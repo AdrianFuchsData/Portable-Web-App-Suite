@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en" data-version="%%BUILD_VERSION%%">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <!-- The apps run in frames and windows written by this page and inherit this policy (plus their own), so it is the
+       union of the policies of all apps (tests/apps/test_overview.py checks it). -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'unsafe-inline' blob: 'wasm-unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; media-src blob: data: mediastream: http: https:; connect-src data: blob: http: https: ws: wss:; worker-src blob: data:; font-src data: blob:; frame-src 'self' about: blob:; form-action 'none'; base-uri 'none'">
+  <title>Portable Web App Suite</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230172ad' d='M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../../vendor/pico.min.css">
+  <link rel="stylesheet" href="../../../shared/css/suite.css">
+  <link rel="stylesheet" href="style.css">
+  <script type="application/json" data-shortcuts="overview"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <noscript>This application requires JavaScript.</noscript>
+  <script type="application/octet-stream" data-bundle="bundle.json"></script>
+  <script src="../../../vendor/htm-preact-standalone.umd.js"></script>
+  <script src="../../../shared/js/i18n.js"></script>
+  <script src="../../../shared/js/files.js"></script>
+  <script src="../../../shared/js/bridge.js"></script>
+  <script src="../../../shared/js/shell.js"></script>
+  <script src="js/zip.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

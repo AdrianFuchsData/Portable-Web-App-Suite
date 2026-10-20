@@ -1,0 +1,236 @@
+<!-- Generated from docs/de/apps/archive.md by tools/build_docs.py - do not edit. Confluence page title: Archivmanager -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Der Archivmanager (<code>archive.html</code>) öffnet, erstellt und bearbeitet Archive: Ordner durchsuchen, Dateien ansehen, Dateien entpacken,
+Dateien und Ordner hinzufügen, Ordner anlegen, umbenennen, löschen und zwischen Formaten umwandeln.</p>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Öffnen</th>
+<th>Speichern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ZIP (auch <code>.jar</code>, <code>.docx</code>, <code>.xlsx</code>, <code>.odt</code>, <code>.epub</code>, <code>.apk</code>, <code>.whl</code> und andere ZIP-basierte Dateien)</td>
+<td>ja, auch ZIP64</td>
+<td>ja (bis 4 GiB und 65.535 Einträge)</td>
+</tr>
+<tr>
+<td>TAR</td>
+<td>ja (ustar, pax, lange GNU-Namen, symbolische Verknüpfungen)</td>
+<td>ja</td>
+</tr>
+<tr>
+<td>TAR.GZ / TGZ</td>
+<td>ja</td>
+<td>ja</td>
+</tr>
+<tr>
+<td>GZ (eine einzelne komprimierte Datei)</td>
+<td>ja</td>
+<td>ja</td>
+</tr>
+<tr>
+<td>7z</td>
+<td>ja</td>
+<td>ja (ohne Verschlüsselung)</td>
+</tr>
+<tr>
+<td>RAR (Version 4 und 5)</td>
+<td>ja</td>
+<td>– (als 7z oder ZIP speichern)</td>
+</tr>
+<tr>
+<td>TAR.XZ, TAR.BZ2, TAR.ZST, TAR.LZMA</td>
+<td>ja</td>
+<td>–</td>
+</tr>
+<tr>
+<td>ISO, CAB, DEB, RPM, CPIO, AR, XAR</td>
+<td>ja</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p>7z, RAR und die weiteren Formate werden mit libarchive gelesen (in die Anwendung eingebaut). Beim Öffnen wird das ganze Archiv entpackt,
+große Archive brauchen also so viel Speicher wie ihr Inhalt. <strong>Speichern</strong> öffnet bei einem nur lesbaren Format <strong>Speichern unter</strong> mit
+7z als Vorschlag. Verschlüsselte 7z- und RAR-Archive lassen sich nicht öffnen (eine Meldung weist darauf hin; verschlüsselte ZIP-Archive
+werden unterstützt, siehe unten), ebenso wenig eine einzelne komprimierte Datei ohne Archiv darin (z. B. <code>notizen.txt.xz</code>).</p>
+<h2>Öffnen und anlegen</h2>
+<ul>
+<li><strong>Öffnen</strong> (<code>Strg+O</code>) öffnet ein Archiv. Sie können ein Archiv auch auf das Fenster ziehen, solange kein Archiv geöffnet ist.</li>
+<li><strong>Neu</strong> beginnt ein leeres ZIP-Archiv. Werden Dateien auf das Fenster gezogen, während nichts geöffnet ist, entsteht ebenfalls
+  ein neues Archiv.</li>
+<li>In Chrome/Edge am Desktop listet die Startseite die zuletzt verwendeten Archive.</li>
+</ul>
+<h2>Durchsuchen</h2>
+<ul>
+<li>Die Liste zeigt den Inhalt des aktuellen Ordners: Name, Größe (bei Ordnern die Anzahl der Elemente), gepackte Größe (ZIP) und
+  Änderungsdatum. Ein Klick auf eine Spaltenüberschrift sortiert.</li>
+<li>Ein Doppelklick (am Smartphone: Tippen) auf einen Ordner öffnet ihn. ↑, <code>Rücktaste</code> oder der Pfad über der Liste führen zurück.</li>
+<li>Ein Doppelklick (Tippen) auf eine Datei zeigt eine Vorschau: Text, Bilder, Audio und Video. <strong>Herunterladen</strong> in der Vorschau
+  speichert die Datei.</li>
+</ul>
+<h2>Auswählen</h2>
+<p>Ein Klick wählt ein Element, <code>Strg</code>+Klick fügt Elemente hinzu oder entfernt sie, <code>Umschalt</code>+Klick wählt einen Bereich, <code>Strg+A</code> wählt
+alle Elemente des Ordners. Auch die Kontrollkästchen wählen Elemente aus (auf Smartphones und Tablets sind sie der Weg zur Auswahl).</p>
+<h2>Entpacken</h2>
+<ul>
+<li><strong>Entpacken</strong> entpackt die gewählten Elemente, <strong>Alles entpacken</strong> den ganzen aktuellen Ordner.</li>
+<li>Eine einzelne Datei wird direkt heruntergeladen.</li>
+<li>In Chrome/Edge am Desktop wählen Sie einen Zielordner; die Dateien werden mit ihren Unterordnern hineingeschrieben.</li>
+<li>In Firefox und unter Android werden mehrere Dateien gemeinsam als eine ZIP-Datei heruntergeladen.</li>
+</ul>
+<p><strong>✓ Testen</strong> prüft das ganze Archiv: Jede Datei wird entpackt und bei ZIP-Archiven mit ihrer gespeicherten Prüfsumme (CRC-32)
+verglichen. Das Ergebnis listet beschädigte Dateien mit dem Grund; dabei wird nichts entpackt oder verändert. Verschlüsselte
+Dateien brauchen das Passwort.</p>
+<h2>Bearbeiten</h2>
+<table>
+<thead>
+<tr>
+<th>Funktion</th>
+<th>Beschreibung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dateien hinzufügen / Ordner hinzufügen</td>
+<td>fügt Dateien oder einen ganzen Ordner in den aktuellen Ordner ein; Dateien und Ordner können auch auf das Fenster gezogen werden</td>
+</tr>
+<tr>
+<td>Neuer Ordner</td>
+<td>legt einen Ordner an und lässt Sie seinen Namen eingeben</td>
+</tr>
+<tr>
+<td>Umbenennen (<code>F2</code>)</td>
+<td>benennt die gewählte Datei oder den gewählten Ordner um</td>
+</tr>
+<tr>
+<td>Löschen (<code>Entf</code>)</td>
+<td>entfernt die gewählten Elemente aus dem Archiv</td>
+</tr>
+</tbody>
+</table>
+<p>Vorhandene Dateien mit gleichem Namen werden nach einer Bestätigung ersetzt.</p>
+<p>Rückgängig (↶, <code>Strg+Z</code>) und Wiederholen (↷, <code>Strg+Y</code>) wirken auf Hinzufügen, Umbenennen, Löschen und neue Ordner.</p>
+<p><strong>Öffnen mit…</strong> (Werkzeugleiste oder Vorschau) öffnet die gewählte Datei in einer anderen Anwendung der Suite; Speichern dort ersetzt die Datei im Archiv (rückgängig machbar). Speichern Sie danach das Archiv.</p>
+<h2>Speichern</h2>
+<ul>
+<li><strong>Speichern</strong> (<code>Strg+S</code>) schreibt das Archiv in seinem Format: in Chrome/Edge am Desktop direkt in die geöffnete Datei, in Firefox
+  und unter Android als Download (ersetzen Sie die ursprüngliche Datei damit).</li>
+<li><strong>Speichern unter</strong> (<code>Strg+Umschalt+S</code>) fragt nach dem Dateinamen und dem <strong>Format</strong> (ZIP, TAR, TAR.GZ, GZ). So wird ein Archiv
+  umgewandelt, etwa ein <code>.tar.gz</code> in ein <code>.zip</code>. Eine GZ-Datei enthält genau eine Datei.</li>
+<li><strong>Kompression</strong> in der Statusleiste legt die Kompression neuer und geänderter Dateien fest: Speichern, Schnell, Normal, Maximal.
+  Unveränderte Dateien eines geöffneten ZIP-Archivs werden unverändert übernommen, daher ist das Speichern schnell.</li>
+</ul>
+<h2>Verschlüsselte ZIP-Archive</h2>
+<p>Verschlüsselte Dateien sind mit 🔒 markiert (der Tooltip nennt das Verfahren). Vorschau, Entpacken oder Öffnen einer solchen
+Datei fragt nach dem Passwort; es bleibt gemerkt, bis ein anderes Archiv geöffnet wird. Beide gebräuchlichen Verfahren werden
+unterstützt: <strong>AES</strong> (WinZip AES, 128/192/256 Bit, verwendet von 7-Zip, WinZip und anderen) und <strong>ZipCrypto</strong> (das alte Verfahren,
+das Windows ohne Zusatzprogramm öffnen kann).</p>
+<ul>
+<li>Nach Eingabe des Passworts eines Archivs werden hinzugefügte oder geänderte Dateien beim Speichern ebenso verschlüsselt
+  (🔒 in der Statusleiste). Unveränderte Dateien bleiben, wie sie sind.</li>
+<li><strong>Speichern unter</strong> bietet für ZIP-Archive die <strong>Verschlüsselung</strong> an: keine, AES-256 (empfohlen) oder ZipCrypto (schwach; nur für
+  den Windows-Explorer), mit zweimal eingegebenem Passwort. Alle noch nicht verschlüsselten Dateien werden dann verschlüsselt;
+  bereits verschlüsselte behalten ihr Passwort. „keine“ speichert neue und geänderte Dateien unverschlüsselt.</li>
+<li>In ZIP-Archiven werden nur die Inhalte verschlüsselt, nicht die Dateinamen und die Dateiliste.</li>
+</ul>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Rückgängig</td>
+</tr>
+<tr>
+<td><code>Strg+Y</code> / <code>Strg+Umschalt+Z</code></td>
+<td>Wiederholen</td>
+</tr>
+<tr>
+<td><code>Strg+A</code></td>
+<td>Alles im Ordner auswählen</td>
+</tr>
+<tr>
+<td><code>F2</code></td>
+<td>Umbenennen</td>
+</tr>
+<tr>
+<td><code>Entf</code></td>
+<td>Löschen</td>
+</tr>
+</tbody>
+</table>
+<h3>Navigation</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Eingabe</code></td>
+<td>Ordner öffnen / Datei-Vorschau</td>
+</tr>
+<tr>
+<td><code>Rücktaste</code> / <code>Alt+↑</code></td>
+<td>Übergeordneter Ordner</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Vorschau schließen</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Werkzeugleiste lässt sich seitlich verschieben. Die Liste zeigt Name und Größe; Tippen auf einen Ordner öffnet ihn, Tippen auf
+eine Datei zeigt die Vorschau, die Kontrollkästchen wählen aus.</p>

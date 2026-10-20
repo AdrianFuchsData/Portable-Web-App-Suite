@@ -1,0 +1,24 @@
+# Development and test dependencies (the apps themselves have no runtime dependencies)
+playwright==1.64.0
+pytest==9.1.1
+pykeepass==4.2.0
+icalendar==7.3.0
+pyftpdlib==2.2.0
+pyOpenSSL==26.4.0
+Markdown==3.11.1
+openpyxl==3.1.5
+python-docx==1.2.0
+python-pptx==1.0.2
+pillow==12.3.0
+nbformat==5.11.1
+pypdf==6.20.1
+pyzipper==0.3.6
+zxing-cpp==3.1.1
+segno==1.6.6
+pycryptodomex==3.24.1
+cryptography==50.0.2
+imageio-ffmpeg==0.6.0
+psd-tools==1.25.0
+py7zr==1.1.4
+pyhanko==0.38.0
+axe-playwright-python==0.1.8

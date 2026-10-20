@@ -1,0 +1,75 @@
+/* Web inspector (on top of shared/css/suite.css) */
+.wi-toolbar { display: flex; gap: .3rem; overflow-x: auto; }
+.wi-toolbar button { margin: 0; padding: .2rem .7rem; font-size: .85rem; width: auto; white-space: nowrap; }
+.suite-main { overflow: hidden; display: flex; flex-direction: column; }
+.wi-layout { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.wi-content { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.wi-page, .wi-har, .wi-bm { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: .4rem .6rem; gap: .3rem; font-size: .85rem; }
+.wi-address, .wi-row { display: flex; flex-wrap: wrap; gap: .3rem; align-items: center; margin: 0; }
+.wi-address input[type=url] { flex: 1 1 14rem; margin: 0; padding: .2rem .5rem; height: auto; font-size: .9rem; }
+.wi-address button, .wi-row button, .wi-subtabs button, .wi-types button { margin: 0; width: auto; padding: .15rem .6rem; font-size: .8rem; }
+.wi-address select { width: auto; margin: 0; padding: .15rem 2rem .15rem .5rem; height: auto; font-size: .8rem; }
+.wi-row input[type=search] { flex: 1 1 10rem; margin: 0; padding: .15rem .5rem; height: auto; font-size: .8rem; }
+.wi-check { display: flex; gap: .3rem; align-items: center; margin: 0; font-size: .8rem; }
+.wi-note, .wi-hint { color: var(--pico-muted-color); font-size: .8rem; margin: 0; }
+.wi-hint { padding: 1rem 0; }
+.wi-summary { display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline; overflow-wrap: anywhere; }
+.wi-status { font-weight: 700; padding: 0 .4rem; border-radius: .3rem; color: #fff; background: #607d8b; }
+.wi-status.s2 { background: #2e7d32; } .wi-status.s3 { background: #1565c0; } .wi-status.s4, .wi-status.s5 { background: #c62828; }
+.wi-subtabs { display: flex; flex-wrap: wrap; gap: .25rem; }
+.wi-sub { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.wi-scroll { flex: 1; overflow: auto; min-height: 0; }
+.wi-preview-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; gap: .2rem; }
+.wi-preview { flex: 1; width: 100%; min-height: 15rem; border: 1px solid var(--pico-muted-border-color); background: #fff; }
+.wi-preview-wrap select { width: auto; margin: 0; padding: .1rem 2rem .1rem .5rem; height: auto; font-size: .8rem; }
+.wi-device { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.wi-device.sized { overflow: auto; align-items: flex-start; background: var(--pico-muted-border-color); padding: .4rem; }
+.wi-device.sized .wi-preview { min-height: 0; box-sizing: content-box; box-shadow: 0 2px 8px rgba(0, 0, 0, .25); }
+.wi-mini { margin: 0 !important; width: auto !important; padding: 0 .35rem !important; font-size: .72rem !important; }
+.wi-blocked td { color: var(--pico-muted-color); text-decoration: line-through; }
+.wi-blocked td:first-child { text-decoration: none; }
+.wi-blocking textarea { font: .78rem var(--pico-font-family-monospace); margin: .3rem 0; }
+.wi-table { width: 100%; margin: 0 0 .6rem; font-size: .78rem; }
+.wi-table td, .wi-table th { padding: .15rem .4rem; vertical-align: top; }
+.wi-key { white-space: nowrap; font-weight: 600; }
+.wi-code { font-family: var(--pico-font-family-monospace); word-break: break-all; }
+.wi-url { max-width: 30rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wi-source-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; gap: .3rem; }
+.wi-source { flex: 1; overflow: auto; margin: 0; padding: .3rem; font-size: .75rem; white-space: pre-wrap; word-break: break-all; }
+.wi-ln { display: inline-block; min-width: 3.5em; color: var(--pico-muted-color); user-select: none; text-align: right; padding-right: .7em; }
+.hl-t { color: #1565c0; } .hl-a { color: #8e24aa; } .hl-s { color: #2e7d32; } .hl-c { color: #9e9e9e; font-style: italic; }
+[data-theme=dark] .hl-t { color: #64b5f6; } [data-theme=dark] .hl-a { color: #ce93d8; } [data-theme=dark] .hl-s { color: #a5d6a7; }
+.wi-list { margin: 0 0 .5rem; padding-left: 1rem; font-size: .78rem; }
+.wi-list li { overflow-wrap: anywhere; }
+.wi-hints ul { margin: 0 0 .5rem; }
+.wi-har-main { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); min-height: 0; gap: .5rem; }
+.wi-har-main.with-detail { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+.wi-har-table tr { cursor: pointer; }
+.wi-har-table tr.selected td { background: var(--suite-selected); }
+.wi-har-table tr.error td { color: var(--pico-del-color); }
+.wi-sort { cursor: pointer; user-select: none; white-space: nowrap; }
+.wi-fall { display: block; height: .6rem; background: #43a047; border-radius: 2px; }
+.wi-har-detail { display: flex; flex-direction: column; min-height: 0; border-left: 1px solid var(--pico-muted-border-color); padding-left: .5rem; }
+.wi-close { margin-left: auto !important; }
+.wi-pre { font-size: .75rem; white-space: pre-wrap; word-break: break-all; margin: 0; }
+.wi-img { max-width: 100%; }
+.wi-bar { display: inline-block; height: .7rem; min-width: 1px; background: #1e88e5; border-radius: 2px; }
+.wi-bar.wait { background: #43a047; } .wi-bar.receive { background: #8e24aa; } .wi-bar.dns { background: #00897b; } .wi-bar.ssl { background: #f4511e; }
+.wi-types { display: flex; flex-wrap: wrap; gap: .2rem; }
+.wi-bm p { max-width: 50rem; }
+.wi-bm-link { display: inline-block; padding: .3rem .8rem; border: 2px dashed var(--pico-primary); border-radius: .4rem; text-decoration: none; font-weight: 600; }
+.wi-bm-code { font: .72rem var(--pico-font-family-monospace); }
+.wi-paste { width: min(48rem, 94vw); max-width: none; }
+.wi-paste textarea { font: .78rem var(--pico-font-family-monospace); }
+.wi-relay { margin: 0; padding: .2rem .6rem; border-top: 1px solid var(--pico-muted-border-color); font-size: .8rem; }
+.wi-relay summary { font-size: .8rem; }
+.appdata-bar { display: flex; flex-wrap: wrap; gap: .3rem; align-items: center; margin: .4rem 0; font-size: .8rem; }
+.appdata-bar button { margin: 0; padding: 0 .4rem; width: auto; font-size: .75rem; }
+.appdata-relay small { display: block; margin-bottom: .4rem; color: var(--pico-muted-color); }
+.appdata-relay input { padding: .15rem .4rem; height: auto; font-size: .8rem; }
+@media (max-width: 760px) {
+  .wi-har-main.with-detail { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 1.3fr); }
+  .wi-har-detail { border-left: 0; border-top: 1px solid var(--pico-muted-border-color); padding: .3rem 0 0; }
+  .wi-wide { display: none; }
+  .wi-url { max-width: 12rem; }
+}

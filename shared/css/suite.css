@@ -1,0 +1,121 @@
+/*
+ * Base styles of all apps, on top of Pico CSS (vendor/pico.min.css). Light and dark mode follow the system
+ * setting unless the user chose one (data-theme="light|dark" on <html>, set by shell.js).
+ */
+:root {
+  --suite-gap: .75rem;
+  --suite-header-height: 3rem;
+  --pico-font-size: 100%;
+  --pico-spacing: .75rem;
+  /* selected rows and items: light enough that links and coloured text on it keep a 4.5:1 contrast (Pico's focus colour does not) */
+  --suite-selected: rgba(2, 154, 232, .14);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --suite-selected: rgba(1, 170, 255, .22); } }
+:root[data-theme="dark"] { --suite-selected: rgba(1, 170, 255, .22); }
+/* a visible keyboard focus everywhere (also on elements Pico does not style) */
+:focus-visible { outline: 2px solid var(--pico-primary, #0172ad); outline-offset: 1px; }
+html, body { height: 100%; }
+body { margin: 0; display: flex; flex-direction: column; }
+body > #app { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+/* app header */
+.suite-header { display: flex; align-items: center; gap: var(--suite-gap); padding: 0 var(--suite-gap); min-height: var(--suite-header-height);
+  border-bottom: 1px solid var(--pico-muted-border-color); background: var(--pico-background-color); flex-wrap: wrap; }
+.suite-header h1 { font-size: 1.1rem; margin: 0; white-space: nowrap; }
+.suite-header .suite-spacer { flex: 1; }
+.suite-header button, .suite-header [role="button"], .suite-header select { margin: 0; padding: .25rem .6rem; font-size: .9rem; width: auto; }
+.suite-main { flex: 1; min-height: 0; overflow: auto; }
+
+/* notifications */
+.suite-toasts { pointer-events: none; position: fixed; right: 1rem; bottom: 1rem; display: flex; flex-direction: column; gap: .5rem; z-index: 1000; max-width: min(28rem, calc(100vw - 2rem)); }
+.suite-toast { padding: .6rem .9rem; border-radius: var(--pico-border-radius); background: var(--pico-card-background-color);
+  box-shadow: var(--pico-card-box-shadow); border-left: 4px solid var(--pico-primary); }
+.suite-toast.error { border-left-color: var(--pico-del-color); }
+.suite-toast.warning { border-left-color: #e8a317; }
+
+/* banner (e.g. "replace the original file with the download") */
+.suite-banner { margin: 0; padding: .5rem var(--suite-gap); background: var(--pico-mark-background-color); color: var(--pico-mark-color);
+  display: flex; gap: var(--suite-gap); align-items: center; flex-wrap: wrap; }
+.suite-banner button { margin: 0; padding: .15rem .6rem; width: auto; }
+
+/* about dialog with the keyboard shortcuts */
+.suite-about { width: min(40rem, calc(100vw - 2rem)); max-width: none; max-height: calc(100vh - 3rem); overflow-y: auto; }
+.suite-shortcuts summary, .suite-prefs summary { font-weight: 600; }
+.suite-prefs { margin-top: .6rem; } .suite-prefs [role=group] { width: auto; margin: 0; } .suite-prefs button { font-size: .85rem; padding: .25rem .6rem; }
+.suite-shortcuts h4 { font-size: .85rem; margin: .8rem 0 .2rem; }
+.suite-shortcuts table { margin: 0; font-size: .85rem; }
+.suite-shortcuts td { padding: .2rem .4rem; vertical-align: top; }
+.suite-shortcuts td:first-child { white-space: nowrap; width: 1%; }
+.suite-shortcuts kbd { font-size: .75rem; padding: .05rem .35rem; }
+.suite-or { color: var(--pico-muted-color); }
+
+/* "Recent" list (shell.js Recent) */
+select.suite-recent { width: auto; max-width: 11rem; margin: 0; padding: .2rem 1.8rem .2rem .5rem; height: auto; font-size: .85rem; flex: none; }
+
+/* drop zone */
+.suite-drop-active { outline: 3px dashed var(--pico-primary); outline-offset: -6px; }
+
+@media (max-width: 600px) {
+  .suite-header h1 { font-size: 1rem; }
+}
+
+/* phones: drawers start below the header (--suite-top, kept up to date by shell.js) above a shade that closes them */
+.suite-backdrop { display: none; }
+@media (max-width: 760px) {
+  /* the app toolbar is a full-width row below the title (title and theme/language/help stay on the first row) and
+     scrolls horizontally instead of wrapping */
+  .suite-header { row-gap: .3rem; padding-top: .3rem; padding-bottom: .3rem; }
+  .suite-header > nav { order: 3; flex: 1 1 100%; width: 100%; max-width: 100%; min-width: 0; display: flex; flex-wrap: nowrap;
+    overflow-x: auto; scrollbar-width: thin; padding-bottom: .15rem; }
+  .suite-header > nav > * { flex: none; }
+  .suite-backdrop { display: block; position: fixed; left: 0; right: 0; bottom: 0; top: var(--suite-top, 3rem); z-index: 14; background: rgba(0, 0, 0, .3); }
+  .suite-drawer { position: fixed !important; z-index: 15 !important; top: var(--suite-top, 3rem) !important; bottom: 0 !important;
+    width: min(20rem, 88vw) !important; overflow-y: auto; background: var(--pico-background-color); box-shadow: 0 0 1rem rgba(0, 0, 0, .3); }
+  .suite-toasts { left: 1rem; right: 1rem; max-width: none; }
+}
+
+/* touch devices: larger targets */
+@media (pointer: coarse) {
+  .suite-header button, .suite-header select { min-height: 2.25rem; min-width: 2.25rem; }
+}
+
+/* dialogs above embedded editors (Univer, canvases with their own stacking) */
+dialog.pico[open] { z-index: 2000; }
+
+/* "Open with" dialog (bridge.js) */
+.suite-open-with article { width: min(30rem, calc(100vw - 2rem)); }
+.suite-open-with-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: .5rem; margin-bottom: .75rem; }
+.suite-open-with-list button { margin: 0; text-align: left; padding: .5rem .7rem; }
+
+/* command palette */
+.suite-palette-shade { position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,.25); }
+.suite-palette { position: fixed; z-index: 91; top: 12vh; left: 50%; transform: translateX(-50%); width: min(36rem, calc(100vw - 2rem));
+  background: var(--pico-background-color); border: 1px solid var(--pico-muted-border-color); border-radius: .5rem; box-shadow: 0 1rem 3rem rgba(0,0,0,.35); padding: .5rem; }
+.suite-palette input { margin: 0 0 .4rem; }
+.suite-palette ul { list-style: none; margin: 0; padding: 0; max-height: 55vh; overflow-y: auto; }
+.suite-palette li { list-style: none; margin: 0; padding: .35rem .6rem; border-radius: .3rem; cursor: pointer; font-size: .9rem; }
+.suite-palette li.active, .suite-palette li:hover { background: var(--suite-selected); }
+.suite-palette p { margin: .3rem .6rem; color: var(--pico-muted-color); font-size: .9rem; }
+
+/* spell checking (shared/js/spell-dom.js, shared/js/cm-spell.js) */
+::highlight(suite-spell) { text-decoration: underline wavy #d32f2f; text-decoration-skip-ink: none; background-color: rgba(211, 47, 47, .12); }
+.cm-spell-error { text-decoration: underline wavy #d32f2f; text-decoration-skip-ink: none; background-color: rgba(211, 47, 47, .12); }
+.suite-spell-layer { position: fixed; inset: 0; pointer-events: none; z-index: 2001; overflow: hidden; }
+.suite-spell-mirror { position: fixed; overflow: hidden; color: transparent; border-style: solid; border-color: transparent; margin: 0; background: none; }
+.suite-spell-menu { position: fixed; z-index: 2002; display: flex; flex-direction: column; min-width: 12rem; max-width: 20rem; padding: .3rem;
+  background: var(--pico-background-color, #fff); border: 1px solid var(--pico-muted-border-color); border-radius: .4rem; box-shadow: 0 .4rem 1.2rem rgba(0, 0, 0, .25); }
+.suite-spell-menu button { margin: 0; padding: .25rem .6rem; text-align: left; border: 0; font-size: .9rem; width: 100%; }
+.suite-spell-menu .suite-spell-suggestion { font-weight: 600; }
+.suite-spell-menu hr { margin: .25rem 0; }
+.suite-spell-menu p { margin: .2rem .6rem; font-size: .85rem; color: var(--pico-muted-color); }
+.suite-header .suite-spell-select { width: auto; max-width: 13rem; margin: 0; padding: .25rem 1.8rem .25rem .5rem; font-size: .85rem; }
+
+/* licence section of the about dialog; marks of a modified version */
+.suite-licence { margin-top: .6rem; }
+.suite-licence summary { font-weight: 600; }
+.suite-licence details summary { font-weight: 400; }
+.suite-licence pre { max-height: 18rem; overflow: auto; white-space: pre-wrap; font-size: .75rem; padding: .5rem; }
+.suite-components { list-style: none; padding: 0; margin: 0; font-size: .85rem; }
+.suite-components li { list-style: none; margin: 0; }
+.suite-modified { border-left: 4px solid #e65100; padding: .4rem .6rem; background: rgba(230, 81, 0, .1); }
+.suite-modified-badge { font-size: .65rem; font-weight: 600; color: #fff; background: #e65100; border-radius: .3rem; padding: .05rem .35rem; vertical-align: middle; white-space: nowrap; }

@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "app/univer-docx": "../../../../shared/js/univer-docx.js",
+    "app/docx-import": "../../../../shared/js/docx-import.js",
+    "app/odt": "../../../../shared/js/odt.js",
+    "app/doc-toc": "../../../../shared/js/doc-toc.js",
+    "app/doc-html": "../../../../shared/js/doc-html.js",
+    "app/spell": "../../../../shared/js/spell.js",
+    "app/spelling": "./spelling.js",
+    "app/spell-dom": "../../../../shared/js/spell-dom.js"
+  }
+}

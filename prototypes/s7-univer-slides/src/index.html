@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'unsafe-inline' blob:; worker-src blob:; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>S-7: Univer Slides</title>
+  <link rel="stylesheet" href="../../../vendor/esm/univer-slides/assets/univerjs__design/lib/index.css">
+  <link rel="stylesheet" href="../../../vendor/esm/univer-slides/assets/univerjs__ui/lib/index.css">
+  <link rel="stylesheet" href="../../../vendor/esm/univer-slides/assets/univerjs__docs-ui/lib/index.css">
+  <link rel="stylesheet" href="../../../vendor/esm/univer-slides/assets/univerjs__slides-ui/lib/index.css">
+  <link rel="stylesheet" href="../../../shared/css/office-fonts.css">
+  <style>
+    html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
+    body { display: flex; flex-direction: column; }
+    header { padding: .4rem .8rem; border-bottom: 1px solid #8884; }
+    #app { flex: 1; min-height: 0; }
+  </style>
+  <script type="importmap" data-src="../../../vendor/esm/univer-slides/importmap.json"></script>
+</head>
+<body>
+  <header><strong>S-7</strong> Univer Slides from file:// <span id="status">loading…</span></header>
+  <div id="app"></div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

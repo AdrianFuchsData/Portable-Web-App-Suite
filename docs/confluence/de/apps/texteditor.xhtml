@@ -1,0 +1,240 @@
+<!-- Generated from docs/de/apps/texteditor.md by tools/build_docs.py - do not edit. Confluence page title: Texteditor -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Der Texteditor (<code>texteditor.html</code>) bearbeitet Textdateien und Quellcode: mehrere Dateien in Registerkarten,
+Syntaxhervorhebung für mehr als 40 Sprachen, Suchen und Ersetzen, mehrere Cursor sowie Kontrolle über Kodierung und
+Zeilenenden.</p>
+<h2>Dateien öffnen und anlegen</h2>
+<ul>
+<li><strong>Öffnen</strong> (<code>Strg+O</code>) öffnet eine oder mehrere Dateien; Sie können Dateien auch in das Fenster ziehen.</li>
+<li><strong>Neu</strong> (<code>Alt+N</code>) legt ein leeres Dokument an.</li>
+<li><strong>Zuletzt</strong> (Chrome/Edge am Desktop) öffnet zuletzt verwendete Dateien erneut.</li>
+</ul>
+<p>Jede Datei öffnet sich in einer eigenen Registerkarte. Ein Punkt (●) zeigt ungespeicherte Änderungen. Schließen Sie
+eine Registerkarte mit × oder <code>Alt+W</code>; bei ungespeicherten Änderungen fragt der Editor vorher nach. Mit der Tastatur gelangen Sie mit
+<code>Tab</code> zu einer Registerkarte; <code>Eingabe</code> zeigt sie, <code>Entf</code> schließt sie.</p>
+<h2>Speichern</h2>
+<ul>
+<li><strong>Speichern</strong> (<code>Strg+S</code>) schreibt die Datei. In Chrome/Edge am Desktop wird die geöffnete Datei direkt geändert; in
+  Firefox und unter Android wird die Datei heruntergeladen – ersetzen Sie die ursprüngliche Datei damit.</li>
+<li><strong>Speichern unter</strong> (<code>Strg+Umschalt+S</code>) speichert unter einem neuen Namen. Neue Dokumente werden immer mit
+  „Speichern unter“ gespeichert.</li>
+</ul>
+<h2>Bearbeiten</h2>
+<table>
+<thead>
+<tr>
+<th>Funktion</th>
+<th>Tasten</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Suchen / Ersetzen (auch mit regulären Ausdrücken)</td>
+<td><code>Strg+F</code> oder 🔍</td>
+</tr>
+<tr>
+<td>Gehe zu Zeile</td>
+<td><code>Strg+G</code> oder ↧</td>
+</tr>
+<tr>
+<td>Cursor hinzufügen</td>
+<td><code>Strg+Klick</code></td>
+</tr>
+<tr>
+<td>Spalte von Cursorn (Rechteckauswahl)</td>
+<td><code>Alt+Ziehen</code> mit der Maus</td>
+</tr>
+<tr>
+<td>Nächstes Vorkommen des Wortes auswählen</td>
+<td><code>Strg+D</code></td>
+</tr>
+<tr>
+<td>Rückgängig / Wiederholen</td>
+<td><code>Strg+Z</code> / <code>Strg+Y</code> oder <code>Strg+Umschalt+Z</code></td>
+</tr>
+<tr>
+<td>Auswahl einrücken / ausrücken</td>
+<td><code>Tab</code> / <code>Umschalt+Tab</code></td>
+</tr>
+<tr>
+<td>Auskommentieren / einkommentieren</td>
+<td><code>Strg+/</code></td>
+</tr>
+</tbody>
+</table>
+<p>Mit mehreren Cursorn geschieht alles, was Sie tippen, löschen oder einfügen, an jedem Cursor. <code>Esc</code> kehrt zu einem
+Cursor zurück.</p>
+<p>Die Schaltflächen ↩ (Zeilenumbruch), · (Leerzeichen und Tabulatoren anzeigen), A− und A+ (Schriftgröße) ändern die
+Ansicht; der Editor merkt sich diese Einstellungen.</p>
+<p>Jedes Dokument hat einen eigenen Verlauf: ↶ und ↷ in der Werkzeugleiste oder <code>Strg+Z</code> und <code>Strg+Y</code> / <code>Strg+Umschalt+Z</code>.</p>
+<p><strong>Rechtschreibung:</strong> Ist im Auswahlfeld <strong>ABC</strong> der Kopfzeile eine Sprache gewählt, werden unbekannte Wörter unterstrichen – in
+reinem Text und Markdown überall, in Programmcode nur in Kommentaren und Zeichenketten; ein Rechtsklick auf ein Wort zeigt
+Vorschläge (<ac:link><ri:page ri:content-title="Portable Web App Suite – Benutzerhandbuch" /><ac:plain-text-link-body><![CDATA[Rechtschreibung]]></ac:plain-text-link-body></ac:link>).</p>
+<h2>Geteilte Ansicht</h2>
+<p><strong>◫</strong> zeigt das aktuelle Dokument ein zweites Mal neben dem ersten (am Smartphone untereinander), etwa um den Anfang einer langen
+Datei zu sehen, während man ihr Ende bearbeitet. Beide Ansichten bearbeiten denselben Text und teilen einen Rückgängig-Verlauf; die
+zweite Ansicht folgt dem aktiven Reiter. Erneut ◫ schließt sie.</p>
+<h2>In Dateien suchen</h2>
+<p><strong>🔍🗂</strong> (<code>Strg+Umschalt+F</code>) durchsucht alle geöffneten Dokumente auf einmal: Treffer werden je Datei mit Zeile und Spalte
+aufgelistet; ein Klick öffnet das Dokument und markiert den Treffer. <strong>Aa</strong> beachtet Groß-/Kleinschreibung, <strong>.*</strong> behandelt den
+Text als regulären Ausdruck. In Chrome und Edge durchsucht <strong>📁 Ordner…</strong> stattdessen einen Ordner auf Ihrem Computer samt
+Unterordnern (ohne <code>.git</code>, <code>node_modules</code>, Binärdateien und Dateien über 5 MB); ein Klick auf einen Treffer öffnet diese Datei.
+Höchstens 2000 Treffer werden aufgelistet.</p>
+<h2>Vergleichen</h2>
+<p><strong>⇔</strong> vergleicht das aktuelle Dokument mit einem anderen geöffneten Dokument oder einer Datei. Auf breiten Bildschirmen stehen
+beide Texte nebeneinander – links der andere Text (schreibgeschützt), rechts das aktuelle Dokument –, geänderte Zeilen und Wörter
+sind hervorgehoben und gleiche Teile ausgerichtet; <strong>→</strong> dazwischen übernimmt eine Änderung des linken Textes ins Dokument. Am
+Smartphone zeigt eine Ansicht die gelöschten Zeilen im Text mit <strong>Accept</strong>/<strong>Reject</strong> je Änderung. <strong>↑</strong>/<strong>↓</strong> springen zwischen den
+Unterschieden; <strong>Fertig</strong> (oder erneut ⇔) beendet den Vergleich, Änderungen in der Zwischenzeit sind ein Rückgängig-Schritt.</p>
+<h2>Werkzeuge</h2>
+<p><strong>🛠 Werkzeuge</strong> in der Werkzeugleiste ändert den ausgewählten Text oder – ohne Auswahl – das ganze Dokument. Jedes
+Werkzeug lässt sich mit <code>Strg+Z</code> rückgängig machen.</p>
+<table>
+<thead>
+<tr>
+<th>Gruppe</th>
+<th>Werkzeuge</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zeilen</td>
+<td>sortieren A→Z oder Z→A (Zahlen in natürlicher Reihenfolge: 9 vor 10; Groß-/Kleinschreibung egal), nach Länge sortieren, Reihenfolge umkehren, doppelte Zeilen entfernen, leere Zeilen entfernen, Leerzeichen am Ende oder an beiden Enden entfernen, Zeilen verbinden</td>
+</tr>
+<tr>
+<td>Groß/klein</td>
+<td>GROSSBUCHSTABEN, kleinbuchstaben, Wörter Groß Beginnen, gROSS/kLEIN uMKEHREN</td>
+</tr>
+<tr>
+<td>Kodieren / dekodieren</td>
+<td>Base64 (UTF-8), URL-Kodierung (Prozentkodierung), HTML-Entitäten</td>
+</tr>
+<tr>
+<td>Formatieren</td>
+<td>JSON formatieren (einrücken) oder verkleinern, XML formatieren</td>
+</tr>
+</tbody>
+</table>
+<p>Zeilenwerkzeuge arbeiten immer mit ganzen Zeilen: denen, die die Auswahl berührt. Ungültige Eingaben (etwa fehlerhaftes JSON)
+zeigen eine Meldung und lassen den Text unverändert.</p>
+<h2>Statusleiste</h2>
+<p>Die Statusleiste zeigt die Cursorposition (Zeile und Spalte), die Länge der Auswahl und die Anzahl der Cursor. Außerdem
+können Sie dort ändern:</p>
+<ul>
+<li><strong>Sprache</strong> der Syntaxhervorhebung (wird am Dateinamen erkannt).</li>
+<li><strong>Kodierung</strong> beim Speichern: UTF-8 (wahlweise mit BOM), UTF-16 LE/BE oder Windows-1252. Beim Öffnen wird die
+  Kodierung automatisch erkannt. Wurde eine Datei falsch erkannt, liest <strong>Neu laden mit Kodierung</strong> sie mit einer
+  anderen Kodierung ein (Chrome/Edge am Desktop).</li>
+<li><strong>Zeilenenden</strong> beim Speichern: LF (Linux, macOS), CRLF (Windows) oder CR.</li>
+</ul>
+<ac:structured-macro ac:name="info"><ac:rich-text-body><p>Windows-1252 kann nicht alle Zeichen speichern. Der Editor warnt, bevor er solche Zeichen durch „?“ ersetzt.</p></ac:rich-text-body></ac:structured-macro>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+<tr>
+<td><code>Alt+N</code></td>
+<td>Neues Dokument</td>
+</tr>
+<tr>
+<td><code>Alt+W</code></td>
+<td>Dokument schließen</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Rückgängig</td>
+</tr>
+<tr>
+<td><code>Strg+Y</code> / <code>Strg+Umschalt+Z</code></td>
+<td>Wiederholen</td>
+</tr>
+<tr>
+<td><code>Strg+F</code></td>
+<td>Suchen und ersetzen</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+F</code></td>
+<td>In allen geöffneten Dateien suchen</td>
+</tr>
+<tr>
+<td><code>Strg+G</code></td>
+<td>Gehe zu Zeile</td>
+</tr>
+<tr>
+<td><code>Strg+D</code></td>
+<td>Nächstes Vorkommen des Wortes auswählen</td>
+</tr>
+<tr>
+<td><code>Strg+Klick</code></td>
+<td>Cursor hinzufügen</td>
+</tr>
+<tr>
+<td><code>Alt+Ziehen</code></td>
+<td>Spalte von Cursorn (Rechteckauswahl)</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Zurück zu einem Cursor</td>
+</tr>
+<tr>
+<td><code>Tab</code> / <code>Umschalt+Tab</code></td>
+<td>Einrücken / ausrücken</td>
+</tr>
+<tr>
+<td><code>Strg+/</code></td>
+<td>Auskommentieren / einkommentieren</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+[</code> / <code>Strg+Umschalt+]</code></td>
+<td>Block falten / entfalten</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Werkzeugleiste lässt sich seitlich verschieben. Tippen Sie auf den Text, um die Tastatur einzublenden. Mehrere
+Cursor mit <code>Alt+Ziehen</code> brauchen Maus und Tastatur.</p>

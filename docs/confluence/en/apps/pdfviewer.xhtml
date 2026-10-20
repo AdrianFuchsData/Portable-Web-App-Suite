@@ -1,0 +1,176 @@
+<!-- Generated from docs/en/apps/pdfviewer.md by tools/build_docs.py - do not edit. Confluence page title: PDF viewer -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The PDF viewer (<code>pdfviewer.html</code>) displays PDF files: page navigation, zoom, rotation, search, outline and page
+thumbnails, links, filling in forms, annotations (highlight, text, drawing), printing and password-protected files.</p>
+<h2>Opening and saving</h2>
+<ul>
+<li><strong>Open</strong> (<code>Ctrl+O</code>) opens a PDF file; you can also drop a file onto the window.</li>
+<li>Password-protected files ask for the password.</li>
+<li><strong>Save</strong> (<code>Ctrl+S</code>) saves the PDF with filled-in form fields and your annotations: directly into the opened file in
+  Chrome/Edge on the desktop, as a download in Firefox and on Android (replace the original file with it).
+  <code>Ctrl+Shift+S</code> saves under a new name.</li>
+</ul>
+<h2>Navigating</h2>
+<ul>
+<li>‹ and › go to the previous and next page; type a page number into the page field.</li>
+<li>☰ shows the sidebar: <strong>Pages</strong> shows thumbnails (click one to go to the page), <strong>Outline</strong> shows the table of contents
+  of the document, if it has one.</li>
+<li>Links in the document work: internal links jump to the target page.</li>
+</ul>
+<h2>Zoom and rotation</h2>
+<p>− and + zoom out and in. The zoom list offers <strong>Automatic</strong>, <strong>Whole page</strong>, <strong>Page width</strong> and fixed sizes. ⟳ rotates all
+pages by 90 degrees (only the view; the file is not changed).</p>
+<h2>Search</h2>
+<p>🔍 or <code>Ctrl+F</code> opens the search bar. The viewer highlights all matches and shows "1 of 3 matches". <strong>Next</strong> and
+<strong>Previous</strong> move between the matches; <strong>Match case</strong> distinguishes upper and lower case.</p>
+<h2>Forms and annotations</h2>
+<p>Form fields can be filled in directly. The <strong>Annotate</strong> list switches the mode:</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Select / fill in forms</td>
+<td>normal mode: select text, click links, fill in forms</td>
+</tr>
+<tr>
+<td>Highlight</td>
+<td>select text to highlight it</td>
+</tr>
+<tr>
+<td>Text</td>
+<td>click on the page to add a text box</td>
+</tr>
+<tr>
+<td>Draw</td>
+<td>draw with the mouse, pen or finger</td>
+</tr>
+</tbody>
+</table>
+<p>Save the file to keep form entries and annotations.</p>
+<h3>Signing</h3>
+<p><strong>✍</strong> opens a signature field: draw your signature with the mouse, a pen or a finger, or type your name. <strong>Place</strong>
+closes the field; then click or tap the spot on the page where the signature should go (<code>Esc</code> or ✍ cancels). The
+signature is added to the page as an image (about 6 cm wide) and can be undone like a page operation (📄 → Undo).
+Save the file to keep it.</p>
+<p>This is a visible signature, like one on paper. It is not a digital (cryptographic) signature.</p>
+<h2>Pages: rearrange, rotate, delete, extract, merge</h2>
+<p>Tick pages in the thumbnails (☰ → Pages); without ticks the current page is meant. <strong>📄 Pages</strong> then offers:</p>
+<table>
+<thead>
+<tr>
+<th>Entry</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rotate left / right</td>
+<td>turns the pages permanently (unlike ⟳, which only turns the view)</td>
+</tr>
+<tr>
+<td>Move earlier / later / to position…</td>
+<td>moves the pages as a block</td>
+</tr>
+<tr>
+<td>Delete</td>
+<td>removes the pages (one page always stays)</td>
+</tr>
+<tr>
+<td>Extract as new PDF…</td>
+<td>saves copies of the pages as a new file; the open file stays unchanged</td>
+</tr>
+<tr>
+<td>Insert PDF after… / Append PDF…</td>
+<td>inserts all pages of one or more other PDF files after the selection or at the end (merging)</td>
+</tr>
+<tr>
+<td>Select all pages, Clear selection</td>
+<td></td>
+</tr>
+<tr>
+<td>Undo</td>
+<td>undoes the last page operation (also <code>Ctrl+Z</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Save the file to keep the changes. Password-protected PDFs can be read and filled in, but their pages cannot be
+changed. Form fields, bookmarks and metadata are kept; bookmarks to deleted pages lead nowhere.</p>
+<h2>Digital signatures</h2>
+<p>When a PDF contains digital signatures, a line above the page shows the result of the check: ✅ <em>signed by … – the signature
+is valid</em>, ⚠️ <em>the document was changed after signing</em> (bytes were added after the signature, e.g. filled-in form fields or
+further signatures – the signed version itself is intact) or ❌ <em>the signature is NOT valid</em> (the signed content was changed,
+or the signature does not belong to the certificate). A click on the line, or ✍ in the sidebar, shows every signature with
+signer, date, reason, location, the certificate (issuer, validity, self-signed or expired) and the certificate chain included
+in the signature.</p>
+<p>The check is done in the browser (RSA and ECDSA signatures, SHA-1 to SHA-512). Whether a certificate is <strong>trustworthy</strong> is not
+decided: offline there is no store of trusted root certificates, so a valid signature only proves that the content has not
+changed since it was signed with that certificate. Compare the certificate with the signer if in doubt.</p>
+<h2>Printing</h2>
+<p>🖨 prepares all pages and opens the print dialog of the browser. Form entries and annotations are printed as well.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+F</code></td>
+<td>Find</td>
+</tr>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo the last page operation</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The toolbar can be scrolled sideways, the sidebar (☰) opens over the pages and closes when you choose a page or chapter (or tap next to it). Use the zoom buttons or the zoom list for the
+page size.</p>

@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "app/languages": "languages.js",
+    "app/tools": "tools.js",
+    "app/spell": "../../../../shared/js/spell.js",
+    "app/spell-dom": "../../../../shared/js/spell-dom.js",
+    "app/cm-spell": "../../../../shared/js/cm-spell.js"
+  }
+}

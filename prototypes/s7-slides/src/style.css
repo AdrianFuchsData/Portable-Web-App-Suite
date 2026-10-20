@@ -1,0 +1,19 @@
+html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
+body { display: flex; flex-direction: column; }
+header { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; padding: .4rem .6rem; border-bottom: 1px solid #8884; }
+header .sep { width: 1px; height: 1.4rem; background: #8886; }
+.button { border: 1px solid #8888; border-radius: 3px; padding: 1px 6px; cursor: pointer; font-size: 13.33px; }
+main { flex: 1; display: flex; min-height: 0; }
+#thumbs { width: 190px; overflow-y: auto; padding: .5rem; border-right: 1px solid #8884; background: #f3f3f3; }
+#thumbs .thumb { position: relative; margin-bottom: .6rem; cursor: pointer; border: 2px solid transparent; background: #fff; overflow: hidden; }
+#thumbs .thumb.active { border-color: #4472c4; }
+#thumbs .thumb .slide { transform-origin: 0 0; pointer-events: none; }
+#thumbs .thumb .no { position: absolute; left: 2px; top: 0; font-size: 11px; color: #666; z-index: 1; }
+#stage-wrap { flex: 1; overflow: auto; background: #e8e8e8; display: flex; align-items: center; justify-content: center; min-width: 0; }
+#stage { transform-origin: 0 0; box-shadow: 0 1px 6px #0004; }
+#stage .el:not(.locked) { cursor: move; }
+#stage .text[contenteditable="true"] { cursor: text; outline: 1px dashed #4472c4; }
+#presenter { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 10; cursor: none; }
+#presenter[hidden] { display: none; }
+#presenter .slide { transform-origin: center center; }
+@media (max-width: 700px) { #thumbs { width: 110px; } }

@@ -1,0 +1,369 @@
+<!-- Generated from docs/en/apps/imageeditor.md by tools/build_docs.py - do not edit. Confluence page title: Image editor -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The image editor (<code>imageeditor.html</code>) edits raster images with layers: painting, shapes, text, gradients, selections,
+adjustments and filters, resizing, cropping, rotating, and the clipboard.</p>
+<h2>Files</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Open</th>
+<th>Save</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PNG, JPEG, WebP</td>
+<td>yes</td>
+<td>yes (JPEG and WebP with a quality setting)</td>
+</tr>
+<tr>
+<td>BMP</td>
+<td>yes</td>
+<td>yes (24 bit)</td>
+</tr>
+<tr>
+<td>GIF, ICO, SVG, AVIF</td>
+<td>yes (GIF: first frame; SVG is converted to pixels)</td>
+<td>–</td>
+</tr>
+<tr>
+<td>OpenRaster (<code>.ora</code>)</td>
+<td>yes, with layers</td>
+<td>yes, with layers, opacity, blend modes and visibility</td>
+</tr>
+<tr>
+<td>Photoshop (<code>.psd</code>)</td>
+<td>yes, with layers</td>
+<td>yes, with layers, opacity, blend modes and visibility</td>
+</tr>
+</tbody>
+</table>
+<p>OpenRaster is the layered format of GIMP, Krita and MyPaint; Photoshop files are understood by most image programs as well. In
+PSD files, layer groups are opened as their single layers (hidden groups stay hidden), layer masks are applied to the layers,
+and text, shape and adjustment layers keep the pixels Photoshop stored for them (they cannot be edited as text or shapes).
+Saving in any other format merges the layers into one image; the application points this out. JPEG and BMP have no transparency; transparent areas become white.</p>
+<ul>
+<li><strong>File → New</strong> (<code>Ctrl+N</code>) asks for the size and the background (white, transparent or the background colour).</li>
+<li><strong>File → Open</strong> (<code>Ctrl+O</code>) opens an image; <strong>Open as layer</strong> adds images as new layers. Dropping image files onto the window opens
+  them (or adds them as layers when you have already started working).</li>
+<li><strong>File → Save</strong> (<code>Ctrl+S</code>) and <strong>Save as</strong> (<code>Ctrl+Shift+S</code>, with format and quality): directly into the file in Chrome/Edge on the
+  desktop, as a download in Firefox and on Android.</li>
+</ul>
+<h2>Tools</h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Key</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✥ Move</td>
+<td><code>V</code></td>
+<td>moves the active layer; with a selection, the selected pixels</td>
+</tr>
+<tr>
+<td>⬚ Rectangle selection, ◌ Ellipse selection</td>
+<td><code>M</code>, <code>Q</code></td>
+<td>drag to select (the size is shown while dragging); a click removes the selection; <code>Shift</code> for squares/circles; tool options: mode (free, fixed aspect ratio, fixed size – a click places it) and the position and size as numbers</td>
+</tr>
+<tr>
+<td>➰ Lasso</td>
+<td><code>F</code></td>
+<td>drag around an area to select it freehand</td>
+</tr>
+<tr>
+<td>⬠ Polygon lasso</td>
+<td><code>P</code></td>
+<td>click the corners; a double-click, <code>Enter</code> or a click on the first corner closes the shape, <code>Backspace</code> removes the last corner, <code>Esc</code> cancels</td>
+</tr>
+<tr>
+<td>🪄 Magic wand</td>
+<td><code>W</code></td>
+<td>selects pixels of similar colour (tolerance; contiguous or all similar pixels of the layer)</td>
+</tr>
+<tr>
+<td>🖌 Brush</td>
+<td><code>B</code></td>
+<td>soft-edged painting; the pen pressure of graphics tablets and styluses changes the size</td>
+</tr>
+<tr>
+<td>✏ Pencil</td>
+<td><code>N</code></td>
+<td>hard pixels without smoothing (pixel art)</td>
+</tr>
+<tr>
+<td>⌫ Eraser</td>
+<td><code>E</code></td>
+<td>makes pixels transparent</td>
+</tr>
+<tr>
+<td>⎘ Clone stamp</td>
+<td><code>S</code></td>
+<td><code>Alt</code>+click sets the source (on touch screens: <strong>⊕ Set source</strong>, then tap), then paint: the pixels at the source are copied. <strong>Aligned</strong>: the source keeps its distance to the brush for every stroke; otherwise every stroke starts at the source. A cross shows the source</td>
+</tr>
+<tr>
+<td>🩹 Healing brush</td>
+<td><code>J</code></td>
+<td>like the clone stamp, but the copied texture takes the colour and brightness of the place it is painted on – removes spots, scratches and blemishes without visible patches</td>
+</tr>
+<tr>
+<td>👆 Smudge</td>
+<td><code>U</code></td>
+<td>drags colours along the stroke like a wet finger; the opacity sets the strength</td>
+</tr>
+<tr>
+<td>◍ Blur / sharpen</td>
+<td><code>K</code></td>
+<td>paints a blurred or sharpened (mode) version of the layer; the size sets the radius, the opacity the strength</td>
+</tr>
+<tr>
+<td>🪣 Fill</td>
+<td><code>G</code></td>
+<td>fills an area of similar colour (tolerance, contiguous or all similar pixels); right-click uses the background colour</td>
+</tr>
+<tr>
+<td>▤ Gradient</td>
+<td><code>D</code></td>
+<td>drag: linear gradient from foreground to background colour</td>
+</tr>
+<tr>
+<td>💧 Colour picker</td>
+<td><code>I</code></td>
+<td>takes the colour under the pointer as foreground colour (right-click or <code>Alt</code>: background colour)</td>
+</tr>
+<tr>
+<td>╱ Line, ▭ Rectangle, ◯ Ellipse</td>
+<td><code>L</code>, <code>R</code>, <code>O</code></td>
+<td>drag; <code>Shift</code> for 45° lines, squares and circles; optionally filled with the background colour</td>
+</tr>
+<tr>
+<td>T Text</td>
+<td><code>T</code></td>
+<td>click where the text should start; enter text, font, size, bold, italic</td>
+</tr>
+<tr>
+<td>✋ Hand</td>
+<td><code>H</code> or hold <code>Space</code></td>
+<td>moves the view</td>
+</tr>
+</tbody>
+</table>
+<p>The tool options (size, opacity, filling, tolerance) are on the right. <code>[</code> and <code>]</code> change the size, <code>X</code> swaps foreground and
+background colour. All painting tools work only inside the selection, if there is one.</p>
+<h3>Combining selections</h3>
+<p>With any selection tool, hold <code>Shift</code> to <strong>add</strong> to the existing selection and <code>Alt</code> to <strong>subtract</strong> from it; the tool option
+<strong>Selection</strong> (New, Add, Subtract, Intersect) does the same without keys, e.g. on a phone. <strong>Edit → Invert selection</strong>
+(<code>Ctrl+Shift+I</code>) selects everything else. Combined and magic-wand selections follow the pixels exactly; the move tool moves
+them like any selection.</p>
+<h3>Selections by coordinates</h3>
+<p>The status bar shows the position and size of the selection (<code>⬚ x, y · width × height</code>). With a selection tool, the tool options
+contain the fields <strong>X</strong>, <strong>Y</strong>, <strong>Width</strong> and <strong>Height</strong>: type values and press <code>Enter</code> (or <strong>Select</strong>) to select exactly that
+area. <strong>Edit → Selection by coordinates…</strong> does the same in a dialog (rectangle or ellipse), also on phones.</p>
+<h3>Rulers, guides and grid</h3>
+<p>Rulers along the top and left edge show image pixels and the pointer position (<strong>View → Rulers</strong>). Drag from a ruler into the
+image to create a <strong>guide</strong> (from the top ruler a horizontal one, from the left ruler a vertical one); with the move or hand
+tool, drag a guide to move it, or back onto a ruler (or out of the image) to remove it. <strong>View → New guide…</strong> places a guide at
+an exact position, <strong>Remove all guides</strong> removes them.</p>
+<p><strong>Snapping</strong>: selections, shapes, lines, gradients, text and moved selections stick to guides and – if
+switched on – to the image edges and the <strong>grid</strong> (View menu: Snap to guides, Grid, Snap to grid, Snap to image edges). <strong>View → Guides and grid…</strong>
+sets the grid spacing and how close the pointer must come (in screen pixels). Snapped edges lie exactly on the guide, so a
+selection between two guides covers exactly the pixels between them. These settings are remembered in the browser; guides
+belong to the open image and are not saved in the file.</p>
+<h2>Layers</h2>
+<p>The layer list on the right shows the layers from top to bottom. Click a layer to make it active; the checkbox shows or hides it,
+a double-click on the name renames it. Below the list: <strong>opacity</strong> and <strong>blend mode</strong> (multiply, screen, overlay, …) of the active
+layer, and buttons to add, duplicate, move up/down, merge down and delete layers. The <strong>Layer</strong> menu also flips a single layer.</p>
+<h2>Edit, image and filters</h2>
+<ul>
+<li><strong>Edit</strong>: undo (<code>Ctrl+Z</code>) and redo (<code>Ctrl+Y</code>) up to 50 steps; cut, copy and paste (<code>Ctrl+X/C/V</code>, also with other programs
+  through the system clipboard; pasted images become a new layer); select all (<code>Ctrl+A</code>), deselect (<code>Ctrl+D</code>), clear the selection
+  (<code>Del</code>), fill the selection with the foreground colour.</li>
+<li><strong>Image</strong>: image size (with or without smoothing), canvas size (with anchor), crop to selection, rotate by 90° or 180°, flip,
+  flatten.</li>
+<li><strong>Filters</strong>: brightness/contrast, hue/saturation (with live preview), levels, curves, auto levels, blur, sharpen, grayscale,
+  sepia, invert, emboss, find edges. Filters change the active layer (inside the selection).</li>
+</ul>
+<p><strong>Levels…</strong> shows the histogram of the active layer (inside the selection) and sets the input black point, mid-tones (gamma)
+and white point, and the output range – for all colours (RGB) or for red, green or blue alone. <strong>Curves…</strong> maps brightness
+values with a curve: drag the points, click on the line to add one, double-click a point to remove it; an S-shaped curve
+increases the contrast. Both show the result on the image while the dialog is open; <strong>Reset</strong> restores the channel,
+<strong>Apply</strong> changes the layer (undo with <code>Ctrl+Z</code>).</p>
+<h2>View</h2>
+<p><code>Ctrl</code> + mouse wheel or a pinch gesture on the touchpad zooms at the pointer, the mouse wheel scrolls. <code>+</code>, <code>−</code>, <code>0</code> (fit to window)
+and <code>1</code> (100 %) work as well; the buttons are at the bottom right. Zoomed in, pixels are shown sharply.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+N</code></td>
+<td>New image</td>
+</tr>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo</td>
+</tr>
+<tr>
+<td><code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code></td>
+<td>Redo</td>
+</tr>
+<tr>
+<td><code>Ctrl+X</code> / <code>Ctrl+C</code> / <code>Ctrl+V</code></td>
+<td>Cut, copy, paste</td>
+</tr>
+<tr>
+<td><code>Ctrl+A</code> / <code>Ctrl+D</code></td>
+<td>Select all / deselect</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+I</code></td>
+<td>Invert the selection</td>
+</tr>
+<tr>
+<td><code>Delete</code> / <code>Backspace</code></td>
+<td>Clear the selection</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Cancel / deselect</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+N</code></td>
+<td>New layer</td>
+</tr>
+<tr>
+<td><code>Ctrl+E</code></td>
+<td>Merge down</td>
+</tr>
+<tr>
+<td><code>[</code> / <code>]</code></td>
+<td>Smaller / larger brush</td>
+</tr>
+<tr>
+<td><code>X</code></td>
+<td>Swap the colours</td>
+</tr>
+</tbody>
+</table>
+<h3>Tools</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>V</code> / <code>H</code></td>
+<td>Move / hand</td>
+</tr>
+<tr>
+<td><code>M</code> / <code>Q</code></td>
+<td>Rectangle / ellipse selection</td>
+</tr>
+<tr>
+<td><code>F</code> / <code>P</code> / <code>W</code></td>
+<td>Lasso / polygon lasso / magic wand</td>
+</tr>
+<tr>
+<td><code>B</code> / <code>N</code> / <code>E</code></td>
+<td>Brush / pencil / eraser</td>
+</tr>
+<tr>
+<td><code>S</code> / <code>J</code> / <code>U</code> / <code>K</code></td>
+<td>Clone stamp / healing brush / smudge / blur and sharpen</td>
+</tr>
+<tr>
+<td><code>G</code> / <code>D</code></td>
+<td>Fill / gradient</td>
+</tr>
+<tr>
+<td><code>I</code></td>
+<td>Colour picker</td>
+</tr>
+<tr>
+<td><code>L</code> / <code>R</code> / <code>O</code> / <code>T</code></td>
+<td>Line / rectangle / ellipse / text</td>
+</tr>
+</tbody>
+</table>
+<h3>View</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>+</code> / <code>-</code> / <code>Ctrl++</code> / <code>Ctrl+-</code></td>
+<td>Zoom in / out</td>
+</tr>
+<tr>
+<td><code>0</code> / <code>Ctrl+0</code></td>
+<td>Fit to the window</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>100 %</td>
+</tr>
+<tr>
+<td><code>Space+Drag</code></td>
+<td>Move the view</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The tools are in a bar below the image. <strong>Panels</strong> opens the tool options and layers. One finger paints, two fingers zoom and move the
+view. The menus can be scrolled sideways.</p>

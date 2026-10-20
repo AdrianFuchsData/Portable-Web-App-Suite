@@ -1,0 +1,14 @@
+{
+  "ag-psd": {
+    "version": "31.0.2",
+    "license": "MIT"
+  },
+  "base64-js": {
+    "version": "1.5.1",
+    "license": "MIT"
+  },
+  "pako": {
+    "version": "2.1.0",
+    "license": "(MIT AND Zlib)"
+  }
+}

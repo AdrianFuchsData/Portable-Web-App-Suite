@@ -1,0 +1,375 @@
+<!-- Generated from docs/de/apps/imageeditor.md by tools/build_docs.py - do not edit. Confluence page title: Bildbearbeitung -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Die Bildbearbeitung (<code>imageeditor.html</code>) bearbeitet Rasterbilder mit Ebenen: Malen, Formen, Text, Verläufe, Auswahlen, Korrekturen und
+Filter, Größe ändern, Zuschneiden, Drehen und die Zwischenablage.</p>
+<h2>Dateien</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Öffnen</th>
+<th>Speichern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PNG, JPEG, WebP</td>
+<td>ja</td>
+<td>ja (JPEG und WebP mit Qualitätseinstellung)</td>
+</tr>
+<tr>
+<td>BMP</td>
+<td>ja</td>
+<td>ja (24 Bit)</td>
+</tr>
+<tr>
+<td>GIF, ICO, SVG, AVIF</td>
+<td>ja (GIF: erstes Bild; SVG wird in Pixel umgewandelt)</td>
+<td>–</td>
+</tr>
+<tr>
+<td>OpenRaster (<code>.ora</code>)</td>
+<td>ja, mit Ebenen</td>
+<td>ja, mit Ebenen, Deckkraft, Ebenenmodi und Sichtbarkeit</td>
+</tr>
+<tr>
+<td>Photoshop (<code>.psd</code>)</td>
+<td>ja, mit Ebenen</td>
+<td>ja, mit Ebenen, Deckkraft, Ebenenmodi und Sichtbarkeit</td>
+</tr>
+</tbody>
+</table>
+<p>OpenRaster ist das Ebenenformat von GIMP, Krita und MyPaint; Photoshop-Dateien verstehen ebenfalls die meisten Bildprogramme. In
+PSD-Dateien werden Ebenengruppen als ihre einzelnen Ebenen geöffnet (ausgeblendete Gruppen bleiben ausgeblendet), Ebenenmasken werden
+auf die Ebenen angewendet, und Text-, Form- und Einstellungsebenen behalten die von Photoshop gespeicherten Pixel (sie lassen sich nicht
+als Text oder Form bearbeiten). Beim Speichern in einem anderen Format werden die Ebenen zu einem Bild vereint; die Anwendung weist
+darauf hin. JPEG und BMP haben keine Transparenz; transparente Bereiche werden weiß.</p>
+<ul>
+<li><strong>Datei → Neu</strong> (<code>Strg+N</code>) fragt nach der Größe und dem Hintergrund (weiß, transparent oder die Hintergrundfarbe).</li>
+<li><strong>Datei → Öffnen</strong> (<code>Strg+O</code>) öffnet ein Bild; <strong>Als Ebene öffnen</strong> fügt Bilder als neue Ebenen hinzu. Auf das Fenster gezogene
+  Bilddateien werden geöffnet (oder als Ebenen hinzugefügt, wenn Sie bereits begonnen haben).</li>
+<li><strong>Datei → Speichern</strong> (<code>Strg+S</code>) und <strong>Speichern unter</strong> (<code>Strg+Umschalt+S</code>, mit Format und Qualität): in Chrome/Edge am Desktop
+  direkt in die Datei, in Firefox und unter Android als Download.</li>
+</ul>
+<h2>Werkzeuge</h2>
+<table>
+<thead>
+<tr>
+<th>Werkzeug</th>
+<th>Taste</th>
+<th>Verwendung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✥ Verschieben</td>
+<td><code>V</code></td>
+<td>verschiebt die aktive Ebene; bei einer Auswahl die ausgewählten Pixel</td>
+</tr>
+<tr>
+<td>⬚ Rechteckauswahl, ◌ Ellipsenauswahl</td>
+<td><code>M</code>, <code>Q</code></td>
+<td>ziehen zum Auswählen; ein Klick hebt die Auswahl auf; <code>Umschalt</code> für Quadrate/Kreise</td>
+</tr>
+<tr>
+<td>➰ Lasso</td>
+<td><code>F</code></td>
+<td>einen Bereich freihand umfahren, um ihn auszuwählen</td>
+</tr>
+<tr>
+<td>⬠ Polygon-Lasso</td>
+<td><code>P</code></td>
+<td>die Ecken anklicken; Doppelklick, <code>Eingabe</code> oder ein Klick auf die erste Ecke schließt die Form, <code>Rücktaste</code> entfernt die letzte Ecke, <code>Esc</code> bricht ab</td>
+</tr>
+<tr>
+<td>🪄 Zauberstab</td>
+<td><code>W</code></td>
+<td>wählt Pixel ähnlicher Farbe aus (Toleranz; zusammenhängend oder alle ähnlichen Pixel der Ebene)</td>
+</tr>
+<tr>
+<td>🖌 Pinsel</td>
+<td><code>B</code></td>
+<td>weich gezeichnetes Malen; der Stiftdruck von Grafiktabletts und Eingabestiften ändert die Größe</td>
+</tr>
+<tr>
+<td>✏ Stift</td>
+<td><code>N</code></td>
+<td>harte Pixel ohne Glättung (Pixelgrafik)</td>
+</tr>
+<tr>
+<td>⌫ Radierer</td>
+<td><code>E</code></td>
+<td>macht Pixel transparent</td>
+</tr>
+<tr>
+<td>⎘ Kopierstempel</td>
+<td><code>S</code></td>
+<td><code>Alt</code>+Klick legt die Quelle fest (auf Touchscreens: <strong>⊕ Quelle setzen</strong>, dann tippen), dann malen: die Pixel an der Quelle werden kopiert. <strong>Ausgerichtet</strong>: die Quelle behält bei jedem Strich ihren Abstand zum Pinsel; sonst beginnt jeder Strich an der Quelle. Ein Kreuz zeigt die Quelle</td>
+</tr>
+<tr>
+<td>🩹 Reparaturpinsel</td>
+<td><code>J</code></td>
+<td>wie der Kopierstempel, aber die kopierte Struktur übernimmt Farbe und Helligkeit der Stelle, auf die gemalt wird – entfernt Flecken, Kratzer und Hautunreinheiten ohne sichtbare Flicken</td>
+</tr>
+<tr>
+<td>👆 Wischfinger</td>
+<td><code>U</code></td>
+<td>verschmiert Farben entlang des Strichs wie ein nasser Finger; die Deckkraft bestimmt die Stärke</td>
+</tr>
+<tr>
+<td>◍ Weichzeichnen / Schärfen</td>
+<td><code>K</code></td>
+<td>malt eine weichgezeichnete oder geschärfte (Modus) Fassung der Ebene; die Größe bestimmt den Radius, die Deckkraft die Stärke</td>
+</tr>
+<tr>
+<td>🪣 Füllen</td>
+<td><code>G</code></td>
+<td>füllt einen Bereich ähnlicher Farbe (Toleranz, zusammenhängend oder alle ähnlichen Pixel); Rechtsklick verwendet die Hintergrundfarbe</td>
+</tr>
+<tr>
+<td>▤ Verlauf</td>
+<td><code>D</code></td>
+<td>ziehen: linearer Verlauf von Vorder- zu Hintergrundfarbe</td>
+</tr>
+<tr>
+<td>💧 Farbpipette</td>
+<td><code>I</code></td>
+<td>übernimmt die Farbe unter dem Zeiger als Vordergrundfarbe (Rechtsklick oder <code>Alt</code>: Hintergrundfarbe)</td>
+</tr>
+<tr>
+<td>╱ Linie, ▭ Rechteck, ◯ Ellipse</td>
+<td><code>L</code>, <code>R</code>, <code>O</code></td>
+<td>ziehen; <code>Umschalt</code> für 45°-Linien, Quadrate und Kreise; optional mit der Hintergrundfarbe gefüllt</td>
+</tr>
+<tr>
+<td>T Text</td>
+<td><code>T</code></td>
+<td>dort klicken, wo der Text beginnen soll; Text, Schrift, Größe, fett, kursiv eingeben</td>
+</tr>
+<tr>
+<td>✋ Hand</td>
+<td><code>H</code> oder <code>Leertaste</code> halten</td>
+<td>verschiebt die Ansicht</td>
+</tr>
+</tbody>
+</table>
+<p>Die Werkzeugoptionen (Größe, Deckkraft, Füllung, Toleranz) stehen rechts. <code>[</code> und <code>]</code> ändern die Größe, <code>X</code> tauscht Vorder- und
+Hintergrundfarbe. Alle Malwerkzeuge wirken nur innerhalb der Auswahl, falls es eine gibt.</p>
+<h3>Auswahlen kombinieren</h3>
+<p>Bei jedem Auswahlwerkzeug fügt gedrücktes <code>Umschalt</code> der bestehenden Auswahl <strong>hinzu</strong>, <code>Alt</code> <strong>zieht</strong> davon <strong>ab</strong>; die
+Werkzeugoption <strong>Auswahl</strong> (Neu, Hinzufügen, Abziehen, Schnittmenge) macht dasselbe ohne Tasten, etwa am Smartphone.
+<strong>Bearbeiten → Auswahl umkehren</strong> (<code>Strg+Umschalt+I</code>) wählt alles andere aus. Kombinierte und Zauberstab-Auswahlen folgen den Pixeln
+genau; das Verschiebewerkzeug verschiebt sie wie jede Auswahl.</p>
+<h3>Auswahl nach Koordinaten</h3>
+<p>Die Statusleiste zeigt Position und Größe der Auswahl (<code>⬚ x, y · Breite × Höhe</code>). Bei einem Auswahlwerkzeug enthalten die
+Werkzeugoptionen die Felder <strong>X</strong>, <strong>Y</strong>, <strong>Breite</strong> und <strong>Höhe</strong>: Werte eingeben und <code>Eingabe</code> (oder <strong>Auswählen</strong>) drücken
+wählt genau diesen Bereich aus. <strong>Bearbeiten → Auswahl nach Koordinaten…</strong> macht dasselbe in einem Dialog (Rechteck oder
+Ellipse), auch auf Smartphones. Als <strong>Modus</strong> gibt es frei, festes Seitenverhältnis und feste Größe (ein Klick setzt die Auswahl);
+beim Ziehen wird die Größe angezeigt.</p>
+<h3>Lineale, Hilfslinien und Raster</h3>
+<p>Lineale am oberen und linken Rand zeigen Bildpixel und die Zeigerposition (<strong>Ansicht → Lineale</strong>). Ziehen Sie aus einem Lineal ins
+Bild, um eine <strong>Hilfslinie</strong> anzulegen (aus dem oberen Lineal eine waagrechte, aus dem linken eine senkrechte); mit dem Verschiebe-
+oder Handwerkzeug lässt sie sich verschieben oder zurück auf ein Lineal (oder aus dem Bild) ziehen, um sie zu entfernen.
+<strong>Ansicht → Neue Hilfslinie…</strong> setzt eine Hilfslinie an eine genaue Position, <strong>Alle Hilfslinien entfernen</strong> entfernt sie.</p>
+<p><strong>Einrasten</strong>: Auswahlen, Formen, Linien, Verläufe, Text und verschobene Auswahlen rasten an Hilfslinien und –
+wenn eingeschaltet – an den Bildrändern und am <strong>Raster</strong> ein (Menü Ansicht: An Hilfslinien einrasten, Raster, Am Raster einrasten, An Bildrändern
+einrasten). <strong>Ansicht → Hilfslinien und Raster…</strong> legt den Rasterabstand fest und wie nahe der Zeiger kommen muss (in
+Bildschirmpixeln). Eingerastete Kanten liegen genau auf der Hilfslinie, eine Auswahl zwischen zwei Hilfslinien umfasst also genau
+die Pixel dazwischen. Diese Einstellungen merkt sich der Browser; Hilfslinien gehören zum geöffneten Bild und werden nicht in der
+Datei gespeichert.</p>
+<h2>Ebenen</h2>
+<p>Die Ebenenliste rechts zeigt die Ebenen von oben nach unten. Ein Klick macht eine Ebene aktiv; das Kontrollkästchen blendet sie ein
+oder aus, ein Doppelklick auf den Namen benennt sie um. Unter der Liste: <strong>Deckkraft</strong> und <strong>Modus</strong> (Multiplizieren, Negativ
+multiplizieren, Überlagern, …) der aktiven Ebene und Schaltflächen zum Hinzufügen, Duplizieren, Nach-oben/-unten-Verschieben,
+Nach-unten-Vereinen und Löschen. Das Menü <strong>Ebene</strong> spiegelt auch eine einzelne Ebene.</p>
+<h2>Bearbeiten, Bild und Filter</h2>
+<ul>
+<li><strong>Bearbeiten</strong>: Rückgängig (<code>Strg+Z</code>) und Wiederholen (<code>Strg+Y</code>) bis zu 50 Schritte; Ausschneiden, Kopieren und Einfügen
+  (<code>Strg+X/C/V</code>, über die System-Zwischenablage auch mit anderen Programmen; eingefügte Bilder werden eine neue Ebene); alles auswählen
+  (<code>Strg+A</code>), Auswahl aufheben (<code>Strg+D</code>), Auswahl löschen (<code>Entf</code>), Auswahl mit der Vordergrundfarbe füllen.</li>
+<li><strong>Bild</strong>: Bildgröße (mit oder ohne Glättung), Leinwandgröße (mit Anker), auf Auswahl zuschneiden, um 90° oder 180° drehen, spiegeln,
+  auf eine Ebene reduzieren.</li>
+<li><strong>Filter</strong>: Helligkeit/Kontrast, Farbton/Sättigung (mit Live-Vorschau), Tonwerte, Gradationskurven, Tonwerte automatisch,
+  weichzeichnen, schärfen, Graustufen, Sepia, Farben umkehren, Relief, Kanten finden. Filter ändern die aktive Ebene (innerhalb der
+  Auswahl).</li>
+</ul>
+<p><strong>Tonwerte…</strong> zeigt das Histogramm der aktiven Ebene (innerhalb der Auswahl) und setzt Schwarzpunkt, Mitteltöne (Gamma) und
+Weißpunkt der Eingabe sowie den Ausgabebereich – für alle Farben (RGB) oder nur für Rot, Grün oder Blau. <strong>Gradationskurven…</strong> bildet
+Helligkeitswerte über eine Kurve ab: Punkte ziehen, ein Klick auf die Linie fügt einen hinzu, ein Doppelklick auf einen Punkt entfernt
+ihn; eine S-förmige Kurve erhöht den Kontrast. Beide zeigen das Ergebnis am Bild, solange der Dialog offen ist; <strong>Zurücksetzen</strong>
+stellt den Kanal zurück, <strong>Anwenden</strong> ändert die Ebene (rückgängig mit <code>Strg+Z</code>).</p>
+<h2>Ansicht</h2>
+<p><code>Strg</code> + Mausrad oder eine Zweifingergeste auf dem Touchpad zoomt am Zeiger, das Mausrad verschiebt. <code>+</code>, <code>−</code>, <code>0</code> (an Fenster anpassen)
+und <code>1</code> (100 %) funktionieren ebenfalls; die Schaltflächen sind unten rechts. Vergrößert werden Pixel scharf dargestellt.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+N</code></td>
+<td>Neues Bild</td>
+</tr>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Rückgängig</td>
+</tr>
+<tr>
+<td><code>Strg+Y</code> / <code>Strg+Umschalt+Z</code></td>
+<td>Wiederholen</td>
+</tr>
+<tr>
+<td><code>Strg+X</code> / <code>Strg+C</code> / <code>Strg+V</code></td>
+<td>Ausschneiden, kopieren, einfügen</td>
+</tr>
+<tr>
+<td><code>Strg+A</code> / <code>Strg+D</code></td>
+<td>Alles auswählen / Auswahl aufheben</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+I</code></td>
+<td>Auswahl umkehren</td>
+</tr>
+<tr>
+<td><code>Entf</code> / <code>Rücktaste</code></td>
+<td>Auswahl leeren</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Abbrechen / Auswahl aufheben</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+N</code></td>
+<td>Neue Ebene</td>
+</tr>
+<tr>
+<td><code>Strg+E</code></td>
+<td>Mit darunterliegender Ebene vereinen</td>
+</tr>
+<tr>
+<td><code>[</code> / <code>]</code></td>
+<td>Kleinerer / größerer Pinsel</td>
+</tr>
+<tr>
+<td><code>X</code></td>
+<td>Farben tauschen</td>
+</tr>
+</tbody>
+</table>
+<h3>Werkzeuge</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>V</code> / <code>H</code></td>
+<td>Verschieben / Hand</td>
+</tr>
+<tr>
+<td><code>M</code> / <code>Q</code></td>
+<td>Rechteck- / Ellipsenauswahl</td>
+</tr>
+<tr>
+<td><code>F</code> / <code>P</code> / <code>W</code></td>
+<td>Lasso / Polygon-Lasso / Zauberstab</td>
+</tr>
+<tr>
+<td><code>B</code> / <code>N</code> / <code>E</code></td>
+<td>Pinsel / Bleistift / Radierer</td>
+</tr>
+<tr>
+<td><code>S</code> / <code>J</code> / <code>U</code> / <code>K</code></td>
+<td>Kopierstempel / Reparaturpinsel / Wischfinger / Weichzeichnen und Schärfen</td>
+</tr>
+<tr>
+<td><code>G</code> / <code>D</code></td>
+<td>Füllen / Verlauf</td>
+</tr>
+<tr>
+<td><code>I</code></td>
+<td>Pipette</td>
+</tr>
+<tr>
+<td><code>L</code> / <code>R</code> / <code>O</code> / <code>T</code></td>
+<td>Linie / Rechteck / Ellipse / Text</td>
+</tr>
+</tbody>
+</table>
+<h3>Ansicht</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>+</code> / <code>-</code> / <code>Strg++</code> / <code>Strg+-</code></td>
+<td>Vergrößern / verkleinern</td>
+</tr>
+<tr>
+<td><code>0</code> / <code>Strg+0</code></td>
+<td>An das Fenster anpassen</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>100 %</td>
+</tr>
+<tr>
+<td><code>Leertaste+Ziehen</code></td>
+<td>Ansicht verschieben</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Werkzeuge stehen in einer Leiste unter dem Bild. <strong>Bereiche</strong> öffnet Werkzeugoptionen und Ebenen. Ein Finger malt, zwei Finger
+zoomen und verschieben die Ansicht. Die Menüs lassen sich seitlich verschieben.</p>

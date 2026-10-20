@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" data-version="%%BUILD_VERSION%%">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src data: blob:; frame-src 'self' about:; connect-src data: blob: http: https: ws: wss:; worker-src data:; form-action 'none'; base-uri 'none'">
+  <title>HTTP analyzer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ef6c00' d='M2 7h20v10H2z'/%3E%3Ctext x='12' y='15' font-size='6' text-anchor='middle' fill='white' font-family='sans-serif'%3EHTTP%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../../vendor/pico.min.css">
+  <link rel="stylesheet" href="../../../shared/css/suite.css">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap" data-src="../../../vendor/esm/codemirror/importmap.json ../../../vendor/esm/yaml/importmap.json js/importmap.json"></script>
+  <script type="application/json" data-shortcuts="http"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <noscript>This application requires JavaScript.</noscript>
+  <script src="../../../vendor/htm-preact-standalone.umd.js"></script>
+  <script src="../../../vendor/kdbxweb.min.js"></script>
+  <script src="../../../vendor/hash-wasm-argon2.umd.min.js"></script>
+  <script src="../../../shared/js/i18n.js"></script>
+  <script src="../../../shared/js/files.js"></script>
+  <script src="../../../shared/js/bridge.js"></script>
+  <script src="../../../shared/js/history.js"></script>
+  <script src="../../../shared/js/kdbx.js"></script>
+  <script src="../../../shared/js/settings.js"></script>
+  <script src="../../../shared/js/relay.js"></script>
+  <script src="../../../shared/js/shell.js"></script>
+  <script src="../../../shared/js/autosave.js"></script>
+  <script src="../../../shared/js/appdata.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

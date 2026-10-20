@@ -1,0 +1,181 @@
+<!-- Generated from docs/en/apps/document.md by tools/build_docs.py - do not edit. Confluence page title: Document -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The document editor (<code>document.html</code>) writes and edits text documents like Word or LibreOffice Writer: paragraphs and headings, fonts and
+colours, alignment and spacing, bullet and numbered lists, tables, images, headers and footers, find and replace. The editing component is
+Univer Docs.</p>
+<h2>Files</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Open</th>
+<th>Save</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Word (<code>.docx</code>)</td>
+<td>yes</td>
+<td>yes</td>
+<td>page size and margins, styles, headings, text formatting, lists, tables, images, hyperlinks, headers and footers</td>
+</tr>
+<tr>
+<td>OpenDocument (<code>.odt</code>, LibreOffice Writer)</td>
+<td>yes (also templates <code>.ott</code>)</td>
+<td>yes</td>
+<td>the same as for Word; footnotes and endnotes are placed at the end of the document</td>
+</tr>
+<tr>
+<td>Word with macros (<code>.docm</code>), templates (<code>.dotx</code>)</td>
+<td>yes</td>
+<td>as <code>.docx</code></td>
+<td>macros are not kept; a template becomes a new document</td>
+</tr>
+<tr>
+<td>Text (<code>.txt</code>, <code>.md</code>)</td>
+<td>yes</td>
+<td>yes (<code>.txt</code>)</td>
+<td>only the text; formatting, tables and images are lost</td>
+</tr>
+<tr>
+<td>Web page (<code>.html</code>)</td>
+<td>no</td>
+<td>yes</td>
+<td>text, formatting, lists, tables, images and links; no page layout</td>
+</tr>
+<tr>
+<td>PDF</td>
+<td>no</td>
+<td>via <strong>🖨</strong></td>
+<td>see <em>Printing and PDF</em></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Open</strong> (<code>Ctrl+O</code>) opens a file; you can also drop it onto the window. <strong>New</strong> starts an empty document.</li>
+<li><strong>Save</strong> (<code>Ctrl+S</code>) saves in the file's format: directly into the file in Chrome/Edge on the desktop, as a download in Firefox and on
+  Android (replace the original file with it). <strong>Save as</strong> (<code>Ctrl+Shift+S</code>) asks for the name and the format.</li>
+<li>The file name in the toolbar shows • while there are unsaved changes.</li>
+</ul>
+<h3>Printing and PDF</h3>
+<p><strong>🖨</strong> (<code>Ctrl+P</code>) prints the document with its page size and margins; choose <em>Save as PDF</em> (Chrome, Edge, Android) or <em>Print to file</em>
+(Firefox) as the printer to get a PDF. The header and footer of the document repeat on every page. The page breaks are made by the
+browser, so they can differ from the editor's pages; inserted page breaks are kept. Links stay clickable in the PDF, including the
+entries of a table of contents.</p>
+<p>Documents from Word and LibreOffice are converted when they are opened; very complex layouts (text boxes, columns, tracked changes,
+comments) may look simpler. Keep the original file until you have checked the result.</p>
+<h2>Editing</h2>
+<p>The ribbon has the tabs <strong>Start</strong> (clipboard, bold/italic/underline/strike, sub- and superscript, paragraph style, size, font, colours,
+alignment, lists, checklists) and <strong>Insert</strong> (tables, images, page breaks, headers and footers). The usual shortcuts work: <code>Ctrl+B/I/U</code>,
+<code>Ctrl+Z/Y</code>, <code>Ctrl+C/X/V</code>, <code>Ctrl+F</code> to find. The status bar shows the word count and the zoom.</p>
+<p>The language of the editing component follows the suite's language switch, and it follows the dark theme too.</p>
+<p>Undo and redo are the first two buttons of the editor toolbar (also <code>Ctrl+Z</code> and <code>Ctrl+Y</code>).</p>
+<h3>Table of contents and footnotes</h3>
+<p><strong>📑 Contents</strong> inserts a table of contents at the paragraph of the cursor: the headings (paragraph styles <em>Heading 1</em> to <em>Heading 5</em>),
+indented by level. After changing headings, click it again to update the table in place. In saved Word and OpenDocument files the
+entries are links to the headings (Ctrl+click in Word, click in LibreOffice); the table has no page numbers (the editor does not know
+them) – Word and LibreOffice can add a real index with page numbers if needed.</p>
+<h3>Spelling</h3>
+<p><strong>ABC✓</strong> (<code>F7</code>) opens the spelling panel beside the document (below it on a phone). It lists the unknown words of the document text
+(headers and footers are not checked); words with digits, words in capitals (abbreviations), web and mail addresses are skipped.</p>
+<ul>
+<li>Click a word to select it in the document; click again to go to its next occurrence. The panel shows suggestions: a suggestion
+  replaces <strong>all</strong> occurrences of the word.</li>
+<li><strong>Ignore</strong> skips the word until the editor is closed; <strong>Add to dictionary</strong> keeps it in the browser for good (for all dictionaries).</li>
+<li><strong>↻ Check again</strong> after editing the text.</li>
+</ul>
+<p>English (US) and German (Germany) are built in. For other languages, <strong>Load dictionary…</strong> takes a Hunspell dictionary: either the
+<code>.aff</code> and the <code>.dic</code> file together (for example from a LibreOffice installation), or a LibreOffice dictionary extension (<code>.oxt</code>, for
+example from extensions.libreoffice.org). Loaded dictionaries stay in the browser and are chosen in the list; 🗑 removes the selected
+one. The dictionary, the added words and the ignored words are the same as in the <strong>ABC</strong> selector in the header and in the other
+applications (see <em>Spelling</em> in the user guide); the panel works whether that selector is on or off, because the page of this
+editor is drawn as an image and cannot show underlines.</p>
+<p><strong>Footnotes and endnotes</strong> of Word and LibreOffice files are shown with their number in superscript; their texts are placed at the end
+of the document after a line, because the editor has no footnote area. Page number fields in headers and footers show the number that
+was stored in the file.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+<tr>
+<td><code>Ctrl+P</code></td>
+<td>Print / PDF</td>
+</tr>
+<tr>
+<td><code>F7</code></td>
+<td>Spelling panel</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo</td>
+</tr>
+<tr>
+<td><code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code></td>
+<td>Redo</td>
+</tr>
+<tr>
+<td><code>Ctrl+X</code> / <code>Ctrl+C</code> / <code>Ctrl+V</code></td>
+<td>Cut, copy, paste</td>
+</tr>
+<tr>
+<td><code>Ctrl+B</code> / <code>Ctrl+I</code> / <code>Ctrl+U</code></td>
+<td>Bold / italic / underline</td>
+</tr>
+<tr>
+<td><code>Ctrl+A</code></td>
+<td>Select all</td>
+</tr>
+<tr>
+<td><code>/</code></td>
+<td>Command menu (at the start of an empty paragraph)</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>Documents can be read and edited; the ribbon can be scrolled sideways. For longer texts a bigger screen and a keyboard are more comfortable.</p>

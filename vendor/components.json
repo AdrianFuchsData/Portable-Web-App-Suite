@@ -1,0 +1,65 @@
+{
+  "_comment": "Third-party components of vendored files without their own lock file, by path prefix below vendor/ (build.py lists them, with their licence texts, in the about dialog of the apps that embed them). esm/* packages come from their lock.json, Python packages from pyodide/licenses.json; entries here add what those files do not name. Licence files are paths below vendor/; \"extends\" adds licence texts to a component of a lock file.",
+  "htm-preact-standalone.umd.js": [
+    {"name": "htm", "version": "3.1.1", "license": "Apache-2.0", "files": ["licenses/htm.LICENSE.txt"]},
+    {"name": "Preact", "version": "10 (bundled with htm 3.1.1)", "license": "MIT", "files": ["licenses/preact.LICENSE.txt"]}
+  ],
+  "pico.min.css": [{"name": "Pico CSS", "version": "2.1.1", "license": "MIT", "files": ["licenses/pico.LICENSE.txt"]}],
+  "pico.conditional.min.css": [{"name": "Pico CSS", "version": "2.1.1", "license": "MIT", "files": ["licenses/pico.LICENSE.txt"]}],
+  "kdbxweb.min.js": [{"name": "kdbxweb", "version": "2.1.1", "license": "MIT", "files": ["licenses/kdbxweb.LICENSE.txt"]}],
+  "hash-wasm-argon2.umd.min.js": [{"name": "hash-wasm", "version": "4.12.0", "license": "MIT", "files": ["licenses/hash-wasm.LICENSE.txt"]}],
+  "otpauth.umd.min.js": [{"name": "otpauth", "version": "9.5.2", "license": "MIT", "files": ["licenses/otpauth.LICENSE.txt"]}],
+  "exceljs.min.js": [{"name": "ExcelJS", "version": "4.4.0", "license": "MIT", "files": ["licenses/exceljs.LICENSE.txt"]}],
+  "xlsx.full.min.js": [{"name": "SheetJS Community Edition", "version": "0.20.3", "license": "Apache-2.0", "files": ["licenses/sheetjs.LICENSE.txt"]}],
+  "pptxgen.bundle.js": [
+    {"name": "PptxGenJS", "version": "4.0.1", "license": "MIT", "files": ["licenses/pptxgenjs.LICENSE.txt"]},
+    {"name": "JSZip (bundled with PptxGenJS)", "version": "3", "license": "MIT OR GPL-3.0 (used under MIT)", "files": ["licenses/spdx/MIT.txt"]}
+  ],
+  "sql-wasm": [
+    {"name": "sql.js", "version": "1.15.0", "license": "MIT", "files": ["licenses/sql.js.LICENSE.txt"]},
+    {"name": "SQLite (in sql.js)", "version": "3", "license": "Public domain", "files": []}
+  ],
+  "mammoth.browser.min.js": [{"name": "mammoth", "version": "1.13.0", "license": "BSD-2-Clause", "files": ["licenses/mammoth.LICENSE.txt"]}],
+  "wasm/": [
+    {"name": "Go runtime (SSH engine)", "version": "1.27", "license": "BSD-3-Clause", "files": ["wasm/licenses/go.LICENSE.txt"]},
+    {"name": "golang.org/x/crypto", "version": "v0.58.0", "license": "BSD-3-Clause", "files": ["wasm/licenses/golang.org_x_crypto.LICENSE.txt"]},
+    {"name": "github.com/pkg/sftp", "version": "v1.13.11", "license": "BSD-2-Clause", "files": ["wasm/licenses/github.com_pkg_sftp.LICENSE.txt"]},
+    {"name": "github.com/kr/fs", "version": "v0.1.0", "license": "BSD-3-Clause", "files": ["wasm/licenses/github.com_kr_fs.LICENSE.txt"]}
+  ],
+  "zxing/": [
+    {"name": "zxing-wasm", "version": "3.1.5", "license": "MIT", "files": ["zxing/LICENSE"]},
+    {"name": "ZXing-C++ (in zxing-wasm)", "version": "2", "license": "Apache-2.0", "files": ["licenses/spdx/Apache-2.0.txt"]}
+  ],
+  "libarchive/": [
+    {"name": "libarchive.js", "version": "2.0.2", "license": "MIT", "files": ["libarchive/LICENSE"]},
+    {"name": "libarchive (in libarchive.js)", "version": "3", "license": "BSD-2-Clause", "files": ["libarchive/LICENSE.libarchive"]},
+    {"name": "comlink (in libarchive.js)", "version": "4", "license": "Apache-2.0", "files": ["libarchive/LICENSE.comlink"]}
+  ],
+  "katex/": [{"name": "KaTeX", "version": "0.16.22", "license": "MIT (fonts: OFL-1.1)", "files": ["katex/LICENSE", "licenses/spdx/OFL-1.1.txt"]}],
+  "reveal/": [
+    {"name": "reveal.js", "version": "6.0.2", "license": "MIT", "files": ["reveal/LICENSE"]},
+    {"name": "highlight.js (in the reveal.js highlight plugin)", "version": "11", "license": "BSD-3-Clause", "files": ["licenses/spdx/BSD-3-Clause.txt"]},
+    {"name": "marked (in the reveal.js markdown plugin)", "version": "4", "license": "MIT", "files": ["licenses/spdx/MIT.txt"]}
+  ],
+  "reveal/fonts/source-sans-pro": [{"name": "Source Sans Pro (font)", "version": "2", "license": "OFL-1.1", "files": ["licenses/spdx/OFL-1.1.txt"]}],
+  "reveal/fonts/league-gothic": [{"name": "League Gothic (font)", "version": "1", "license": "OFL-1.1", "files": ["licenses/spdx/OFL-1.1.txt"]}],
+  "pdfjs/": [
+    {"name": "PDF.js (pdfjs-dist)", "version": "6.4.299", "license": "Apache-2.0", "files": ["pdfjs/LICENSE"]},
+    {"name": "OpenJPEG decoder (in PDF.js)", "version": "2", "license": "BSD-2-Clause", "files": ["licenses/spdx/BSD-2-Clause.txt"]},
+    {"name": "QCMS (in PDF.js)", "version": "", "license": "MIT", "files": ["licenses/spdx/MIT.txt"]},
+    {"name": "Foxit standard fonts (in PDF.js)", "version": "", "license": "BSD-3-Clause", "files": ["licenses/spdx/BSD-3-Clause.txt"]},
+    {"name": "Liberation fonts (in PDF.js)", "version": "2", "license": "OFL-1.1", "files": ["licenses/spdx/OFL-1.1.txt"]}
+  ],
+  "pyodide/": [
+    {"name": "Pyodide", "version": "314.0.7", "license": "MPL-2.0", "files": ["licenses/spdx/MPL-2.0.txt"]},
+    {"name": "CPython and its standard library (in Pyodide)", "version": "3.14", "license": "PSF-2.0", "files": ["licenses/spdx/Python-2.0.txt"]}
+  ],
+  "esm/spell/": [
+    {"name": "Hunspell (compiled into hunspell-asm)", "version": "1.7", "license": "MPL-1.1 OR GPL-2.0-or-later OR LGPL-2.1-or-later (used under LGPL-2.1)", "files": ["licenses/spdx/LGPL-2.1-only.txt"]},
+    {"extends": "dictionary-de", "license": "GPL-2.0 OR GPL-3.0 (igerman98 German dictionary)", "files": ["licenses/spdx/GPL-2.0-only.txt", "licenses/spdx/GPL-3.0-only.txt"]}
+  ],
+  "esm/audio/": [
+    {"name": "LAME MP3 encoder (in the Mediabunny MP3 extension)", "version": "3.100", "license": "LGPL-2.1", "files": ["licenses/spdx/LGPL-2.1-only.txt"]},
+    {"name": "libFLAC (in the Mediabunny FLAC extension)", "version": "1.4", "license": "BSD-3-Clause", "files": ["licenses/spdx/BSD-3-Clause.txt"]}
+  ]
+}

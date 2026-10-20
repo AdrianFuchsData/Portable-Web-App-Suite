@@ -1,0 +1,145 @@
+<!-- Generated from docs/de/apps/dbtool.md by tools/build_docs.py - do not edit. Confluence page title: Datenbankwerkzeug -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Das Datenbankwerkzeug (<code>dbtool.html</code>) öffnet <strong>SQLite</strong>-Datenbankdateien und verbindet sich mit <strong>PostgreSQL</strong>-Servern: Schema durchsuchen,
+SQL schreiben und ausführen, Tabellendaten ansehen und bearbeiten, Ergebnisse exportieren.</p>
+<h2>SQLite-Datenbanken</h2>
+<ul>
+<li><strong>Neue SQLite</strong> legt eine leere Datenbank an, <strong>SQLite öffnen…</strong> (<code>Strg+O</code>) öffnet eine Datenbankdatei (<code>.sqlite</code>, <code>.db</code>, …); die Datei kann
+  auch auf das Fenster gezogen werden. Mehrere Datenbanken können gleichzeitig geöffnet sein (Liste <strong>Offene Datenbanken</strong> links).</li>
+<li>Die Datenbank wird im Speicher bearbeitet. <strong>Datenbank speichern</strong> (<code>Strg+S</code>) schreibt sie zurück: in Chrome/Edge am Desktop direkt in die
+  Datei, in Firefox und unter Android als Download (ersetzen Sie die ursprüngliche Datei damit). Geänderte Datenbanken sind mit • markiert.</li>
+</ul>
+<p>SQLite funktioniert vollständig offline.</p>
+<h2>PostgreSQL-Server</h2>
+<p>Ein Postgres-Server wird über das <strong>lokale Relay</strong> erreicht (siehe Benutzerhandbuch, „Netzwerkfunktionen und das Relay“).</p>
+<ol>
+<li><strong>Mit Postgres verbinden…</strong> öffnet den Verbindungsdialog: Name, Host, Port (5432), Datenbank, Benutzer, Passwort, SSL (bevorzugen,
+   erforderlich, aus; optional selbst signierte Zertifikate akzeptieren) sowie Adresse und Token des Relays. <strong>Testen</strong> prüft das Relay.</li>
+<li><strong>Verbinden</strong> öffnet die Verbindung; <strong>Verbindung speichern</strong> fügt sie den <strong>Gespeicherten Verbindungen</strong> hinzu (das Passwort nur, wenn das
+   Kästchen angehakt ist).</li>
+<li>Ein Klick auf eine gespeicherte Verbindung verbindet (oder fragt nach dem Passwort, wenn es nicht gespeichert wurde); ✎ bearbeitet und
+   × löscht eine Verbindung.</li>
+</ol>
+<p>Unterstützt werden Passwort-, MD5- und SCRAM-SHA-256-Anmeldung.</p>
+<h3>Verbindungen speichern</h3>
+<p>Gespeicherte Verbindungen und die Relay-Einstellungen liegen in einer <strong>Verbindungsdatei</strong>. <strong>Speichern</strong> im Bereich „Verbindungen“ fragt nach
+dem Format:</p>
+<ul>
+<li><strong>KeePass-Datenbank</strong> (mit Passwort verschlüsselt; empfohlen) – jede Verbindung wird ein KeePass-Eintrag in der Gruppe
+  „Portable Web App Suite/dbtool“ und ist auch in KeePass sichtbar;</li>
+<li><strong>JSON-Datei</strong> (unverschlüsselt; Passwörter wären lesbar).</li>
+</ul>
+<p><strong>Öffnen…</strong> öffnet eine solche Datei wieder (KeePass fragt nach dem Passwort). Dieselbe Datei kann die Verbindungen der anderen Anwendungen
+der Suite enthalten.</p>
+<h2>Schema und SQL</h2>
+<ul>
+<li><strong>Schema</strong> listet die Tabellen (▦) und Sichten (👁) der aktiven Datenbank; aufgeklappt zeigt eine Tabelle ihre Spalten (🔑 = Primärschlüssel,
+  Typen, NOT NULL). ⟳ lädt das Schema neu; nach <code>CREATE</code>, <code>ALTER</code> und <code>DROP</code> geschieht das automatisch.</li>
+<li>Der SQL-Editor hebt SQL hervor und ergänzt Schlüsselwörter, Tabellen- und Spaltennamen (<code>Strg+Leertaste</code>).</li>
+<li><strong>Ausführen</strong> (<code>Strg+Eingabe</code>) führt den markierten Text oder die Anweisung an der Schreibmarke aus; <strong>Alles ausführen</strong>
+  (<code>Strg+Umschalt+Eingabe</code>) führt alle Anweisungen aus.</li>
+<li>Jede Anweisung mit Ergebnis erhält einen Ergebnis-Reiter. Die Meldungszeile zeigt die Zahl der geänderten Zeilen, die Dauer oder den Fehler
+  (bei Postgres mit SQL-State-Code, Detail und Hinweis).</li>
+<li><strong>CSV</strong> und <strong>JSON</strong> exportieren das angezeigte Ergebnis.</li>
+<li><strong>⛁ ER-Diagramm</strong> (über dem Schema) zeichnet die Tabellen und Sichten mit ihren Spalten (🔑 Primärschlüssel, → Fremdschlüssel) und
+  die Fremdschlüssel-Beziehungen und öffnet die Zeichnung im Diagrammeditor (referenzierte Tabellen über den referenzierenden), wo sie
+  angeordnet, bearbeitet, gedruckt oder exportiert werden kann.</li>
+<li><strong>Erklären</strong> zeigt, wie die Datenbank die aktuelle Anweisung ausführt: bei SQLite den Abfrageplan als Baum (<code>SCAN</code> = liest die
+  ganze Tabelle, <code>SEARCH … USING INDEX</code> = nutzt einen Index), bei Postgres den Text von <code>EXPLAIN</code>.</li>
+<li><strong>Verlauf</strong> in der Seitenleiste listet die zuletzt ausgeführten Anweisungen (fehlgeschlagene sind unterstrichen). Ein Klick holt
+  eine Anweisung zurück in den Editor, ein Doppelklick führt sie erneut aus. Der Verlauf liegt nur in diesem Browser; × löscht ihn.</li>
+</ul>
+<h2>Tabellen ansehen und bearbeiten</h2>
+<p><strong>Anzeigen</strong> neben einer Tabelle zeigt ihre Zeilen (200 pro Seite, ‹ und › blättern).</p>
+<ul>
+<li>Doppelklick auf eine Zelle bearbeitet sie; <code>Eingabe</code> speichert, <code>Esc</code> bricht ab, <code>Strg+Entf</code> setzt den Wert auf NULL.</li>
+<li><strong>Zeile hinzufügen</strong> öffnet ein Formular mit einem Feld pro Spalte (leere Felder verwenden den Standardwert der Spalte).</li>
+<li>× löscht eine Zeile (nach einer Bestätigung).</li>
+</ul>
+<p>Zum Bearbeiten braucht eine Tabelle einen Primärschlüssel (SQLite-Tabellen ohne Primärschlüssel werden über ihre <code>rowid</code> bearbeitet). Jede
+Änderung wird sofort als <code>UPDATE</code>, <code>INSERT</code> oder <code>DELETE</code> ausgeführt; die Anweisung erscheint in der Meldungszeile.</p>
+<p>Rückgängig (↶, <code>Strg+Z</code> außerhalb des SQL-Editors) und Wiederholen (↷, <code>Strg+Y</code>): bei SQLite-Datenbanken für jede Änderung, auch durch ausgeführte SQL-Anweisungen (bis zu 20 Schritte, für Datenbanken bis 32 MiB); bei PostgreSQL-Servern für die Änderungen in der Ergebnistabelle (geänderte Zellen, gelöschte Zeilen). Die Tabelle wird danach neu geladen.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>SQLite-Datei öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>SQLite-Datei speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+</tbody>
+</table>
+<h3>SQL</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Eingabe</code></td>
+<td>Anweisung am Cursor (oder die Auswahl) ausführen</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+Eingabe</code></td>
+<td>Alle Anweisungen ausführen</td>
+</tr>
+</tbody>
+</table>
+<h3>Tabelle</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Eingabe</code></td>
+<td>Bearbeitete Zelle übernehmen</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Bearbeitung abbrechen</td>
+</tr>
+<tr>
+<td><code>Strg+Entf</code></td>
+<td>Zelle auf NULL setzen</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>☰ öffnet die Liste der Datenbanken, das Schema und die gespeicherten Verbindungen. Ergebnisse lassen sich seitlich verschieben.</p>

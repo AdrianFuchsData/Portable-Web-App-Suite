@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "@app/imap.js": "imap.js",
+    "@app/smtp.js": "smtp.js",
+    "@app/mime.js": "mime.js",
+    "@app/threads.js": "threads.js",
+    "app/spell": "../../../../shared/js/spell.js",
+    "app/spell-dom": "../../../../shared/js/spell-dom.js"
+  }
+}

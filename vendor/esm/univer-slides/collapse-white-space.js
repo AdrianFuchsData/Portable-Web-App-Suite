@@ -1,0 +1,2 @@
+/* collapse-white-space@2.1.0 (jsDelivr +esm) */
+const l=/\s+/g,a=/[\t\n\v\f\r ]+/g;function f(r,e){e?typeof e=="string"&&(e={style:e}):e={};const n=e.preserveLineEndings?u:g;return String(r).replace(e.style==="html"?a:l,e.trim?i(n):n)}function u(r){const e=/\r?\n|\r/.exec(r);return e?e[0]:" "}function g(){return" "}function i(r){return e;function e(n,t,c){return t===0||t+n.length===c.length?"":r(n)}}export{f as collapseWhiteSpace};

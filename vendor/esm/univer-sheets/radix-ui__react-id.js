@@ -1,0 +1,2 @@
+/* @radix-ui/react-id@1.1.4 (jsDelivr +esm) */
+import*as t from"react";import{useLayoutEffect as f}from"@radix-ui/react-use-layout-effect";var n=Object.defineProperty,s=(e,r)=>n(e,"name",{value:r,configurable:!0}),c=t[" useId ".trim().toString()]||(()=>{}),d=0;function o(e){const[r,a]=t.useState(c());return f(()=>{e||a(u=>u??String(d++))},[e]),e||(r?`radix-${r}`:"")}s(o,"useId");export{o as useId};

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'unsafe-inline' blob:; worker-src blob:; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>S-2: Univer Sheets</title>
+  <link rel="stylesheet" href="../../../vendor/esm/univer-sheets/assets/univerjs__preset-sheets-core/lib/index.css">
+  <style>
+    html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
+    body { display: flex; flex-direction: column; }
+    header { padding: .4rem .8rem; border-bottom: 1px solid #8884; display: flex; gap: 1rem; align-items: center; }
+    #app { flex: 1; min-height: 0; }
+  </style>
+  <script type="importmap" data-src="../../../vendor/esm/univer-sheets/importmap.json"></script>
+</head>
+<body>
+  <header><strong>S-2</strong> Univer Sheets from file:// <span id="status">loading…</span></header>
+  <div id="app"></div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

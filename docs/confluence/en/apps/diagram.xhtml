@@ -1,0 +1,314 @@
+<!-- Generated from docs/en/apps/diagram.md by tools/build_docs.py - do not edit. Confluence page title: Diagram editor -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The diagram editor (<code>diagram.html</code>) draws flowcharts and other diagrams: shapes, connectors, text, images, several pages.
+It opens and saves <strong>draw.io</strong> files, so diagrams can be exchanged with draw.io (diagrams.net) and its desktop app, and it
+imports <strong>Excalidraw</strong> drawings.</p>
+<h2>Files</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Open</th>
+<th>Save</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>draw.io (<code>.drawio</code>, <code>.xml</code>), also compressed</td>
+<td>yes, all pages</td>
+<td>yes (<strong>Save</strong>, <code>Ctrl+S</code>)</td>
+</tr>
+<tr>
+<td>SVG and PNG with an embedded diagram (<code>.drawio.svg</code>, <code>.drawio.png</code>)</td>
+<td>yes</td>
+<td><strong>SVG</strong> / <strong>PNG</strong> export</td>
+</tr>
+<tr>
+<td>Excalidraw (<code>.excalidraw</code>)</td>
+<td>yes (rectangles, ellipses, diamonds, text, arrows, lines, images)</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Mermaid flowchart (<code>.mmd</code>, <code>.mermaid</code>)</td>
+<td>yes, laid out automatically</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p>The SVG and PNG exports show the current page as a picture and contain the whole diagram, like draw.io's "editable" exports:
+open them again in this editor (or in draw.io) to continue editing. Dropping a diagram file onto the window opens it; dropping
+an image inserts it.</p>
+<p><strong>🖨</strong> prints the diagram: every page on its own sheet with its name, scaled to the width of the sheet. Choose "Save as PDF" as
+the printer to get a PDF.</p>
+<ac:structured-macro ac:name="info"><ac:rich-text-body><p>draw.io has many more shapes and options. Shapes this editor does not know are shown as rectangles, and labels are plain
+text (bold or coloured parts of a label are not kept). Style settings that the editor does not use are kept when you save, so
+a round trip through this editor does not remove them.</p></ac:rich-text-body></ac:structured-macro>
+<h2>Drawing</h2>
+<ul>
+<li>The shape bar on the left adds a shape in the middle of the view; you can also drag a shape onto the drawing.</li>
+<li>Keyboard tools: <code>R</code> rectangle, <code>O</code> ellipse, <code>D</code> decision (diamond), <code>N</code> note, <code>T</code> text, <code>A</code> connector, <code>V</code> select, <code>H</code> pan.
+  With a shape tool, drag to draw the shape in any size.</li>
+<li><strong>Connectors</strong>: point at a shape; small circles appear at the middle of each side. Drag from one of them to another shape (onto a
+  circle for a fixed side, or anywhere on the shape for a floating end). Drag the end points of a selected connector to attach them
+  elsewhere or to leave them free.</li>
+<li><strong>Text</strong>: double-click a shape or connector to edit its label (<code>Ctrl+Enter</code> or a click outside finishes, <code>Escape</code> cancels).
+  Double-click on an empty place to add a text. <code>F2</code> or <code>Enter</code> edits the selected item.</li>
+<li><strong>Images</strong>: the image button inserts a picture file; pasted and dropped images work too.</li>
+</ul>
+<h3>Shape libraries</h3>
+<p>Below the general shapes, further libraries open with a click on their name (the open ones are remembered):</p>
+<table>
+<thead>
+<tr>
+<th>Library</th>
+<th>Shapes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UML</td>
+<td>class, package, component, actor, use case (ellipse), note</td>
+</tr>
+<tr>
+<td>BPMN</td>
+<td>task, start, intermediate and end event, exclusive gateway, pool, document, data store</td>
+</tr>
+<tr>
+<td>Network</td>
+<td>server, computer, firewall, router, cloud, database</td>
+</tr>
+<tr>
+<td>Entity relationship</td>
+<td>entity, relationship (diamond), attribute (ellipse)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Classes and entities</strong> have a title compartment: the first line of the text is the title, the further lines are listed below
+it, and a line with only <code>--</code> draws a separator (e.g. between fields and methods). <strong>Connector ends</strong> (format panel, Start/End)
+include the crow's foot notation for entity relationships (<code>er-one</code>, <code>er-mand-one</code>, <code>er-many</code>, <code>er-one-many</code>, <code>er-zero-one</code>,
+<code>er-zero-many</code>) and the hollow triangle and diamond of UML (<code>block-open</code> for generalisation, <code>diamond-open</code> for aggregation).
+All of them are saved as the corresponding draw.io shapes and arrows.</p>
+<h2>Selecting and arranging</h2>
+<ul>
+<li>Click selects, <code>Shift</code>+click adds or removes, dragging on an empty place selects everything inside the frame, <code>Ctrl+A</code> selects all.</li>
+<li>Drag to move (on the grid; hold <code>Alt</code> for free positioning), drag the handles to resize (<code>Shift</code> keeps the proportions). The arrow keys
+  move by one point, with <code>Shift</code> by one grid step.</li>
+<li><code>Delete</code> removes the selection (connectors of removed shapes are removed too). <code>Ctrl+D</code> duplicates, <code>Ctrl+C</code>, <code>Ctrl+X</code> and <code>Ctrl+V</code>
+  copy, cut and paste — also between this editor and draw.io, because the clipboard holds draw.io XML. Pasted plain text becomes a text.</li>
+<li>Undo <code>Ctrl+Z</code>, redo <code>Ctrl+Y</code> (or <code>Ctrl+Shift+Z</code>).</li>
+</ul>
+<h3>Groups, locking and layers</h3>
+<ul>
+<li><strong>Group</strong> (<code>Ctrl+G</code>, in the format panel) joins the selected shapes and connectors: a click on one of them selects the whole
+  group, which then moves together; <code>Alt</code>+click selects a single member. <strong>Ungroup</strong> (<code>Ctrl+Shift+G</code>) separates them again.</li>
+<li><strong>Lock</strong> (<code>Ctrl+L</code>) fixes the selection: locked objects cannot be selected, moved or deleted by accident (clicks go through
+  them). <strong>Unlock all</strong> in the <em>Diagram</em> panel (nothing selected) or <code>Ctrl+Shift+L</code> releases them.</li>
+<li><strong>Layers</strong> (in the <em>Diagram</em> panel, top layer first): ◉ chooses the layer new shapes go to, 👁 shows or hides a layer (hidden
+  layers are not exported or printed either), 🔒 locks it, ▲ ▼ change the order, a double-click renames it, × deletes it (its
+  content moves to the layer below), <strong>+ Add layer</strong> adds one. With several layers, <strong>Move to layer</strong> in the format panel moves
+  the selection.</li>
+</ul>
+<p>Groups, locks and layers are saved in the draw.io file and are understood by draw.io.</p>
+<h3>Automatic layout and Mermaid</h3>
+<p><strong>Automatic layout</strong> (in the format panel when nothing is selected – or with several shapes selected, for just those)
+arranges the shapes in layers along their connectors: top to bottom, left to right, bottom to top or right to left.
+Connectors pointing back against that direction are led around the side. Undo restores the previous arrangement.</p>
+<p><strong>Insert Mermaid…</strong> turns a <a href="https://mermaid.js.org">Mermaid</a> flowchart into shapes and connectors and lays them out, for
+example:</p>
+<ac:structured-macro ac:name="code"><ac:plain-text-body><![CDATA[flowchart TD
+  A[Start] --> B{OK?}
+  B -->|yes| C([Done])
+  B -- no --> D[(Database)]
+  D -.-> A]]></ac:plain-text-body></ac:structured-macro>
+<p>Supported are the direction (<code>TD</code>/<code>TB</code>, <code>LR</code>, <code>BT</code>, <code>RL</code>), the node shapes <code>[ ]</code> rectangle, <code>( )</code> rounded, <code>([ ])</code> terminator,
+<code>[( )]</code> cylinder, <code>(( ))</code> circle, <code>{ }</code> decision, <code>{{ }}</code> hexagon, <code>[/ /]</code> parallelogram, quoted labels and <code>&lt;br&gt;</code>, the links
+<code>--&gt;</code>, <code>---</code>, <code>-.-&gt;</code> (dashed), <code>==&gt;</code> (thick), <code>&lt;--&gt;</code>, <code>--o</code>, <code>--x</code>, labels as <code>--&gt;|text|</code> or <code>-- text --&gt;</code>, chains and <code>A &amp; B --&gt; C</code>.
+Subgraphs, styles and classes are ignored; other Mermaid diagram types (sequence, class, …) cannot be imported.</p>
+<h2>Format panel</h2>
+<p>The panel on the right shows the settings of the selection:</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Settings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Style</td>
+<td>shape type, fill (or none), line colour (or none), line width, dashed, opacity</td>
+</tr>
+<tr>
+<td>Connector</td>
+<td>routing (straight, elbow, curved), arrow at the start and at the end (none, classic, open, diamond, oval)</td>
+</tr>
+<tr>
+<td>Text</td>
+<td>font size and colour, bold, italic, horizontal and vertical alignment</td>
+</tr>
+<tr>
+<td>Position and size</td>
+<td>X, Y, width and height of a single shape</td>
+</tr>
+<tr>
+<td>Arrange</td>
+<td>to front, to back, duplicate, delete; with several shapes: align left/centre/right/top/middle/bottom, distribute</td>
+</tr>
+</tbody>
+</table>
+<p>Without a selection, the panel switches the grid and snapping on or off.</p>
+<h2>Pages and view</h2>
+<p>The bar at the bottom shows the pages: click to switch, double-click to rename, <strong>+</strong> adds a page, <strong>×</strong> deletes the current page.
+<code>Ctrl</code> + mouse wheel (or pinch) zooms, the mouse wheel scrolls, hold <code>Space</code> or use the hand tool to move the view. <strong>Fit</strong> (<code>Ctrl+0</code>)
+shows the whole page.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo</td>
+</tr>
+<tr>
+<td><code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code></td>
+<td>Redo</td>
+</tr>
+<tr>
+<td><code>Ctrl+X</code> / <code>Ctrl+C</code> / <code>Ctrl+V</code></td>
+<td>Cut, copy, paste</td>
+</tr>
+<tr>
+<td><code>Ctrl+A</code></td>
+<td>Select all</td>
+</tr>
+<tr>
+<td><code>Ctrl+D</code></td>
+<td>Duplicate</td>
+</tr>
+<tr>
+<td><code>Ctrl+G</code> / <code>Ctrl+Shift+G</code></td>
+<td>Group / ungroup</td>
+</tr>
+<tr>
+<td><code>Ctrl+L</code> / <code>Ctrl+Shift+L</code></td>
+<td>Lock the selection / unlock all</td>
+</tr>
+<tr>
+<td><code>Delete</code> / <code>Backspace</code></td>
+<td>Delete</td>
+</tr>
+<tr>
+<td><code>F2</code> / <code>Enter</code></td>
+<td>Edit the text</td>
+</tr>
+<tr>
+<td><code>←</code> / <code>→</code> / <code>↑</code> / <code>↓</code></td>
+<td>Move by 1 (with Shift: by the grid)</td>
+</tr>
+<tr>
+<td><code>Ctrl+]</code> / <code>Ctrl+[</code></td>
+<td>Bring forward / send backward</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Deselect, back to the select tool</td>
+</tr>
+</tbody>
+</table>
+<h3>Tools</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>V</code> / <code>H</code></td>
+<td>Select / hand</td>
+</tr>
+<tr>
+<td><code>A</code> / <code>L</code></td>
+<td>Connector</td>
+</tr>
+<tr>
+<td><code>T</code></td>
+<td>Text</td>
+</tr>
+<tr>
+<td><code>R</code> / <code>O</code> / <code>D</code> / <code>N</code></td>
+<td>Rectangle / ellipse / diamond / note</td>
+</tr>
+</tbody>
+</table>
+<h3>View</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl++</code> / <code>Ctrl+-</code></td>
+<td>Zoom in / out</td>
+</tr>
+<tr>
+<td><code>Ctrl+0</code></td>
+<td>Fit to the window</td>
+</tr>
+<tr>
+<td><code>Space+Drag</code></td>
+<td>Move the view</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The shapes are in a bar below the drawing; tap one to add it. <strong>Format</strong> opens the format panel. Two fingers zoom and move the view.</p>

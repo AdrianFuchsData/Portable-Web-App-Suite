@@ -1,0 +1,243 @@
+<!-- Generated from docs/en/apps/mediaplayer.md by tools/build_docs.py - do not edit. Confluence page title: Media player -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The media player (<code>mediaplayer.html</code>) plays audio and video files and stream URLs with playlists, shuffle and repeat,
+playback speed, subtitles, fullscreen and picture-in-picture.</p>
+<h2>Supported formats</h2>
+<p>The player uses the codecs of the browser. Usually supported:</p>
+<table>
+<thead>
+<tr>
+<th>Browser</th>
+<th>Audio</th>
+<th>Video</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chrome, Edge (desktop, Android)</td>
+<td>MP3, AAC/M4A, WAV, FLAC, Ogg Vorbis, Opus</td>
+<td>MP4 (H.264, AV1), WebM (VP8, VP9, AV1); MKV often works</td>
+</tr>
+<tr>
+<td>Firefox</td>
+<td>MP3, AAC/M4A, WAV, FLAC, Ogg Vorbis, Opus</td>
+<td>MP4 (H.264, AV1; depends on the system), WebM, Ogg Theora</td>
+</tr>
+</tbody>
+</table>
+<p>Formats such as AVI, WMV/WMA or MPEG-2 are usually not supported; the player then shows a message and skips the file.
+Title, artist, album and cover are read from ID3 (MP3), FLAC/Ogg comments, MP4 tags and WAV INFO chunks.</p>
+<h2>Opening</h2>
+<ul>
+<li><strong>Open files</strong> (<code>Ctrl+O</code>) adds audio and video files, playlists and subtitles; <strong>Open folder</strong> adds all media files of a folder
+  (also in subfolders). You can also drop files and folders onto the window.</li>
+<li><strong>Open URL</strong> (<code>Ctrl+L</code>) adds a stream or a file on a web server (<code>http://</code>, <code>https://</code>). It is played directly by the browser;
+  the server must be reachable.</li>
+<li>The first added file starts playing if nothing is playing yet.</li>
+</ul>
+<h2>Playlist</h2>
+<ul>
+<li>Double-click (on phones: tap) an item to play it. ↑ and ↓ move an item, × removes it; you can also drag items to a new position.</li>
+<li><strong>Filter</strong> shows only items whose title, artist or album contains the text. <strong>Clear</strong> empties the playlist.</li>
+<li><strong>Playlists</strong> (M3U, M3U8, PLS, XSPF): open the playlist <strong>together with the media files</strong> it refers to (select them all, or open
+  the folder). The entries are matched by file name. Entries without a file are crossed out; when you add the file later, it takes
+  its place in the list. URLs in a playlist are played directly.</li>
+<li><strong>▦</strong> switches to the <strong>album view</strong>: one tile per album with its cover (from the tags), titles without an album at the
+  end; a click plays the album. <strong>☰</strong> returns to the list.</li>
+<li><strong>Save playlist</strong> stores the list as M3U8 (local files by their name or original path, streams by URL).</li>
+</ul>
+<ac:structured-macro ac:name="info"><ac:rich-text-body><p>For security reasons the browser does not give the player access to files that you did not select. That is why a
+playlist alone cannot load its files.</p></ac:rich-text-body></ac:structured-macro>
+<h2>Playback</h2>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Key</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>▶ / ⏸</td>
+<td><code>Space</code>, <code>K</code></td>
+<td>play / pause (also a click on the picture)</td>
+</tr>
+<tr>
+<td>⏹</td>
+<td><code>S</code></td>
+<td>stop</td>
+</tr>
+<tr>
+<td>⏮ / ⏭</td>
+<td><code>P</code> / <code>N</code></td>
+<td>previous / next item (⏮ first goes back to the beginning of the item)</td>
+</tr>
+<tr>
+<td>seek bar</td>
+<td><code>←</code> / <code>→</code> (<code>Shift</code>: 1 minute)</td>
+<td>jump 5 seconds</td>
+</tr>
+<tr>
+<td>🔊 and slider</td>
+<td><code>M</code>, <code>↑</code> / <code>↓</code></td>
+<td>mute, volume</td>
+</tr>
+<tr>
+<td>speed</td>
+<td><code>[</code> / <code>]</code>, <code>=</code></td>
+<td>0.25× to 4× (pitch is kept), normal speed</td>
+</tr>
+<tr>
+<td>🔀</td>
+<td></td>
+<td>shuffle: every item is played once in random order</td>
+</tr>
+<tr>
+<td>🔁 / 🔂</td>
+<td></td>
+<td>repeat: off, all, one</td>
+</tr>
+<tr>
+<td>subtitles</td>
+<td><code>V</code></td>
+<td>choose or switch off subtitles</td>
+</tr>
+<tr>
+<td>⧉</td>
+<td></td>
+<td>picture-in-picture (Chrome, Edge)</td>
+</tr>
+<tr>
+<td>⛶</td>
+<td><code>F</code>, double-click</td>
+<td>fullscreen</td>
+</tr>
+<tr>
+<td>A–B</td>
+<td><code>L</code></td>
+<td>repeat a part: the first click sets A, the second B (then the part between them repeats), the third ends it</td>
+</tr>
+<tr>
+<td>⏴ / ⏵ (videos)</td>
+<td><code>,</code> / <code>.</code></td>
+<td>one frame back / forward (pauses)</td>
+</tr>
+<tr>
+<td>📷 (videos)</td>
+<td></td>
+<td>saves the current picture as PNG</td>
+</tr>
+<tr>
+<td>🎚</td>
+<td></td>
+<td>equaliser (see below)</td>
+</tr>
+</tbody>
+</table>
+<p>Long files (two minutes or more) continue where you stopped last time (the last 200 files are remembered in this browser).</p>
+<p><strong>Equaliser</strong>: 🎚 opens ten bands from 31 Hz to 16 kHz (±12 dB) with presets (flat, bass boost, treble boost, voice,
+loudness) and <strong>Normalise loudness</strong>, which evens out loud and quiet passages. It works for local files; stream URLs are
+played unchanged (the browser does not allow processing their sound).</p>
+<p>Volume, mute, speed, shuffle, repeat and whether the playlist is shown are remembered in this browser.
+Media keys of the keyboard and the playback notification on Android work as well.</p>
+<h2>Subtitles</h2>
+<p>Add an SRT or WebVTT file. A subtitle file named like a video (<code>movie.srt</code> for <code>movie.mp4</code>) belongs to that video; otherwise it is
+added to the item that is playing. Several subtitle files can be added; the list in the control bar chooses one.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open files</td>
+</tr>
+<tr>
+<td><code>Ctrl+L</code></td>
+<td>Open a stream URL</td>
+</tr>
+</tbody>
+</table>
+<h3>Playback</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Space</code> / <code>K</code></td>
+<td>Play / pause</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>Stop</td>
+</tr>
+<tr>
+<td><code>←</code> / <code>→</code></td>
+<td>Back / forward 5 s (with Shift: 60 s)</td>
+</tr>
+<tr>
+<td><code>↑</code> / <code>↓</code></td>
+<td>Volume</td>
+</tr>
+<tr>
+<td><code>M</code></td>
+<td>Mute</td>
+</tr>
+<tr>
+<td><code>[</code> / <code>]</code></td>
+<td>Slower / faster</td>
+</tr>
+<tr>
+<td><code>=</code></td>
+<td>Normal speed</td>
+</tr>
+<tr>
+<td><code>N</code> / <code>P</code></td>
+<td>Next / previous item</td>
+</tr>
+<tr>
+<td><code>F</code></td>
+<td>Fullscreen</td>
+</tr>
+<tr>
+<td><code>V</code></td>
+<td>Next subtitle track</td>
+</tr>
+<tr>
+<td><code>L</code></td>
+<td>A–B repeat (set A, set B, off)</td>
+</tr>
+<tr>
+<td><code>,</code> / <code>.</code></td>
+<td>One frame back / forward (videos)</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The picture is shown above the controls and the playlist. Tap an item to play it; the buttons ↑, ↓ and × are always visible.</p>

@@ -1,0 +1,58 @@
+/* PDF viewer layout (on top of shared/css/suite.css and vendor/pdfjs/pdf_viewer.css) */
+.pv-toolbar { display: flex; gap: .3rem; flex-wrap: wrap; align-items: center; }
+.pv-toolbar button, .pv-toolbar select, .pv-toolbar input { margin: 0; padding: .2rem .5rem; font-size: .85rem; width: auto; height: auto; }
+.pv-group { display: inline-flex; gap: .2rem; align-items: center; font-size: .85rem; white-space: nowrap; }
+.pv-page { width: 3.5rem !important; text-align: center; }
+.suite-main { overflow: hidden; display: flex; flex-direction: column; }
+.pv-layout { display: flex; flex-direction: column; height: 100%; }
+.pv-findbar { display: flex; gap: .4rem; align-items: center; padding: .3rem .6rem; margin: 0; border-bottom: 1px solid var(--pico-muted-border-color); flex-wrap: wrap; font-size: .85rem; }
+.pv-findbar input:not([type=checkbox]), .pv-findbar button { margin: 0; padding: .2rem .5rem; height: auto; width: auto; font-size: .85rem; }
+.pv-findbar input:not([type=checkbox]) { flex: 1; min-width: 8rem; }
+.pv-findbar label { margin: 0; }
+.pv-body { flex: 1; display: flex; min-height: 0; }
+.pv-sidebar { width: 190px; border-right: 1px solid var(--pico-muted-border-color); display: flex; flex-direction: column; background: var(--pico-card-sectioning-background-color); flex: none; }
+.pv-tabs { display: flex; gap: .2rem; padding: .3rem; }
+.pv-tabs button { margin: 0; padding: .15rem .4rem; font-size: .8rem; flex: 1; }
+.pv-thumbs { overflow-y: auto; padding: .3rem; display: flex; flex-direction: column; align-items: center; gap: .4rem; }
+.pv-thumb { background: none; border: 2px solid transparent; padding: 2px; margin: 0; display: flex; flex-direction: column; align-items: center; color: inherit; font-size: .75rem; width: auto; }
+.pv-thumb canvas { background: #fff; box-shadow: 0 1px 3px #0005; max-width: 140px; height: auto; }
+.pv-thumb.active { border-color: var(--pico-primary); }
+.pv-outline { overflow-y: auto; padding: .3rem .5rem; font-size: .85rem; }
+.pv-outline ul { padding-left: .8rem; margin: 0; }
+.pv-outline li { list-style: none; margin: .15rem 0; }
+.pv-host { flex: 1; position: relative; min-width: 0; background: #7a7a7a33; }
+.pv-container { position: absolute; inset: 0; overflow: auto; outline: none; }
+.pv-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; margin: 0; color: var(--pico-muted-color); pointer-events: none; }
+.pv-error { color: var(--pico-del-color); }
+#pv-print { display: none; }
+@media print {
+  body > #app, .suite-toasts { display: none !important; }
+  #pv-print { display: block; }
+  #pv-print img { display: block; width: 100%; page-break-after: always; }
+}
+@media (max-width: 800px) {
+  .pv-toolbar { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; order: 3; width: 100%; padding-bottom: .2rem; }
+  .pv-toolbar > * { flex: none; }
+  .pv-sidebar { position: absolute; z-index: 5; top: 0; bottom: 0; left: 0; box-shadow: 2px 0 8px #0004; } /* drawer on phones (suite.css) */
+  .pv-body { position: relative; }
+}
+/* page selection for page operations (Pages menu) */
+.pv-thumb-box { position: relative; }
+.pv-thumb-box.selected .pv-thumb { border-color: var(--pico-secondary); background: var(--suite-selected); }
+.pv-thumb-check { position: absolute; top: .3rem; right: .3rem; margin: 0 !important; }
+.pv-toolbar select[data-testid=pages-menu] { width: auto; }
+
+/* signing */
+.pv-sign { max-width: min(40rem, 96vw); }
+.pv-sign-pad { display: block; width: 100%; aspect-ratio: 3 / 1; border: 1px dashed var(--pico-muted-border-color); border-radius: .4rem; background: #fff; touch-action: none; cursor: crosshair; margin: .4rem 0; }
+.pv-placing .page { cursor: crosshair; }
+.pv-sigbar { display: block; width: 100%; margin: 0; border-radius: 0; text-align: left; padding: .25rem .7rem; font-size: .85rem; border: 0; border-bottom: 1px solid var(--pico-muted-border-color); }
+.pv-sigbar.ok { background: #e8f5e9; color: #1b5e20; } .pv-sigbar.warn { background: #fff8e1; color: #6d4c00; } .pv-sigbar.bad { background: #ffebee; color: #b71c1c; }
+[data-theme=dark] .pv-sigbar.ok { background: #1b3a1e; color: #c8e6c9; } [data-theme=dark] .pv-sigbar.warn { background: #3a3000; color: #ffe082; } [data-theme=dark] .pv-sigbar.bad { background: #4a1414; color: #ffcdd2; }
+.pv-signatures { overflow-y: auto; padding: .4rem; font-size: .78rem; }
+.pv-signatures section { border-bottom: 1px solid var(--pico-muted-border-color); padding-bottom: .4rem; margin-bottom: .4rem; overflow-wrap: anywhere; }
+.pv-signatures ul { list-style: none; padding: 0; margin: .3rem 0; }
+.pv-signatures li { list-style: none; margin: .1rem 0; }
+.pv-signatures dl { margin: 0; } .pv-signatures dt { font-weight: 600; margin-top: .2rem; } .pv-signatures dd { margin: 0; }
+.pv-signatures ol { padding-left: 1rem; margin: 0; }
+.pv-sig-note { color: var(--pico-muted-color); font-size: .72rem; }

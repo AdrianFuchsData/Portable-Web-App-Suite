@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "@pdf-lib/standard-fonts": "pdf-lib__standard-fonts.js",
+    "@pdf-lib/upng": "pdf-lib__upng.js",
+    "pako": "pako.js",
+    "pdf-lib": "pdf-lib.js",
+    "tslib": "tslib.js"
+  }
+}

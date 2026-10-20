@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "app/pptx-import": "../../../../shared/js/pptx-import.js",
+    "app/pptx-export": "../../../../shared/js/pptx-export.js",
+    "app/slide-render": "../../../../shared/js/slide-render.js"
+  }
+}

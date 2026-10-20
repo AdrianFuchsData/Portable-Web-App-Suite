@@ -1,0 +1,100 @@
+<!-- Generated from docs/en/apps/ftp.md by tools/build_docs.py - do not edit. Confluence page title: FTP/SFTP client -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The FTP/SFTP client (<code>ftp.html</code>) transfers files between your computer and servers, like FileZilla. It supports <strong>SFTP</strong> (over SSH),
+<strong>FTPS</strong> (FTP over TLS, explicit and implicit) and plain <strong>FTP</strong>. Connections go through the <strong>local relay</strong> (see the user guide,
+"Network functions and the relay").</p>
+<h2>Connecting</h2>
+<p>The bar at the top connects directly: choose the protocol, enter host, port (filled in for the protocol), user and password, and click
+<strong>Connect</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Protocol</th>
+<th>Port</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SFTP (SSH)</td>
+<td>22</td>
+<td>password or private key (paste it into the key field); the server's host key is shown on the first connection</td>
+</tr>
+<tr>
+<td>FTPS (explicit TLS)</td>
+<td>21</td>
+<td>encrypted after <code>AUTH TLS</code>; the usual secure FTP</td>
+</tr>
+<tr>
+<td>FTPS (implicit TLS)</td>
+<td>990</td>
+<td>encrypted from the start</td>
+</tr>
+<tr>
+<td>FTP (not encrypted)</td>
+<td>21</td>
+<td>passwords and files travel in clear text — use only in trusted networks</td>
+</tr>
+</tbody>
+</table>
+<p>For FTPS with a self-signed server certificate, tick <strong>Accept untrusted certificates</strong>. FTP always uses passive mode; the data connections go to
+the same host as the control connection.</p>
+<p><strong>Save site</strong> stores the current settings under a name in the <strong>Sites</strong> list; a click on a site connects, ✎ loads it into the bar, × deletes it.
+Sites and the relay settings are kept in a connections file (KeePass database or JSON file, <strong>Save</strong> and <strong>Open…</strong> below the list).</p>
+<h2>Local and remote files</h2>
+<p>The window shows two lists: <strong>Local</strong> on the left, <strong>Remote</strong> (the server) on the right.</p>
+<ul>
+<li><strong>Local</strong> (Chrome/Edge on the desktop): <strong>Choose local folder…</strong> opens a folder of your computer. Double-click folders to open them, ↑ goes up.
+  Downloads are written into this folder; folders are downloaded with their content.</li>
+<li>In Firefox and on phones, local folders cannot be opened: <strong>Upload files…</strong> uploads files, and downloads go to the browser's download folder.</li>
+<li><strong>Remote</strong>: double-click a folder to open it, ↑ goes up, or type a path and press <code>Enter</code>; ⟳ reloads.</li>
+</ul>
+<p>Click selects an entry, <code>Ctrl</code>+click selects several.</p>
+<h2>Transfers</h2>
+<ul>
+<li><strong>Upload →</strong> uploads the selected local entries (folders with their content) into the current remote folder; you can also drag entries from
+  the local list (or files from the desktop) onto the remote list.</li>
+<li><strong>← Download</strong> downloads the selected remote entries; double-clicking a remote file downloads it; you can also drag remote entries onto the
+  local list.</li>
+<li>Existing remote files are overwritten after a confirmation.</li>
+</ul>
+<p>The <strong>Transfers</strong> list shows every transfer with its progress, size and result; <strong>Clear finished</strong> removes the finished ones.</p>
+<p><strong>Resuming</strong>: when a transfer fails (e.g. the connection was lost), <strong>↻ Resume</strong> next to it continues where it stopped – a
+download keeps the part already received and asks the server only for the rest, an upload continues after the part the server
+already has. When you upload a file and a smaller file of the same name is on the server, the client asks whether to resume the
+upload; when you download into a local folder that contains a smaller file of the same name, it asks whether to resume the
+download. Resuming works with SFTP and with FTP servers that support <code>REST</code> and <code>APPE</code> (almost all do).</p>
+<h2>Comparing and synchronizing folders</h2>
+<p>With a local folder open (Chrome/Edge on the desktop) and a connection, <strong>⇄ Compare / synchronize</strong> compares the local folder
+with the current remote folder, including all subfolders. The list shows every file that differs: <em>only local</em>, <em>only on the
+server</em>, <em>local is newer</em>, <em>server is newer</em> or <em>different size</em> (when the times do not tell which is newer), with size and
+modification time on both sides; <strong>Show identical files</strong> adds the files that are the same.</p>
+<p>Every file gets an action – <strong>upload</strong>, <strong>download</strong> or <strong>skip</strong> – that you can change. <strong>Direction</strong> proposes the actions:
+<em>both ways</em> (the newer file wins), <em>upload only</em> (makes the server match the local folder) or <em>download only</em>. <strong>Synchronize</strong>
+puts the transfers into the queue; missing folders are created. Files are never deleted.</p>
+<p>Files with the same size count as identical; tick <strong>Compare modification times when the sizes are equal</strong> to compare their times
+as well. Uploads keep the local modification time on the server (FTP <code>MFMT</code>, SFTP), so they count as identical afterwards. A
+browser cannot set the time of a downloaded file: downloaded files get the current time, which is why the comparison relies on
+the sizes by default. At most 5000 files per side are compared.</p>
+<h2>Managing remote files</h2>
+<p><strong>New folder</strong>, <strong>Rename</strong> (one selected entry) and <strong>Delete</strong> (selected entries; folders are deleted with their content after a confirmation).</p>
+<p><strong>Open with…</strong> opens the selected remote file in another application of the suite; saving there uploads it again (shown in the transfer queue).</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The lists are shown one below the other; ☰ <strong>Sites</strong> opens the saved sites.</p>

@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@xterm/addon-fit": "xterm__addon-fit.js",
+    "@xterm/xterm": "xterm__xterm.js"
+  }
+}

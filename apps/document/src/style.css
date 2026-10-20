@@ -1,0 +1,30 @@
+/* Document (on top of shared/css/suite.css) */
+.doc-toolbar { display: flex; gap: .3rem; flex-wrap: wrap; align-items: center; justify-content: flex-start; }
+.doc-toolbar button { margin: 0; padding: .2rem .55rem; font-size: .85rem; width: auto; }
+.doc-name { font-size: .85rem; color: var(--pico-muted-color); margin-left: .4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.suite-main { overflow: hidden; display: flex; flex-direction: column; }
+.doc-layout { flex: 1; min-height: 0; position: relative; }
+.doc-univer { position: absolute; inset: 0; }
+@media (max-width: 760px) {
+  nav.doc-toolbar { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; order: 3; width: 100%; }
+  .doc-toolbar > * { flex: none; }
+}
+.doc-print-frame { position: fixed; width: 0; height: 0; border: 0; visibility: hidden; }
+/* spelling panel: beside the document, a bottom sheet on phones */
+.doc-layout.spell-open .doc-univer { right: 18rem; }
+.doc-spell { position: absolute; top: 0; right: 0; bottom: 0; width: 18rem; overflow-y: auto; padding: .6rem; border-left: 1px solid var(--pico-muted-border-color, #ccc);
+  background: var(--pico-background-color, #fff); font-size: .85rem; display: flex; flex-direction: column; gap: .4rem; }
+.doc-spell header { display: flex; justify-content: space-between; align-items: center; }
+.doc-spell button { margin: 0; padding: .15rem .5rem; font-size: .8rem; width: auto; }
+.doc-spell select { margin: 0; padding: .2rem .5rem; font-size: .85rem; flex: 1; }
+.doc-spell-language, .doc-spell-actions, .doc-spell-suggestions { display: flex; gap: .3rem; flex-wrap: wrap; align-items: center; }
+.doc-spell-status { margin: 0; color: var(--pico-muted-color); }
+.doc-spell-list { list-style: none; margin: 0; padding: 0; }
+.doc-spell-list li { list-style: none; margin: 0 0 .2rem; padding: .2rem; border-radius: .3rem; }
+.doc-spell-list li.current { background: var(--pico-secondary-background, rgba(127,127,127,.15)); background: rgba(127,127,127,.15); }
+.doc-spell-word.doc-spell-word { background: none; border: 0; color: var(--pico-del-color, #c62828); text-decoration: underline wavy; text-align: left; width: 100%; }
+.doc-spell-detail { display: flex; flex-direction: column; gap: .3rem; padding: .2rem 0 .3rem .4rem; }
+@media (max-width: 760px) {
+  .doc-layout.spell-open .doc-univer { right: 0; bottom: 45%; }
+  .doc-spell { top: auto; left: 0; width: auto; height: 45%; border-left: 0; border-top: 1px solid var(--pico-muted-border-color, #ccc); }
+}

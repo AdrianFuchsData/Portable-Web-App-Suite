@@ -1,0 +1,31 @@
+{
+ "package": "reveal.js",
+ "version": "6.0.2",
+ "license": "MIT",
+ "files": {
+  "reveal.js": "aa1bbbf2617b23a623b23612cb3c5bdb63de512e652bf20fcfa832b045d37844",
+  "plugin/highlight.js": "6c98ab2d30c913516efed604909ad525367ad5d7ba1715f43d3b2f662a31d6a8",
+  "plugin/markdown.js": "7a8991997115b882b5f7813a903ed74bf17ab0bbdb90569d5f4331680af92ad9",
+  "plugin/notes.js": "447c42f365876e41853de81453d0c53c580c5b2099132e8f61200de4a0ba2af3",
+  "plugin/zoom.js": "ff65816a86a2c0e2d52250d41e4be296b4198fd7684359b4f92a9be5a29ccea8",
+  "plugin/search.js": "887591079bebb965a8d07300b323339ed98d9f4504987713379174f2480d2eb0",
+  "reveal.css": "615ee850cbbb98a0f688b60ed37b21819a3f54c9f3e6f20e33e63693ab74a0c0",
+  "reset.css": "39413c3490fdcf826427c26ff4c1ee59ea961a0aa8507c18454e0c6dc96c12d8",
+  "plugin/highlight/monokai.css": "504e51314144f3f8327155dc69502ba10b1a4991ae4cc3fa70086cf155465999",
+  "plugin/highlight/zenburn.css": "e298a0f1c2de9dea4ace202ce7e60cbc3143ebf7eab42efe891a8885f392444c",
+  "theme/black.css": "c29c9689e8f3b277aa66edc01ed2ef97981a6768b05ad750582eac068d9705c3",
+  "theme/white.css": "41e9507d97eb13ce6804645a9ce9f16220ddc3bfd6e7888aa3a0b5f61777d8f3",
+  "theme/league.css": "2303d0b38b4d739908112894f93ddca2e4a30ad058bb8a184c85b0a9ddc00a07",
+  "theme/beige.css": "b46a29fb18d3e0451c2545d728db60911c2e85ee67740757aabb582832e3a780",
+  "theme/night.css": "8f58176d72dba32ad6ecdd2d0035d9355762683b7bf718ddb9a431cbd4d58348",
+  "theme/serif.css": "9bc18b2e020715b740df656fd28c86230ea4eada95c819901c7bd64b2d187789",
+  "theme/simple.css": "b6c8df9a191c2f25acebf0075d748134773f916385a359303a509a52851551c2",
+  "theme/sky.css": "3435a76a0d394c93864b90633b5be590ee5dc0f643255a8c8fee0214f799bff3",
+  "theme/solarized.css": "91300a3ac059fe020db391084d1fc7d0fd59f9488e43461ef01b3da6ebcce21c",
+  "theme/moon.css": "e5adaff1083f18014b09452aaec51fa539feabfb5542ffcae15e893e83e166ca",
+  "theme/dracula.css": "47bf8605c95d61ad25c23d2e16b7de9aca79c1c5b5f1af33558f87f1faef26d0",
+  "theme/blood.css": "157eace8f16356383b8b31a1e1ff5c507071c0f990ecafc85841e584a38cafab",
+  "theme/black-contrast.css": "d44a241835fe768dcb487059ebc3216d4adeef423c62192c7484bec50bf6d36b",
+  "theme/white-contrast.css": "ced195643e5700ccbb79203389b6ab8074349a920b566cda08b47228b4e0a505"
+ }
+}

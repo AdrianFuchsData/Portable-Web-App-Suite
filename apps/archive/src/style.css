@@ -1,0 +1,48 @@
+/* Archive manager (on top of shared/css/suite.css) */
+.ar-toolbar { display: flex; gap: .3rem; flex-wrap: wrap; align-items: center; }
+.ar-toolbar button { margin: 0; padding: .2rem .55rem; font-size: .85rem; width: auto; }
+.ar-sep { width: 1px; align-self: stretch; background: var(--pico-muted-border-color); margin: 0 .2rem; }
+.ar-level { display: flex; align-items: center; gap: .3rem; margin: 0 0 0 auto; font-size: .8rem; }
+.ar-level select { margin: 0; padding: 0 1.6rem 0 .4rem; height: auto; width: auto; font-size: .8rem; }
+.suite-main { overflow: hidden; display: flex; flex-direction: column; }
+.ar-main { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.ar-path { display: flex; align-items: center; gap: .35rem; padding: .35rem .6rem; border-bottom: 1px solid var(--pico-muted-border-color); flex-wrap: wrap; }
+.ar-path button { margin: 0; padding: .1rem .5rem; width: auto; }
+.ar-path a { text-decoration: none; }
+.ar-crumb-sep { color: var(--pico-muted-color); }
+.ar-list { flex: 1; overflow: auto; min-height: 0; }
+.ar-table { margin: 0; font-size: .9rem; user-select: none; }
+.ar-table th { cursor: pointer; white-space: nowrap; position: sticky; top: 0; z-index: 1; background: var(--pico-background-color); }
+.ar-table td, .ar-table th { padding: .3rem .6rem; }
+.ar-table tr.selected td { background: var(--suite-selected); }
+.ar-table tbody tr { cursor: default; }
+.ar-check { width: 2rem; }
+.ar-check input { margin: 0; }
+.ar-num { text-align: right; white-space: nowrap; }
+.ar-name { word-break: break-all; }
+.ar-name form { margin: 0; }
+.ar-name input { margin: 0; padding: .15rem .4rem; height: auto; }
+.ar-icon { margin-right: .4rem; }
+.ar-empty { padding: 1rem; color: var(--pico-muted-color); }
+.ar-status { display: flex; align-items: center; gap: 1rem; padding: .3rem .6rem; border-top: 1px solid var(--pico-muted-border-color); font-size: .8rem; color: var(--pico-muted-color); flex-wrap: wrap; }
+.ar-welcome { max-width: 36rem; margin: 2rem auto; padding: 0 1rem; text-align: center; }
+.ar-buttons { display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+.ar-buttons button { width: auto; }
+.ar-welcome ul { list-style: none; padding: 0; }
+.ar-preview { width: min(60rem, 95vw); max-width: none; }
+.ar-preview pre { max-height: 60vh; overflow: auto; white-space: pre-wrap; word-break: break-word; font-size: .8rem; }
+.ar-preview img, .ar-preview video { max-width: 100%; max-height: 60vh; display: block; margin: 0 auto; }
+.ar-preview audio { width: 100%; }
+.ar-main[aria-busy=true] { cursor: progress; }
+@media (max-width: 760px) {
+  .ar-toolbar { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; order: 3; width: 100%; padding-bottom: .2rem; }
+  .ar-toolbar > * { flex: none; }
+  .ar-wide { display: none; }
+  .ar-table td, .ar-table th { padding: .55rem .5rem; }
+}
+.ar-error { color: var(--pico-del-color); margin: 0 0 .5rem; }
+
+/* integrity test */
+.ar-test-ok { color: var(--pico-ins-color, #2e7d32); }
+.ar-test-bad { color: var(--pico-del-color, #c62828); }
+.ar-test-errors { max-height: 40vh; overflow: auto; font-size: .85rem; }

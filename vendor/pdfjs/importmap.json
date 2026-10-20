@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "pdfjs-dist": "pdf.min.mjs",
+    "pdfjs-dist/web/pdf_viewer": "pdf_viewer.mjs"
+  }
+}

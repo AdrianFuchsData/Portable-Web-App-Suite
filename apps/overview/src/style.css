@@ -1,0 +1,30 @@
+/* Overview layout (on top of shared/css/suite.css) */
+.ov-toolbar { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
+.ov-toolbar button { margin: 0; padding: .25rem .7rem; font-size: .9rem; width: auto; }
+.suite-main { overflow: hidden; display: flex; flex-direction: column; }
+.ov-layout { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.ov-tabs { display: flex; gap: .3rem; align-items: center; padding: .3rem .6rem; border-bottom: 1px solid var(--pico-muted-border-color); overflow-x: auto; flex: none; }
+.ov-tabs button { margin: 0; padding: .25rem .6rem; font-size: .85rem; width: auto; white-space: nowrap; }
+.ov-tab { display: inline-flex; flex: none; }
+.ov-tab > button:first-child { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.ov-tab .ov-tab-close { border-top-left-radius: 0; border-bottom-left-radius: 0; padding: .25rem .45rem; }
+.ov-loading { white-space: nowrap; color: var(--pico-muted-color); }
+.ov-home { flex: 1; overflow: auto; padding: 1rem; }
+.ov-home h2 { font-size: 1.1rem; margin: 1.2rem 0 .6rem; }
+.ov-intro { max-width: 60rem; }
+.ov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: .8rem; }
+.ov-card { margin: 0; padding: .8rem 1rem; display: flex; flex-direction: column; }
+.ov-card header { margin: -.8rem -1rem .5rem; padding: .6rem 1rem; }
+.ov-card p { flex: 1; font-size: .9rem; margin-bottom: .6rem; }
+.ov-card footer { margin: 0 -1rem -.8rem; padding: .5rem 1rem; display: flex; gap: .4rem; }
+.ov-card footer button { margin: 0; padding: .3rem .7rem; width: auto; }
+.ov-icon { font-size: 1.3rem; }
+.ov-frame-host { flex: 1; min-height: 0; position: relative; }
+.ov-frame-host[hidden] { display: none; }
+.ov-frames { position: absolute; inset: 0; }
+.ov-frames iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: none; background: var(--pico-background-color); }
+.ov-frames iframe.active { display: block; }
+@media (max-width: 600px) {
+  .ov-home { padding: .6rem; }
+  .ov-grid { grid-template-columns: 1fr; }
+}

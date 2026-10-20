@@ -1,0 +1,319 @@
+<!-- Generated from docs/de/apps/diagram.md by tools/build_docs.py - do not edit. Confluence page title: Diagrammeditor -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Der Diagrammeditor (<code>diagram.html</code>) zeichnet Flussdiagramme und andere Diagramme: Formen, Verbinder, Text, Bilder, mehrere Seiten.
+Er öffnet und speichert <strong>draw.io</strong>-Dateien, sodass Diagramme mit draw.io (diagrams.net) und dessen Desktop-Anwendung ausgetauscht
+werden können, und er importiert <strong>Excalidraw</strong>-Zeichnungen.</p>
+<h2>Dateien</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Öffnen</th>
+<th>Speichern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>draw.io (<code>.drawio</code>, <code>.xml</code>), auch komprimiert</td>
+<td>ja, alle Seiten</td>
+<td>ja (<strong>Speichern</strong>, <code>Strg+S</code>)</td>
+</tr>
+<tr>
+<td>SVG und PNG mit eingebettetem Diagramm (<code>.drawio.svg</code>, <code>.drawio.png</code>)</td>
+<td>ja</td>
+<td>Export <strong>SVG</strong> / <strong>PNG</strong></td>
+</tr>
+<tr>
+<td>Excalidraw (<code>.excalidraw</code>)</td>
+<td>ja (Rechtecke, Ellipsen, Rauten, Text, Pfeile, Linien, Bilder)</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Mermaid-Flussdiagramm (<code>.mmd</code>, <code>.mermaid</code>)</td>
+<td>ja, automatisch angeordnet</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p>Die SVG- und PNG-Exporte zeigen die aktuelle Seite als Bild und enthalten das ganze Diagramm, wie die „bearbeitbaren“ Exporte von
+draw.io: Öffnen Sie sie wieder in diesem Editor (oder in draw.io), um weiterzuarbeiten. Eine auf das Fenster gezogene Diagrammdatei wird
+geöffnet; ein gezogenes Bild wird eingefügt.</p>
+<p><strong>🖨</strong> druckt das Diagramm: jede Seite auf einem eigenen Blatt mit ihrem Namen, auf die Blattbreite skaliert. Wählen Sie „Als PDF
+speichern“ als Drucker, um ein PDF zu erhalten.</p>
+<ac:structured-macro ac:name="info"><ac:rich-text-body><p>draw.io kennt viel mehr Formen und Optionen. Formen, die dieser Editor nicht kennt, werden als Rechtecke dargestellt, und
+Beschriftungen sind reiner Text (fette oder farbige Teile einer Beschriftung gehen verloren). Stileinstellungen, die der Editor nicht
+verwendet, bleiben beim Speichern erhalten, sodass sie beim Bearbeiten mit diesem Editor nicht verloren gehen.</p></ac:rich-text-body></ac:structured-macro>
+<h2>Zeichnen</h2>
+<ul>
+<li>Die Formenleiste links fügt eine Form in der Mitte der Ansicht ein; eine Form kann auch auf die Zeichnung gezogen werden.</li>
+<li>Tastatur-Werkzeuge: <code>R</code> Rechteck, <code>O</code> Ellipse, <code>D</code> Entscheidung (Raute), <code>N</code> Notiz, <code>T</code> Text, <code>A</code> Verbinder, <code>V</code> Auswählen,
+  <code>H</code> Verschieben. Mit einem Formwerkzeug ziehen Sie die Form in beliebiger Größe auf.</li>
+<li><strong>Verbinder</strong>: Zeigen Sie auf eine Form; an der Mitte jeder Seite erscheinen kleine Kreise. Ziehen Sie von einem davon zu einer anderen
+  Form (auf einen Kreis für eine feste Seite oder irgendwo auf die Form für ein freies Ende). Die Endpunkte eines ausgewählten Verbinders
+  lassen sich an eine andere Stelle ziehen oder frei lassen.</li>
+<li><strong>Text</strong>: Ein Doppelklick auf eine Form oder einen Verbinder bearbeitet die Beschriftung (<code>Strg+Eingabe</code> oder ein Klick daneben
+  beendet, <code>Esc</code> bricht ab). Ein Doppelklick auf eine leere Stelle fügt einen Text ein. <code>F2</code> oder <code>Eingabe</code> bearbeitet das gewählte Element.</li>
+<li><strong>Bilder</strong>: Die Bild-Schaltfläche fügt eine Bilddatei ein; eingefügte und gezogene Bilder funktionieren ebenfalls.</li>
+</ul>
+<h3>Formenbibliotheken</h3>
+<p>Unter den allgemeinen Formen öffnen sich weitere Bibliotheken mit einem Klick auf ihren Namen (die geöffneten bleiben gespeichert):</p>
+<table>
+<thead>
+<tr>
+<th>Bibliothek</th>
+<th>Formen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UML</td>
+<td>Klasse, Paket, Komponente, Akteur, Anwendungsfall (Ellipse), Notiz</td>
+</tr>
+<tr>
+<td>BPMN</td>
+<td>Aufgabe, Start-, Zwischen- und Endereignis, exklusives Gateway, Pool, Dokument, Datenspeicher</td>
+</tr>
+<tr>
+<td>Netzwerk</td>
+<td>Server, Computer, Firewall, Router, Wolke, Datenbank</td>
+</tr>
+<tr>
+<td>Entity-Relationship</td>
+<td>Entität, Beziehung (Raute), Attribut (Ellipse)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Klassen und Entitäten</strong> haben ein Titelfeld: die erste Textzeile ist der Titel, die weiteren Zeilen stehen darunter, und eine Zeile
+nur mit <code>--</code> zeichnet eine Trennlinie (z. B. zwischen Attributen und Methoden). Die <strong>Verbinderenden</strong> (Formatbereich, Anfang/Ende)
+enthalten die Krähenfußnotation für Entity-Relationship-Diagramme (<code>er-one</code>, <code>er-mand-one</code>, <code>er-many</code>, <code>er-one-many</code>, <code>er-zero-one</code>,
+<code>er-zero-many</code>) sowie das hohle Dreieck und die hohle Raute von UML (<code>block-open</code> für Generalisierung, <code>diamond-open</code> für Aggregation).
+Alle werden als die entsprechenden draw.io-Formen und -Pfeile gespeichert.</p>
+<h2>Auswählen und anordnen</h2>
+<ul>
+<li>Klick wählt aus, <code>Umschalt</code>+Klick fügt hinzu oder entfernt, Ziehen auf einer leeren Stelle wählt alles im Rahmen, <code>Strg+A</code> wählt alles.</li>
+<li>Ziehen verschiebt (am Raster; <code>Alt</code> halten für freie Position), Ziehen an den Griffen ändert die Größe (<code>Umschalt</code> behält die Proportionen).
+  Die Pfeiltasten verschieben um einen Punkt, mit <code>Umschalt</code> um einen Rasterschritt.</li>
+<li><code>Entf</code> löscht die Auswahl (Verbinder gelöschter Formen werden mitgelöscht). <code>Strg+D</code> dupliziert, <code>Strg+C</code>, <code>Strg+X</code> und <code>Strg+V</code> kopieren,
+  schneiden aus und fügen ein – auch zwischen diesem Editor und draw.io, weil die Zwischenablage draw.io-XML enthält. Eingefügter reiner
+  Text wird ein Text.</li>
+<li>Rückgängig <code>Strg+Z</code>, Wiederholen <code>Strg+Y</code> (oder <code>Strg+Umschalt+Z</code>).</li>
+</ul>
+<h3>Gruppen, Sperren und Ebenen</h3>
+<ul>
+<li><strong>Gruppieren</strong> (<code>Strg+G</code>, im Formatbereich) fasst die gewählten Formen und Verbinder zusammen: ein Klick auf eine davon wählt die
+  ganze Gruppe, die sich dann gemeinsam verschiebt; <code>Alt</code>+Klick wählt ein einzelnes Mitglied. <strong>Gruppierung aufheben</strong>
+  (<code>Strg+Umschalt+G</code>) trennt sie wieder.</li>
+<li><strong>Sperren</strong> (<code>Strg+L</code>) fixiert die Auswahl: gesperrte Objekte lassen sich nicht versehentlich auswählen, verschieben oder löschen
+  (Klicks gehen durch sie hindurch). <strong>Alle entsperren</strong> im Bereich <em>Diagramm</em> (nichts ausgewählt) oder <code>Strg+Umschalt+L</code> gibt sie frei.</li>
+<li><strong>Ebenen</strong> (im Bereich <em>Diagramm</em>, oberste Ebene zuerst): ◉ wählt die Ebene für neue Formen, 👁 zeigt oder verbirgt eine Ebene
+  (verborgene Ebenen werden auch nicht exportiert oder gedruckt), 🔒 sperrt sie, ▲ ▼ ändern die Reihenfolge, ein Doppelklick benennt sie
+  um, × löscht sie (ihr Inhalt kommt auf die Ebene darunter), <strong>+ Ebene hinzufügen</strong> legt eine an. Bei mehreren Ebenen verschiebt
+  <strong>Auf Ebene verschieben</strong> im Formatbereich die Auswahl.</li>
+</ul>
+<p>Gruppen, Sperren und Ebenen werden in der draw.io-Datei gespeichert und von draw.io verstanden.</p>
+<h3>Automatisch anordnen und Mermaid</h3>
+<p><strong>Automatisch anordnen</strong> (im Formatbereich, wenn nichts ausgewählt ist – oder bei mehreren ausgewählten Formen nur für diese)
+ordnet die Formen in Ebenen entlang ihrer Verbinder an: von oben nach unten, von links nach rechts, von unten nach oben oder von
+rechts nach links. Verbinder, die gegen diese Richtung zurückführen, werden seitlich herumgeführt. Rückgängig stellt die vorherige
+Anordnung wieder her.</p>
+<p><strong>Mermaid einfügen…</strong> wandelt ein <a href="https://mermaid.js.org">Mermaid</a>-Flussdiagramm in Formen und Verbinder um und ordnet sie an,
+zum Beispiel:</p>
+<ac:structured-macro ac:name="code"><ac:plain-text-body><![CDATA[flowchart TD
+  A[Start] --> B{OK?}
+  B -->|ja| C([Fertig])
+  B -- nein --> D[(Datenbank)]
+  D -.-> A]]></ac:plain-text-body></ac:structured-macro>
+<p>Unterstützt werden die Richtung (<code>TD</code>/<code>TB</code>, <code>LR</code>, <code>BT</code>, <code>RL</code>), die Knotenformen <code>[ ]</code> Rechteck, <code>( )</code> abgerundet, <code>([ ])</code> Start/Ende,
+<code>[( )]</code> Zylinder, <code>(( ))</code> Kreis, <code>{ }</code> Entscheidung, <code>{{ }}</code> Sechseck, <code>[/ /]</code> Parallelogramm, Beschriftungen in Anführungszeichen und
+<code>&lt;br&gt;</code>, die Verbindungen <code>--&gt;</code>, <code>---</code>, <code>-.-&gt;</code> (gestrichelt), <code>==&gt;</code> (dick), <code>&lt;--&gt;</code>, <code>--o</code>, <code>--x</code>, Beschriftungen als <code>--&gt;|Text|</code> oder
+<code>-- Text --&gt;</code>, Ketten und <code>A &amp; B --&gt; C</code>. Untergraphen, Stile und Klassen werden ignoriert; andere Mermaid-Diagrammarten (Sequenz,
+Klassen, …) lassen sich nicht importieren.</p>
+<h2>Formatbereich</h2>
+<p>Der Bereich rechts zeigt die Einstellungen der Auswahl:</p>
+<table>
+<thead>
+<tr>
+<th>Abschnitt</th>
+<th>Einstellungen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stil</td>
+<td>Formtyp, Füllung (oder keine), Linienfarbe (oder keine), Linienbreite, gestrichelt, Deckkraft</td>
+</tr>
+<tr>
+<td>Verbinder</td>
+<td>Linienführung (gerade, gewinkelt, gebogen), Pfeil am Anfang und am Ende (keiner, klassisch, offen, Raute, Oval)</td>
+</tr>
+<tr>
+<td>Text</td>
+<td>Schriftgröße und -farbe, fett, kursiv, waagrechte und senkrechte Ausrichtung</td>
+</tr>
+<tr>
+<td>Position und Größe</td>
+<td>X, Y, Breite und Höhe einer einzelnen Form</td>
+</tr>
+<tr>
+<td>Anordnen</td>
+<td>nach vorne, nach hinten, duplizieren, löschen; bei mehreren Formen: links/mittig/rechts/oben/Mitte/unten ausrichten, verteilen</td>
+</tr>
+</tbody>
+</table>
+<p>Ohne Auswahl schaltet der Bereich Raster und Einrasten ein oder aus.</p>
+<h2>Seiten und Ansicht</h2>
+<p>Die Leiste unten zeigt die Seiten: Klick wechselt, Doppelklick benennt um, <strong>+</strong> fügt eine Seite hinzu, <strong>×</strong> löscht die aktuelle Seite.
+<code>Strg</code> + Mausrad (oder Zweifingergeste) zoomt, das Mausrad verschiebt, <code>Leertaste</code> halten oder das Hand-Werkzeug verschiebt die Ansicht.
+<strong>Einpassen</strong> (<code>Strg+0</code>) zeigt die ganze Seite.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Rückgängig</td>
+</tr>
+<tr>
+<td><code>Strg+Y</code> / <code>Strg+Umschalt+Z</code></td>
+<td>Wiederholen</td>
+</tr>
+<tr>
+<td><code>Strg+X</code> / <code>Strg+C</code> / <code>Strg+V</code></td>
+<td>Ausschneiden, kopieren, einfügen</td>
+</tr>
+<tr>
+<td><code>Strg+A</code></td>
+<td>Alles auswählen</td>
+</tr>
+<tr>
+<td><code>Strg+D</code></td>
+<td>Duplizieren</td>
+</tr>
+<tr>
+<td><code>Strg+G</code> / <code>Strg+Umschalt+G</code></td>
+<td>Gruppieren / Gruppierung aufheben</td>
+</tr>
+<tr>
+<td><code>Strg+L</code> / <code>Strg+Umschalt+L</code></td>
+<td>Auswahl sperren / alle entsperren</td>
+</tr>
+<tr>
+<td><code>Entf</code> / <code>Rücktaste</code></td>
+<td>Löschen</td>
+</tr>
+<tr>
+<td><code>F2</code> / <code>Eingabe</code></td>
+<td>Text bearbeiten</td>
+</tr>
+<tr>
+<td><code>←</code> / <code>→</code> / <code>↑</code> / <code>↓</code></td>
+<td>Um 1 verschieben (mit Umschalt: um das Raster)</td>
+</tr>
+<tr>
+<td><code>Strg+]</code> / <code>Strg+[</code></td>
+<td>Nach vorne / nach hinten</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Auswahl aufheben, zurück zum Auswahlwerkzeug</td>
+</tr>
+</tbody>
+</table>
+<h3>Werkzeuge</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>V</code> / <code>H</code></td>
+<td>Auswählen / Hand</td>
+</tr>
+<tr>
+<td><code>A</code> / <code>L</code></td>
+<td>Verbinder</td>
+</tr>
+<tr>
+<td><code>T</code></td>
+<td>Text</td>
+</tr>
+<tr>
+<td><code>R</code> / <code>O</code> / <code>D</code> / <code>N</code></td>
+<td>Rechteck / Ellipse / Raute / Notiz</td>
+</tr>
+</tbody>
+</table>
+<h3>Ansicht</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg++</code> / <code>Strg+-</code></td>
+<td>Vergrößern / verkleinern</td>
+</tr>
+<tr>
+<td><code>Strg+0</code></td>
+<td>An das Fenster anpassen</td>
+</tr>
+<tr>
+<td><code>Leertaste+Ziehen</code></td>
+<td>Ansicht verschieben</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Formen stehen in einer Leiste unter der Zeichnung; Tippen fügt eine Form ein. <strong>Format</strong> öffnet den Formatbereich. Zwei Finger zoomen
+und verschieben die Ansicht.</p>

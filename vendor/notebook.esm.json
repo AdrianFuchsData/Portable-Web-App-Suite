@@ -1,0 +1,7 @@
+{
+  "out": "esm/notebook",
+  "packages": {
+    "marked": "16",
+    "dompurify": "3"
+  }
+}

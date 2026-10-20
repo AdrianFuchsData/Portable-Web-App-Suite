@@ -1,0 +1,231 @@
+<!-- Generated from docs/de/apps/reveal.md by tools/build_docs.py - do not edit. Confluence page title: Web-Folien -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p><code>reveal.html</code> erstellt Präsentationen mit <a href="https://revealjs.com">reveal.js</a>, dem HTML-Präsentationsframework (das auch der
+Folienexport von Jupyter verwendet). Präsentationen werden als <strong>eine HTML-Datei</strong> gespeichert, die in jedem Browser läuft –
+offline, ohne Installation – und wieder bearbeitet werden kann.</p>
+<h2>Folien</h2>
+<p>Die Liste links zeigt die Folien. reveal.js ordnet sie zweidimensional an: Hauptfolien von links nach rechts und
+<strong>Unterfolien</strong> unter einer Hauptfolie (in der Liste eingerückt, nummeriert 2.1, 2.2, …).</p>
+<table>
+<thead>
+<tr>
+<th>Schaltfläche</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>+ Folie</td>
+<td>fügt nach der aktuellen eine Folie ein: Titel, Titel und Liste, Abschnitt, Bild, Code, Zitat, leer, Markdown oder HTML</td>
+</tr>
+<tr>
+<td>+ Unterfolie</td>
+<td>fügt unter der aktuellen Folie eine Unterfolie ein</td>
+</tr>
+<tr>
+<td>↑ ↓</td>
+<td>verschieben die Folie (innerhalb ihrer Ebene)</td>
+</tr>
+<tr>
+<td>⇥ ⇤</td>
+<td>machen eine Hauptfolie zur Unterfolie der vorigen Folie bzw. eine Unterfolie zur Hauptfolie</td>
+</tr>
+<tr>
+<td>⧉ 🗑</td>
+<td>duplizieren bzw. löschen die Folie</td>
+</tr>
+</tbody>
+</table>
+<p>Mit der Maus lassen sich Folien in der Liste auch <strong>ziehen</strong>: Ablegen auf einer Folie setzt die gezogene Folie davor (auf derselben
+Ebene); Ablegen auf der rechten Hälfte einer Hauptfolie macht sie zu deren letzter Unterfolie. Eine Hauptfolie nimmt ihre Unterfolien
+mit.</p>
+<h2>Eine Folie bearbeiten</h2>
+<p>In der Mitte erscheint die Folie so, wie reveal.js sie zeigt. <strong>Klicken</strong> Sie ein Element an, um es auszuwählen;
+<strong>doppelklicken</strong> Sie einen Text (oder drücken Sie <code>Eingabe</code>), um ihn direkt dort zu bearbeiten; die Leiste darüber bietet fett,
+kursiv, unterstrichen, durchgestrichen, Code, Link, Farbe und Formatierung entfernen. <code>Esc</code> oder <strong>Fertig</strong> beendet die Bearbeitung.</p>
+<p><strong>+ Element</strong> fügt nach dem gewählten Element eine Überschrift, einen Text, eine Liste, ein Bild, Code, ein Zitat, eine Tabelle,
+ein Diagramm oder einen HTML-Block ein. Der Reiter <strong>Element</strong> rechts bearbeitet das gewählte Element:</p>
+<ul>
+<li>Überschriftenebene und „Text an die Folie anpassen“, nummerierte Listen, Bilder (Datei, Alternativtext, Breite, restliche Höhe
+  füllen), Code (Sprache mit Syntaxhervorhebung, Zeilennummern und hervorgehobene Schritte wie <code>1|2-3|5</code>), Tabellenzeilen und
+  -spalten, HTML;</li>
+<li><strong>Einblenden (Fragment)</strong>: Das Element erscheint auf Klick mit einem Effekt (einblenden, von unten, wachsen, schrumpfen,
+  hervorheben, …); Listen können ihre Punkte einzeln zeigen; die Reihenfolge bestimmt, was zuerst kommt;</li>
+<li><strong>Auto-Animate-ID</strong>: Elemente mit gleicher ID auf aufeinanderfolgenden Auto-Animate-Folien gehen fließend ineinander über;</li>
+<li>Ausrichtung, Größe und Farbe; verschieben, duplizieren und löschen.</li>
+</ul>
+<p>Eine Folie kann auch in <strong>Markdown</strong> oder <strong>HTML</strong> geschrieben werden (Reiter Folie, Inhalt); Markdown unterstützt die
+reveal.js-Schreibweise, zum Beispiel <code>&lt;!-- .element: class="fragment" --&gt;</code>.</p>
+<h3>Diagramme</h3>
+<p>Ein <strong>Diagramm</strong>-Block zeichnet ein Mermaid-Flussdiagramm, das im Inspektor eingegeben wird, zum Beispiel <code>flowchart LR</code> und Zeilen wie
+<code>A[Idee] --&gt; B{Gut?}</code> und <code>B --&gt;|ja| C([Folien])</code>. Kästen, abgerundete Kästen, Entscheidungen, Start/Ende, Datenbanken, Sechsecke und Kreise
+werden automatisch angeordnet, wie beim <em>Mermaid-Import</em> des Diagrammeditors; andere Mermaid-Diagrammarten zeigen einen Fehler. Die Zeichnung
+wird als SVG in der Präsentation gespeichert, braucht also keine Mermaid-Bibliothek und funktioniert offline; sie übernimmt die Textfarbe des
+Designs. Beim Speichern als PowerPoint werden Diagramme ausgelassen.</p>
+<h3>Formeln</h3>
+<p>Mathematische Formeln schreiben Sie in TeX (LaTeX-Schreibweise) in jedem Text, in Markdown oder HTML: <code>$$ … $$</code> oder
+<code>\[ … \]</code> für eine Formel in eigener Zeile, <code>\( … \)</code> innerhalb eines Satzes, zum Beispiel <code>$$\int_0^1 x^2\,dx = \tfrac13$$</code>
+oder <code>Pythagoras: \(a^2 + b^2 = c^2\)</code>. Ein einzelnes <code>$</code> bleibt ein gewöhnliches Dollarzeichen. Die Formeln werden mit KaTeX
+in der Vorschau und in der gespeicherten Präsentation gesetzt, auch offline; nur Präsentationen mit Formeln enthalten KaTeX
+(etwa 0,6 MB). Beim Bearbeiten eines Textes mit Formel bearbeiten Sie ihren TeX-Quelltext.</p>
+<h2>Folien- und Präsentationseinstellungen</h2>
+<ul>
+<li>Reiter <strong>Folie</strong>: Hintergrund (Farbe, CSS-Verlauf, Bild mit Größe und Deckkraft), Übergang und Geschwindigkeit, Auto-Animate,
+  Sichtbarkeit (versteckt oder nicht gezählt), senkrechte Position, automatisches Weiterschalten, <strong>Sprechernotizen</strong>, CSS-Klasse.</li>
+<li>Reiter <strong>Präsentation</strong>: Titel, Design (14 reveal.js-Designs), Code-Farben, Übergänge, Foliengröße (z. B. 16:9),
+  Pfeil-Steuerung, Fortschrittsbalken, Foliennummern, senkrechtes Zentrieren, Endlosschleife, Foliennummer in der Adresse,
+  Navigationsart, Ansicht als scrollende Seite, automatisches Weiterschalten, Sprache und eigenes CSS.</li>
+</ul>
+<h2>Präsentieren</h2>
+<p><strong>▶ Präsentieren</strong> (<code>F5</code>) zeigt die Präsentation ab der aktuellen Folie im Vollbild. Tasten: Pfeile oder <code>Leertaste</code> zum Blättern,
+<code>O</code> oder <code>Esc</code> Übersicht, <code>S</code> Referentenansicht mit Notizen und Uhr, <code>F</code> Vollbild. <strong>↗</strong> präsentiert in einem neuen Fenster
+(praktisch mit einem zweiten Bildschirm), <strong>🖨</strong> öffnet die Druckansicht zum Speichern als PDF (im Druckdialog „Als PDF
+speichern“ wählen) – mit <em>Drucken / PDF mit Sprechernotizen</em> folgt auf jede Folie eine Seite mit ihren Notizen.</p>
+<h2>Dateien</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Öffnen</th>
+<th>Speichern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>reveal.js-Präsentation (<code>.html</code>)</td>
+<td>ja – eigene Dateien vollständig, andere reveal.js-Präsentationen mit ihren Folien als HTML</td>
+<td>ja (Speichern, <code>Strg+S</code>)</td>
+</tr>
+<tr>
+<td>Markdown (<code>.md</code>)</td>
+<td>ja – <code>---</code> trennt Folien, <code>--</code> Unterfolien, <code>Note:</code> beginnt Sprechernotizen</td>
+<td>Speichern unter → Markdown (nur Texte)</td>
+</tr>
+<tr>
+<td>Jupyter-Notebook (<code>.ipynb</code>)</td>
+<td>ja – die Folientypen der Zellen (slide, subslide, fragment, skip, notes) wie bei <code>jupyter nbconvert --to slides</code></td>
+<td>–</td>
+</tr>
+<tr>
+<td>PowerPoint (<code>.pptx</code>)</td>
+<td>ja – in Blöcke umgewandelt: Titel, formatierte Texte, Listen, Bilder, Tabellen, Notizen, Hintergründe, Übergänge, Eingangsanimationen als Fragmente</td>
+<td>Speichern unter → PowerPoint (Blöcke von oben nach unten angeordnet)</td>
+</tr>
+</tbody>
+</table>
+<p>Markdown-Dateien und Notebooks werden umgewandelt; Speichern erzeugt eine neue HTML-Präsentation. Im Python-Notebook zeigt
+<strong>Folien</strong> für jede Zelle einen Folientyp, und <strong>🎞️ Folien</strong> öffnet das Notebook hier. Rückgängig und Wiederholen (<code>Strg+Z</code>,
+<code>Strg+Y</code>) wirken auf alle Änderungen.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Rückgängig</td>
+</tr>
+<tr>
+<td><code>Strg+Y</code> / <code>Strg+Umschalt+Z</code></td>
+<td>Wiederholen</td>
+</tr>
+<tr>
+<td><code>Eingabe</code></td>
+<td>Ausgewähltes Element bearbeiten</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Bearbeitung beenden</td>
+</tr>
+<tr>
+<td><code>Entf</code> / <code>Rücktaste</code></td>
+<td>Ausgewähltes Element löschen</td>
+</tr>
+</tbody>
+</table>
+<h3>Vorführen</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F5</code></td>
+<td>Vorführen</td>
+</tr>
+<tr>
+<td><code>→</code> / <code>←</code> / <code>Leertaste</code></td>
+<td>Nächster / vorheriger Schritt</td>
+</tr>
+<tr>
+<td><code>↑</code> / <code>↓</code></td>
+<td>Vertikale Folien</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>Referentenansicht mit Notizen</td>
+</tr>
+<tr>
+<td><code>O</code> / <code>Esc</code></td>
+<td>Übersicht aller Folien</td>
+</tr>
+<tr>
+<td><code>F</code></td>
+<td>Vollbild</td>
+</tr>
+<tr>
+<td><code>B</code></td>
+<td>Schwarzer Bildschirm (Pause)</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Vorschau nutzt die volle Breite; ‹ und › wechseln die Folie, <strong>Folien</strong> öffnet die Folienliste und <strong>Bereiche</strong> die
+Einstellungen. Doppeltippen auf einen Text bearbeitet ihn.</p>

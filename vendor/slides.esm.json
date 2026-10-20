@@ -1,0 +1,6 @@
+{
+  "out": "esm/slides",
+  "packages": {
+    "moveable": "0.53"
+  }
+}

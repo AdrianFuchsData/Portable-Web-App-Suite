@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "ag-psd": "ag-psd.js",
+    "base64-js": "base64-js.js",
+    "pako": "pako.js"
+  }
+}

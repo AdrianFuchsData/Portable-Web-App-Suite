@@ -1,0 +1,26 @@
+{
+  "dictionary-de": {
+    "version": "3.0.0",
+    "license": "(GPL-2.0 OR GPL-3.0)"
+  },
+  "dictionary-en": {
+    "version": "4.0.0",
+    "license": "(MIT AND BSD)"
+  },
+  "emscripten-wasm-loader": {
+    "version": "3.0.3",
+    "license": "MIT"
+  },
+  "getroot": {
+    "version": "1.0.0",
+    "license": "MIT"
+  },
+  "hunspell-asm": {
+    "version": "4.0.2",
+    "license": "MIT"
+  },
+  "nanoid": {
+    "version": "2.1.11",
+    "license": "MIT"
+  }
+}

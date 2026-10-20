@@ -1,0 +1,2 @@
+/* @radix-ui/react-arrow@1.1.16 (jsDelivr +esm) */
+import*as p from"react";import{Primitive as s}from"@radix-ui/react-primitive";import{jsx as e}from"react/jsx-runtime";var c=Object.defineProperty,d=(o,r)=>c(o,"name",{value:r,configurable:!0}),t=p.forwardRef(d(function(r,i){const{children:n,width:a=10,height:f=5,...m}=r;return e(s.svg,{...m,ref:i,width:a,height:f,viewBox:"0 0 30 10",preserveAspectRatio:"none",children:r.asChild?n:e("polygon",{points:"0,0 30,0 15,10"})})},"Arrow"));export{t as Arrow,t as Root};

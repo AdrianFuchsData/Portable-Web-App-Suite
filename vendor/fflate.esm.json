@@ -1,0 +1,6 @@
+{
+  "out": "esm/fflate",
+  "packages": {
+    "fflate": "0.8"
+  }
+}

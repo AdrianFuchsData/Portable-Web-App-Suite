@@ -1,0 +1,27 @@
+{
+  "files": {
+    "archive": "../../../dist/archive.html",
+    "audioeditor": "../../../dist/audioeditor.html",
+    "barcode": "../../../dist/barcode.html",
+    "calendar": "../../../dist/calendar.html",
+    "dbtool": "../../../dist/dbtool.html",
+    "diagram": "../../../dist/diagram.html",
+    "document": "../../../dist/document.html",
+    "ftp": "../../../dist/ftp.html",
+    "hexeditor": "../../../dist/hexeditor.html",
+    "http": "../../../dist/http.html",
+    "imageeditor": "../../../dist/imageeditor.html",
+    "keepass": "../../../dist/keepass.html",
+    "mail": "../../../dist/mail.html",
+    "mediaplayer": "../../../dist/mediaplayer.html",
+    "notebook": "../../../dist/notebook.html",
+    "pdfviewer": "../../../dist/pdfviewer.html",
+    "presentation": "../../../dist/presentation.html",
+    "reveal": "../../../dist/reveal.html",
+    "spreadsheet": "../../../dist/spreadsheet.html",
+    "ssh": "../../../dist/ssh.html",
+    "texteditor": "../../../dist/texteditor.html",
+    "videoeditor": "../../../dist/videoeditor.html",
+    "webinspector": "../../../dist/webinspector.html"
+  }
+}

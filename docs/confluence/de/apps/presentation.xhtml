@@ -1,0 +1,180 @@
+<!-- Generated from docs/de/apps/presentation.md by tools/build_docs.py - do not edit. Confluence page title: Präsentation -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Der Präsentationseditor (<code>presentation.html</code>) erstellt und bearbeitet Folienpräsentationen wie PowerPoint oder LibreOffice Impress: Textfelder,
+Formen, Bilder und Tabellen auf Folien und das Vorführen im Vollbild. Dateien sind PowerPoint-Präsentationen (<code>.pptx</code>).</p>
+<h2>Dateien</h2>
+<ul>
+<li><strong>Öffnen</strong> (<code>Strg+O</code>) öffnet eine <code>.pptx</code>-Datei (auch Vorlagen <code>.potx</code> und Bildschirmpräsentationen <code>.ppsx</code>, die als neue <code>.pptx</code> gespeichert
+  werden); die Datei kann auch auf das Fenster gezogen werden. <strong>Neu</strong> beginnt eine leere Präsentation.</li>
+<li><strong>Speichern</strong> (<code>Strg+S</code>) schreibt die <code>.pptx</code>-Datei: in Chrome/Edge am Desktop direkt in die Datei, in Firefox und unter Android als Download
+  (ersetzen Sie die ursprüngliche Datei damit). <strong>Speichern unter</strong> (<code>Strg+Umschalt+S</code>) fragt nach einem neuen Namen.</li>
+<li><strong>Drucken / PDF</strong> druckt jede Folie auf eine eigene Seite; wählen Sie im Druckdialog „Als PDF speichern“, um ein PDF zu erhalten.</li>
+</ul>
+<p>Folien aus PowerPoint behalten Texte, Schriften, Farben, Positionen, Formen, Bilder und Tabellen, auch die von Folienlayouts und -mastern geerbte
+Formatierung, die Notizen, Folienübergänge und Eingangsanimationen. Andere Animationseffekte, Diagramme, SmartArt und Videos werden nicht
+unterstützt. Behalten Sie die ursprüngliche Datei, bis Sie das Ergebnis geprüft haben.</p>
+<p>Auch <strong>Web-Folien</strong> (reveal.js-Präsentationen der App <em>Web-Folien</em>, <code>.html</code>, oder reveal.js-Markdown, <code>.md</code>) lassen sich öffnen: ihre Blöcke
+werden von oben nach unten auf PowerPoint-Folien angeordnet (Überschriften, Texte, Listen, Code, Zitate, Bilder, Tabellen), Unterfolien folgen
+ihrer Hauptfolie, Notizen, Hintergrundfarben, Übergänge und Fragmente (als Eingangsanimationen) werden übernommen, und Text auf dunklem
+Hintergrund wird weiß. Speichern erzeugt dann eine <code>.pptx</code>-Datei neben dem Original. In der App <em>Web-Folien</em> lassen sich ebenso
+PowerPoint-Dateien öffnen und Web-Folien als <code>.pptx</code> speichern.</p>
+<h2>Folien</h2>
+<p>Die Miniaturansichten links zeigen alle Folien: Ein Klick bearbeitet eine Folie, Ziehen an eine andere Stelle ändert die Reihenfolge. <strong>+ Neue
+Folie</strong> fügt nach der aktuellen Folie eine leere ein. Ohne gewähltes Element legt der Bereich rechts den <strong>Hintergrund</strong> der Folie und die
+<strong>Foliengröße</strong> (16:9 oder 4:3) fest und dupliziert, löscht oder verschiebt die Folie (↑ ↓). <code>Bild auf</code> und <code>Bild ab</code> wechseln die Folie.</p>
+<h2>Elemente</h2>
+<ul>
+<li><strong>Textfeld</strong>, <strong>Form</strong> (Rechteck, abgerundetes Rechteck, Ellipse, Dreieck, Raute, Sechseck, Pfeil, Stern, Linie), <strong>Bild</strong> (aus einer Datei) und
+  <strong>Tabelle</strong> (3 × 3) fügen ein Element in der Mitte der Folie ein.</li>
+<li>Ein Klick wählt ein Element; Ziehen verschiebt es, Ziehen an den Griffen ändert die Größe, Ziehen am runden Griff dreht es. Hilfslinien helfen
+  beim Ausrichten an der Folie und an anderen Elementen. Pfeiltasten verschieben um einen Punkt (<code>Umschalt</code>: 10 Punkte).</li>
+<li>Doppelklick auf einen Text (oder <code>Eingabe</code>) bearbeitet ihn; Doppelklick auf eine Tabellenzelle bearbeitet die Zelle. Ein Klick daneben beendet das
+  Bearbeiten.</li>
+<li>Der Bereich rechts zeigt Position, Größe und Drehung, Füll- und Linienfarbe, Schrift, Größe und Farbe des Texts, fett, kursiv, unterstrichen,
+  waagrechte und senkrechte Ausrichtung sowie <strong>Nach vorne</strong>, <strong>Nach hinten</strong>, <strong>Duplizieren</strong> und <strong>Löschen</strong>. Während ein Text bearbeitet wird,
+  wirken fett, kursiv, unterstrichen, Schrift und Farbe auf die markierten Wörter.</li>
+<li><code>Strg+C</code>, <code>Strg+X</code>, <code>Strg+V</code> kopieren, schneiden aus und fügen Elemente ein, <code>Strg+D</code> dupliziert, <code>Entf</code> löscht, <code>Strg+Z</code>/<code>Strg+Y</code> machen rückgängig
+  und wiederholen.</li>
+</ul>
+<h2>Vorführen</h2>
+<p><strong>▶ Vorführen</strong> (oder <code>F5</code> ab der ersten Folie, <code>Umschalt+F5</code> ab der aktuellen Folie) zeigt die Präsentation im Vollbild. Nächste Folie: Klick, <code>→</code>,
+<code>↓</code>, <code>Bild ab</code>, <code>Leertaste</code>, <code>Eingabe</code> oder auf Touch-Geräten nach links wischen; vorherige Folie: <code>←</code>, <code>↑</code>, <code>Bild auf</code>, <code>Rücktaste</code> oder nach
+rechts wischen. <code>Pos1</code> und <code>Ende</code> springen zur ersten und letzten Folie, <code>Esc</code> beendet die Vorführung.</p>
+<p><strong>Übergänge</strong>: Ohne gewähltes Element legt <em>Übergang</em> im Bereich rechts fest, wie die Folie erscheint: Verblassen, Schieben, Wischen,
+Aufdecken oder Zoom, die Richtung (Schieben, Wischen, Aufdecken), die Dauer und wahlweise <em>Nächste Folie nach</em> einer Anzahl Sekunden (sonst kommt
+die nächste Folie per Klick). <strong>Auf alle Folien anwenden</strong> überträgt den Übergang auf jede Folie.</p>
+<p><strong>Animationen</strong>: Wählen Sie ein Element und einen <em>Eingang</em> (Erscheinen, Einblenden, Hineinfliegen, Zoom) sowie den Start: <em>bei Klick</em>, <em>mit
+vorheriger</em> oder <em>nach vorheriger</em>. In der Vorführung warten die Elemente auf ihren Klick; zurückblättern blendet sie wieder aus. Ohne gewähltes
+Element listet der Bereich die Animationen der Folie in der Abspielreihenfolge (↑ ↓ ändern die Reihenfolge, × entfernt eine). Übergänge und
+Animationen werden in der PPTX-Datei gespeichert und aus PowerPoint-Dateien gelesen (andere PowerPoint-Effekte werden als der nächstliegende
+gelesen, z. B. Teilen als Wischen; Hervorhebungs- und Ausgangseffekte werden nicht übernommen).</p>
+<p><strong>Notizen</strong>: Ohne gewähltes Element enthält der Bereich rechts ein Feld <em>Notizen</em> für die aktuelle Folie. Notizen werden in der PPTX-Datei
+gespeichert und aus PowerPoint-Dateien gelesen.</p>
+<p><strong>🎤 Referentenansicht</strong> (<code>Alt+F5</code>) öffnet die Folien in einem zweiten Fenster – ziehen Sie es auf den Beamer oder Zweitbildschirm und schalten
+Sie es dort auf Vollbild (<code>F11</code>) – und zeigt in diesem Fenster eine Konsole: aktuelle Folie, nächste Folie, die Notizen in großer Schrift, die
+Zeit seit dem Start (⏸ hält sie an, ⟲ beginnt neu), die Uhrzeit und die Foliennummer. Die Tasten oben wirken in beiden Fenstern; <strong>Beenden</strong> (oder
+<code>Esc</code>) schließt das zweite Fenster. Blockiert der Browser das zweite Fenster, erlauben Sie Pop-ups für die Seite.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Rückgängig</td>
+</tr>
+<tr>
+<td><code>Strg+Y</code> / <code>Strg+Umschalt+Z</code></td>
+<td>Wiederholen</td>
+</tr>
+<tr>
+<td><code>Strg+X</code> / <code>Strg+C</code> / <code>Strg+V</code></td>
+<td>Ausschneiden, kopieren, einfügen</td>
+</tr>
+<tr>
+<td><code>Strg+D</code></td>
+<td>Element duplizieren</td>
+</tr>
+<tr>
+<td><code>Entf</code> / <code>Rücktaste</code></td>
+<td>Element löschen</td>
+</tr>
+<tr>
+<td><code>Eingabe</code> / <code>F2</code></td>
+<td>Text bearbeiten</td>
+</tr>
+<tr>
+<td><code>←</code> / <code>→</code> / <code>↑</code> / <code>↓</code></td>
+<td>Element um 1 verschieben (mit Umschalt: 10)</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Auswahl aufheben</td>
+</tr>
+<tr>
+<td><code>Bild↑</code> / <code>Bild↓</code></td>
+<td>Vorherige / nächste Folie</td>
+</tr>
+</tbody>
+</table>
+<h3>Vorführen</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F5</code> / <code>Umschalt+F5</code></td>
+<td>Vorführen vom Anfang / ab der aktuellen Folie</td>
+</tr>
+<tr>
+<td><code>Alt+F5</code></td>
+<td>Referentenansicht (Notizen, Zeit, nächste Folie)</td>
+</tr>
+<tr>
+<td><code>→</code> / <code>Leertaste</code> / <code>Eingabe</code> / <code>N</code></td>
+<td>Nächste Folie</td>
+</tr>
+<tr>
+<td><code>←</code> / <code>Rücktaste</code> / <code>P</code></td>
+<td>Vorherige Folie</td>
+</tr>
+<tr>
+<td><code>Pos1</code> / <code>Ende</code></td>
+<td>Erste / letzte Folie</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Vorführung beenden</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Miniaturansichten stehen unter der Folie; <strong>Format</strong> öffnet den Bereich rechts. Das Vorführen funktioniert mit Wischgesten.</p>

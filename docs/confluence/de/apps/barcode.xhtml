@@ -1,0 +1,79 @@
+<!-- Generated from docs/de/apps/barcode.md by tools/build_docs.py - do not edit. Confluence page title: Barcodes -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Die Barcode-Anwendung (<code>barcode.html</code>) liest QR-Codes und andere Barcodes mit der Kamera oder aus Bildern und erstellt
+sie – für Links, WLAN-Zugänge, Kontakte, E-Mails und beliebigen Text. Alles läuft im Browser; Bilder und Inhalte werden
+nirgendwohin gesendet.</p>
+<p>Unterstützte Codes: <strong>QR-Code</strong>, Micro-QR-Code, <strong>Data Matrix</strong>, <strong>Aztec</strong>, <strong>PDF417</strong> (2D) sowie <strong>Code 128</strong>, Code 39,
+Code 93, <strong>EAN-13</strong>, EAN-8, UPC-A, UPC-E, ITF und Codabar (1D-Strichcodes). Beim Lesen werden weitere Formate erkannt
+(etwa DataBar, MaxiCode, rMQR).</p>
+<h2>Lesen</h2>
+<ul>
+<li><strong>📷 Kamera</strong> startet die Kamera (der Browser fragt nach der Erlaubnis); Codes im Bild werden grün markiert und
+  aufgelistet, sobald sie erkannt sind. <strong>🔄 Kamera wechseln</strong> wechselt zwischen den Kameras des Geräts; <strong>⏹ Kamera beenden</strong>
+  beendet sie.</li>
+<li><strong>🖼 Bild öffnen…</strong> (<code>Strg+O</code>) liest Codes aus Bilddateien (PNG, JPEG, GIF, WebP, BMP, SVG, AVIF). Sie können Bilder auch
+  auf das Fenster ziehen oder aus der Zwischenablage einfügen (<code>Strg+V</code>), etwa ein Bildschirmfoto. Mehrere Codes in einem
+  Bild werden gemeinsam gefunden.</li>
+<li>Jeder Code erscheint einmal in der Liste mit seinem Format und seiner <strong>Inhaltsart</strong>: Link, WLAN, Kontakt
+  (vCard/MeCard), E-Mail, Telefonnummer, SMS, Ort, Einrichtung eines Einmalpassworts (<code>otpauth://</code>), Termin oder Text. Die
+  Details (etwa Netzwerkname und Passwort) stehen unter dem Text.</li>
+<li>Aktionen: <strong>Kopieren</strong> des Textes, <strong>Link öffnen</strong> (nur <code>http</code>/<code>https</code>, in einem neuen Tab), WLAN-Passwort kopieren,
+  <strong>Kontakt speichern (.vcf)</strong>, <strong>Termin speichern (.ics)</strong> und <strong>Im Generator bearbeiten</strong>, das den Inhalt in den Reiter
+  <em>Erstellen</em> übernimmt.</li>
+</ul>
+<ac:structured-macro ac:name="info"><ac:rich-text-body><p>Prüfen Sie Links, bevor Sie sie öffnen – ein QR-Code kann überallhin führen. Die Anwendung öffnet Links nie
+von selbst.</p></ac:rich-text-body></ac:structured-macro>
+<h2>Erstellen</h2>
+<ol>
+<li>Wählen Sie den <strong>Inhalt</strong>: Text, Link, WLAN, Kontakt, E-Mail, Telefonnummer, SMS oder Ort, und füllen Sie die Felder
+   aus. Daraus entsteht der Text des Codes (etwa <code>WIFI:T:WPA;S:Home;P:geheim;;</code> oder eine vCard); <em>Inhalt</em> unter der
+   Vorschau zeigt ihn.</li>
+<li>Wählen Sie das <strong>Format</strong>. Bei QR-Codes legt die <strong>Fehlerkorrektur</strong> fest, wie viel des Codes beschädigt oder verdeckt
+   sein darf (L 7 %, M 15 %, Q 25 %, H 30 %). 1D-Codes nehmen nur bestimmte Zeichen an (EAN/UPC: Ziffern, die Prüfziffer
+   wird berechnet) – beim Wechsel wird ein Beispiel eingetragen; eine Fehlermeldung erklärt ungültige Inhalte.</li>
+<li>Stellen Sie die <strong>Modulgröße</strong> (Pixel je Quadrat bzw. Balken), die <strong>Ruhezone</strong> (weißer Rand in Modulen; Scanner brauchen
+   ihn), bei 1D-Codes die <strong>Balkenhöhe</strong> und den Text unter den Balken sowie die <strong>Farben</strong> oder einen transparenten
+   Hintergrund ein. Dunkle Codes auf hellem Grund mit genug Kontrast sind am sichersten.</li>
+</ol>
+<p>Die Vorschau wird automatisch zurückgelesen: <strong>✓ lesbar</strong> bestätigt, dass der Code gescannt werden kann. <strong>⬇ SVG</strong>
+(skalierbar, für den Druck) und <strong>⬇ PNG</strong> laden den Code herunter, <strong>Bild kopieren</strong> legt ihn in die Zwischenablage,
+<strong>🖨 Drucken</strong> druckt nur den Code.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Bilder öffnen und ihre Codes lesen</td>
+</tr>
+<tr>
+<td><code>Strg+V</code></td>
+<td>Code eines eingefügten Bildes lesen</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Zuerst wird die rückseitige Kamera verwendet; <em>Kamera wechseln</em> schaltet auf die Frontkamera. Der Generator zeigt den Code
+über dem Formular. Heruntergeladene Bilder landen im Download-Ordner des Browsers.</p>

@@ -1,0 +1,177 @@
+<!-- Generated from docs/de/apps/keepass.md by tools/build_docs.py - do not edit. Confluence page title: KeePass -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Die KeePass-Anwendung (<code>keepass.html</code>) öffnet, bearbeitet und erstellt KeePass-Passwortdatenbanken (<code>.kdbx</code>, KDBX 3.1 und 4).
+Die Dateien bleiben mit KeePass, KeePassXC, KeePassDX und anderen KeePass-Apps kompatibel. Alles läuft im Browser;
+nichts wird über das Netzwerk gesendet.</p>
+<h2>Eine Datenbank entsperren</h2>
+<ol>
+<li><strong>Datenbank wählen…</strong> wählt die <code>.kdbx</code>-Datei. Sie können die Datei (und ihre Schlüsseldatei) auch auf das Fenster ziehen.
+   In Chrome/Edge am Desktop listet <strong>Zuletzt verwendet</strong> die zuvor geöffneten Datenbanken.</li>
+<li>Geben Sie das Master-Passwort ein.</li>
+<li>Verwendet die Datenbank eine Schlüsseldatei, wählen Sie diese mit <strong>Schlüsseldatei wählen…</strong>.</li>
+<li><strong>Entsperren</strong>. Ein falsches Passwort oder eine falsche Schlüsseldatei ergibt eine Fehlermeldung.</li>
+</ol>
+<h2>Eine Datenbank anlegen</h2>
+<p><strong>Neue Datenbank anlegen</strong> fragt nach einem Namen und dem Master-Passwort (zweimal). Optional erzeugt die Anwendung auch eine
+<strong>Schlüsseldatei</strong> (<code>&lt;Name&gt;.keyx</code>), die sofort heruntergeladen wird: Bewahren Sie sie sicher auf, denn ohne sie lässt sich
+die Datenbank nicht öffnen. Die neue Datenbank wird erst gespeichert, wenn Sie <strong>Speichern</strong> wählen.</p>
+<h2>Gruppen und Einträge</h2>
+<ul>
+<li>Der linke Bereich zeigt die <strong>Gruppen</strong>. Ein Klick auf eine Gruppe zeigt ihre Einträge; ein Doppelklick (oder <strong>Umbenennen</strong>)
+  benennt sie um. <strong>Neue Gruppe</strong> legt eine Untergruppe der gewählten Gruppe an; <strong>Gruppe löschen</strong> verschiebt die Gruppe mit
+  allen Einträgen in den Papierkorb.</li>
+<li>Der mittlere Bereich listet die <strong>Einträge</strong> der Gruppe, nach Titel sortiert. Das <strong>Suchfeld</strong> durchsucht Titel, Benutzername,
+  URL, Notizen und Tags in allen Gruppen (<code>Strg+F</code>).</li>
+<li><strong>Neuer Eintrag</strong> legt in der gewählten Gruppe einen Eintrag mit einem erzeugten Passwort an.</li>
+<li>Der rechte Bereich bearbeitet den gewählten Eintrag. Alle Änderungen wirken sofort; die Schaltfläche <strong>Speichern</strong> ist
+  hervorgehoben, solange es ungespeicherte Änderungen gibt.</li>
+</ul>
+<h2>Einen Eintrag bearbeiten</h2>
+<table>
+<thead>
+<tr>
+<th>Feld</th>
+<th>Hinweise</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Titel, Benutzername, URL, Notizen</td>
+<td>⧉ kopiert den Benutzernamen; <strong>Öffnen</strong> öffnet die URL in einem neuen Tab</td>
+</tr>
+<tr>
+<td>Passwort</td>
+<td>👁 zeigt oder verbirgt es, ⧉ kopiert es; die Stärke wird in Bit angezeigt</td>
+</tr>
+<tr>
+<td>Einmalpasswort</td>
+<td>wird mit den verbleibenden Sekunden angezeigt, wenn der Eintrag ein Feld <code>otp</code> hat (<code>otpauth://totp/…</code>, wie es KeePassXC schreibt)</td>
+</tr>
+<tr>
+<td>Tags</td>
+<td>durch Kommas getrennt</td>
+</tr>
+<tr>
+<td>Läuft ab</td>
+<td>setzt ein Ablaufdatum; abgelaufene Einträge werden markiert</td>
+</tr>
+<tr>
+<td>Weitere Felder</td>
+<td>eigene Felder mit Name und Wert; 🔒 schützt ein Feld (es wird verborgen und im Speicher verschlüsselt gehalten)</td>
+</tr>
+<tr>
+<td>Anhänge</td>
+<td>Dateien hinzufügen, durch Klick auf den Namen herunterladen oder entfernen</td>
+</tr>
+<tr>
+<td>Gruppe</td>
+<td>verschiebt den Eintrag in eine andere Gruppe</td>
+</tr>
+<tr>
+<td>Verlauf</td>
+<td>frühere Versionen des Eintrags; <strong>Wiederherstellen</strong> macht eine frühere Version wieder aktuell</td>
+</tr>
+</tbody>
+</table>
+<p>Bei jeder Bearbeitung eines Eintrags wird die vorherige Version einmal im <strong>Verlauf</strong> abgelegt (nicht bei jedem Tastendruck).</p>
+<p>Kopierte Werte werden nach 30 Sekunden aus der Zwischenablage entfernt.</p>
+<p>Rückgängig (↶, <code>Strg+Z</code>) und Wiederholen (↷, <code>Strg+Y</code>) wirken auf alle Änderungen der Datenbank seit dem Entsperren: Felder, neue und gelöschte Einträge und Gruppen, Verschieben, Anhänge und Einstellungen. Tippen in ein Feld zählt als ein Schritt. Sperren löscht den Verlauf.</p>
+<p>↗ neben einem Anhang (<strong>Öffnen mit…</strong>) öffnet ihn in einer anderen Anwendung der Suite; Speichern dort ersetzt den Anhang. Speichern Sie danach die Datenbank.</p>
+<h2>Passwortgenerator</h2>
+<p>🎲 <strong>Erzeugen</strong> öffnet den Generator: Länge (4 bis 64), Kleinbuchstaben, Großbuchstaben, Ziffern, Sonderzeichen und die Option,
+ähnliche Zeichen (l, 1, O, 0) zu vermeiden. ⟳ erzeugt ein neues Passwort; <strong>Übernehmen</strong> setzt es als Passwort des Eintrags.</p>
+<h2>Papierkorb</h2>
+<p>Gelöschte Einträge und Gruppen werden in die Gruppe <strong>Papierkorb</strong> verschoben. Um einen Eintrag wiederherzustellen, wählen Sie
+ihn im Papierkorb aus und wählen im Feld <strong>Gruppe</strong> eine andere Gruppe. <strong>Papierkorb leeren</strong> löscht den Inhalt endgültig.</p>
+<h2>Speichern</h2>
+<p><strong>Speichern</strong> (<code>Strg+S</code>) schreibt die Datenbank in Chrome/Edge am Desktop direkt in die geöffnete Datei. In Firefox und unter
+Android wird die Datenbank heruntergeladen: Ersetzen Sie die ursprüngliche Datei damit. <code>Strg+Umschalt+S</code> speichert unter
+einem neuen Namen. Nach dem Schreiben prüft die Anwendung, ob sich die gespeicherte Datei wieder öffnen lässt.</p>
+<h2>Hauptschlüssel und Datenbankeinstellungen</h2>
+<p><strong>Datenbank</strong> öffnet die Einstellungen: den Namen der Datenbank und <strong>Hauptschlüssel ändern</strong> (neues Passwort und optional eine
+neue Schlüsseldatei oder das Entfernen der bisherigen). Speichern Sie die Datenbank danach; behalten Sie die alte Datei, bis Sie
+geprüft haben, dass sich die neue öffnen lässt.</p>
+<h2>Datenbanken zusammenführen</h2>
+<p><strong>⇄ Zusammenführen…</strong> verbindet eine andere <code>.kdbx</code>-Datei mit der geöffneten Datenbank (Sie geben ihr Passwort und bei Bedarf
+ihre Schlüsseldatei ein):</p>
+<ul>
+<li><strong>Eine Kopie derselben Datenbank</strong> (etwa auf einem anderen Computer oder Smartphone bearbeitet) wird <strong>abgeglichen</strong>: für jeden
+  Eintrag gewinnt die neuere Fassung, die ältere kommt in den Verlauf; neue Einträge und Gruppen werden übernommen, in einer
+  Kopie gelöschte Einträge werden gelöscht. Das entspricht „Synchronisieren“ in KeePass und KeePassXC.</li>
+<li><strong>Eine andere Datenbank</strong> wird <strong>übernommen</strong>: ihre Gruppen und Einträge werden in eine neue Gruppe mit ihrem Namen kopiert
+  (ohne Papierkorb). In der geöffneten Datenbank wird nichts verändert.</li>
+</ul>
+<p>Speichern Sie danach, um das Ergebnis zu behalten; ↶ macht das Zusammenführen rückgängig.</p>
+<h2>Passwortbericht</h2>
+<p><strong>🩺 Bericht</strong> prüft alle Einträge (außer denen im Papierkorb) und listet Probleme auf: leere Passwörter, schwache Passwörter
+(weniger als 60 Bit geschätzte Stärke, dieselbe Schätzung wie im Generator), in mehreren Einträgen verwendete Passwörter,
+abgelaufene Einträge und Passwörter, die seit mehr als einem Jahr unverändert sind (aus dem Verlauf der Einträge). Ein Klick
+öffnet den Eintrag. Die Prüfung läuft vollständig im Browser; kein Passwort verlässt das Gerät.</p>
+<h2>Sperren</h2>
+<p><strong>Sperren</strong> (<code>Strg+L</code>) schließt die Datenbank; bei ungespeicherten Änderungen ist eine Bestätigung nötig. Nach 15 Minuten ohne
+Aktivität wird die Datenbank automatisch gesperrt, außer es gibt ungespeicherte Änderungen.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+<tr>
+<td><code>Strg+L</code></td>
+<td>Sperren</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Rückgängig</td>
+</tr>
+<tr>
+<td><code>Strg+Y</code> / <code>Strg+Umschalt+Z</code></td>
+<td>Wiederholen</td>
+</tr>
+<tr>
+<td><code>Strg+F</code></td>
+<td>Suchen</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Anwendung zeigt jeweils einen Bereich: die Eintragsliste, die Gruppen (‹ <strong>Gruppen</strong>) und den Eintrag (‹ <strong>Einträge</strong> führt zurück).</p>

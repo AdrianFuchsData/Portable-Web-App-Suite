@@ -1,0 +1,76 @@
+<!-- Generated from docs/en/apps/ssh.md by tools/build_docs.py - do not edit. Confluence page title: SSH client -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The SSH client (<code>ssh.html</code>) opens terminal sessions on SSH servers and transfers files over SFTP. It works like PuTTY with an
+integrated file panel. Connections go through the <strong>local relay</strong> (see the user guide, "Network functions and the relay").</p>
+<h2>Connecting</h2>
+<ol>
+<li><strong>New connection</strong> opens the connection dialog: name, host, port (22), user and the authentication:
+   - <strong>Private key</strong>: paste the key (OpenSSH format <code>-----BEGIN OPENSSH PRIVATE KEY-----</code> or PEM) or load the key file; enter the
+     passphrase if the key is protected. Ed25519, ECDSA and RSA keys are supported.
+   - <strong>Password</strong> (also used for keyboard-interactive login).</li>
+<li>Enter the relay address and token once (they are stored with the connections).</li>
+<li><strong>Connect</strong> opens a new tab; <strong>Save connection</strong> adds the connection to <strong>Saved connections</strong> (password and passphrase only if the
+   box is ticked; a private key is always saved with the connection).</li>
+</ol>
+<h3>Host keys</h3>
+<p>When you connect to a server for the first time, the client shows the server's key fingerprint (<code>SHA256:…</code>). Compare it with the
+fingerprint the administrator gives you (<code>ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub</code> on the server):</p>
+<ul>
+<li><strong>Accept and save</strong> stores the fingerprint with the saved connection; later connections are accepted without a question.</li>
+<li><strong>Accept once</strong> connects without storing it.</li>
+<li><strong>Reject</strong> cancels the connection.</li>
+</ul>
+<p>If the fingerprint of a saved connection changes, a <strong>warning</strong> is shown — someone could be intercepting the connection. Only accept the new
+key if you know why it changed (e.g. the server was reinstalled).</p>
+<h2>Terminal</h2>
+<p>Every connection opens a tab with a terminal (xterm-compatible, colours, mouse, resizing). The coloured dot shows the state: green connected,
+yellow connecting, red closed. <strong>Reconnect</strong> opens a closed session again; × closes a tab.</p>
+<ul>
+<li>Select text to copy it with ⧉ (or the browser's copy shortcut); 📋 pastes the clipboard into the session.</li>
+<li><strong>Font size</strong> changes the size of all terminals.</li>
+<li><strong>⏺</strong> records the session from now on; a second click (<strong>⏹</strong>, showing the recorded size) stops and saves the log as a text file
+  (without colour codes). <strong>⤓</strong> saves what the terminal currently holds (including the scrollback of up to 5000 lines).</li>
+<li>On touch screens a key bar offers Esc, Tab, Ctrl (applies to the next key, e.g. Ctrl then C), the arrow keys and a few characters that are
+  hard to type on phone keyboards.</li>
+</ul>
+<h2>Files (SFTP)</h2>
+<p><strong>📁 Files</strong> opens the file panel of the session (it starts in the home directory):</p>
+<ul>
+<li>Click a folder to open it, <code>..</code> goes up; type a path and press <code>Enter</code> to jump there; ⟳ reloads.</li>
+<li>Click a file (or ⬇) to download it.</li>
+<li><strong>Upload…</strong> uploads files into the current folder; you can also drop files onto the panel.</li>
+<li><strong>New folder</strong>, ✎ rename and × delete (folders must be empty).</li>
+</ul>
+<h2>Saved connections</h2>
+<p>Saved connections and the relay settings are kept in a connections file, a <strong>KeePass database</strong> (encrypted, recommended) or a <strong>JSON file</strong>
+(not encrypted). Use <strong>Save</strong> and <strong>Open…</strong> in the left panel. In KeePass, every connection is an entry in the group
+"Portable Web App Suite/ssh" with the private key and the host key fingerprint as additional fields (the key protected).
+A click on a saved connection connects; ✎ edits and × deletes it.</p>
+<p><strong>Known host keys</strong>: the left panel lists the host key fingerprints saved with connections; × forgets one, so the next connection
+asks again (e.g. after the server was reinstalled).</p>
+<h3>Creating a key pair</h3>
+<p><strong>🔑 New key pair…</strong> creates a key for logging in without a password: Ed25519 (recommended), ECDSA P-256 or RSA 4096, with a
+comment and an optional passphrase that encrypts the private key. Afterwards the dialog shows the public key and its fingerprint:
+copy it into <code>~/.ssh/authorized_keys</code> on the server (or save it as <code>.pub</code>), save the private key (<code>id_ed25519</code>, OpenSSH format,
+usable with OpenSSH and PuTTYgen), and <strong>Use in a new connection</strong> fills it into the connection dialog. Port forwarding is not
+possible in a browser (a page cannot listen on local ports).</p>
+<p>In the file panel, ↗ (<strong>Open with…</strong>) opens a remote file in another application of the suite; saving there writes it back over SFTP.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>☰ opens the saved connections. The file panel shares the screen with the terminal (below it). Use the key bar for keys missing on the on-screen keyboard.</p>

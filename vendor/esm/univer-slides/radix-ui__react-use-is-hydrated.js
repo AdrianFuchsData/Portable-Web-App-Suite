@@ -1,0 +1,2 @@
+/* @radix-ui/react-use-is-hydrated@0.1.3 (jsDelivr +esm) */
+import*as t from"react";var c=Object.defineProperty,s=(e,r)=>c(e,"name",{value:r,configurable:!0}),a=!1;function u(){const[e,r]=t.useState(a);return t.useEffect(()=>{a||(a=!0,r(!0))},[]),e}s(u,"useIsHydrated");var n=t[" useSyncExternalStore ".trim().toString()];function d(){return()=>{}}s(d,"subscribe");function o(){return n(d,()=>!0,()=>!1)}s(o,"useIsHydratedModern");var f=typeof n=="function"?o:u;export{f as useIsHydrated};

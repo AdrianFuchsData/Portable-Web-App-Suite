@@ -1,0 +1,2 @@
+/* @radix-ui/react-portal@1.1.18 (jsDelivr +esm) */
+import*as e from"react";import*as s from"react-dom";import{Primitive as u}from"@radix-ui/react-primitive";import{useLayoutEffect as l}from"@radix-ui/react-use-layout-effect";import{jsx as p}from"react/jsx-runtime";var P=Object.defineProperty,d=(r,o)=>P(r,"name",{value:o,configurable:!0}),a=e.forwardRef(d(function(o,n){const{container:i,...f}=o,[m,c]=e.useState(!1);l(()=>c(!0),[]);const t=i||m&&globalThis?.document?.body;return t?s.createPortal(p(u.div,{...f,ref:n}),t):null},"Portal"));export{a as Portal,a as Root};

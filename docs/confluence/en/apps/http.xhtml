@@ -1,0 +1,150 @@
+<!-- Generated from docs/en/apps/http.md by tools/build_docs.py - do not edit. Confluence page title: HTTP analyzer -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The HTTP analyzer (<code>http.html</code>) sends HTTP requests and shows the responses, like Postman: for testing APIs, web services and web
+servers. Requests are organised in collections that are stored as <strong>Postman collection v2.1</strong> files.</p>
+<h2>Sending requests</h2>
+<ol>
+<li>Choose the <strong>method</strong> (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS) and enter the <strong>URL</strong>.</li>
+<li>Optionally fill in the tabs:
+   - <strong>Params</strong>: query parameters (kept in sync with the URL);
+   - <strong>Headers</strong>: request headers;
+   - <strong>Body</strong>: <em>raw</em> (JSON, XML, text, HTML, JavaScript, with syntax highlighting), <em>x-www-form-urlencoded</em>, <em>form-data</em> (text fields and
+     files, sent as multipart) or a <em>file</em>; the matching <code>Content-Type</code> is set unless you set your own;
+   - <strong>Auth</strong>: Basic (user and password) or a Bearer token.
+   Rows can be switched off with their checkbox; × removes a row; type into the empty last row to add one.</li>
+<li><strong>Send</strong> (<code>Ctrl+Enter</code>).</li>
+</ol>
+<p><strong>Send via</strong> chooses the way:</p>
+<ul>
+<li><strong>Relay</strong> (recommended): the request is sent by the local relay (see the user guide, "Network functions and the relay"). There are no browser
+  limits: every method, every header (also <code>Cookie</code>, <code>Host</code>, …) and every response header (also <code>Set-Cookie</code>) works, and servers without CORS
+  headers can be reached. Options in <strong>Environments… → Relay</strong>: accept untrusted certificates, follow redirects.</li>
+<li><strong>Browser</strong>: the request is sent by the browser itself. This works without the relay, but only for servers that allow it with CORS headers;
+  the browser hides some headers.</li>
+</ul>
+<h2>Responses</h2>
+<p>The status line shows the status code (coloured), the time and the size. <strong>Body</strong> shows the content: <strong>Pretty</strong> (JSON formatted, syntax
+highlighting), <strong>Raw</strong>, or <strong>Preview</strong> (images, HTML in a sandbox without scripts). <strong>Headers</strong> lists all response headers. <strong>Save body</strong>
+downloads the content.</p>
+<h2>Variables and environments</h2>
+<p>Write <code>{{name}}</code> in the URL, headers, body or auth fields to use a variable. <strong>Environments…</strong> manages environments (e.g. <em>test</em> and
+<em>production</em>), each with its own variables; the list in the toolbar chooses the active one. Collection variables (stored in the collection
+file) are used when the environment has no variable of that name.</p>
+<p>Environments and the relay settings are kept in a connections file (KeePass database or JSON file, <strong>Save</strong> and <strong>Open…</strong> in the left
+panel), so tokens and passwords can be stored encrypted.</p>
+<h2>Scripts and tests</h2>
+<p>The <strong>Scripts</strong> tab of a request holds two JavaScript snippets in the style of Postman (collections from Postman keep them):</p>
+<ul>
+<li><strong>Pre-request</strong> runs before sending, e.g. to compute a value: <code>pm.environment.set('stamp', Date.now())</code>,
+  <code>pm.variables.set('page', 2)</code> (only for this request), <code>pm.request.headers.add({ key: 'X-Id', value: '1' })</code>.</li>
+<li><strong>Tests</strong> run after the response: <code>pm.test('status', () =&gt; pm.response.to.have.status(200))</code>,
+  <code>pm.test('name', () =&gt; pm.expect(pm.response.json().name).to.equal('Anna'))</code>. Results appear in the <strong>Tests</strong> tab of the
+  response (✓/✗ with the reason), together with <code>console.log</code> output. Tests can also save values for the next request,
+  e.g. a login token: <code>pm.environment.set('token', pm.response.json().token)</code>.</li>
+</ul>
+<p>Available: <code>pm.environment</code>, <code>pm.collectionVariables</code>, <code>pm.variables</code> (<code>get</code>, <code>set</code>, <code>unset</code>, <code>has</code>), <code>pm.request</code> (<code>method</code>,
+<code>url</code>, <code>headers</code>), <code>pm.response</code> (<code>code</code>, <code>status</code>, <code>responseTime</code>, <code>headers.get()</code>, <code>text()</code>, <code>json()</code>, <code>to.have.status()</code>,
+<code>to.have.header()</code>, <code>to.be.ok</code>, <code>to.be.json</code>), <code>pm.test()</code> and <code>pm.expect()</code> with the usual assertions (<code>to.equal</code>, <code>to.eql</code>,
+<code>to.include</code>, <code>to.have.property</code>, <code>to.be.above</code>/<code>below</code>, <code>to.match</code>, <code>to.be.oneOf</code>, <code>to.be.true</code>, <code>to.exist</code>, <code>to.be.empty</code>, <code>.not</code>, …).
+Scripts run isolated from the suite (no access to its storage, files or passwords) and are stopped after five seconds.</p>
+<h2>WebSocket</h2>
+<p>A URL starting with <code>ws://</code> or <code>wss://</code> turns the request into a WebSocket connection: <strong>Connect</strong> opens it, the lower half
+shows the messages (↑ sent, ↓ received, with time; binary messages as hex) and a field to write messages (<strong>Send</strong> or
+<code>Ctrl+Enter</code>, <code>{{variables}}</code> are replaced); <strong>Disconnect</strong> closes it, the close code and reason are shown. A header
+<code>Sec-WebSocket-Protocol</code> requests subprotocols. WebSockets are opened directly by the browser, not through the relay.</p>
+<h2>OpenAPI</h2>
+<p><strong>Open collection…</strong> also reads OpenAPI 3 and Swagger 2 descriptions (JSON or YAML) and creates a collection from them:
+one folder per tag and one request per operation with <code>{{baseUrl}}</code> (from the first server), path parameters as variables
+(<code>/pets/{{petId}}</code>), required query parameters and headers with their examples, an example JSON body built from the schema,
+and Basic/Bearer authorization or API-key headers from the security schemes (<code>{{token}}</code>, <code>{{username}}</code>, …). Fill in the
+variable values in the collection, then save it (as a Postman collection).</p>
+<h2>Collections</h2>
+<ul>
+<li>The left panel shows the collection: <strong>+ New request</strong>, <strong>+ New folder</strong>; point at an entry for ⧉ duplicate, ✎ rename and × delete.</li>
+<li><strong>Open collection…</strong> (<code>Ctrl+O</code>) opens a Postman collection (v2.1 JSON); <strong>Save collection</strong> (<code>Ctrl+S</code>) saves it (directly into the file in
+  Chrome/Edge on the desktop, as a download in Firefox and on Android).</li>
+<li><strong>History</strong> lists the requests sent in this session; a click copies one into the collection.</li>
+</ul>
+<p>Undo (↶, <code>Ctrl+Z</code>) and redo (↷, <code>Ctrl+Y</code>) cover all changes to the collection: requests, folders, URL, headers, body, authentication. Typing into one field counts as one step.</p>
+<h2>cURL</h2>
+<ul>
+<li><strong>Import cURL…</strong> turns a <code>curl</code> command (e.g. "Copy as cURL" from the browser developer tools) into a request: method, URL, headers, data,
+  form fields, <code>-u</code> user, and more.</li>
+<li><strong>cURL</strong> next to the tabs shows the current request as a <code>curl</code> command (with variables resolved) to copy it.</li>
+</ul>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open a collection</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save the collection</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+</tbody>
+</table>
+<h3>Request</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Enter</code></td>
+<td>Send the request</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo</td>
+</tr>
+<tr>
+<td><code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code></td>
+<td>Redo</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>☰ opens the collection. The request is shown above the response.</p>

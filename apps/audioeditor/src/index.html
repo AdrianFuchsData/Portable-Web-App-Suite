@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en" data-version="%%BUILD_VERSION%%">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; connect-src data: blob:; worker-src blob:; form-action 'none'; base-uri 'none'">
+  <title>Audio editor</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='4' fill='%23e65100'/%3E%3Cpath stroke='white' stroke-width='2' stroke-linecap='round' d='M4 12h1M7 8v8M10 5v14M13 9v6M16 7v10M19 11v2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../../vendor/pico.min.css">
+  <link rel="stylesheet" href="../../../shared/css/suite.css">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap" data-src="../../../vendor/esm/audio/importmap.json ../../../vendor/esm/fflate/importmap.json js/importmap.json"></script>
+  <script type="application/json" data-shortcuts="audioeditor"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <noscript>This application requires JavaScript.</noscript>
+  <script src="../../../vendor/htm-preact-standalone.umd.js"></script>
+  <script src="../../../shared/js/i18n.js"></script>
+  <script src="../../../shared/js/files.js"></script>
+  <script src="../../../shared/js/bridge.js"></script>
+  <script src="../../../shared/js/shell.js"></script>
+  <script src="../../../shared/js/autosave.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

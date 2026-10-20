@@ -1,0 +1,193 @@
+<!-- Generated from docs/en/apps/calendar.md by tools/build_docs.py - do not edit. Confluence page title: Calendar -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The calendar (<code>calendar.html</code>) shows and edits calendars in the iCalendar format (<code>.ics</code>), the format of Outlook, Thunderbird,
+Google Calendar, Apple Calendar and most other calendar programs. Several calendars can be open at the same time.</p>
+<h2>Calendars</h2>
+<ul>
+<li><strong>Open…</strong> (<code>Ctrl+O</code>) opens one or more <code>.ics</code> files; each becomes a calendar in the list on the left. You can also drop <code>.ics</code> files onto
+  the window. In Chrome/Edge on the desktop, <strong>Recently used</strong> reopens calendars with one click.</li>
+<li><strong>New calendar</strong> creates an empty calendar.</li>
+<li>The checkbox shows or hides a calendar, the colour field sets its colour, a double-click on the name renames it. A click on the name makes
+  it the calendar for new and imported events.</li>
+<li><strong>Import events…</strong> adds the events of an <code>.ics</code> file (e.g. an invitation received by e-mail) to the selected calendar. An event with the same
+  UID replaces the existing one, so an updated invitation updates the event.</li>
+<li>💾 saves a calendar: directly into its file in Chrome/Edge on the desktop, as a download in Firefox and on Android (replace the original file
+  with it). <strong>Save all</strong> (<code>Ctrl+S</code>) saves every changed calendar; changed calendars are marked with •.</li>
+</ul>
+<p>Everything in the file that the calendar does not edit (further reminders, participants, tasks, other properties) is kept when saving.</p>
+<h2>Views</h2>
+<table>
+<thead>
+<tr>
+<th>View</th>
+<th>Key</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Month</td>
+<td><code>M</code></td>
+<td>six weeks; a click on a day number opens the day</td>
+</tr>
+<tr>
+<td>Week</td>
+<td><code>W</code></td>
+<td>time grid of the week with a line for all-day events; the red line is the current time</td>
+</tr>
+<tr>
+<td>Day</td>
+<td><code>D</code></td>
+<td>time grid of one day</td>
+</tr>
+<tr>
+<td>Agenda</td>
+<td><code>A</code></td>
+<td>list of the events of the next 60 days</td>
+</tr>
+<tr>
+<td>Availability</td>
+<td><code>F</code></td>
+<td>free and busy times of the week, one row per calendar (see below)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Today</strong> (<code>T</code>), ‹ and › (<code>←</code>/<code>→</code>) navigate; the small month on the left jumps to a date. The week starts on Monday or Sunday (setting at the
+bottom left). <strong>Search</strong> (<code>/</code>) shows only events whose title, location, description or categories contain the text.</p>
+<p><strong>🖨</strong> prints the current view with the names of the shown calendars and the period as heading (month and week on landscape
+sheets, the whole day on one sheet); with "Save as PDF" as the printer you get a PDF. The search applies to the print as well.</p>
+<h3>Availability (free/busy)</h3>
+<p>The <strong>Availability</strong> view helps to find a time that suits several calendars, e.g. your own calendar and the calendars or
+free/busy files of colleagues. For every day of the week it shows the working hours with one bar per shown calendar: busy
+times in the calendar's colour, tentative events (status "tentative") hatched. Events marked as "free" (transparent) and
+cancelled events do not count; all-day events (birthdays, holidays, trips) only count when the file marks them as busy.
+The green row <strong>Free</strong> shows the times in which all shown calendars are free for at least the chosen <strong>duration</strong>; the list
+below repeats them. A click on a free time opens a new event at that time.</p>
+<p><strong>Working hours</strong> (e.g. 8 to 18), <strong>Duration (min)</strong> and <strong>Weekends</strong> set what is searched; the settings are remembered.
+<strong>Export free/busy (.ifb)</strong> saves the busy times of the shown calendars for the next eight weeks as an iCalendar free/busy file
+(<code>VFREEBUSY</code>) – without titles or other details, so it can be shared to tell others when you are available. Free/busy files
+from others (<code>.ifb</code>, e.g. published by Outlook or a calendar server) can be opened like calendars; their busy times appear in
+the availability view (they have no events for the other views) and are kept unchanged when the calendar is saved.</p>
+<h2>Creating and changing events</h2>
+<ul>
+<li><strong>New event</strong> (<code>N</code>), a double-click on a day in the month view, or <strong>dragging</strong> over a time range in the week or day view opens the event
+  dialog.</li>
+<li>In the week and day views, drag an event to move it (also to another day) and drag its lower edge to change the end. In the month view, drag
+  an event to another day.</li>
+<li>A click on an event opens it for editing.</li>
+</ul>
+<p>The event dialog contains title, calendar, all day, start and end, time zone, repetition, location, description and categories.
+<strong>Export (.ics)</strong> downloads the event as a file, e.g. to send it by e-mail.</p>
+<h3>Time zones</h3>
+<p>New events use the time zone of the computer. An event keeps its time zone; for example, a meeting at 9:00 in New York is shown at the
+corresponding local time. Times of events from Outlook with Windows time zone names are converted correctly. "Floating" times have no time zone
+and are always shown at the same clock time.</p>
+<h3>Repeating events</h3>
+<p><strong>Repeat</strong>: daily, weekly (on selected weekdays), monthly (on the same day of the month or, e.g., on the third Monday) or yearly, every n
+days/weeks/months/years, ending never, after a number of times or on a date. More complex rules from other programs are shown as
+"Custom rule" and kept unchanged.</p>
+<p>When you change, move or delete an occurrence of a repeating event, the calendar asks whether to change <strong>only this</strong> occurrence or <strong>all</strong>
+occurrences.</p>
+<p><strong>🔔 Reminder</strong> sets a reminder at the start or a time before it (5 minutes to one week); it is stored in the file as an
+alarm (<code>VALARM</code>), so other calendar programs show it as well. Reminders appear while the calendar is open in the browser:
+as a message at the top of the window or, after switching on 🔔 in the toolbar (the browser asks for permission), as a
+system notification. A closed page cannot remind you. Reminders that were due more than five minutes before the page
+was opened are not shown again.</p>
+<p>Undo (↶, <code>Ctrl+Z</code>) and redo (↷, <code>Ctrl+Y</code>) cover new, changed, moved and deleted events, imports and the name and color of calendars. Opening and closing calendar files are not undone.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open calendars</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save all calendars</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo</td>
+</tr>
+<tr>
+<td><code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code></td>
+<td>Redo</td>
+</tr>
+<tr>
+<td><code>N</code></td>
+<td>New event</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Close the dialog</td>
+</tr>
+</tbody>
+</table>
+<h3>View</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>M</code> / <code>W</code> / <code>D</code> / <code>A</code> / <code>F</code></td>
+<td>Month / week / day / agenda / availability</td>
+</tr>
+<tr>
+<td><code>T</code></td>
+<td>Today</td>
+</tr>
+<tr>
+<td><code>←</code> / <code>K</code></td>
+<td>Previous</td>
+</tr>
+<tr>
+<td><code>→</code> / <code>J</code></td>
+<td>Next</td>
+</tr>
+<tr>
+<td><code>/</code></td>
+<td>Search</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The agenda view is the default; ☰ opens the calendar list and the small month. The other views work as well; in the week view the days are
+narrow, so the day view is often more practical.</p>

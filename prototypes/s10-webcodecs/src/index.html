@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; connect-src data: blob:; worker-src blob:">
+  <title>S-10 WebCodecs</title>
+  <script type="importmap" data-src="../../../vendor/esm/video/importmap.json"></script>
+</head>
+<body>
+  <pre id="out">running…</pre>
+  <script type="module">
+    import * as mb from 'mediabunny';
+    const out = {};
+    async function encode(format, video, audio) {
+      const output = new mb.Output({ format: format === 'mp4' ? new mb.Mp4OutputFormat() : new mb.WebMOutputFormat(), target: new mb.BufferTarget() });
+      const canvas = new OffscreenCanvas(320, 240);
+      const g = canvas.getContext('2d');
+      const vs = new mb.CanvasSource(canvas, { codec: video, bitrate: 1e6 });
+      output.addVideoTrack(vs, { frameRate: 30 });
+      const as = new mb.AudioBufferSource({ codec: audio, bitrate: 128e3 });
+      output.addAudioTrack(as);
+      await output.start();
+      for (let i = 0; i < 30; i++) { g.fillStyle = `hsl(${i * 12},80%,50%)`; g.fillRect(0, 0, 320, 240); await vs.add(i / 30, 1 / 30); }
+      const ctx = new OfflineAudioContext(2, 48000, 48000);
+      const o = ctx.createOscillator(); o.connect(ctx.destination); o.start();
+      await as.add(await ctx.startRendering());
+      await output.finalize();
+      return output.target.buffer;
+    }
+    async function decode(buffer) {
+      const input = new mb.Input({ source: new mb.BufferSource(buffer), formats: mb.ALL_FORMATS });
+      const v = await input.getPrimaryVideoTrack();
+      const a = await input.getPrimaryAudioTrack();
+      let frames = 0;
+      const sink = new mb.CanvasSink(v, { width: 160 });
+      for await (const f of sink.canvases()) frames++;
+      return { duration: await input.computeDuration(), frames, codec: v.codec, audio: a && a.codec, canDecode: await v.canDecode() };
+    }
+    (async () => {
+      out.webcodecs = typeof VideoEncoder === 'function';
+      for (const [fmt, v, a] of [['webm', 'vp9', 'opus'], ['webm', 'vp8', 'opus'], ['mp4', 'avc', 'aac'], ['mp4', 'vp9', 'opus']]) {
+        const key = `${fmt}-${v}-${a}`;
+        try {
+          out[key] = { encodable: await mb.canEncodeVideo(v) && await mb.canEncodeAudio(a) };
+          if (!out[key].encodable) continue;
+          const buf = await encode(fmt, v, a);
+          out[key].bytes = buf.byteLength;
+          out[key].decoded = await decode(buf);
+        } catch (e) { out[key] = { error: String(e) }; }
+      }
+      document.getElementById('out').textContent = JSON.stringify(out, null, 1);
+      document.body.dataset.done = '1';
+    })();
+  </script>
+</body>
+</html>

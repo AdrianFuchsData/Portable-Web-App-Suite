@@ -1,0 +1,176 @@
+<!-- Generated from docs/en/apps/keepass.md by tools/build_docs.py - do not edit. Confluence page title: KeePass -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The KeePass application (<code>keepass.html</code>) opens, edits and creates KeePass password databases (<code>.kdbx</code>, KDBX 3.1 and 4).
+The files stay compatible with KeePass, KeePassXC, KeePassDX and other KeePass apps. Everything runs in the browser;
+nothing is sent over the network.</p>
+<h2>Unlocking a database</h2>
+<ol>
+<li><strong>Choose database…</strong> selects the <code>.kdbx</code> file. You can also drop the file (and its key file) onto the window.
+   In Chrome/Edge on the desktop, <strong>Recently used</strong> lists the databases opened before.</li>
+<li>Enter the master password.</li>
+<li>If the database uses a key file, select it with <strong>Choose key file…</strong>.</li>
+<li><strong>Unlock</strong>. A wrong password or key file shows an error message.</li>
+</ol>
+<h2>Creating a database</h2>
+<p><strong>Create a new database</strong> asks for a name and the master password (twice). Optionally, the application also creates a
+<strong>key file</strong> (<code>&lt;name&gt;.keyx</code>), which is downloaded immediately: keep it in a safe place, because without it the
+database cannot be opened. The new database is stored only after you <strong>save</strong> it.</p>
+<h2>Groups and entries</h2>
+<ul>
+<li>The left pane shows the <strong>groups</strong>. Click a group to show its entries; double-click a group (or <strong>Rename</strong>) to rename it.
+  <strong>New group</strong> creates a subgroup of the selected group; <strong>Delete group</strong> moves the group with all its entries into the
+  recycle bin.</li>
+<li>The middle pane lists the <strong>entries</strong> of the group, sorted by title. The <strong>search</strong> field searches the title, user name,
+  URL, notes and tags in all groups (<code>Ctrl+F</code>).</li>
+<li><strong>New entry</strong> creates an entry with a generated password in the selected group.</li>
+<li>The right pane edits the selected entry. All changes take effect immediately; the <strong>Save</strong> button is highlighted while
+  there are unsaved changes.</li>
+</ul>
+<h2>Editing an entry</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title, user name, URL, notes</td>
+<td>⧉ copies the user name; <strong>Open</strong> opens the URL in a new tab</td>
+</tr>
+<tr>
+<td>Password</td>
+<td>👁 shows or hides it, ⧉ copies it; the strength is shown in bits</td>
+</tr>
+<tr>
+<td>One-time password</td>
+<td>shown with its remaining seconds if the entry has an <code>otp</code> field (<code>otpauth://totp/…</code>, as written by KeePassXC)</td>
+</tr>
+<tr>
+<td>Tags</td>
+<td>separated by commas</td>
+</tr>
+<tr>
+<td>Expires</td>
+<td>sets an expiry date; expired entries are marked</td>
+</tr>
+<tr>
+<td>Additional fields</td>
+<td>own fields with name and value; 🔒 protects a field (it is hidden and stored in encrypted form in memory)</td>
+</tr>
+<tr>
+<td>Attachments</td>
+<td>add files, download them by clicking the name, or remove them</td>
+</tr>
+<tr>
+<td>Group</td>
+<td>moves the entry into another group</td>
+</tr>
+<tr>
+<td>History</td>
+<td>earlier versions of the entry; <strong>Restore</strong> makes an earlier version current again</td>
+</tr>
+</tbody>
+</table>
+<p>Each time you edit an entry, the previous version is stored once in the <strong>history</strong> (not on every key press).</p>
+<p>Copied values are removed from the clipboard after 30 seconds.</p>
+<p>Undo (↶, <code>Ctrl+Z</code>) and redo (↷, <code>Ctrl+Y</code>) cover all changes to the database since it was unlocked: fields, new and deleted entries and groups, moving, attachments and settings. Typing into one field counts as one step. Locking clears the history.</p>
+<p>↗ next to an attachment (<strong>Open with…</strong>) opens it in another application of the suite; saving there replaces the attachment. Save the database afterwards.</p>
+<h2>Password generator</h2>
+<p>🎲 <strong>Generate</strong> opens the generator: length (4 to 64), lower case, upper case, digits, symbols, and the option to avoid similar
+characters (l, 1, O, 0). ⟳ creates a new password; <strong>Use</strong> sets it as the password of the entry.</p>
+<h2>Recycle bin</h2>
+<p>Deleted entries and groups are moved into the <strong>Recycle bin</strong> group. To restore an entry, select it in the recycle bin and
+choose another group in the <strong>Group</strong> field. <strong>Empty recycle bin</strong> deletes its content permanently.</p>
+<h2>Saving</h2>
+<p><strong>Save</strong> (<code>Ctrl+S</code>) writes the database directly into the opened file in Chrome/Edge on the desktop. In Firefox and on Android,
+the database is downloaded: replace the original file with it. <code>Ctrl+Shift+S</code> saves under a new name.
+After writing, the application checks that the saved file can be opened again.</p>
+<h2>Master key and database settings</h2>
+<p><strong>Database</strong> opens the settings: the database name and <strong>Change master key</strong> (new password and, optionally, a new key file
+or removal of the existing key file). Save the database afterwards; keep the old file until you have checked that you can
+open the new one.</p>
+<h2>Merging databases</h2>
+<p><strong>⇄ Merge…</strong> combines another <code>.kdbx</code> file with the open database (you enter its password and, if needed, its key file):</p>
+<ul>
+<li><strong>A copy of the same database</strong> (for example one edited on another computer or phone) is <strong>synchronized</strong>: for every
+  entry the newer version wins, the older one goes into its history; new entries and groups are added and entries
+  deleted in one copy are deleted. This is the same as "Synchronize" in KeePass and KeePassXC.</li>
+<li><strong>Another database</strong> is <strong>imported</strong>: its groups and entries are copied into a new group named after it (the
+  recycle bin is skipped). Nothing in the open database is changed.</li>
+</ul>
+<p>Save afterwards to keep the result; ↶ undoes the merge.</p>
+<h2>Password report</h2>
+<p><strong>🩺 Report</strong> checks all entries (except those in the recycle bin) and lists problems: empty passwords, weak passwords
+(less than 60 bits of estimated strength, the same estimate as in the generator), passwords used in several entries,
+expired entries and passwords unchanged for more than a year (from the entry history). Click an entry to open it.
+The check runs completely in the browser; no password leaves the device.</p>
+<h2>Locking</h2>
+<p><strong>Lock</strong> (<code>Ctrl+L</code>) closes the database; unsaved changes require a confirmation. After 15 minutes without activity the
+database is locked automatically, unless there are unsaved changes.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+<tr>
+<td><code>Ctrl+L</code></td>
+<td>Lock</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo</td>
+</tr>
+<tr>
+<td><code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code></td>
+<td>Redo</td>
+</tr>
+<tr>
+<td><code>Ctrl+F</code></td>
+<td>Search</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The application shows one pane at a time: the entry list, a group list (‹ <strong>Groups</strong>) and the entry (‹ <strong>Entries</strong> goes back).</p>

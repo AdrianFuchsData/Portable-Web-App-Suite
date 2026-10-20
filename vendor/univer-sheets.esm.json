@@ -1,0 +1,46 @@
+{
+  "out": "esm/univer-sheets",
+  "packages": {
+    "@univerjs/presets": "1.0.4",
+    "@univerjs/preset-sheets-core": "1.0.4",
+    "@univerjs/preset-sheets-conditional-formatting": "1.0.4",
+    "@univerjs/preset-sheets-data-validation": "1.0.4",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "rxjs": "7.8.2"
+  },
+  "modules": [
+    "@univerjs/preset-sheets-core/locales/en-US",
+    "@univerjs/preset-sheets-core/locales/de-DE",
+    "react-dom/client",
+    "@univerjs/preset-sheets-conditional-formatting/locales/en-US",
+    "@univerjs/preset-sheets-conditional-formatting/locales/de-DE",
+    "@univerjs/preset-sheets-data-validation/locales/en-US",
+    "@univerjs/preset-sheets-data-validation/locales/de-DE"
+  ],
+  "assets": {
+    "@univerjs/preset-sheets-core": [
+      "lib/index.css"
+    ],
+    "@univerjs/preset-sheets-conditional-formatting": [
+      "lib/index.css"
+    ],
+    "@univerjs/preset-sheets-data-validation": [
+      "lib/index.css"
+    ]
+  },
+  "exclude": [
+    "@univerjs/engine-render/lib/es/*"
+  ],
+  "include": [
+    "@univerjs/engine-render/lib/es/de-1996-*",
+    "@univerjs/engine-render/lib/es/en-gb-*"
+  ],
+  "stub": {
+    "template": "export const {name} = [\"\", \"{}\", []];",
+    "name": {
+      "regex": "^.*/lib/es/(.+)-[A-Za-z0-9_-]{8}\\.js$",
+      "pascal": true
+    }
+  }
+}

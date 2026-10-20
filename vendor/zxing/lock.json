@@ -1,0 +1,11 @@
+{
+ "package": "zxing-wasm",
+ "version": "3.1.5",
+ "license": "MIT (zxing-wasm), Apache-2.0 (ZXing-C++ in the WebAssembly)",
+ "files": {
+  "zxing.js": "b7b655b9145cf78a759719500f9757fe5f5022529edbfc1e4b1026a609dceeec",
+  "share.js": "68b09047a19c17ba74c0bf7e0a4341e77d46b36ae1cae4bdcca31d0c6757f3f2",
+  "zxing_full.wasm": "51b3b1ee268652dd6acdcdb937d59f42406ca8efe22dd441abc01d0b51ede5b3",
+  "LICENSE": "fb506e4ade12d7a9efa67c9d76a9a28c8e15d347ca49a69e48e29b40b34ad2ab"
+ }
+}

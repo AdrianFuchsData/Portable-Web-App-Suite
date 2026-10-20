@@ -1,0 +1,727 @@
+{
+ "info": {
+  "abi_version": "2026_0",
+  "arch": "wasm32",
+  "platform": "emscripten_5_0_3",
+  "python": "3.14.2"
+ },
+ "packages": {
+  "argon2-cffi": {
+   "depends": [
+    "argon2-cffi-bindings"
+   ],
+   "file_name": "argon2_cffi-23.1.0-py3-none-any.whl",
+   "imports": [
+    "argon2"
+   ],
+   "install_dir": "site",
+   "name": "argon2-cffi",
+   "package_type": "package",
+   "sha256": "6dcfd114c94eab7e3feb4af995cc0a62db38972332667da93804b79f2eb28da5",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "23.1.0"
+  },
+  "argon2-cffi-bindings": {
+   "depends": [
+    "cffi"
+   ],
+   "file_name": "argon2_cffi_bindings-25.1.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "_argon2_cffi_bindings"
+   ],
+   "install_dir": "site",
+   "name": "argon2-cffi-bindings",
+   "package_type": "package",
+   "sha256": "13b8766c50db38a25aed860a5800fd50b16c39c5d1f89a7682170aac6855c07d",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "25.1.0"
+  },
+  "beautifulsoup4": {
+   "depends": [
+    "soupsieve",
+    "typing-extensions"
+   ],
+   "file_name": "beautifulsoup4-4.14.3-py3-none-any.whl",
+   "imports": [
+    "bs4"
+   ],
+   "install_dir": "site",
+   "name": "beautifulsoup4",
+   "package_type": "package",
+   "sha256": "60e71fb66c245d535d80c63a9ab922ee2ab086624a04e0995bc601bfea0ef750",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "4.14.3"
+  },
+  "certifi": {
+   "depends": [],
+   "file_name": "certifi-2026.4.22-py3-none-any.whl",
+   "imports": [
+    "certifi"
+   ],
+   "install_dir": "site",
+   "name": "certifi",
+   "package_type": "package",
+   "sha256": "c2c0091986db798df5fd84582d289496f31244a898ec032b7015278c2d82c80c",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2026.4.22"
+  },
+  "cffi": {
+   "depends": [
+    "pycparser"
+   ],
+   "file_name": "cffi-2.0.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "cffi"
+   ],
+   "install_dir": "site",
+   "name": "cffi",
+   "package_type": "package",
+   "sha256": "9ae1a61096321cef7248e02293f42d000fa87b73a3e795705a2444290590459d",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2.0.0"
+  },
+  "charset-normalizer": {
+   "depends": [],
+   "file_name": "charset_normalizer-3.4.7-py3-none-any.whl",
+   "imports": [
+    "charset_normalizer"
+   ],
+   "install_dir": "site",
+   "name": "charset-normalizer",
+   "package_type": "package",
+   "sha256": "9e437ef92fa51f06eedeb1ef092c0a887bd24fe0d40b1e900191117ce1653121",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "3.4.7"
+  },
+  "contourpy": {
+   "depends": [
+    "numpy"
+   ],
+   "file_name": "contourpy-1.3.3-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "contourpy"
+   ],
+   "install_dir": "site",
+   "name": "contourpy",
+   "package_type": "package",
+   "sha256": "0ac15ebf9f820d2d1c3526388aa2818b631cb6c4aae1682efd6b4cc12c1f302c",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "1.3.3"
+  },
+  "cycler": {
+   "depends": [
+    "six"
+   ],
+   "file_name": "cycler-0.12.1-py3-none-any.whl",
+   "imports": [
+    "cycler"
+   ],
+   "install_dir": "site",
+   "name": "cycler",
+   "package_type": "package",
+   "sha256": "8ee450085f15b47f78b034d60059af6a3649e98fa5dde073363437742cc0b4ea",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "0.12.1"
+  },
+  "decorator": {
+   "depends": [],
+   "file_name": "decorator-5.2.1-py3-none-any.whl",
+   "imports": [
+    "decorator"
+   ],
+   "install_dir": "site",
+   "name": "decorator",
+   "package_type": "package",
+   "sha256": "da941fd8a421e3e0d0d8b4efa5ec775d63ba553c7262de9fd40ddabee659f547",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "5.2.1"
+  },
+  "fonttools": {
+   "depends": [],
+   "file_name": "fonttools-4.62.1-py3-none-any.whl",
+   "imports": [
+    "fontTools"
+   ],
+   "install_dir": "site",
+   "name": "fonttools",
+   "package_type": "package",
+   "sha256": "0d1516e073fd0a8d8e6d9af46417b6a26209a42518024a18f7085e72d2599605",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "4.62.1"
+  },
+  "idna": {
+   "depends": [],
+   "file_name": "idna-3.11-py3-none-any.whl",
+   "imports": [
+    "idna"
+   ],
+   "install_dir": "site",
+   "name": "idna",
+   "package_type": "package",
+   "sha256": "1619419bc899f07c7a608a12e8238e5e0bc15bb25fec90cfe20a86bb849ba0d8",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "3.11"
+  },
+  "kiwisolver": {
+   "depends": [],
+   "file_name": "kiwisolver-1.5.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "kiwisolver"
+   ],
+   "install_dir": "site",
+   "name": "kiwisolver",
+   "package_type": "package",
+   "sha256": "47781998156721147c128a3c74547d5703e0e3cc454d8203e629339368308a93",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "1.5.0"
+  },
+  "lxml": {
+   "depends": [],
+   "file_name": "lxml-6.1.3-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "lxml"
+   ],
+   "install_dir": "site",
+   "name": "lxml",
+   "package_type": "package",
+   "sha256": "6a0b98f57a538cb6af4868c3499efec2bb52f7ed59fed94b7fbf195d6e40281f",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "6.1.3"
+  },
+  "matplotlib": {
+   "depends": [
+    "contourpy",
+    "cycler",
+    "fonttools",
+    "kiwisolver",
+    "numpy",
+    "packaging",
+    "pillow",
+    "pyparsing",
+    "python-dateutil",
+    "pytz"
+   ],
+   "file_name": "matplotlib-3.10.8-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "pylab",
+    "mpl_toolkits",
+    "matplotlib"
+   ],
+   "install_dir": "site",
+   "name": "matplotlib",
+   "package_type": "package",
+   "sha256": "722857932f8f62eac64f8439af15c94d427f9fb945f9590cd242805c983d2d54",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "3.10.8"
+  },
+  "micropip": {
+   "depends": [],
+   "file_name": "micropip-0.11.1-py3-none-any.whl",
+   "imports": [
+    "micropip"
+   ],
+   "install_dir": "site",
+   "name": "micropip",
+   "package_type": "package",
+   "sha256": "e2d52886594fd4cd0d0847110a1c34ae0134d3a970eb4496d3b5eb31ee2d8af6",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "0.11.1"
+  },
+  "mpmath": {
+   "depends": [],
+   "file_name": "mpmath-1.4.1-py3-none-any.whl",
+   "imports": [
+    "mpmath"
+   ],
+   "install_dir": "site",
+   "name": "mpmath",
+   "package_type": "package",
+   "sha256": "e5ebd537e74b9066341a5152e83b63ff2fc37a6388fa7351e766b6e4640f7eee",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "1.4.1"
+  },
+  "networkx": {
+   "depends": [
+    "decorator",
+    "setuptools",
+    "matplotlib",
+    "numpy"
+   ],
+   "file_name": "networkx-3.6.1-py3-none-any.whl",
+   "imports": [
+    "networkx"
+   ],
+   "install_dir": "site",
+   "name": "networkx",
+   "package_type": "package",
+   "sha256": "58b21d3717a1c7a1a32facd972b9422b28a764abc8f2ff59b4fef03d4525cb54",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "3.6.1"
+  },
+  "numpy": {
+   "depends": [],
+   "file_name": "numpy-2.4.6-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "numpy"
+   ],
+   "install_dir": "site",
+   "name": "numpy",
+   "package_type": "package",
+   "sha256": "a292c1f5d7d8a2208cd5e94fc467604c131cabcd2fc14fed6eefde121e7fabdf",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2.4.6"
+  },
+  "packaging": {
+   "depends": [],
+   "file_name": "packaging-26.1-py3-none-any.whl",
+   "imports": [
+    "packaging"
+   ],
+   "install_dir": "site",
+   "name": "packaging",
+   "package_type": "package",
+   "sha256": "565acbbea54da30348b6d68b6a54373e6f777987db9f1db6966b4b3a5060d303",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "26.1"
+  },
+  "pandas": {
+   "depends": [
+    "numpy",
+    "python-dateutil",
+    "pytz"
+   ],
+   "file_name": "pandas-3.0.2-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "pandas"
+   ],
+   "install_dir": "site",
+   "name": "pandas",
+   "package_type": "package",
+   "sha256": "45ff57772cc2f366a8582c7d3097cc4e6676342ecd5a3c08184a43462d5a02ae",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "3.0.2"
+  },
+  "pillow": {
+   "depends": [],
+   "file_name": "pillow-12.2.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "PIL"
+   ],
+   "install_dir": "site",
+   "name": "Pillow",
+   "package_type": "package",
+   "sha256": "e29838b7a756e4ee0f27a9cfa9a387ee0dfa2e9dd44be2dd595130b9f9d93ac3",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "12.2.0"
+  },
+  "pycparser": {
+   "depends": [],
+   "file_name": "pycparser-3.0-py3-none-any.whl",
+   "imports": [
+    "pycparser"
+   ],
+   "install_dir": "site",
+   "name": "pycparser",
+   "package_type": "package",
+   "sha256": "0b4cbc12c42e25df55343342fb0da45b189181e4f360602f9721db2016fc3a4b",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "3.0"
+  },
+  "pycryptodome": {
+   "depends": [],
+   "file_name": "pycryptodome-3.23.0-cp37-abi3-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "Crypto"
+   ],
+   "install_dir": "site",
+   "name": "pycryptodome",
+   "package_type": "package",
+   "sha256": "67b86abb0de02dceebf422d10fc6e0e3754aea08626d1957e6fe69b75cbf644d",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "3.23.0"
+  },
+  "pyparsing": {
+   "depends": [],
+   "file_name": "pyparsing-3.3.2-py3-none-any.whl",
+   "imports": [
+    "pyparsing"
+   ],
+   "install_dir": "site",
+   "name": "pyparsing",
+   "package_type": "package",
+   "sha256": "f0dd8225b5f8e945980b400bd465b4b90cb0498a2eede0d9dbea98372f6110c5",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "3.3.2"
+  },
+  "python-dateutil": {
+   "depends": [
+    "six"
+   ],
+   "file_name": "python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+   "imports": [
+    "dateutil"
+   ],
+   "install_dir": "site",
+   "name": "python-dateutil",
+   "package_type": "package",
+   "sha256": "9b13365edf9c188f570baf9c540bbb3029ada2a2dacb9694b3659941693ee9e5",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2.9.0.post0"
+  },
+  "pytz": {
+   "depends": [],
+   "file_name": "pytz-2026.1.post1-py2.py3-none-any.whl",
+   "imports": [
+    "pytz"
+   ],
+   "install_dir": "site",
+   "name": "pytz",
+   "package_type": "package",
+   "sha256": "b8249d6450146e0b61e6d710dc02ebb35a904796c4c2f97fe87d4ac5872db36a",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2026.1.post1"
+  },
+  "pyyaml": {
+   "depends": [],
+   "file_name": "pyyaml-6.0.3-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "_yaml",
+    "yaml"
+   ],
+   "install_dir": "site",
+   "name": "pyyaml",
+   "package_type": "package",
+   "sha256": "a05d2a48c13ed72a8c60c73b30b753a25c3a591bb66c15428b7e95e69a9e806f",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "6.0.3"
+  },
+  "regex": {
+   "depends": [],
+   "file_name": "regex-2026.3.32-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "regex"
+   ],
+   "install_dir": "site",
+   "name": "regex",
+   "package_type": "package",
+   "sha256": "872e5bbab799991b2c0570c30e20f30404d7b0fd979dadd4f161f91645a0c1ac",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "2026.3.32"
+  },
+  "requests": {
+   "depends": [
+    "charset-normalizer",
+    "idna",
+    "urllib3",
+    "certifi"
+   ],
+   "file_name": "requests-2.33.1-py3-none-any.whl",
+   "imports": [
+    "requests"
+   ],
+   "install_dir": "site",
+   "name": "requests",
+   "package_type": "package",
+   "sha256": "6d62c51c4e7707386bfc2ef54845c16cdaeb99606c064357cccfe4d621285175",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2.33.1"
+  },
+  "setuptools": {
+   "depends": [
+    "pyparsing"
+   ],
+   "file_name": "setuptools-82.0.1-py3-none-any.whl",
+   "imports": [
+    "_distutils_hack",
+    "setuptools"
+   ],
+   "install_dir": "site",
+   "name": "setuptools",
+   "package_type": "package",
+   "sha256": "f411555185daefde67e99bec050782a5390ea62270ac6cddc2dab7bea70e53b1",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "82.0.1"
+  },
+  "six": {
+   "depends": [],
+   "file_name": "six-1.17.0-py2.py3-none-any.whl",
+   "imports": [
+    "six"
+   ],
+   "install_dir": "site",
+   "name": "six",
+   "package_type": "package",
+   "sha256": "228c50f73aa7addf2c2ccf2979c256802a59ab69cad8152b31b9443cc8140f42",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "1.17.0"
+  },
+  "soupsieve": {
+   "depends": [],
+   "file_name": "soupsieve-2.8.3-py3-none-any.whl",
+   "imports": [
+    "soupsieve"
+   ],
+   "install_dir": "site",
+   "name": "soupsieve",
+   "package_type": "package",
+   "sha256": "675af05b7a3de6b5f8e0b89eb7644364a809af5f374b911b9f8c6225417c3299",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2.8.3"
+  },
+  "sqlalchemy": {
+   "depends": [
+    "typing-extensions"
+   ],
+   "file_name": "sqlalchemy-2.0.48-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "sqlalchemy"
+   ],
+   "install_dir": "site",
+   "name": "sqlalchemy",
+   "package_type": "package",
+   "sha256": "e12ade7bb0e2746d59fddb40ed0a26caf70d2d3bb483e2e022850939322c5105",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "2.0.48"
+  },
+  "sympy": {
+   "depends": [
+    "mpmath"
+   ],
+   "file_name": "sympy-1.14.0-py3-none-any.whl",
+   "imports": [
+    "isympy",
+    "sympy"
+   ],
+   "install_dir": "site",
+   "name": "sympy",
+   "package_type": "package",
+   "sha256": "61ea8bb98049ba1c702ba3ad2607acb7ab94b9af0b6f97498741f50d3249f428",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "1.14.0"
+  },
+  "typing-extensions": {
+   "depends": [],
+   "file_name": "typing_extensions-4.15.0-py3-none-any.whl",
+   "imports": [
+    "typing_extensions"
+   ],
+   "install_dir": "site",
+   "name": "typing-extensions",
+   "package_type": "package",
+   "sha256": "4fec68770a05408e668a4fa53d6bf4f0f684b9dacf820c7c5d6e97d3ad225e29",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "4.15.0"
+  },
+  "urllib3": {
+   "depends": [],
+   "file_name": "urllib3-2.6.3-py3-none-any.whl",
+   "imports": [
+    "urllib3"
+   ],
+   "install_dir": "site",
+   "name": "urllib3",
+   "package_type": "package",
+   "sha256": "86b7c1af060597b115bcde5e36798039ca50b221afe14aa03d3437ac09b02a75",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2.6.3"
+  },
+  "xlrd": {
+   "depends": [],
+   "file_name": "xlrd-2.0.2-py2.py3-none-any.whl",
+   "imports": [
+    "xlrd"
+   ],
+   "install_dir": "site",
+   "name": "xlrd",
+   "package_type": "package",
+   "sha256": "3829769da32d8eeb6299d1e9193b8425a5852cd5714b20848b0e9d305efc1334",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2.0.2"
+  },
+  "seaborn": {
+   "name": "seaborn",
+   "version": "0.13.2",
+   "file_name": "seaborn-0.13.2-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "636f8336facf092165e27924f223d3c62ca560b1f2bb5dff7ab7fad265361987",
+   "package_type": "package",
+   "imports": [
+    "seaborn"
+   ],
+   "depends": [
+    "numpy",
+    "pandas",
+    "matplotlib"
+   ],
+   "unvendored_tests": false
+  },
+  "et-xmlfile": {
+   "name": "et-xmlfile",
+   "version": "2.0.0",
+   "file_name": "et_xmlfile-2.0.0-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa",
+   "package_type": "package",
+   "imports": [
+    "et_xmlfile"
+   ],
+   "depends": [],
+   "unvendored_tests": false
+  },
+  "openpyxl": {
+   "name": "openpyxl",
+   "version": "3.1.5",
+   "file_name": "openpyxl-3.1.5-py2.py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2",
+   "package_type": "package",
+   "imports": [
+    "openpyxl"
+   ],
+   "depends": [
+    "et-xmlfile"
+   ],
+   "unvendored_tests": false
+  },
+  "pyotp": {
+   "name": "pyotp",
+   "version": "2.9.0",
+   "file_name": "pyotp-2.9.0-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "81c2e5865b8ac55e825b0358e496e1d9387c811e85bb40e71a3b29b288963612",
+   "package_type": "package",
+   "imports": [
+    "pyotp"
+   ],
+   "depends": [],
+   "unvendored_tests": false
+  },
+  "construct": {
+   "name": "construct",
+   "version": "2.10.70",
+   "file_name": "construct-2.10.70-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "c80be81ef595a1a821ec69dc16099550ed22197615f4320b57cc9ce2a672cb30",
+   "package_type": "package",
+   "imports": [
+    "construct"
+   ],
+   "depends": [],
+   "unvendored_tests": false
+  },
+  "pykeepass": {
+   "name": "pykeepass",
+   "version": "4.2.0",
+   "file_name": "pykeepass-4.2.0-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "8d6100788422eb8a43710b227fde873f7684d08bf0117eb43c8ae346644b086d",
+   "package_type": "package",
+   "imports": [
+    "pykeepass"
+   ],
+   "depends": [
+    "pyotp",
+    "construct",
+    "argon2-cffi",
+    "pycryptodome",
+    "lxml"
+   ],
+   "unvendored_tests": false
+  },
+  "asn1crypto": {
+   "name": "asn1crypto",
+   "version": "1.5.1",
+   "file_name": "asn1crypto-1.5.1-py2.py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "db4e40728b728508912cbb3d44f19ce188f218e9eba635821bb4b68564f8fd67",
+   "package_type": "package",
+   "imports": [
+    "asn1crypto"
+   ],
+   "depends": [],
+   "unvendored_tests": false
+  },
+  "scramp": {
+   "name": "scramp",
+   "version": "1.4.12",
+   "file_name": "scramp-1.4.12-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "6adb2828c5d64bd7785a6878eed30f66ce0fae60bf5fc07c26ce1f521db3ec3e",
+   "package_type": "package",
+   "imports": [
+    "scramp"
+   ],
+   "depends": [
+    "asn1crypto"
+   ],
+   "unvendored_tests": false
+  },
+  "looseversion": {
+   "name": "looseversion",
+   "version": "1.3.0",
+   "file_name": "looseversion-1.3.0-py2.py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "781ef477b45946fc03dd4c84ea87734b21137ecda0e1e122bcb3c8d16d2a56e0",
+   "package_type": "package",
+   "imports": [
+    "looseversion"
+   ],
+   "depends": [],
+   "unvendored_tests": false
+  },
+  "nzpy": {
+   "name": "nzpy",
+   "version": "1.17.8",
+   "file_name": "nzpy-1.17.8-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "73c7ae6d737dd4acf5b6caadb90145cdefa018702816c14a0ad01798654608c0",
+   "package_type": "package",
+   "imports": [
+    "nzpy"
+   ],
+   "depends": [
+    "scramp",
+    "looseversion"
+   ],
+   "unvendored_tests": false
+  }
+ },
+ "tool": {}
+}

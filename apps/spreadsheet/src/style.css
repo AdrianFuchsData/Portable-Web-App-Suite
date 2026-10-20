@@ -1,0 +1,19 @@
+/* Spreadsheet (on top of shared/css/suite.css) */
+.ss-toolbar { display: flex; gap: .3rem; flex-wrap: wrap; align-items: center; justify-content: flex-start; }
+.ss-toolbar button { margin: 0; padding: .2rem .55rem; font-size: .85rem; width: auto; }
+.ss-name { font-size: .85rem; color: var(--pico-muted-color); margin-left: .4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.suite-main { overflow: hidden; display: flex; flex-direction: column; }
+.ss-layout { flex: 1; min-height: 0; position: relative; }
+.ss-univer { position: absolute; inset: 0; }
+@media (max-width: 760px) {
+  nav.ss-toolbar { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; order: 3; width: 100%; }
+  .ss-toolbar > * { flex: none; }
+}
+
+/* CSV import dialog */
+.ss-csv { max-width: min(56rem, 96vw); }
+.ss-csv-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 0 .8rem; }
+.ss-csv-preview { overflow: auto; max-height: 40vh; border: 1px solid var(--pico-muted-border-color); margin: .3rem 0 .8rem; }
+.ss-csv-preview table { margin: 0; font-size: .8rem; }
+.ss-csv-preview td { padding: .15rem .4rem; white-space: nowrap; border-right: 1px solid var(--pico-muted-border-color); }
+.ss-csv-preview td.num { text-align: right; }

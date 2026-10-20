@@ -1,0 +1,225 @@
+<!-- Generated from docs/de/apps/notebook.md by tools/build_docs.py - do not edit. Confluence page title: Python-Notebook -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Das Python-Notebook (<code>notebook.html</code>) führt Python 3 im Browser aus – ohne Installation, Server oder Internetverbindung. Es arbeitet wie Jupyter:
+Notebooks mit Code- und Textzellen, Ergebnisse direkt unter dem Code, Diagramme, Tabellen. Eine Konsole führt einzelne Befehle aus.</p>
+<p>Enthaltene Bibliotheken: numpy, pandas, matplotlib, seaborn, sympy, networkx, lxml, beautifulsoup4, pyyaml, openpyxl, xlrd, regex, requests,
+sqlite3, SQLAlchemy, pykeepass, nzpy und micropip. Sie werden beim ersten Import geladen; numpy, pandas und matplotlib werden nach dem Start im
+Hintergrund vorbereitet. Der erste Start dauert einige Sekunden; der Status rechts oben zeigt, wann Python bereit ist.</p>
+<h2>Notebooks</h2>
+<ul>
+<li><strong>Öffnen</strong> (<code>Strg+O</code>) öffnet ein Jupyter-Notebook (<code>.ipynb</code>) oder ein Python-Skript. In Skripten beginnt <code># %%</code> eine Codezelle und
+  <code># %% [markdown]</code> eine Textzelle (das Format von VS Code, Spyder und Jupytext); ein Skript ohne Markierungen wird eine Zelle.</li>
+<li><strong>Speichern</strong> (<code>Strg+S</code>) speichert das Notebook als <code>.ipynb</code> (mit Ausgaben): in Chrome/Edge am Desktop direkt in die Datei, in Firefox und
+  unter Android als Download. <strong>Speichern unter</strong> speichert unter neuem Namen. <strong>Exportieren…</strong> lädt das Notebook als Python-Skript (<code>.py</code>)
+  herunter, als <strong>HTML-Seite</strong> mit Code, Markdown und Ausgaben (Tabellen, Diagramme), die sich in jedem Browser öffnen lässt, als <strong>HTML-Seite ohne
+  Code</strong> (ein Bericht der Ergebnisse) oder druckt es (<strong>PDF</strong>: „Als PDF speichern“ als Drucker wählen).</li>
+<li><strong>Neu</strong> beginnt ein leeres Notebook.</li>
+</ul>
+<h2>Zellen</h2>
+<ul>
+<li><strong>+ Code</strong> und <strong>+ Markdown</strong> fügen unter der gewählten Zelle eine Zelle ein; die Schaltflächen neben einer Zelle führen sie aus (▶), wechseln
+  ihren Typ (M / { }), verschieben sie (↑ ↓) oder löschen sie (✕).</li>
+<li>Markdown-Zellen zeigen nach dem Ausführen formatierten Text; ein Doppelklick bearbeitet sie wieder.</li>
+<li><strong>▶▶ Alle ausführen</strong> führt alle Zellen von oben aus; <strong>Ausgaben löschen</strong> entfernt alle Ergebnisse.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Taste</th>
+<th>In einer Zelle (Bearbeiten)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Umschalt+Eingabe</code></td>
+<td>ausführen und zur nächsten Zelle (am Ende eine neue)</td>
+</tr>
+<tr>
+<td><code>Strg+Eingabe</code></td>
+<td>ausführen und bleiben</td>
+</tr>
+<tr>
+<td><code>Alt+Eingabe</code></td>
+<td>ausführen und darunter eine neue Zelle einfügen</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Editor verlassen (Befehlsmodus)</td>
+</tr>
+</tbody>
+</table>
+<p>Im Befehlsmodus (eine Zelle ist gewählt, die Schreibmarke steht nicht darin): <code>Eingabe</code> bearbeitet, <code>A</code>/<code>B</code> fügen eine Zelle darüber/darunter ein,
+<code>M</code> macht eine Markdown-Zelle, <code>Y</code> eine Codezelle, <code>↑</code>/<code>↓</code> wählen, <code>Entf</code> löscht die Zelle.</p>
+<p>Ausgaben: gedruckter Text, Fehler (im Traceback nur Ihr Code), das Ergebnis der letzten Zeile, Tabellen (pandas), Diagramme (matplotlib, auch ohne
+<code>plt.show()</code>), HTML und Markdown. HTML und Markdown aus Notebooks werden ohne Skripte angezeigt.</p>
+<p>Im Befehlsmodus macht <code>Z</code> oder <code>Strg+Z</code> (und ↶ in der Werkzeugleiste) die letzte Zellenaktion rückgängig: Einfügen, Löschen, Verschieben, Typ ändern, Ausgaben löschen; <code>Umschalt+Z</code>, <code>Strg+Y</code> oder ↷ wiederholt sie. In einer Zelle macht <code>Strg+Z</code> die Eingabe in dieser Zelle rückgängig. Das Ausführen von Zellen wird nicht rückgängig gemacht.</p>
+<p>Im Modus <strong>Folien</strong> zeigt jede Zelle einen Folientyp (slide, subslide, fragment, skip, notes – im Notebook gespeichert wie in Jupyter), und <strong>🎞️ Folien</strong> öffnet das Notebook als reveal.js-Präsentation in den <ac:link><ri:page ri:content-title="Web-Folien" /><ac:plain-text-link-body><![CDATA[Web-Folien]]></ac:plain-text-link-body></ac:link>.</p>
+<p><strong>Rechtschreibung:</strong> Ist im Auswahlfeld <strong>ABC</strong> der Kopfzeile eine Sprache gewählt, werden Markdown-Zellen vollständig und
+Code-Zellen in Kommentaren und Zeichenketten geprüft; ein Rechtsklick auf ein unterstrichenes Wort zeigt Vorschläge
+(<ac:link><ri:page ri:content-title="Portable Web App Suite – Benutzerhandbuch" /><ac:plain-text-link-body><![CDATA[Rechtschreibung]]></ac:plain-text-link-body></ac:link>).</p>
+<h2>Konsole</h2>
+<p>Der Reiter <strong>Konsole</strong> führt einzelne Befehle in derselben Python-Sitzung wie das Notebook aus (Variablen werden geteilt). <code>Eingabe</code> führt aus,
+<code>Umschalt+Eingabe</code> beginnt eine neue Zeile, <code>↑</code>/<code>↓</code> holen frühere Befehle zurück. <strong>Leeren</strong> leert die Konsole.</p>
+<h2>Dateien und Pakete</h2>
+<p>Der Bereich <strong>Dateien</strong> zeigt den Arbeitsordner von Python (<code>/home/pyodide</code>):</p>
+<ul>
+<li><strong>Hochladen…</strong> kopiert Dateien von Ihrem Computer in den Ordner (oder Dateien auf das Fenster ziehen), damit Python sie lesen kann, z. B. mit
+  <code>pd.read_csv('daten.csv')</code>.</li>
+<li>Ein Klick auf eine Datei lädt sie herunter (z. B. von Python geschriebene Ergebnisse), × löscht sie, Ordner öffnen sich mit einem Klick.</li>
+<li><strong>Wheel installieren…</strong> installiert weitere Python-Pakete aus Wheel-Dateien (<code>.whl</code>): reine Python-Pakete von PyPI oder für Pyodide gebaute
+  Pakete. Sie bleiben installiert, bis die Seite geschlossen wird (auch nach einem Neustart).</li>
+</ul>
+<p>Die Dateien existieren nur, solange die Seite geöffnet ist: Laden Sie Ergebnisse herunter, die Sie behalten möchten.</p>
+<p>↗ neben einer Datei im Dateibereich (<strong>Öffnen mit…</strong>) öffnet sie in einer anderen Anwendung der Suite (z. B. Texteditor oder Tabellenkalkulation); Speichern dort schreibt sie ins Python-Dateisystem zurück.</p>
+<h2>Variablen</h2>
+<p><strong>Variablen</strong> neben <strong>Dateien</strong> in der Seitenleiste listet nach jedem Ausführen die Variablen der laufenden Python-Sitzung: Name,
+Typ (mit dem <code>dtype</code> von NumPy-Arrays), Größe (<code>Zeilen × Spalten</code> bei DataFrames und Arrays, die Länge von Listen und Texten) und
+einen kurzen Wert (bei DataFrames die Spaltennamen). Module, Funktionen, Klassen und Namen mit <code>_</code> am Anfang werden weggelassen.
+Ein Klick auf einen DataFrame, eine Series oder ein Array (▦) zeigt sie als Tabelle (bis zu 500 Zeilen und 50 Spalten).</p>
+<h2>Interaktive Widgets</h2>
+<p>Zellen können Bedienelemente mit der üblichen <code>ipywidgets</code>-API zeigen (eingebaut, keine Installation nötig):</p>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">py</ac:parameter><ac:plain-text-body><![CDATA[import ipywidgets as widgets
+
+@widgets.interact(freq=(1, 10), kind=['sin', 'cos'])
+def plot(freq=3, kind='sin'):
+    ...                      # print, Rückgabewert oder matplotlib: die Ausgabe wird bei jeder Änderung erneuert]]></ac:plain-text-body></ac:structured-macro>
+<p>Verfügbar sind Schieberegler (<code>IntSlider</code>, <code>FloatSlider</code>, <code>FloatLogSlider</code>, Bereichsregler, <code>SelectionSlider</code>), Zahlen- und Textfelder,
+<code>Checkbox</code>, <code>ToggleButton</code>, <code>Dropdown</code>, <code>RadioButtons</code>, <code>Select</code>, <code>SelectMultiple</code>, <code>ToggleButtons</code>, <code>Button</code> (<code>on_click</code>), <code>ColorPicker</code>,
+<code>DatePicker</code>, <code>Play</code>, Fortschrittsbalken, <code>Label</code>, <code>HTML</code>, <code>Output</code> (<code>with out:</code> sammelt Ausgaben, Anzeigen und Grafiken), die Container
+<code>HBox</code>, <code>VBox</code>, <code>GridBox</code>, <code>Tab</code> und <code>Accordion</code> sowie <code>interact</code>, <code>interactive</code>, <code>interact_manual</code>, <code>fixed</code>, <code>observe</code>, <code>link</code> und <code>dlink</code>.
+Auch <code>from IPython.display import display, clear_output, HTML, Markdown</code> funktioniert.</p>
+<p>Ausgaben und Fehler von Callbacks außerhalb eines <code>Output</code>-Widgets erscheinen unter der Zelle, die das Widget erzeugt hat. Gespeicherte
+Notebooks behalten den Zustand der Widgets (im Format von Jupyter): Nach dem Öffnen werden die Bedienelemente wie zuvor angezeigt, sind
+aber inaktiv, bis die Zelle erneut läuft; dasselbe gilt nach einem Neustart. Eigene Widget-Bibliotheken (etwa <code>ipyleaflet</code>, <code>bqplot</code>)
+werden nicht unterstützt.</p>
+<h2>Neustart</h2>
+<p><strong>⟲ Neu starten</strong> hält eine laufende Zelle an und startet Python neu: Alle Variablen gehen verloren, Dateien und installierte Wheels bleiben.</p>
+<h2>Grenzen</h2>
+<ul>
+<li>Netzwerk: <code>requests</code> funktioniert bei Servern, die Zugriffe von Webseiten erlauben (CORS); direkte TCP-Verbindungen (Datenbanken, SSH, E-Mail) sind
+  im Browser nicht möglich – verwenden Sie dafür das Datenbankwerkzeug, den SSH-Client oder den E-Mail-Client der Suite.</li>
+<li>Es können nur Pakete der Suite oder als Wheel verfügbare Pakete verwendet werden; Pakete mit kompiliertem Code brauchen für Pyodide gebaute Wheels.</li>
+</ul>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+</tbody>
+</table>
+<h3>In einer Zelle</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Umschalt+Eingabe</code></td>
+<td>Ausführen und zur nächsten Zelle</td>
+</tr>
+<tr>
+<td><code>Strg+Eingabe</code></td>
+<td>Ausführen</td>
+</tr>
+<tr>
+<td><code>Alt+Eingabe</code></td>
+<td>Ausführen und Zelle darunter einfügen</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Zelle verlassen (Befehlsmodus)</td>
+</tr>
+</tbody>
+</table>
+<h3>Befehlsmodus</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Eingabe</code></td>
+<td>Zelle bearbeiten</td>
+</tr>
+<tr>
+<td><code>A</code> / <code>B</code></td>
+<td>Zelle darüber / darunter einfügen</td>
+</tr>
+<tr>
+<td><code>M</code> / <code>Y</code></td>
+<td>In Markdown / Code umwandeln</td>
+</tr>
+<tr>
+<td><code>↑</code> / <code>↓</code></td>
+<td>Vorherige / nächste Zelle</td>
+</tr>
+<tr>
+<td><code>Entf</code></td>
+<td>Zelle löschen</td>
+</tr>
+<tr>
+<td><code>Z</code> / <code>Umschalt+Z</code></td>
+<td>Zellenoperationen rückgängig / wiederholen</td>
+</tr>
+</tbody>
+</table>
+<h3>Konsole</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Eingabe</code></td>
+<td>Befehl ausführen</td>
+</tr>
+<tr>
+<td><code>↑</code> / <code>↓</code></td>
+<td>Vorheriger / nächster Befehl</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Zellen-Schaltflächen stehen unter jeder Zelle; <strong>Dateien · Variablen</strong> öffnet die Seitenleiste.</p>

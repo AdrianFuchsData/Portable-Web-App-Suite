@@ -1,0 +1,66 @@
+{
+  "@daybrush/utils": {
+    "version": "1.13.0",
+    "license": "MIT"
+  },
+  "@egjs/agent": {
+    "version": "2.4.3",
+    "license": "MIT"
+  },
+  "@egjs/children-differ": {
+    "version": "1.0.1",
+    "license": "MIT"
+  },
+  "@egjs/list-differ": {
+    "version": "1.0.1",
+    "license": "MIT"
+  },
+  "@scena/dragscroll": {
+    "version": "1.4.0",
+    "license": "MIT"
+  },
+  "@scena/event-emitter": {
+    "version": "1.0.5",
+    "license": "MIT"
+  },
+  "@scena/matrix": {
+    "version": "1.1.1",
+    "license": "MIT"
+  },
+  "croact": {
+    "version": "1.0.4",
+    "license": "MIT"
+  },
+  "croact-css-styled": {
+    "version": "1.1.9",
+    "license": "MIT"
+  },
+  "croact-moveable": {
+    "version": "0.9.0",
+    "license": "MIT"
+  },
+  "css-styled": {
+    "version": "1.0.8",
+    "license": "MIT"
+  },
+  "css-to-mat": {
+    "version": "1.1.1",
+    "license": "MIT"
+  },
+  "framework-utils": {
+    "version": "1.1.0",
+    "license": "MIT"
+  },
+  "gesto": {
+    "version": "1.19.4",
+    "license": "MIT"
+  },
+  "moveable": {
+    "version": "0.53.0",
+    "license": "MIT"
+  },
+  "overlap-area": {
+    "version": "1.1.0",
+    "license": "MIT"
+  }
+}

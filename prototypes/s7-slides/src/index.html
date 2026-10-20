@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src data:; form-action 'none'; base-uri 'none'">
+  <title>S-7: Slides</title>
+  <link rel="stylesheet" href="../../../shared/css/office-fonts.css">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap" data-src="../../../vendor/esm/slides/importmap.json ../../../vendor/esm/fflate/importmap.json js/importmap.json"></script>
+</head>
+<body>
+  <header>
+    <strong>S-7</strong>
+    <label class="button">Open PPTX <input type="file" id="open" accept=".pptx" hidden></label>
+    <button id="save">Save PPTX</button>
+    <span class="sep"></span>
+    <button id="add-slide">+ Slide</button>
+    <button id="add-text">Text box</button>
+    <button id="add-rect">Rectangle</button>
+    <button id="add-ellipse">Ellipse</button>
+    <button id="bold"><b>B</b></button>
+    <button id="italic"><i>I</i></button>
+    <button id="delete">Delete</button>
+    <span class="sep"></span>
+    <button id="present">▶ Present</button>
+    <span id="status"></span>
+  </header>
+  <main>
+    <nav id="thumbs"></nav>
+    <section id="stage-wrap"><div id="stage"></div></section>
+  </main>
+  <div id="presenter" hidden></div>
+  <script src="../../../vendor/pptxgen.bundle.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

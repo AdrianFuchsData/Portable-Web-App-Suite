@@ -1,0 +1,184 @@
+<!-- Generated from docs/de/apps/document.md by tools/build_docs.py - do not edit. Confluence page title: Textverarbeitung -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Die Textverarbeitung (<code>document.html</code>) schreibt und bearbeitet Textdokumente wie Word oder LibreOffice Writer: Absätze und Überschriften, Schriften
+und Farben, Ausrichtung und Abstände, Aufzählungen und nummerierte Listen, Tabellen, Bilder, Kopf- und Fußzeilen, Suchen und Ersetzen. Die
+Bearbeitungskomponente ist Univer Docs.</p>
+<h2>Dateien</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Öffnen</th>
+<th>Speichern</th>
+<th>Hinweise</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Word (<code>.docx</code>)</td>
+<td>ja</td>
+<td>ja</td>
+<td>Seitengröße und Ränder, Formatvorlagen, Überschriften, Textformatierung, Listen, Tabellen, Bilder, Hyperlinks, Kopf- und Fußzeilen</td>
+</tr>
+<tr>
+<td>OpenDocument (<code>.odt</code>, LibreOffice Writer)</td>
+<td>ja (auch Vorlagen <code>.ott</code>)</td>
+<td>ja</td>
+<td>dasselbe wie bei Word; Fuß- und Endnoten werden ans Ende des Dokuments gesetzt</td>
+</tr>
+<tr>
+<td>Word mit Makros (<code>.docm</code>), Vorlagen (<code>.dotx</code>)</td>
+<td>ja</td>
+<td>als <code>.docx</code></td>
+<td>Makros bleiben nicht erhalten; eine Vorlage wird ein neues Dokument</td>
+</tr>
+<tr>
+<td>Text (<code>.txt</code>, <code>.md</code>)</td>
+<td>ja</td>
+<td>ja (<code>.txt</code>)</td>
+<td>nur der Text; Formatierung, Tabellen und Bilder gehen verloren</td>
+</tr>
+<tr>
+<td>Webseite (<code>.html</code>)</td>
+<td>nein</td>
+<td>ja</td>
+<td>Text, Formatierung, Listen, Tabellen, Bilder und Links; kein Seitenlayout</td>
+</tr>
+<tr>
+<td>PDF</td>
+<td>nein</td>
+<td>über <strong>🖨</strong></td>
+<td>siehe <em>Drucken und PDF</em></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Öffnen</strong> (<code>Strg+O</code>) öffnet eine Datei; sie kann auch auf das Fenster gezogen werden. <strong>Neu</strong> beginnt ein leeres Dokument.</li>
+<li><strong>Speichern</strong> (<code>Strg+S</code>) speichert im Format der Datei: in Chrome/Edge am Desktop direkt in die Datei, in Firefox und unter Android als Download
+  (ersetzen Sie die ursprüngliche Datei damit). <strong>Speichern unter</strong> (<code>Strg+Umschalt+S</code>) fragt nach Name und Format.</li>
+<li>Der Dateiname in der Werkzeugleiste zeigt •, solange es ungespeicherte Änderungen gibt.</li>
+</ul>
+<h3>Drucken und PDF</h3>
+<p><strong>🖨</strong> (<code>Strg+P</code>) druckt das Dokument mit seiner Seitengröße und seinen Rändern; wählen Sie <em>Als PDF speichern</em> (Chrome, Edge, Android) oder
+<em>In Datei drucken</em> (Firefox) als Drucker, um ein PDF zu erhalten. Kopf- und Fußzeile des Dokuments wiederholen sich auf jeder Seite. Die
+Seitenumbrüche setzt der Browser, sie können also von den Seiten im Editor abweichen; eingefügte Seitenumbrüche bleiben erhalten. Links sind
+im PDF anklickbar, auch die Einträge eines Inhaltsverzeichnisses.</p>
+<p>Dokumente aus Word und LibreOffice werden beim Öffnen umgewandelt; sehr komplexe Layouts (Textfelder, Spalten, Änderungsverfolgung, Kommentare)
+können einfacher aussehen. Behalten Sie die ursprüngliche Datei, bis Sie das Ergebnis geprüft haben.</p>
+<h2>Bearbeiten</h2>
+<p>Das Menüband hat die Reiter <strong>Start</strong> (Zwischenablage, fett/kursiv/unterstrichen/durchgestrichen, Hoch- und Tiefstellung, Absatzformat, Größe,
+Schrift, Farben, Ausrichtung, Listen, Checklisten) und <strong>Einfügen</strong> (Tabellen, Bilder, Seitenumbrüche, Kopf- und Fußzeilen). Die üblichen
+Tastenkombinationen funktionieren: <code>Strg+B/I/U</code>, <code>Strg+Z/Y</code>, <code>Strg+C/X/V</code>, <code>Strg+F</code> zum Suchen. Die Statusleiste zeigt die Wortanzahl und den Zoom.</p>
+<p>Die Sprache der Bearbeitungskomponente folgt der Sprachumschaltung der Suite, ebenso das dunkle Design.</p>
+<p>Rückgängig und Wiederholen sind die ersten beiden Schaltflächen der Editor-Werkzeugleiste (auch <code>Strg+Z</code> und <code>Strg+Y</code>).</p>
+<h3>Inhaltsverzeichnis und Fußnoten</h3>
+<p><strong>📑 Inhalt</strong> fügt am Absatz der Schreibmarke ein Inhaltsverzeichnis ein: die Überschriften (Absatzformate <em>Überschrift 1</em> bis
+<em>Überschrift 5</em>), nach Ebene eingerückt. Nach Änderungen an den Überschriften genügt ein erneuter Klick, um das Verzeichnis an seiner Stelle zu
+aktualisieren. In gespeicherten Word- und OpenDocument-Dateien sind die Einträge Links zu den Überschriften (Strg+Klick in Word, Klick in
+LibreOffice); Seitenzahlen enthält das Verzeichnis nicht (der Editor kennt sie nicht) – Word und LibreOffice können bei Bedarf ein echtes
+Verzeichnis mit Seitenzahlen einfügen.</p>
+<h3>Rechtschreibung</h3>
+<p><strong>ABC✓</strong> (<code>F7</code>) öffnet die Rechtschreibprüfung neben dem Dokument (am Smartphone darunter). Sie listet die unbekannten Wörter des
+Dokumenttexts (Kopf- und Fußzeilen werden nicht geprüft); Wörter mit Ziffern, Wörter in Großbuchstaben (Abkürzungen), Web- und
+Mailadressen werden übersprungen.</p>
+<ul>
+<li>Ein Klick auf ein Wort markiert es im Dokument, ein weiterer Klick springt zum nächsten Vorkommen. Die Liste zeigt Vorschläge: Ein
+  Vorschlag ersetzt <strong>alle</strong> Vorkommen des Worts.</li>
+<li><strong>Ignorieren</strong> überspringt das Wort, bis der Editor geschlossen wird; <strong>Zum Wörterbuch hinzufügen</strong> behält es dauerhaft im Browser
+  (für alle Wörterbücher).</li>
+<li><strong>↻ Erneut prüfen</strong> nach Änderungen am Text.</li>
+</ul>
+<p>Englisch (USA) und Deutsch (Deutschland) sind eingebaut. Für andere Sprachen lädt <strong>Wörterbuch laden…</strong> ein Hunspell-Wörterbuch:
+entweder die <code>.aff</code>- und die <code>.dic</code>-Datei zusammen (etwa aus einer LibreOffice-Installation) oder eine LibreOffice-Wörterbucherweiterung
+(<code>.oxt</code>, etwa von extensions.libreoffice.org). Geladene Wörterbücher bleiben im Browser und werden in der Liste gewählt; 🗑 entfernt das
+gewählte. Wörterbuch, hinzugefügte und ignorierte Wörter sind dieselben wie im Auswahlfeld <strong>ABC</strong> in der Kopfzeile und in den anderen
+Anwendungen (siehe <em>Rechtschreibung</em> im Benutzerhandbuch); der Bereich funktioniert unabhängig davon, ob dieses Auswahlfeld ein- oder
+ausgeschaltet ist, weil die Seite dieses Editors als Bild gezeichnet wird und keine Unterstreichungen zeigen kann.</p>
+<p><strong>Fuß- und Endnoten</strong> aus Word- und LibreOffice-Dateien erscheinen mit ihrer hochgestellten Nummer; ihre Texte stehen nach einer Linie am Ende
+des Dokuments, weil der Editor keinen Fußnotenbereich hat. Seitenzahlfelder in Kopf- und Fußzeilen zeigen die in der Datei gespeicherte Zahl.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+<tr>
+<td><code>Strg+P</code></td>
+<td>Drucken / PDF</td>
+</tr>
+<tr>
+<td><code>F7</code></td>
+<td>Rechtschreibprüfung</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Rückgängig</td>
+</tr>
+<tr>
+<td><code>Strg+Y</code> / <code>Strg+Umschalt+Z</code></td>
+<td>Wiederholen</td>
+</tr>
+<tr>
+<td><code>Strg+X</code> / <code>Strg+C</code> / <code>Strg+V</code></td>
+<td>Ausschneiden, kopieren, einfügen</td>
+</tr>
+<tr>
+<td><code>Strg+B</code> / <code>Strg+I</code> / <code>Strg+U</code></td>
+<td>Fett / kursiv / unterstrichen</td>
+</tr>
+<tr>
+<td><code>Strg+A</code></td>
+<td>Alles auswählen</td>
+</tr>
+<tr>
+<td><code>/</code></td>
+<td>Befehlsmenü (am Anfang eines leeren Absatzes)</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Dokumente lassen sich lesen und bearbeiten; das Menüband lässt sich seitlich verschieben. Für längere Texte sind ein größerer Bildschirm und eine
+Tastatur angenehmer.</p>

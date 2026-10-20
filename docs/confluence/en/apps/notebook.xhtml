@@ -1,0 +1,224 @@
+<!-- Generated from docs/en/apps/notebook.md by tools/build_docs.py - do not edit. Confluence page title: Python notebook -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The Python notebook (<code>notebook.html</code>) runs Python 3 in the browser — without installation, server or internet connection. It works
+like Jupyter: notebooks with code and text cells, results directly below the code, plots, tables. A console runs single commands.</p>
+<p>Included libraries: numpy, pandas, matplotlib, seaborn, sympy, networkx, lxml, beautifulsoup4, pyyaml, openpyxl, xlrd, regex, requests,
+sqlite3, SQLAlchemy, pykeepass, nzpy and micropip. They are loaded when they are imported for the first time; numpy, pandas and matplotlib
+are prepared in the background after the start. The first start takes a few seconds; the status at the top right shows when Python is
+ready.</p>
+<h2>Notebooks</h2>
+<ul>
+<li><strong>Open</strong> (<code>Ctrl+O</code>) opens a Jupyter notebook (<code>.ipynb</code>) or a Python script. In scripts, <code># %%</code> starts a code cell and <code># %% [markdown]</code> a
+  text cell (the format of VS Code, Spyder and Jupytext); a script without markers becomes one cell.</li>
+<li><strong>Save</strong> (<code>Ctrl+S</code>) saves the notebook as <code>.ipynb</code> (with outputs): directly into the file in Chrome/Edge on the desktop, as a download in
+  Firefox and on Android. <strong>Save as</strong> saves under a new name. <strong>Export…</strong> downloads the notebook as a Python script (<code>.py</code>), as an <strong>HTML page</strong>
+  with code, Markdown and outputs (tables, charts) that opens in any browser, as an <strong>HTML page without code</strong> (a report of the
+  results), or prints it (<strong>PDF</strong>: choose "Save as PDF" as the printer).</li>
+<li><strong>New</strong> starts an empty notebook.</li>
+</ul>
+<h2>Cells</h2>
+<ul>
+<li><strong>+ Code</strong> and <strong>+ Markdown</strong> insert a cell below the selected one; the buttons next to a cell run it (▶), switch its type
+  (M / { }), move it (↑ ↓) or delete it (✕).</li>
+<li>Markdown cells show formatted text after running; double-click to edit them again.</li>
+<li><strong>▶▶ Run all</strong> runs all cells from the top; <strong>Clear outputs</strong> removes all results.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>In a cell (editing)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Shift+Enter</code></td>
+<td>run and go to the next cell (a new one at the end)</td>
+</tr>
+<tr>
+<td><code>Ctrl+Enter</code></td>
+<td>run and stay</td>
+</tr>
+<tr>
+<td><code>Alt+Enter</code></td>
+<td>run and insert a new cell below</td>
+</tr>
+<tr>
+<td><code>Escape</code></td>
+<td>leave the editor (command mode)</td>
+</tr>
+</tbody>
+</table>
+<p>In command mode (a cell is selected, the cursor is not in it): <code>Enter</code> edits, <code>A</code>/<code>B</code> insert a cell above/below, <code>M</code> makes it a Markdown
+cell, <code>Y</code> a code cell, <code>↑</code>/<code>↓</code> select, <code>Delete</code> deletes the cell.</p>
+<p>Outputs: printed text, errors (only your code in the traceback), the result of the last line, tables (pandas), plots (matplotlib, also
+without <code>plt.show()</code>), HTML and Markdown. HTML and Markdown from notebooks are shown without scripts.</p>
+<p>In command mode, <code>Z</code> or <code>Ctrl+Z</code> (and ↶ in the toolbar) undoes the last cell operation: inserting, deleting, moving, changing the type, clearing outputs; <code>Shift+Z</code>, <code>Ctrl+Y</code> or ↷ redoes it. Inside a cell, <code>Ctrl+Z</code> undoes typing in that cell. Running cells is not undone.</p>
+<p>In <strong>Slideshow</strong> mode every cell shows a slide type (slide, sub-slide, fragment, skip, notes – stored in the notebook like in Jupyter), and <strong>🎞️ Slides</strong> opens the notebook as a reveal.js presentation in the <ac:link><ri:page ri:content-title="Web slides" /><ac:plain-text-link-body><![CDATA[web slides]]></ac:plain-text-link-body></ac:link> app.</p>
+<p><strong>Spelling:</strong> with a language chosen in the <strong>ABC</strong> selector of the header, Markdown cells are checked completely and code
+cells in their comments and strings; right-click an underlined word for suggestions (<ac:link><ri:page ri:content-title="Portable Web App Suite – User Guide" /><ac:plain-text-link-body><![CDATA[Spelling]]></ac:plain-text-link-body></ac:link>).</p>
+<h2>Console</h2>
+<p>The <strong>Console</strong> tab runs single commands in the same Python session as the notebook (variables are shared). <code>Enter</code> runs, <code>Shift+Enter</code> starts a
+new line, <code>↑</code>/<code>↓</code> recall earlier commands. <strong>Clear</strong> empties the console.</p>
+<h2>Files and packages</h2>
+<p>The <strong>Files</strong> panel shows Python's working folder (<code>/home/pyodide</code>):</p>
+<ul>
+<li><strong>Upload…</strong> copies files from your computer into the folder (or drop them onto the window), so Python can read them, e.g. with
+  <code>pd.read_csv('data.csv')</code>.</li>
+<li>Click a file to download it (e.g. results written by Python), × deletes it, folders open with a click.</li>
+<li><strong>Install wheel…</strong> installs further Python packages from wheel files (<code>.whl</code>): pure-Python packages from PyPI, or packages built for
+  Pyodide. They stay installed until the page is closed (also after a restart).</li>
+</ul>
+<p>The files only exist while the page is open: download results you want to keep.</p>
+<p>↗ next to a file in the files panel (<strong>Open with…</strong>) opens it in another application of the suite (e.g. the text editor or spreadsheet); saving there writes it back into the Python file system.</p>
+<h2>Variables</h2>
+<p><strong>Variables</strong> next to <strong>Files</strong> in the side panel lists the variables of the running Python session after every run: name,
+type (with the <code>dtype</code> of NumPy arrays), size (<code>rows × columns</code> of DataFrames and arrays, the length of lists and strings)
+and a short value (the column names of DataFrames). Modules, functions, classes and names starting with <code>_</code> are left out.
+A click on a DataFrame, Series or array (▦) shows it as a table (up to 500 rows and 50 columns).</p>
+<h2>Interactive widgets</h2>
+<p>Cells can show controls with the usual <code>ipywidgets</code> API (built in, nothing to install):</p>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">py</ac:parameter><ac:plain-text-body><![CDATA[import ipywidgets as widgets
+
+@widgets.interact(freq=(1, 10), kind=['sin', 'cos'])
+def plot(freq=3, kind='sin'):
+    ...                      # print, return a value or draw with matplotlib: the output is updated on every change]]></ac:plain-text-body></ac:structured-macro>
+<p>Available are sliders (<code>IntSlider</code>, <code>FloatSlider</code>, <code>FloatLogSlider</code>, range sliders, <code>SelectionSlider</code>), number and text fields,
+<code>Checkbox</code>, <code>ToggleButton</code>, <code>Dropdown</code>, <code>RadioButtons</code>, <code>Select</code>, <code>SelectMultiple</code>, <code>ToggleButtons</code>, <code>Button</code> (<code>on_click</code>),
+<code>ColorPicker</code>, <code>DatePicker</code>, <code>Play</code>, progress bars, <code>Label</code>, <code>HTML</code>, <code>Output</code> (<code>with out:</code> collects prints, displays and figures),
+the containers <code>HBox</code>, <code>VBox</code>, <code>GridBox</code>, <code>Tab</code> and <code>Accordion</code>, as well as <code>interact</code>, <code>interactive</code>, <code>interact_manual</code>, <code>fixed</code>,
+<code>observe</code>, <code>link</code> and <code>dlink</code>. <code>from IPython.display import display, clear_output, HTML, Markdown</code> works too.</p>
+<p>Prints and errors of callbacks outside an <code>Output</code> widget appear below the cell that created the widget. Saved notebooks keep the
+state of the widgets (in the format of Jupyter): after opening, the controls are shown as they were but are inactive until the cell
+runs again; the same applies after a restart. Custom widget libraries (e.g. <code>ipyleaflet</code>, <code>bqplot</code>) are not supported.</p>
+<h2>Restart</h2>
+<p><strong>⟲ Restart</strong> stops a running cell and starts Python again: all variables are lost, files and installed wheels stay.</p>
+<h2>Limits</h2>
+<ul>
+<li>Network: <code>requests</code> works for servers that allow access from web pages (CORS); raw TCP connections (databases, SSH, mail) are not possible in
+  the browser — use the suite's database tool, SSH client or mail client for those.</li>
+<li>Only packages included in the suite or available as wheels can be used; packages with compiled code need wheels built for Pyodide.</li>
+</ul>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+</tbody>
+</table>
+<h3>In a cell</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Shift+Enter</code></td>
+<td>Run and go to the next cell</td>
+</tr>
+<tr>
+<td><code>Ctrl+Enter</code></td>
+<td>Run</td>
+</tr>
+<tr>
+<td><code>Alt+Enter</code></td>
+<td>Run and insert a cell below</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Leave the cell (command mode)</td>
+</tr>
+</tbody>
+</table>
+<h3>Command mode</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Enter</code></td>
+<td>Edit the cell</td>
+</tr>
+<tr>
+<td><code>A</code> / <code>B</code></td>
+<td>Insert a cell above / below</td>
+</tr>
+<tr>
+<td><code>M</code> / <code>Y</code></td>
+<td>Make it Markdown / code</td>
+</tr>
+<tr>
+<td><code>↑</code> / <code>↓</code></td>
+<td>Previous / next cell</td>
+</tr>
+<tr>
+<td><code>Delete</code></td>
+<td>Delete the cell</td>
+</tr>
+<tr>
+<td><code>Z</code> / <code>Shift+Z</code></td>
+<td>Undo / redo cell operations</td>
+</tr>
+</tbody>
+</table>
+<h3>Console</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Enter</code></td>
+<td>Run the command</td>
+</tr>
+<tr>
+<td><code>↑</code> / <code>↓</code></td>
+<td>Previous / next command</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The cell buttons are shown below each cell; <strong>Files · Variables</strong> opens the side panel.</p>

@@ -1,0 +1,6 @@
+{
+  "out": "esm/docx",
+  "packages": {
+    "docx": "9"
+  }
+}

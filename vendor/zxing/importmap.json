@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "zxing-wasm": "zxing.js",
+    "zxing-wasm/share": "share.js"
+  }
+}

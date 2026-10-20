@@ -1,0 +1,11 @@
+{
+  "imports": {
+    "app/pptx-import": "../../../../shared/js/pptx-import.js",
+    "app/pptx-export": "../../../../shared/js/pptx-export.js",
+    "app/slide-render": "../../../../shared/js/slide-render.js",
+    "app/deck-convert": "../../../../shared/js/deck-convert.js",
+    "app/reveal-deck": "../../../reveal/src/js/deck.js",
+    "app/spell": "../../../../shared/js/spell.js",
+    "app/spell-dom": "../../../../shared/js/spell-dom.js"
+  }
+}

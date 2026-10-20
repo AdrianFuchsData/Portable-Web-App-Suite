@@ -1,0 +1,6 @@
+{
+  "out": "esm/psd",
+  "packages": {
+    "ag-psd": "31.0.2"
+  }
+}

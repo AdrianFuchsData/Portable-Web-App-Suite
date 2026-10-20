@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval'; worker-src blob:; style-src 'unsafe-inline'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>S-5: Platform capabilities from file://</title>
+  <script type="application/octet-stream" id="add-wasm" data-src="assets/add.wasm"></script>
+  <script type="text/plain" id="square-worker" data-src="js/worker.js"></script>
+</head>
+<body>
+  <h1>S-5: Platform capabilities</h1>
+  <pre id="out">running…</pre>
+  <script src="../../../shared/js/embed.js"></script>
+  <script src="js/probe.js"></script>
+</body>
+</html>

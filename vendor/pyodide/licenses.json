@@ -1,0 +1,527 @@
+{
+ "argon2_cffi-23.1.0-py3-none-any.whl": {
+  "name": "argon2-cffi",
+  "version": "23.1.0",
+  "license": "MIT",
+  "classifiers": [
+   "MIT License"
+  ],
+  "license_files": [
+   "argon2_cffi-23.1.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "argon2_cffi_bindings-25.1.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl": {
+  "name": "argon2-cffi-bindings",
+  "version": "25.1.0",
+  "license": "MIT",
+  "classifiers": [],
+  "license_files": [
+   "argon2_cffi_bindings-25.1.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "beautifulsoup4-4.14.3-py3-none-any.whl": {
+  "name": "beautifulsoup4",
+  "version": "4.14.3",
+  "license": "MIT License",
+  "classifiers": [
+   "MIT License"
+  ],
+  "license_files": [
+   "beautifulsoup4-4.14.3.dist-info/licenses/AUTHORS",
+   "beautifulsoup4-4.14.3.dist-info/licenses/LICENSE"
+  ]
+ },
+ "certifi-2026.4.22-py3-none-any.whl": {
+  "name": "certifi",
+  "version": "2026.4.22",
+  "license": "MPL-2.0",
+  "classifiers": [
+   "Mozilla Public License 2.0 (MPL 2.0)"
+  ],
+  "license_files": [
+   "certifi-2026.4.22.dist-info/licenses/LICENSE"
+  ]
+ },
+ "cffi-2.0.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "cffi",
+  "version": "2.0.0",
+  "license": "MIT",
+  "classifiers": [],
+  "license_files": [
+   "cffi-2.0.0.dist-info/licenses/AUTHORS",
+   "cffi-2.0.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "charset_normalizer-3.4.7-py3-none-any.whl": {
+  "name": "charset-normalizer",
+  "version": "3.4.7",
+  "license": "MIT",
+  "classifiers": [],
+  "license_files": [
+   "charset_normalizer-3.4.7.dist-info/licenses/LICENSE"
+  ]
+ },
+ "contourpy-1.3.3-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "contourpy",
+  "version": "1.3.3",
+  "license": "BSD 3-Clause License",
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "contourpy-1.3.3.dist-info/LICENSE"
+  ]
+ },
+ "cycler-0.12.1-py3-none-any.whl": {
+  "name": "cycler",
+  "version": "0.12.1",
+  "license": "Copyright (c) 2015, matplotlib project",
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "cycler-0.12.1.dist-info/LICENSE"
+  ]
+ },
+ "decorator-5.2.1-py3-none-any.whl": {
+  "name": "decorator",
+  "version": "5.2.1",
+  "license": "BSD-2-Clause",
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "decorator-5.2.1.dist-info/LICENSE.txt"
+  ]
+ },
+ "fonttools-4.62.1-py3-none-any.whl": {
+  "name": "fonttools",
+  "version": "4.62.1",
+  "license": "MIT",
+  "classifiers": [],
+  "license_files": [
+   "fonttools-4.62.1.dist-info/licenses/LICENSE",
+   "fonttools-4.62.1.dist-info/licenses/LICENSE.external"
+  ]
+ },
+ "idna-3.11-py3-none-any.whl": {
+  "name": "idna",
+  "version": "3.11",
+  "license": "BSD-3-Clause",
+  "classifiers": [],
+  "license_files": [
+   "idna-3.11.dist-info/licenses/LICENSE.md"
+  ]
+ },
+ "kiwisolver-1.5.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "kiwisolver",
+  "version": "1.5.0",
+  "license": "=========================",
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "kiwisolver-1.5.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "lxml-6.1.3-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "lxml",
+  "version": "6.1.3",
+  "license": "BSD-3-Clause",
+  "classifiers": [],
+  "license_files": [
+   "lxml-6.1.3.dist-info/licenses/LICENSE.txt",
+   "lxml-6.1.3.dist-info/licenses/LICENSES.txt"
+  ]
+ },
+ "matplotlib-3.10.8-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "matplotlib",
+  "version": "3.10.8",
+  "license": "License agreement for matplotlib versions 1.3.0 and later",
+  "classifiers": [
+   "Python Software Foundation License"
+  ],
+  "license_files": [
+   "matplotlib/mpl-data/fonts/ttf/LICENSE_DEJAVU",
+   "matplotlib/mpl-data/fonts/ttf/LICENSE_STIX",
+   "matplotlib-3.10.8.dist-info/LICENSE"
+  ]
+ },
+ "micropip-0.11.1-py3-none-any.whl": {
+  "name": "micropip",
+  "version": "0.11.1",
+  "license": "Mozilla Public License Version 2.0",
+  "classifiers": [
+   "Mozilla Public License 2.0 (MPL 2.0)"
+  ],
+  "license_files": [
+   "micropip/_vendored/packaging/LICENSE",
+   "micropip/_vendored/packaging/LICENSE.APACHE",
+   "micropip/_vendored/packaging/LICENSE.BSD",
+   "micropip/_vendored/packaging/src/packaging/licenses/__init__.py",
+   "micropip/_vendored/packaging/src/packaging/licenses/_spdx.py",
+   "micropip-0.11.1.dist-info/licenses/LICENSE"
+  ]
+ },
+ "mpmath-1.4.1-py3-none-any.whl": {
+  "name": "mpmath",
+  "version": "1.4.1",
+  "license": "BSD-3-Clause",
+  "classifiers": [],
+  "license_files": [
+   "mpmath-1.4.1.dist-info/licenses/LICENSE"
+  ]
+ },
+ "networkx-3.6.1-py3-none-any.whl": {
+  "name": "networkx",
+  "version": "3.6.1",
+  "license": "BSD-3-Clause",
+  "classifiers": [],
+  "license_files": [
+   "networkx-3.6.1.dist-info/licenses/LICENSE.txt"
+  ]
+ },
+ "numpy-2.4.6-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "numpy",
+  "version": "2.4.6",
+  "license": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+  "classifiers": [],
+  "license_files": [
+   "numpy/_core/include/numpy/random/LICENSE.txt",
+   "numpy/ma/LICENSE",
+   "numpy/random/LICENSE.md",
+   "numpy-2.4.6.dist-info/licenses/LICENSE.txt",
+   "numpy-2.4.6.dist-info/licenses/numpy/_core/include/numpy/libdivide/LICENSE.txt",
+   "numpy-2.4.6.dist-info/licenses/numpy/_core/src/common/pythoncapi-compat/COPYING",
+   "numpy-2.4.6.dist-info/licenses/numpy/_core/src/highway/LICENSE",
+   "numpy-2.4.6.dist-info/licenses/numpy/_core/src/multiarray/dragon4_LICENSE.txt",
+   "numpy-2.4.6.dist-info/licenses/numpy/_core/src/npysort/x86-simd-sort/LICENSE.md",
+   "numpy-2.4.6.dist-info/licenses/numpy/_core/src/umath/svml/LICENSE"
+  ]
+ },
+ "packaging-26.1-py3-none-any.whl": {
+  "name": "packaging",
+  "version": "26.1",
+  "license": "Apache-2.0 OR BSD-2-Clause",
+  "classifiers": [],
+  "license_files": [
+   "packaging/licenses/__init__.py",
+   "packaging/licenses/_spdx.py",
+   "packaging-26.1.dist-info/licenses/LICENSE",
+   "packaging-26.1.dist-info/licenses/LICENSE.APACHE",
+   "packaging-26.1.dist-info/licenses/LICENSE.BSD"
+  ]
+ },
+ "pandas-3.0.2-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "pandas",
+  "version": "3.0.2",
+  "license": "BSD 3-Clause License",
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "pandas-3.0.2.dist-info/LICENSE"
+  ]
+ },
+ "pillow-12.2.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "pillow",
+  "version": "12.2.0",
+  "license": "MIT-CMU",
+  "classifiers": [],
+  "license_files": [
+   "pillow-12.2.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "pycparser-3.0-py3-none-any.whl": {
+  "name": "pycparser",
+  "version": "3.0",
+  "license": "BSD-3-Clause",
+  "classifiers": [],
+  "license_files": [
+   "pycparser-3.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "pycryptodome-3.23.0-cp37-abi3-pyemscripten_2026_0_wasm32.whl": {
+  "name": "pycryptodome",
+  "version": "3.23.0",
+  "license": "BSD, Public Domain",
+  "classifiers": [
+   "BSD License",
+   "Public Domain"
+  ],
+  "license_files": [
+   "pycryptodome-3.23.0.dist-info/licenses/AUTHORS.rst",
+   "pycryptodome-3.23.0.dist-info/licenses/LICENSE.rst"
+  ]
+ },
+ "pyparsing-3.3.2-py3-none-any.whl": {
+  "name": "pyparsing",
+  "version": "3.3.2",
+  "license": "MIT",
+  "classifiers": [],
+  "license_files": [
+   "pyparsing-3.3.2.dist-info/licenses/LICENSE"
+  ]
+ },
+ "python_dateutil-2.9.0.post0-py2.py3-none-any.whl": {
+  "name": "python-dateutil",
+  "version": "2.9.0.post0",
+  "license": "Dual License",
+  "classifiers": [
+   "BSD License",
+   "Apache Software License"
+  ],
+  "license_files": [
+   "python_dateutil-2.9.0.post0.dist-info/LICENSE"
+  ]
+ },
+ "pytz-2026.1.post1-py2.py3-none-any.whl": {
+  "name": "pytz",
+  "version": "2026.1.post1",
+  "license": "MIT",
+  "classifiers": [
+   "MIT License"
+  ],
+  "license_files": [
+   "pytz-2026.1.post1.dist-info/LICENSE.txt"
+  ]
+ },
+ "pyyaml-6.0.3-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "PyYAML",
+  "version": "6.0.3",
+  "license": "MIT",
+  "classifiers": [
+   "MIT License"
+  ],
+  "license_files": [
+   "pyyaml-6.0.3.dist-info/licenses/LICENSE"
+  ]
+ },
+ "regex-2026.3.32-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "regex",
+  "version": "2026.3.32",
+  "license": "Apache-2.0 AND CNRI-Python",
+  "classifiers": [],
+  "license_files": [
+   "regex-2026.3.32.dist-info/licenses/LICENSE.txt"
+  ]
+ },
+ "requests-2.33.1-py3-none-any.whl": {
+  "name": "requests",
+  "version": "2.33.1",
+  "license": "Apache-2.0",
+  "classifiers": [
+   "Apache Software License"
+  ],
+  "license_files": [
+   "requests-2.33.1.dist-info/licenses/LICENSE",
+   "requests-2.33.1.dist-info/licenses/NOTICE"
+  ]
+ },
+ "setuptools-82.0.1-py3-none-any.whl": {
+  "name": "setuptools",
+  "version": "82.0.1",
+  "license": "MIT",
+  "classifiers": [],
+  "license_files": [
+   "setuptools/_vendor/importlib_metadata-8.7.1.dist-info/licenses/LICENSE",
+   "setuptools/_vendor/jaraco_context-6.1.0.dist-info/licenses/LICENSE",
+   "setuptools/_vendor/jaraco_functools-4.4.0.dist-info/licenses/LICENSE",
+   "setuptools/_vendor/more_itertools-10.8.0.dist-info/licenses/LICENSE",
+   "setuptools/_vendor/packaging/licenses/__init__.py",
+   "setuptools/_vendor/packaging/licenses/_spdx.py",
+   "setuptools/_vendor/packaging-26.0.dist-info/licenses/LICENSE",
+   "setuptools/_vendor/packaging-26.0.dist-info/licenses/LICENSE.APACHE",
+   "setuptools/_vendor/packaging-26.0.dist-info/licenses/LICENSE.BSD",
+   "setuptools/_vendor/platformdirs-4.4.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "six-1.17.0-py2.py3-none-any.whl": {
+  "name": "six",
+  "version": "1.17.0",
+  "license": "MIT",
+  "classifiers": [
+   "MIT License"
+  ],
+  "license_files": [
+   "six-1.17.0.dist-info/LICENSE"
+  ]
+ },
+ "soupsieve-2.8.3-py3-none-any.whl": {
+  "name": "soupsieve",
+  "version": "2.8.3",
+  "license": "MIT",
+  "classifiers": [
+   "MIT License"
+  ],
+  "license_files": [
+   "soupsieve-2.8.3.dist-info/licenses/LICENSE.md"
+  ]
+ },
+ "sqlalchemy-2.0.48-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "SQLAlchemy",
+  "version": "2.0.48",
+  "license": "MIT",
+  "classifiers": [],
+  "license_files": [
+   "sqlalchemy-2.0.48.dist-info/licenses/LICENSE"
+  ]
+ },
+ "sympy-1.14.0-py3-none-any.whl": {
+  "name": "sympy",
+  "version": "1.14.0",
+  "license": "BSD",
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "sympy/parsing/latex/LICENSE.txt",
+   "sympy-1.14.0.dist-info/licenses/AUTHORS",
+   "sympy-1.14.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "typing_extensions-4.15.0-py3-none-any.whl": {
+  "name": "typing_extensions",
+  "version": "4.15.0",
+  "license": "PSF-2.0",
+  "classifiers": [],
+  "license_files": [
+   "typing_extensions-4.15.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "urllib3-2.6.3-py3-none-any.whl": {
+  "name": "urllib3",
+  "version": "2.6.3",
+  "license": "MIT",
+  "classifiers": [],
+  "license_files": [
+   "urllib3-2.6.3.dist-info/licenses/LICENSE.txt"
+  ]
+ },
+ "xlrd-2.0.2-py2.py3-none-any.whl": {
+  "name": "xlrd",
+  "version": "2.0.2",
+  "license": "BSD",
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "xlrd-2.0.2.dist-info/LICENSE"
+  ]
+ },
+ "seaborn-0.13.2-py3-none-any.whl": {
+  "name": "seaborn",
+  "version": "0.13.2",
+  "license": null,
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "seaborn-0.13.2.dist-info/LICENSE.md"
+  ]
+ },
+ "et_xmlfile-2.0.0-py3-none-any.whl": {
+  "name": "et_xmlfile",
+  "version": "2.0.0",
+  "license": "MIT",
+  "classifiers": [
+   "MIT License"
+  ],
+  "license_files": [
+   "et_xmlfile-2.0.0.dist-info/LICENCE.python",
+   "et_xmlfile-2.0.0.dist-info/LICENCE.rst"
+  ]
+ },
+ "openpyxl-3.1.5-py2.py3-none-any.whl": {
+  "name": "openpyxl",
+  "version": "3.1.5",
+  "license": "MIT",
+  "classifiers": [
+   "MIT License"
+  ],
+  "license_files": [
+   "openpyxl-3.1.5.dist-info/LICENCE.rst"
+  ]
+ },
+ "pyotp-2.9.0-py3-none-any.whl": {
+  "name": "pyotp",
+  "version": "2.9.0",
+  "license": "MIT License",
+  "classifiers": [
+   "MIT License"
+  ],
+  "license_files": [
+   "pyotp-2.9.0.dist-info/LICENSE"
+  ]
+ },
+ "construct-2.10.70-py3-none-any.whl": {
+  "name": "construct",
+  "version": "2.10.70",
+  "license": "MIT",
+  "classifiers": [
+   "MIT License"
+  ],
+  "license_files": [
+   "construct-2.10.70.dist-info/LICENSE"
+  ]
+ },
+ "pykeepass-4.2.0-py3-none-any.whl": {
+  "name": "pykeepass",
+  "version": "4.2.0",
+  "license": "GPL-3.0",
+  "classifiers": [
+   "GNU General Public License v3 (GPLv3)"
+  ],
+  "license_files": [
+   "pykeepass-4.2.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "asn1crypto-1.5.1-py2.py3-none-any.whl": {
+  "name": "asn1crypto",
+  "version": "1.5.1",
+  "license": "MIT",
+  "classifiers": [
+   "MIT License"
+  ],
+  "license_files": [
+   "asn1crypto-1.5.1.dist-info/LICENSE"
+  ]
+ },
+ "scramp-1.4.12-py3-none-any.whl": {
+  "name": "scramp",
+  "version": "1.4.12",
+  "license": "MIT No Attribution",
+  "classifiers": [
+   "MIT No Attribution License (MIT-0)"
+  ],
+  "license_files": [
+   "scramp-1.4.12.dist-info/licenses/LICENSE"
+  ]
+ },
+ "looseversion-1.3.0-py2.py3-none-any.whl": {
+  "name": "looseversion",
+  "version": "1.3.0",
+  "license": "PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2",
+  "classifiers": [
+   "Python Software Foundation License"
+  ],
+  "license_files": [
+   "looseversion-1.3.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "nzpy-1.17.8-py3-none-any.whl": {
+  "name": "nzpy",
+  "version": "1.17.8",
+  "license": "IBM",
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "nzpy-1.17.8.dist-info/licenses/LICENSE"
+  ]
+ },
+ "pyodide": {
+  "license": "MPL-2.0",
+  "note": "Pyodide runtime; includes CPython (PSF-2.0) and the Python standard library"
+ }
+}

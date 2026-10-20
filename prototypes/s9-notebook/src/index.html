@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'unsafe-inline' blob: 'wasm-unsafe-eval'; worker-src blob:; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src http: https:; form-action 'none'; base-uri 'none'">
+  <title>S-9: Python notebook</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap" data-src="../../../vendor/esm/codemirror/importmap.json ../../../vendor/esm/notebook/importmap.json"></script>
+  <script type="application/octet-stream" data-bundle="../../../vendor/pyodide/bundle.json"></script>
+  <script type="text/plain" id="worker-hash-wasm" data-src="../../../vendor/hash-wasm-argon2.umd.min.js"></script>
+  <script type="text/plain" id="python-worker" data-src="../../../shared/js/python-worker.js"></script>
+</head>
+<body>
+  <header>
+    <strong>S-9</strong>
+    <label class="button">Open .ipynb <input type="file" id="open" accept=".ipynb,application/json" hidden></label>
+    <button id="save">Save .ipynb</button>
+    <span class="sep"></span>
+    <button id="add-code">+ Code</button>
+    <button id="add-markdown">+ Markdown</button>
+    <button id="run-all">▶▶ Run all</button>
+    <button id="restart">⟲ Restart</button>
+    <span class="sep"></span>
+    <label class="button">Upload file <input type="file" id="upload" multiple hidden></label>
+    <label class="button">Install wheel <input type="file" id="wheel" accept=".whl" multiple hidden></label>
+    <span id="status">loading…</span>
+  </header>
+  <main>
+    <section id="cells"></section>
+    <aside id="files"><h3>/home/pyodide</h3><ul id="file-list"></ul></aside>
+  </main>
+  <script src="../../../shared/js/python-kernel.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

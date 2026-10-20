@@ -1,0 +1,10 @@
+{
+  "out": "esm/xterm",
+  "packages": {
+    "@xterm/xterm": "6",
+    "@xterm/addon-fit": "0"
+  },
+  "assets": {
+    "@xterm/xterm": ["css/xterm.css"]
+  }
+}

@@ -1,0 +1,236 @@
+<!-- Generated from docs/en/apps/texteditor.md by tools/build_docs.py - do not edit. Confluence page title: Text editor -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The text editor (<code>texteditor.html</code>) edits text files and source code: several files in tabs, syntax highlighting
+for more than 40 languages, search and replace, multiple cursors, and control over encoding and line endings.</p>
+<h2>Opening and creating files</h2>
+<ul>
+<li><strong>Open</strong> (<code>Ctrl+O</code>) opens one or more files; you can also drag files onto the window.</li>
+<li><strong>New</strong> (<code>Alt+N</code>) creates an empty document.</li>
+<li><strong>Recent</strong> (Chrome/Edge on the desktop) reopens recently used files.</li>
+</ul>
+<p>Every file opens in its own tab. A dot (●) on a tab shows unsaved changes. Close a tab with × or <code>Alt+W</code>; if it has
+unsaved changes, the editor asks first. With the keyboard, move to a tab with <code>Tab</code> and press <code>Enter</code> to show it or
+<code>Delete</code> to close it.</p>
+<h2>Saving</h2>
+<ul>
+<li><strong>Save</strong> (<code>Ctrl+S</code>) writes the file. In Chrome/Edge on the desktop the opened file is changed directly; in Firefox
+  and on Android the file is downloaded – replace the original file with it.</li>
+<li><strong>Save as</strong> (<code>Ctrl+Shift+S</code>) saves under a new name. New documents are always saved with "Save as".</li>
+</ul>
+<h2>Editing</h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Keys</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Find / replace (also with regular expressions)</td>
+<td><code>Ctrl+F</code>, or 🔍</td>
+</tr>
+<tr>
+<td>Go to line</td>
+<td><code>Ctrl+G</code>, or ↧</td>
+</tr>
+<tr>
+<td>Add a cursor</td>
+<td><code>Ctrl+click</code></td>
+</tr>
+<tr>
+<td>Column of cursors (rectangular selection)</td>
+<td><code>Alt+drag</code> with the mouse</td>
+</tr>
+<tr>
+<td>Select the next occurrence of the word</td>
+<td><code>Ctrl+D</code></td>
+</tr>
+<tr>
+<td>Undo / redo</td>
+<td><code>Ctrl+Z</code> / <code>Ctrl+Y</code> or <code>Ctrl+Shift+Z</code></td>
+</tr>
+<tr>
+<td>Indent / unindent the selection</td>
+<td><code>Tab</code> / <code>Shift+Tab</code></td>
+</tr>
+<tr>
+<td>Comment / uncomment</td>
+<td><code>Ctrl+/</code></td>
+</tr>
+</tbody>
+</table>
+<p>With several cursors, everything you type, delete or paste happens at every cursor. <code>Esc</code> returns to one cursor.</p>
+<p>The buttons ↩ (word wrap), · (show spaces and tabs), A− and A+ (font size) change the view; the editor remembers
+these settings.</p>
+<p>Every document has its own undo history: ↶ and ↷ in the toolbar, or <code>Ctrl+Z</code> and <code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code>.</p>
+<p><strong>Spelling:</strong> with a language chosen in the <strong>ABC</strong> selector of the header, unknown words are underlined – in plain text and
+Markdown everywhere, in program code only in comments and strings; right-click a word for suggestions (<ac:link><ri:page ri:content-title="Portable Web App Suite – User Guide" /><ac:plain-text-link-body><![CDATA[Spelling]]></ac:plain-text-link-body></ac:link>).</p>
+<h2>Split view</h2>
+<p><strong>◫</strong> shows the current document a second time, next to the first one (one above the other on phones), for example to
+look at the beginning of a long file while editing its end. Both views edit the same text and share one undo history;
+the second view follows the active tab. ◫ again closes it.</p>
+<h2>Find in files</h2>
+<p><strong>🔍🗂</strong> (<code>Ctrl+Shift+F</code>) searches all open documents at once: matches are listed by file with line and column; a click
+opens the document and selects the match. <strong>Aa</strong> matches upper/lower case exactly, <strong>.*</strong> treats the text as a regular
+expression. In Chrome and Edge, <strong>📁 Folder…</strong> searches a folder on your computer instead, with its subfolders (skipping
+<code>.git</code>, <code>node_modules</code>, binary files and files over 5 MB); a click on a match opens that file. At most 2000 matches are
+listed.</p>
+<h2>Comparing</h2>
+<p><strong>⇔</strong> compares the current document with another open document or with a file. On wide screens the two texts are
+shown side by side – left the other text (read-only), right the current document – with changed lines and words
+highlighted and unchanged parts aligned; <strong>→</strong> between them copies a change of the left text into the document. On phones
+one view shows the deleted lines inline with <strong>Accept</strong>/<strong>Reject</strong> for each change. <strong>↑</strong>/<strong>↓</strong> jump between the
+differences; <strong>Done</strong> (or ⇔ again) ends the comparison, and edits made meanwhile become one undo step.</p>
+<h2>Tools</h2>
+<p><strong>🛠 Tools</strong> in the toolbar changes the selected text, or the whole document when nothing is selected. Every tool can
+be undone with <code>Ctrl+Z</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Tools</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lines</td>
+<td>sort A→Z or Z→A (numbers in natural order: 9 before 10; upper/lower case ignored), sort by length, reverse the order, remove duplicate lines, remove empty lines, trim whitespace at the end or at both ends, join lines</td>
+</tr>
+<tr>
+<td>Case</td>
+<td>UPPER CASE, lower case, Title Case, iNVERT cASE</td>
+</tr>
+<tr>
+<td>Encode / decode</td>
+<td>Base64 (UTF-8), URL encoding (percent encoding), HTML entities</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>format (indent) or minify JSON, format XML</td>
+</tr>
+</tbody>
+</table>
+<p>Line tools always work on whole lines: those touched by the selection. Invalid input (for example broken JSON) shows
+a message and leaves the text unchanged.</p>
+<h2>Status bar</h2>
+<p>The status bar shows the cursor position (line and column), the length of the selection and the number of
+cursors. It also lets you change:</p>
+<ul>
+<li><strong>Language</strong> of the syntax highlighting (detected from the file name).</li>
+<li><strong>Encoding</strong> used when saving: UTF-8 (optionally with BOM), UTF-16 LE/BE or Windows-1252. When opening, the
+  encoding is detected automatically. If a file was detected wrongly, <strong>Reload with encoding</strong> reads it again with
+  another encoding (Chrome/Edge on the desktop).</li>
+<li><strong>Line endings</strong> used when saving: LF (Linux, macOS), CRLF (Windows) or CR.</li>
+</ul>
+<ac:structured-macro ac:name="info"><ac:rich-text-body><p>Windows-1252 cannot store all characters. The editor warns before it replaces such characters with “?”.</p></ac:rich-text-body></ac:structured-macro>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+<tr>
+<td><code>Alt+N</code></td>
+<td>New document</td>
+</tr>
+<tr>
+<td><code>Alt+W</code></td>
+<td>Close the document</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo</td>
+</tr>
+<tr>
+<td><code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code></td>
+<td>Redo</td>
+</tr>
+<tr>
+<td><code>Ctrl+F</code></td>
+<td>Find and replace</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+F</code></td>
+<td>Find in all open files</td>
+</tr>
+<tr>
+<td><code>Ctrl+G</code></td>
+<td>Go to line</td>
+</tr>
+<tr>
+<td><code>Ctrl+D</code></td>
+<td>Select the next occurrence of the word</td>
+</tr>
+<tr>
+<td><code>Ctrl+Click</code></td>
+<td>Add a cursor</td>
+</tr>
+<tr>
+<td><code>Alt+Drag</code></td>
+<td>Column of cursors (rectangular selection)</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Back to one cursor</td>
+</tr>
+<tr>
+<td><code>Tab</code> / <code>Shift+Tab</code></td>
+<td>Indent / unindent</td>
+</tr>
+<tr>
+<td><code>Ctrl+/</code></td>
+<td>Comment / uncomment</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+[</code> / <code>Ctrl+Shift+]</code></td>
+<td>Fold / unfold the block</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The toolbar can be scrolled sideways. Tap the text to show the keyboard. Multiple cursors with <code>Alt+drag</code> need a
+mouse and keyboard.</p>

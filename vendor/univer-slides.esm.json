@@ -1,0 +1,57 @@
+{
+  "out": "esm/univer-slides",
+  "packages": {
+    "@univerjs/core": "1",
+    "@univerjs/design": "1",
+    "@univerjs/ui": "1",
+    "@univerjs/engine-render": "1",
+    "@univerjs/engine-formula": "1",
+    "@univerjs/docs": "1",
+    "@univerjs/docs-ui": "1",
+    "@univerjs/drawing": "1",
+    "@univerjs/slides": "1",
+    "@univerjs/slides-ui": "1",
+    "react": "18",
+    "react-dom": "18",
+    "rxjs": "7"
+  },
+  "modules": [
+    "@univerjs/design/locale/en-US",
+    "@univerjs/design/locale/de-DE",
+    "@univerjs/ui/locale/en-US",
+    "@univerjs/ui/locale/de-DE",
+    "@univerjs/docs-ui/locale/en-US",
+    "@univerjs/docs-ui/locale/de-DE",
+    "@univerjs/slides-ui/locale/en-US",
+    "@univerjs/slides-ui/locale/de-DE",
+    "react-dom/client"
+  ],
+  "exclude": [
+    "@univerjs/engine-render/lib/es/*"
+  ],
+  "include": [
+    "@univerjs/engine-render/lib/es/de-*",
+    "@univerjs/engine-render/lib/es/en-gb-*"
+  ],
+  "assets": {
+    "@univerjs/design": [
+      "lib/index.css"
+    ],
+    "@univerjs/ui": [
+      "lib/index.css"
+    ],
+    "@univerjs/docs-ui": [
+      "lib/index.css"
+    ],
+    "@univerjs/slides-ui": [
+      "lib/index.css"
+    ]
+  },
+  "stub": {
+    "template": "export const {name} = [\"\", \"{}\", []];",
+    "name": {
+      "regex": "^.*/lib/es/(.+)-[A-Za-z0-9_-]{8}\\.js$",
+      "pascal": true
+    }
+  }
+}

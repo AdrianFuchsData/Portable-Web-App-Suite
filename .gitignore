@@ -1,0 +1,24 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Test output
+test-results/
+
+# include Build output
+# uncomment to exclude
+# dist/
+
+# Local developer tools (e.g. portable PowerShell for relay tests)
+.tools/
+
+
+# Hosted PWA variant (tools/build_pwa.py)
+build/
+
+# Build output (attach the built apps to a GitHub release instead)
+dist/
+build/

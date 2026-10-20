@@ -1,0 +1,74 @@
+/* Media player (on top of shared/css/suite.css) */
+.mp-toolbar { display: flex; gap: .3rem; flex-wrap: wrap; align-items: center; }
+.mp-toolbar button { margin: 0; padding: .2rem .55rem; font-size: .85rem; width: auto; }
+.suite-main { overflow: hidden; display: flex; flex-direction: column; }
+.mp-layout { flex: 1; display: grid; grid-template-columns: 1fr; min-height: 0; }
+.mp-layout.with-playlist { grid-template-columns: 1fr minmax(16rem, 24rem); }
+.mp-player { display: flex; flex-direction: column; min-height: 0; min-width: 0; margin: 0; background: #000; color: #eee; }
+.mp-stage { flex: 1; position: relative; min-height: 10rem; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.mp-video { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.mp-video video { max-width: 100%; max-height: 100%; width: 100%; height: 100%; object-fit: contain; }
+.mp-info { position: relative; display: flex; flex-direction: column; align-items: center; gap: .3rem; text-align: center; padding: 1rem; max-width: 40rem; cursor: pointer; }
+.mp-info img { max-width: min(18rem, 60vw); max-height: 40vh; border-radius: .4rem; box-shadow: 0 .3rem 1rem rgba(0,0,0,.5); }
+.mp-info p { color: #bbb; }
+.mp-info strong { font-size: 1.3rem; color: #fff; }
+.mp-info span { color: #ccc; }
+.mp-info small { color: #999; }
+.mp-note { font-size: 5rem; line-height: 1; color: #777; }
+.mp-controls { padding: .4rem .6rem .5rem; background: #161616; }
+.mp-seek { display: flex; align-items: center; gap: .6rem; font-variant-numeric: tabular-nums; font-size: .85rem; }
+.mp-seek input { flex: 1; margin: 0; }
+.mp-buttons { display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; margin-top: .3rem; }
+.mp-buttons button { margin: 0; width: auto; padding: .25rem .55rem; color: #eee; border-color: #555; }
+.mp-buttons button.mp-play { padding: .25rem .9rem; }
+.mp-buttons select { margin: 0; width: auto; padding: .15rem 1.8rem .15rem .5rem; height: auto; font-size: .85rem; background-color: #222; color: #eee; border-color: #555; }
+.mp-gap { flex: 1; }
+.mp-buttons input.mp-volume { width: 7rem; flex: none; margin: 0; }
+.mp-player:fullscreen { width: 100vw; height: 100vh; }
+.mp-playlist { display: flex; flex-direction: column; min-height: 0; border-left: 1px solid var(--pico-muted-border-color); }
+.mp-pl-head { display: flex; gap: .3rem; padding: .4rem; border-bottom: 1px solid var(--pico-muted-border-color); }
+.mp-pl-head input { margin: 0; padding: .25rem .6rem; height: auto; }
+.mp-pl-head button { margin: 0; width: auto; padding: .2rem .55rem; font-size: .85rem; }
+.mp-list { flex: 1; overflow-y: auto; margin: 0; padding: 0; list-style: none; counter-reset: item; }
+.mp-list li { list-style: none; display: flex; align-items: center; gap: .3rem; padding: 0 .3rem; margin: 0; border-bottom: 1px solid var(--pico-muted-border-color); }
+.mp-list li.current { background: var(--suite-selected); font-weight: 600; }
+.mp-list li.missing .mp-item-title, .mp-list li.error .mp-item-title { color: var(--pico-muted-color); text-decoration: line-through; }
+.mp-list li.dragging { opacity: .4; }
+.mp-item { flex: 1; min-width: 0; display: flex; justify-content: space-between; gap: .5rem; background: none; border: 0; color: inherit; text-align: left; margin: 0; padding: .45rem .3rem; font-size: .9rem; font-weight: inherit; cursor: default; }
+.mp-item:focus-visible { outline: 2px solid var(--pico-primary); }
+.mp-item-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-item-time { color: var(--pico-muted-color); font-variant-numeric: tabular-nums; }
+.mp-item-actions { display: flex; gap: .15rem; visibility: hidden; }
+.mp-list li:hover .mp-item-actions, .mp-list li:focus-within .mp-item-actions { visibility: visible; }
+.mp-item-actions button { margin: 0; width: auto; padding: 0 .4rem; font-size: .8rem; }
+.mp-pl-foot { margin: 0; padding: .3rem .6rem; font-size: .8rem; color: var(--pico-muted-color); border-top: 1px solid var(--pico-muted-border-color); }
+@media (max-width: 760px) {
+  .mp-toolbar { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; order: 3; width: 100%; padding-bottom: .2rem; }
+  .mp-toolbar > * { flex: none; }
+  .suite-main { overflow-y: auto; }
+  .mp-layout, .mp-layout.with-playlist { grid-template-columns: 1fr; grid-template-rows: auto auto; flex: none; }
+  .mp-stage { min-height: 0; aspect-ratio: 16 / 9; flex: none; }
+  .mp-buttons input.mp-volume { width: 5rem; }
+  .mp-playlist { border-left: 0; }
+  .mp-list { overflow: visible; }
+  .mp-item-actions { visibility: visible; }
+  .mp-item { padding: .7rem .3rem; }
+  .mp-buttons button { padding: .45rem .7rem; }
+}
+@media (pointer: coarse) { .mp-item-actions { visibility: visible; } }
+/* equaliser */
+.mp-eq { background: #181818; color: #eee; padding: .4rem .6rem; border-top: 1px solid #333; }
+.mp-eq-head { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+.mp-eq-head select { margin: 0; width: auto; padding: .1rem 1.8rem .1rem .5rem; height: auto; font-size: .85rem; background-color: #222; color: #eee; border-color: #555; }
+.mp-eq-check { display: flex; align-items: center; gap: .3rem; margin: 0; font-size: .85rem; color: #eee; }
+.mp-eq-check input { margin: 0; }
+.mp-eq-bands { display: flex; justify-content: space-between; gap: .2rem; padding: .4rem 0; }
+.mp-eq-band { display: flex; flex-direction: column; align-items: center; gap: .2rem; margin: 0; flex: 1; min-width: 0; color: #bbb; }
+.mp-eq-band input { writing-mode: vertical-lr; direction: rtl; height: 6rem; width: 1.4rem; margin: 0; padding: 0; }
+.mp-eq-hint { color: #999; font-size: .75rem; }
+/* album view */
+.mp-albums { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: .5rem; padding: .5rem; align-content: start; }
+.mp-album { display: flex; flex-direction: column; align-items: stretch; gap: .2rem; margin: 0; padding: .3rem; text-align: left; background: none; border: 1px solid var(--pico-muted-border-color); color: inherit; }
+.mp-album img, .mp-album-note { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: .2rem; background: var(--pico-muted-border-color); display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+.mp-album strong { font-size: .8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-album small { font-size: .72rem; color: var(--pico-muted-color); }

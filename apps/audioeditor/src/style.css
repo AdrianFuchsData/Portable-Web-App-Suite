@@ -1,0 +1,52 @@
+/* Audio editor (on top of shared/css/suite.css) */
+:root { --ae-wave: #1f6fd1; --ae-lane: #fbfcfe; --ae-empty: #e9edf2; --ae-clip-head: #cfe0f5; --ae-cue: #ef6c00; --ae-sel: rgba(31, 111, 209, .22); --ae-head: 168px; }
+[data-theme=dark] { --ae-wave: #6ab0ff; --ae-lane: #141a22; --ae-empty: #0b0f14; --ae-clip-head: #22344d; --ae-cue: #ffa040; --ae-sel: rgba(106, 176, 255, .25); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme=light]) { --ae-wave: #6ab0ff; --ae-lane: #141a22; --ae-empty: #0b0f14; --ae-clip-head: #22344d; --ae-cue: #ffa040; --ae-sel: rgba(106, 176, 255, .25); } }
+.ae-toolbar { display: flex; gap: .3rem; align-items: center; overflow-x: auto; }
+.ae-toolbar button { margin: 0; padding: .2rem .55rem; font-size: .85rem; width: auto; white-space: nowrap; flex: 0 0 auto; }
+.ae-sep { flex: 0 0 .4rem; }
+.suite-main { overflow: hidden; display: flex; flex-direction: column; }
+.ae-layout { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.ae-name-bar { padding: .2rem .6rem; font-size: .8rem; color: var(--pico-muted-color); }
+.ae-transport { display: flex; flex-wrap: wrap; gap: .3rem; align-items: center; padding: .3rem .6rem; border-bottom: 1px solid var(--pico-muted-border-color); font-size: .8rem; }
+.ae-transport button { margin: 0; width: auto; padding: .15rem .55rem; font-size: .9rem; }
+.ae-transport label { margin: 0; display: flex; align-items: center; gap: .3rem; font-size: .75rem; }
+.ae-transport input { margin: 0; width: 6.5rem; padding: .1rem .4rem; height: auto; font-size: .8rem; font-family: var(--pico-font-family-monospace); }
+.ae-clock { font: 1.1rem var(--pico-font-family-monospace); padding: 0 .5rem; min-width: 7rem; }
+.ae-len { font-family: var(--pico-font-family-monospace); color: var(--pico-muted-color); }
+.ae-rec { color: #e53935; }
+.ae-rec:not(.outline) { background: #e53935; border-color: #e53935; color: #fff; }
+.ae-rate { color: var(--pico-muted-color); }
+.ae-empty { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; text-align: center; color: var(--pico-muted-color); }
+.ae-tracks { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.ae-rows { flex: 1; overflow-y: auto; min-height: 0; }
+.ae-row { display: flex; border-bottom: 1px solid var(--pico-muted-border-color); }
+.ae-head { flex: 0 0 var(--ae-head); width: var(--ae-head); padding: .25rem .35rem; border-right: 1px solid var(--pico-muted-border-color); font-size: .75rem; display: flex; flex-direction: column; gap: .2rem; }
+.ae-head.selected { background: var(--suite-selected); }
+.ae-head-row { display: flex; gap: .2rem; align-items: center; }
+.ae-head button { margin: 0; width: auto; padding: 0 .4rem; font-size: .72rem; }
+.ae-name { margin: 0 !important; padding: .05rem .3rem !important; height: auto !important; font-size: .78rem !important; flex: 1; min-width: 0; }
+.ae-slider { display: flex; align-items: center; gap: .3rem; margin: 0; }
+.ae-slider input { margin: 0; height: 1rem; }
+.ae-corner { padding: 0; }
+.ae-lane { flex: 1; min-width: 0; height: 120px; display: block; touch-action: none; cursor: text; }
+.ae-ruler { flex: 1; min-width: 0; height: 24px; display: block; cursor: pointer; }
+.ae-hscroll { flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden; height: 14px; }
+.ae-menu { position: fixed; z-index: 40; list-style: none; margin: 0; padding: .3rem; background: var(--pico-background-color); border: 1px solid var(--pico-muted-border-color); border-radius: .4rem; box-shadow: 0 .4rem 1.2rem rgba(0,0,0,.25); min-width: 13rem; }
+.ae-menu li { list-style: none; margin: 0; }
+.ae-menu hr { margin: .25rem 0; }
+.ae-hint { display: block; font-size: .65rem; color: var(--pico-muted-color); line-height: 1.1; padding: .1rem .3rem; }
+.ae-menu { max-height: calc(100vh - 6rem); overflow-y: auto; }
+.ae-menu button { width: 100%; margin: .1rem 0; padding: .2rem .6rem; font-size: .85rem; text-align: left; border: 0; }
+@media (max-width: 760px) {
+  :root { --ae-head: 112px; }
+  .ae-head { padding: .15rem .2rem; gap: .1rem; }
+  .ae-head-row { gap: .1rem; }
+  .ae-head button { padding: 0 .25rem; font-size: .68rem; }
+  .ae-slider { gap: .1rem; font-size: .65rem; }
+  .ae-wide { display: none !important; }
+  .ae-lane { height: 96px; }
+  .ae-clock { min-width: 0; font-size: .95rem; }
+  .ae-transport input { width: 5.5rem; }
+}
+.ae-labels { flex: 1; min-width: 0; height: 44px; display: block; cursor: pointer; border-bottom: 1px solid var(--pico-muted-border-color); }

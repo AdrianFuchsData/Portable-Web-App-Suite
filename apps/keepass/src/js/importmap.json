@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "app/spell": "../../../../shared/js/spell.js",
+    "app/spell-dom": "../../../../shared/js/spell-dom.js"
+  }
+}

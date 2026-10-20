@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" data-version="%%BUILD_VERSION%%">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>S-1: ES modules without a bundler</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- library modules (vendored by tools/vendor_esm.py) and own modules, embedded by build.py -->
+  <script type="importmap" data-src="../../../vendor/esm/codemirror/importmap.json js/importmap.json"></script>
+</head>
+<body>
+  <header>
+    <strong>S-1</strong> CodeMirror 6 from file://
+    <select id="lang"><option>javascript</option><option>python</option><option>html</option><option>css</option><option>markdown</option><option>json</option></select>
+    <label><input type="checkbox" id="dark"> dark</label>
+    <span id="status">loading…</span>
+  </header>
+  <div id="editor"></div>
+  <!-- classic script: runs before the modules; shows that classic app code can use the module libraries -->
+  <script src="js/classic.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

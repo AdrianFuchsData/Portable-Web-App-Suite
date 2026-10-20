@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" data-version="%%BUILD_VERSION%%">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'unsafe-inline' blob:; worker-src blob:; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src data: blob:; form-action 'none'; base-uri 'none'">
+  <title>Spreadsheet</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23217346' d='M3 3h18v18H3z'/%3E%3Cpath fill='none' stroke='white' stroke-width='1.5' d='M3 9h18M3 15h18M9 3v18M15 3v18'/%3E%3C/svg%3E">
+  <!-- conditional Pico: only inside .pico elements, so that it does not restyle the Univer UI -->
+  <link rel="stylesheet" href="../../../vendor/pico.conditional.min.css">
+  <link rel="stylesheet" href="../../../shared/css/suite.css">
+  <link rel="stylesheet" href="../../../vendor/esm/univer-sheets/assets/univerjs__preset-sheets-core/lib/index.css">
+  <link rel="stylesheet" href="../../../vendor/esm/univer-sheets/assets/univerjs__preset-sheets-conditional-formatting/lib/index.css">
+  <link rel="stylesheet" href="../../../vendor/esm/univer-sheets/assets/univerjs__preset-sheets-data-validation/lib/index.css">
+  <link rel="stylesheet" href="../../../shared/css/office-fonts.css">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap" data-src="../../../vendor/esm/univer-sheets/importmap.json"></script>
+  <script type="application/json" data-shortcuts="spreadsheet"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <noscript>This application requires JavaScript.</noscript>
+  <script src="../../../vendor/htm-preact-standalone.umd.js"></script>
+  <script src="../../../vendor/exceljs.min.js"></script>
+  <script src="../../../vendor/xlsx.full.min.js"></script>
+  <script src="../../../shared/js/i18n.js"></script>
+  <script src="../../../shared/js/files.js"></script>
+  <script src="../../../shared/js/bridge.js"></script>
+  <script src="../../../shared/js/shell.js"></script>
+  <script src="../../../shared/js/autosave.js"></script>
+  <script src="../../../shared/js/univer-xlsx.js"></script>
+  <script src="js/csv.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "package": "katex",
+  "version": "0.16.22",
+  "license": "MIT",
+  "files": {
+    "katex.min.js": "e8d885505949f3a5f4abdd5dd0d53696bd1371ad26ffbf4f310dcd77c8cdae89",
+    "auto-render.min.js": "bb53eb953394531aae36fdd537065c4244eb8542901a3ce914601d932675b8ac",
+    "katex.css": "c87d2b61698d44a07331ee70f61e01ec7afa1c102903403c03f1f7d44fa4f746",
+    "LICENSE": "766ccc1f306c885aa45542a9846bbd0a505b27a0374f146778171c2254ce18e3"
+  }
+}

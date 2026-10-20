@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'unsafe-inline' blob:; worker-src blob:; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>S-6: Univer Docs</title>
+  <link rel="stylesheet" href="../../../vendor/esm/univer-docs/assets/univerjs__preset-docs-core/lib/index.css">
+  <link rel="stylesheet" href="../../../vendor/esm/univer-docs/assets/univerjs__preset-docs-drawing/lib/index.css">
+  <link rel="stylesheet" href="../../../shared/css/office-fonts.css">
+  <style>
+    html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
+    body { display: flex; flex-direction: column; }
+    header { padding: .4rem .8rem; border-bottom: 1px solid #8884; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+    #app { flex: 1; min-height: 0; }
+  </style>
+  <script type="importmap" data-src="../../../vendor/esm/univer-docs/importmap.json ../../../vendor/esm/docx/importmap.json ../../../vendor/esm/fflate/importmap.json js/importmap.json"></script>
+</head>
+<body>
+  <header>
+    <strong>S-6</strong>
+    <label>Open DOCX <input type="file" id="open" accept=".docx"></label>
+    <button id="export-docx">Save as DOCX</button>
+    <span id="status">loading…</span>
+  </header>
+  <div id="app"></div>
+  <script src="../../../vendor/mammoth.browser.min.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

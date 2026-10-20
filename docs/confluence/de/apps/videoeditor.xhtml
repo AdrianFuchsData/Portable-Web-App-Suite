@@ -1,0 +1,171 @@
+<!-- Generated from docs/de/apps/videoeditor.md by tools/build_docs.py - do not edit. Confluence page title: Video-Editor -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Der Video-Editor (<code>videoeditor.html</code>) schneidet Videos wie ein einfaches kdenlive: Medienliste, Zeitleiste mit mehreren
+Video- und Audiospuren, Titel, Blenden und Export als WebM oder MP4.</p>
+<h2>Medien</h2>
+<p><strong>Medien importieren</strong> (oder Ziehen von Dateien auf das Fenster) fügt Videos (WebM, MP4, MOV, MKV, …), Audiodateien (MP3,
+WAV, OGG, M4A, FLAC, …) und Bilder (PNG, JPEG, WebP, GIF, SVG) zur Medienliste hinzu. Welche Videoformate gehen, hängt vom
+Browser ab; ⚠ markiert Dateien, die in der Vorschau laufen, aber für den Export nicht dekodiert werden können.</p>
+<p>Eine Datei kommt mit <strong>＋</strong> in die Zeitleiste (ans Ende von V1, Audio an A1), per Doppelklick oder durch Ziehen auf eine
+Spur an die gewünschte Zeit. Videos können auch auf eine Audiospur gezogen werden, um nur ihren Ton zu verwenden.</p>
+<h2>Zeitleiste</h2>
+<ul>
+<li>Videospuren liegen übereinander: V2 verdeckt V1 (Bild im Bild, Logos, Titel). Audiospuren geben nur Ton wieder; Videos auf
+  Videospuren spielen auch ihren eigenen Ton.</li>
+<li>Ziehen verschiebt einen Clip (auch auf eine andere Spur derselben Art), Ziehen am linken oder rechten Rand kürzt ihn. Clips
+  rasten an den Rändern anderer Clips und an der Abspielposition ein. Wird ein Clip auf andere geschoben, überschreibt er die
+  verdeckten Teile.</li>
+<li>Ein Klick wählt einen Clip. <strong>✂</strong> (<code>S</code>) teilt den gewählten Clip (oder alle Clips) an der Abspielposition, <strong>🗑</strong> (<code>Entf</code>)
+  löscht ihn, <strong>⇤🗑</strong> (<code>Umschalt+Entf</code>) löscht ihn und schiebt die folgenden Clips der Spur nach links.</li>
+<li>Ein Klick auf das Zeitlineal oder eine leere Stelle einer Spur setzt die Abspielposition. <strong>+</strong>/<strong>−</strong> zoomen.</li>
+<li>Der Spurkopf hat 👁 (Videospur ausblenden), 🔊 (stumm) und × (Spur löschen); <strong>+V</strong> und <strong>+A</strong> fügen Spuren hinzu.</li>
+<li>Audioclips zeigen ihre Wellenform (mit der Lautstärke des Clips skaliert), Videoclips mit Ton eine kleinere am unteren Rand.
+  So schneidet man leicht in Pausen oder richtet Clips an einem Takt aus. (Dateien über 400 MB erscheinen ohne Wellenform.)</li>
+<li><code>Strg+Z</code>/<code>Strg+Y</code> machen jede Änderung rückgängig bzw. wiederholen sie.</li>
+</ul>
+<h2>Eigenschaften</h2>
+<p>Ohne gewählten Clip zeigt der Bereich rechts das Projekt: Auflösung (z. B. 1920 × 1080, 1280 × 720, hochkant 1080 × 1920,
+quadratisch), Bildrate und Hintergrundfarbe.</p>
+<p>Für einen Clip: Beginn, Dauer, Startpunkt in der Quelle, Ein-/Ausblenden (Bild und Ton), Lautstärke (0–200 %) und für Bilder
+X/Y-Versatz, Größe und Deckkraft. <strong>T Titel</strong> fügt an der Abspielposition auf der obersten Spur einen Titel ein: Text (mehrere
+Zeilen), Schriftgröße, Farbe, Position (oben, Mitte, unten) und ein optionaler dunkler Hintergrund.</p>
+<p><strong>Geschwindigkeit (%)</strong> spielt einen Video- oder Audioclip langsamer (Zeitlupe, bis 10 %) oder schneller (bis 1000 %); der Clip wird
+auf der Zeitleiste länger oder kürzer, der Ausschnitt der Quelle bleibt gleich, und der Ton ändert wie bei einem Band seine Tonhöhe.
+<strong>Rückwärts</strong> spielt den Clip rückwärts ab. Die Zeitleiste zeigt die Geschwindigkeit und ◀ bei rückwärts laufenden Clips. In der
+Vorschau ist ein rückwärts laufender Clip stumm und läuft eventuell weniger flüssig (der Browser kann Medien nicht rückwärts
+abspielen); der Export enthält Bild und Ton rückwärts.</p>
+<p><strong>Untertitel</strong>: Beim Import einer SRT- oder WebVTT-Datei (mit den Medien oder durch Ablegen) wird jeder Untertitel ein Titel auf einer Spur
+<em>Subtitles</em> ganz oben – am unteren Bildrand, weiß auf dunklem Band; sie lassen sich wie jeder Titel bearbeiten, verschieben und kürzen und werden
+in das exportierte Video eingebrannt. <strong>CC</strong> speichert die Titel dieser Spur (oder alle Titel) wieder als SRT-Datei.</p>
+<p><strong>Bild</strong> (für Videos und Bilder, unter den Clip-Einstellungen aufklappbar): Helligkeit, Kontrast und Sättigung (100 % = unverändert),
+Drehung in Grad, Abschneiden jedes Rands (in % des Bildes) und <strong>Bewegung</strong> (Ken Burns): Größe und X/Y-Versatz am Ende des Clips – das
+Bild zoomt und schwenkt gleichmäßig von seinen Werten am Anfang dorthin, etwa <em>Größe am Ende</em> 130 % für ein langsames Hineinzoomen in ein
+Foto. <strong>Bild zurücksetzen</strong> stellt alles zurück.</p>
+<p><strong>Übergänge</strong>: <em>Einblenden als</em> und <em>Ausblenden als</em> legen fest, wie ein Bild während seiner Blende erscheint bzw. verschwindet:
+Überblendung (wird durchsichtig, Standard), Wischen oder Schieben in eine von vier Richtungen, Zoom oder Kreis. Was darunter liegt, scheint
+durch: Ein Clip auf V1 darunter ergibt einen Übergang zwischen zwei Bildern (legen Sie den nächsten Clip so auf V2, dass er das Ende des
+ersten überlappt, und blenden Sie ihn ein); ohne etwas darunter ist es schwarz.</p>
+<h2>Vorschau</h2>
+<p>▶ (<code>Leertaste</code>) spielt ab der Abspielposition, ◀ ▶| (<code>←</code> <code>→</code>) gehen ein Bild weiter (<code>Umschalt</code>: eine Sekunde), ⏮ ⏭
+(<code>Pos1</code>/<code>Ende</code>) springen an den Anfang bzw. das Ende. <strong>📷</strong> speichert das aktuelle Bild als PNG.</p>
+<h2>Export</h2>
+<p><strong>Exportieren</strong> berechnet die Zeitleiste mit dem Video-Encoder des Browsers (WebCodecs) als WebM (VP9 oder VP8, Ton Opus)
+oder MP4 (H.264 und AAC in Chrome und Edge, sonst VP9 und Opus), in der Auflösung und Bildrate des Projekts und der gewählten
+Qualität. Ein Fortschrittsbalken zeigt den Stand (lange Videos dauern eine Weile); der Export kann abgebrochen werden.</p>
+<p>Der Export braucht WebCodecs: Chrome, Edge und Firefox am Desktop haben es, <strong>Firefox für Android nicht</strong> (Schneiden geht,
+Exportieren nicht).</p>
+<h2>Projekte</h2>
+<p><strong>Projekt speichern</strong> (<code>Strg+S</code>) speichert Zeitleiste und Einstellungen als JSON-Datei. Die Mediendateien sind <strong>nicht</strong>
+enthalten: Bewahren Sie sie zusammen mit dem Projekt auf. Nach <strong>Projekt öffnen</strong> stehen die Medien als „fehlt“ in der Liste;
+importieren Sie sie erneut (Dateien mit gleichem Namen werden automatisch verknüpft) oder verwenden Sie <strong>Suchen…</strong> für jede.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Projekt öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Projekt speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Projekt speichern unter</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Rückgängig</td>
+</tr>
+<tr>
+<td><code>Strg+Y</code> / <code>Strg+Umschalt+Z</code></td>
+<td>Wiederholen</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>An der Abspielposition teilen</td>
+</tr>
+<tr>
+<td><code>Entf</code> / <code>Rücktaste</code></td>
+<td>Clip löschen (mit Umschalt: Lücke schließen)</td>
+</tr>
+</tbody>
+</table>
+<h3>Wiedergabe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Leertaste</code></td>
+<td>Abspielen / Stopp</td>
+</tr>
+<tr>
+<td><code>←</code> / <code>→</code></td>
+<td>Ein Bild zurück / vor (mit Umschalt: 1 s)</td>
+</tr>
+<tr>
+<td><code>Pos1</code> / <code>Ende</code></td>
+<td>Zum Anfang / Ende</td>
+</tr>
+</tbody>
+</table>
+<h3>Ansicht</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>+</code> / <code>-</code></td>
+<td>Zeitleiste zoomen</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Vorschau steht oben, <strong>Medien</strong> und <strong>Eigenschaften</strong> wechseln den Bereich darunter, die Zeitleiste ist unten. Tippen
+wählt einen Clip, Ziehen mit dem Finger verschiebt ihn; verwenden Sie ＋ in der Medienliste statt Ziehen und Ablegen.</p>
+<h2>Grenzen</h2>
+<p>Keine Übergänge zwischen Clips außer Blenden, keine Keyframes, keine Bildeffekte (Farbe, Unschärfe, …), keine
+Geschwindigkeitsänderung. Lange 4K-Projekte können den Speicher des Browsers übersteigen.</p>

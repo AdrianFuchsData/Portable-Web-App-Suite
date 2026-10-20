@@ -1,0 +1,14 @@
+{
+  "@mediabunny/flac-encoder": {
+    "version": "1.61.5",
+    "license": "MPL-2.0"
+  },
+  "@mediabunny/mp3-encoder": {
+    "version": "1.61.5",
+    "license": "MPL-2.0"
+  },
+  "mediabunny": {
+    "version": "1.61.5",
+    "license": "MPL-2.0"
+  }
+}

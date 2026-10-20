@@ -1,0 +1,51 @@
+/* Minimal ZIP writer (stored entries, no compression) for "Save all apps" where no folder can be chosen. */
+(function () {
+  'use strict';
+
+  const table = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+    table[n] = c >>> 0;
+  }
+  function crc32(bytes) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) c = table[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  function dosTime(d) {
+    return { time: (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1), date: ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate() };
+  }
+
+  /** files: [{ name, bytes: Uint8Array }] -> Blob (application/zip). */
+  function zip(files, now = new Date()) {
+    const enc = new TextEncoder();
+    const { time, date } = dosTime(now);
+    const parts = [];
+    const central = [];
+    let offset = 0;
+    for (const f of files) {
+      const name = enc.encode(f.name);
+      const crc = crc32(f.bytes);
+      const local = new DataView(new ArrayBuffer(30));
+      local.setUint32(0, 0x04034B50, true); local.setUint16(4, 20, true); local.setUint16(6, 0x800, true); local.setUint16(8, 0, true);
+      local.setUint16(10, time, true); local.setUint16(12, date, true); local.setUint32(14, crc, true);
+      local.setUint32(18, f.bytes.length, true); local.setUint32(22, f.bytes.length, true); local.setUint16(26, name.length, true);
+      parts.push(local.buffer, name, f.bytes);
+      const c = new DataView(new ArrayBuffer(46));
+      c.setUint32(0, 0x02014B50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x800, true);
+      c.setUint16(12, time, true); c.setUint16(14, date, true); c.setUint32(16, crc, true); c.setUint32(20, f.bytes.length, true);
+      c.setUint32(24, f.bytes.length, true); c.setUint16(28, name.length, true); c.setUint32(42, offset, true);
+      central.push(c.buffer, name);
+      offset += 30 + name.length + f.bytes.length;
+    }
+    const size = central.reduce((n, p) => n + p.byteLength, 0);
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054B50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+    end.setUint32(12, size, true); end.setUint32(16, offset, true);
+    return new Blob([...parts, ...central, end.buffer], { type: 'application/zip' });
+  }
+
+  window.OV = Object.assign(window.OV || {}, { zip, crc32 });
+})();

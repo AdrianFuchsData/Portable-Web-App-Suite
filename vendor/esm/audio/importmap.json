@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@mediabunny/flac-encoder": "mediabunny__flac-encoder.js",
+    "@mediabunny/mp3-encoder": "mediabunny__mp3-encoder.js",
+    "mediabunny": "mediabunny.js"
+  }
+}

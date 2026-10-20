@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "@app/doc.js": "doc.js",
+    "@app/tools.js": "tools.js",
+    "@app/filters.js": "filters.js",
+    "@app/guides.js": "guides.js",
+    "app/spell": "../../../../shared/js/spell.js",
+    "app/spell-dom": "../../../../shared/js/spell-dom.js"
+  }
+}

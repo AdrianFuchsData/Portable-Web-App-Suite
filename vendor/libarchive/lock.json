@@ -1,0 +1,13 @@
+{
+  "package": "libarchive.js",
+  "version": "2.0.2",
+  "license": "MIT (libarchive: BSD-2-Clause, comlink: Apache-2.0)",
+  "files": {
+    "libarchive.js": "7948329343f4039e3088bb9818af96b2e70fc7dac8a43b878ced4314de0c8f2a",
+    "worker-bundle.js": "552fd4c4e96e677b8d1ee28b96eec3f7761f19ae9069b6df40c1848b3b632493",
+    "libarchive.wasm": "8a66066ed3ea1e6db0469ec752d8fca888a6bf737c6cff21fdbcb62241a72424",
+    "LICENSE": "cd2233ededca3500350239c4995a3bf4f57cb810b77074d266b0fb0d781dc161",
+    "LICENSE.libarchive": "b2cdf763345de2de34cebf54394df3c61a105c3b71288603c251f2fa638200ba",
+    "LICENSE.comlink": "bcf29b4fd3ec2cb5f9d40a0866da446f6da62170d2ccedf4aeca9cf9406dd20c"
+  }
+}

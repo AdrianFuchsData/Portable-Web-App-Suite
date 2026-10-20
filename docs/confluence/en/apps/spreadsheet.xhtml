@@ -1,0 +1,172 @@
+<!-- Generated from docs/en/apps/spreadsheet.md by tools/build_docs.py - do not edit. Confluence page title: Spreadsheet -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The spreadsheet (<code>spreadsheet.html</code>) edits workbooks like Excel or LibreOffice Calc: cells with values and formulas (more than 400
+functions), formatting, several sheets, sorting, filters, merged cells, frozen rows and columns, find and replace. The editing component is
+Univer Sheets.</p>
+<h2>Files</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Open</th>
+<th>Save</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Excel (<code>.xlsx</code>)</td>
+<td>yes</td>
+<td>yes</td>
+<td>values, formulas, styles, number formats, merged cells, column widths, row heights, frozen panes, tab colours, hidden sheets, conditional formatting, data validation</td>
+</tr>
+<tr>
+<td>Excel with macros (<code>.xlsm</code>)</td>
+<td>yes</td>
+<td>as <code>.xlsx</code></td>
+<td>macros cannot be kept</td>
+</tr>
+<tr>
+<td>OpenDocument (<code>.ods</code>)</td>
+<td>yes</td>
+<td>yes</td>
+<td>values, formulas, merged cells (no formatting)</td>
+</tr>
+<tr>
+<td>Excel 97–2003 (<code>.xls</code>)</td>
+<td>yes</td>
+<td>yes</td>
+<td>values and formulas (no formatting)</td>
+</tr>
+<tr>
+<td>CSV, TSV (<code>.csv</code>, <code>.tsv</code>, <code>.txt</code>)</td>
+<td>yes, with options</td>
+<td><code>.csv</code></td>
+<td>only the values of the first sheet</td>
+</tr>
+<tr>
+<td>Numbers, flat ODS</td>
+<td>yes</td>
+<td>–</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Open</strong> (<code>Ctrl+O</code>) opens a file; you can also drop it onto the window. <strong>New</strong> starts an empty workbook.</li>
+<li><strong>Save</strong> (<code>Ctrl+S</code>) saves in the file's format: directly into the file in Chrome/Edge on the desktop, as a download in Firefox and on
+  Android (replace the original file with it). <strong>Save as</strong> (<code>Ctrl+Shift+S</code>) asks for the name and the format.</li>
+<li>The file name in the toolbar shows • while there are unsaved changes.</li>
+</ul>
+<h3>Importing CSV and text files</h3>
+<p>Opening a <code>.csv</code>, <code>.tsv</code> or <code>.txt</code> file shows the import options with a preview of the first rows:</p>
+<ul>
+<li><strong>Encoding</strong>: recognised automatically (UTF-8 with or without BOM, UTF-16 with BOM, otherwise Windows-1252); choose
+  another one when umlauts look wrong.</li>
+<li><strong>Separator</strong>: comma, semicolon, tab or vertical bar; the most likely one is preselected.</li>
+<li><strong>Values</strong>: <em>Recognise numbers and dates</em> converts numbers (with the chosen <strong>decimal separator</strong>, <code>1,234.5</code> or
+  <code>1.234,5</code>, also with <code>%</code>), dates (<code>2026-10-16</code>, <code>16.10.2026</code>, with or without time) and <code>TRUE</code>/<code>FALSE</code>. Numbers with
+  leading zeros (postcodes, phone numbers) stay text. <em>Everything as text</em> keeps every cell exactly as in the file.</li>
+</ul>
+<p>Quoted fields may contain separators, quotes (<code>""</code>) and line breaks. <strong>Save</strong> writes the CSV again with the separator
+it was imported with.</p>
+<h2>Editing</h2>
+<p>The ribbon above the table has the tabs <strong>Start</strong> (clipboard, font, colours, borders, alignment, merge, number formats), <strong>Formulas</strong> and
+<strong>View</strong>. Type into a cell and confirm with <code>Enter</code>; formulas start with <code>=</code>, e.g. <code>=SUM(B2:B10)</code>. The formula bar shows and edits the content
+of the selected cell. The bar at the bottom adds (+) and switches sheets; right-click a sheet tab to rename, colour, hide or delete it. The zoom
+is at the bottom right. Right-clicking cells, rows and columns opens further commands (insert, delete, sort, …).</p>
+<p>The common keyboard shortcuts work: <code>Ctrl+C/X/V</code>, <code>Ctrl+Z/Y</code>, <code>Ctrl+B/I/U</code>, arrow keys, <code>Tab</code>, <code>F2</code> to edit a cell.</p>
+<p>The language of the editing component follows the suite's language switch, and it follows the dark theme too.</p>
+<p>Undo and redo are the first two buttons of the editor toolbar (also <code>Ctrl+Z</code> and <code>Ctrl+Y</code>).</p>
+<h3>Conditional formatting and data validation</h3>
+<p><strong>Conditional formatting</strong> (tab <em>Data</em>, second menu) colours cells by their value: highlight cells
+(greater/less than, between, text contains/begins/ends with, dates, top/bottom values, above/below average, duplicates, own
+formula), colour scales and data bars. <strong>Data validation</strong> (tab <em>Data</em>, first menu) restricts what may be entered: a list with a drop-down,
+whole or decimal numbers, dates, text length or an own formula, with an input message and an error message.</p>
+<p>Both are read from and written to Excel files. Icon sets are not taken over from Excel files; "duplicates" and "unique values"
+are saved as formula rules, and lists that are ranges of the workbook stay references.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo</td>
+</tr>
+<tr>
+<td><code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code></td>
+<td>Redo</td>
+</tr>
+<tr>
+<td><code>Ctrl+X</code> / <code>Ctrl+C</code> / <code>Ctrl+V</code></td>
+<td>Cut, copy, paste</td>
+</tr>
+<tr>
+<td><code>Ctrl+B</code> / <code>Ctrl+I</code> / <code>Ctrl+U</code></td>
+<td>Bold / italic / underline</td>
+</tr>
+<tr>
+<td><code>F2</code></td>
+<td>Edit the cell</td>
+</tr>
+<tr>
+<td><code>Enter</code> / <code>Tab</code></td>
+<td>Store and move down / right</td>
+</tr>
+<tr>
+<td><code>Delete</code></td>
+<td>Clear the cells</td>
+</tr>
+<tr>
+<td><code>Ctrl+F</code></td>
+<td>Find and replace</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The table can be viewed, scrolled and edited; the ribbon can be scrolled sideways. For larger changes a bigger screen is more comfortable.</p>

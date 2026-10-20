@@ -1,0 +1,202 @@
+<!-- Generated from docs/de/apps/hexeditor.md by tools/build_docs.py - do not edit. Confluence page title: Hex-Editor -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Der Hex-Editor (<code>hexeditor.html</code>) zeigt und bearbeitet die Bytes beliebiger Dateien: hexadezimale und Textansicht,
+Überschreib- und Einfügemodus, Suche nach Bytefolgen und Text, ein Dateninspektor sowie Rückgängig/Wiederholen. Er
+kommt mit Dateien von mehreren hundert Megabyte zurecht; gezeichnet werden nur die sichtbaren Zeilen.</p>
+<h2>Öffnen, anlegen und speichern</h2>
+<ul>
+<li><strong>Öffnen</strong> (<code>Strg+O</code>) öffnet eine Datei; Sie können eine Datei auch in das Fenster ziehen. <strong>Neu</strong> beginnt eine leere
+  Datei.</li>
+<li><strong>Speichern</strong> (<code>Strg+S</code>) schreibt die Datei: in Chrome/Edge am Desktop direkt in die geöffnete Datei, in Firefox und
+  unter Android als Download (ersetzen Sie die ursprüngliche Datei damit). <strong>Speichern unter</strong> speichert unter einem
+  neuen Namen.</li>
+</ul>
+<h2>Die Ansicht</h2>
+<p>Jede Zeile zeigt den Offset (hexadezimal), die Bytes hexadezimal und dieselben Bytes als Text (<code>.</code> für nicht druckbare
+Bytes). <strong>Bytes pro Zeile</strong> wählt 8, 16 oder 32 Bytes oder passt sich der Fensterbreite an (Auto).</p>
+<p>Das hervorgehobene Byte ist der Cursor. <code>Tab</code> wechselt zwischen der hexadezimalen und der Textspalte.</p>
+<h2>Bearbeiten</h2>
+<table>
+<thead>
+<tr>
+<th>Funktion</th>
+<th>Tasten</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cursor bewegen</td>
+<td>Pfeiltasten, <code>Bild auf</code>/<code>Bild ab</code>, <code>Pos1</code>/<code>Ende</code> (Zeile), <code>Strg+Pos1</code>/<code>Strg+Ende</code> (Datei)</td>
+</tr>
+<tr>
+<td>Auswählen</td>
+<td><code>Umschalt</code> + Bewegungstasten oder Ziehen mit der Maus; <code>Strg+A</code> wählt alles aus</td>
+</tr>
+<tr>
+<td>Byte ändern</td>
+<td>zwei hexadezimale Ziffern tippen (Hex-Spalte) oder ein Zeichen (Textspalte)</td>
+</tr>
+<tr>
+<td>Überschreib- / Einfügemodus</td>
+<td><code>Einfg</code> oder die Modus-Schaltfläche</td>
+</tr>
+<tr>
+<td>Bytes löschen</td>
+<td><code>Entf</code> (Byte unter dem Cursor oder Auswahl), <code>Rücktaste</code> (Byte vor dem Cursor oder Auswahl)</td>
+</tr>
+<tr>
+<td>Rückgängig / Wiederholen</td>
+<td><code>Strg+Z</code> / <code>Strg+Y</code></td>
+</tr>
+<tr>
+<td>Als Hex kopieren</td>
+<td><code>Strg+C</code></td>
+</tr>
+<tr>
+<td>Hexadezimale Bytes einfügen</td>
+<td><code>Strg+V</code></td>
+</tr>
+</tbody>
+</table>
+<p>Tippen am Dateiende hängt Bytes an. Im Einfügemodus werden neue Bytes vor dem Cursor eingefügt.</p>
+<h2>Suchen und Gehe zu</h2>
+<ul>
+<li><strong>Suchen</strong> (<code>Strg+F</code>, 🔍) sucht hexadezimale Bytes (zum Beispiel <code>DE AD BE EF</code>) oder Text (UTF-8). <strong>Weiter</strong> und
+  <strong>Zurück</strong> springen zum nächsten Treffer; die Suche setzt am anderen Ende der Datei fort.</li>
+<li><strong>Gehe zu</strong> (<code>Strg+G</code>, ↧) springt zu einem Offset, dezimal (<code>1024</code>) oder hexadezimal (<code>0x400</code>).</li>
+</ul>
+<h2>Dateninspektor</h2>
+<p>Der Dateninspektor deutet die Bytes am Cursor: binär, Ganzzahlen mit und ohne Vorzeichen mit 8, 16, 32 und 64 Bit,
+Gleitkommazahlen (32 und 64 Bit) und das UTF-8-Zeichen. <strong>Little Endian</strong> wechselt die Byte-Reihenfolge.</p>
+<p><strong>Bytewert (hex)</strong> schreibt die eingegebenen Bytes an den Cursor (zum Beispiel <code>FF</code> oder <code>48 65 6C</code>). So bearbeiten Sie
+Bytes am einfachsten auf Smartphones und Tablets.</p>
+<h2>Prüfsummen</h2>
+<p><strong>#</strong> zeigt die Prüfsummen der Auswahl oder – ohne Auswahl – der ganzen Datei: CRC-32, Adler-32, MD5, SHA-1, SHA-256 und
+SHA-512 (hexadezimal). ⧉ kopiert einen Wert, etwa um ihn mit einer veröffentlichten Prüfsumme zu vergleichen.</p>
+<h2>Zwei Dateien vergleichen</h2>
+<p><strong>⇆</strong> öffnet eine zweite Datei und vergleicht sie Byte für Byte mit der aktuellen (an denselben Offsets). Ihre Bytes stehen
+in einer zusätzlichen Spalte neben der Hex-Spalte (statt der Textspalte), beide scrollen gemeinsam, und abweichende Bytes
+sind in beiden hervorgehoben. Die Leiste über der Ansicht zeigt die Zahl der Unterschiede; <strong>↑</strong> und <strong>↓</strong> springen zum
+vorherigen/nächsten Unterschied. Bytes hinter dem Ende der kürzeren Datei zählen als Unterschiede. Bearbeiten aktualisiert
+den Vergleich; <strong>×</strong> (oder erneut ⇆) beendet ihn.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Rückgängig</td>
+</tr>
+<tr>
+<td><code>Strg+Y</code> / <code>Strg+Umschalt+Z</code></td>
+<td>Wiederholen</td>
+</tr>
+<tr>
+<td><code>Strg+C</code> / <code>Strg+V</code></td>
+<td>Kopieren, einfügen</td>
+</tr>
+<tr>
+<td><code>Strg+A</code></td>
+<td>Alles auswählen</td>
+</tr>
+<tr>
+<td><code>0–9</code> / <code>A–F</code></td>
+<td>Hex-Ziffer eingeben (Hex-Spalte)</td>
+</tr>
+<tr>
+<td><code>Einfg</code></td>
+<td>Einfügen / Überschreiben</td>
+</tr>
+<tr>
+<td><code>Entf</code> / <code>Rücktaste</code></td>
+<td>Bytes löschen</td>
+</tr>
+<tr>
+<td><code>Tab</code></td>
+<td>Zwischen Hex- und Textspalte wechseln</td>
+</tr>
+</tbody>
+</table>
+<h3>Navigation</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+F</code></td>
+<td>Suchen</td>
+</tr>
+<tr>
+<td><code>Strg+G</code></td>
+<td>Gehe zu Adresse</td>
+</tr>
+<tr>
+<td><code>←</code> / <code>→</code> / <code>↑</code> / <code>↓</code></td>
+<td>Bewegen (mit Umschalt: auswählen)</td>
+</tr>
+<tr>
+<td><code>Bild↑</code> / <code>Bild↓</code></td>
+<td>Eine Seite nach oben / unten</td>
+</tr>
+<tr>
+<td><code>Pos1</code> / <code>Ende</code></td>
+<td>Anfang / Ende der Zeile</td>
+</tr>
+<tr>
+<td><code>Strg+Pos1</code> / <code>Strg+Ende</code></td>
+<td>Anfang / Ende der Datei</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Zeilen zeigen 8 Bytes, der Dateninspektor steht unter den Bytes. Tippen Sie auf ein Byte, um es auszuwählen, geben
+Sie den neuen Wert unter <strong>Bytewert (hex)</strong> ein und tippen Sie auf <strong>Setzen</strong>.</p>

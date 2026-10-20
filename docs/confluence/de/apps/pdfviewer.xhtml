@@ -1,0 +1,178 @@
+<!-- Generated from docs/de/apps/pdfviewer.md by tools/build_docs.py - do not edit. Confluence page title: PDF-Betrachter -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Der PDF-Betrachter (<code>pdfviewer.html</code>) zeigt PDF-Dateien an: Blättern, Zoom, Drehen, Suche, Inhaltsverzeichnis und
+Seitenvorschau, Links, Formulare ausfüllen, Kommentare (Markieren, Text, Zeichnen), Drucken und passwortgeschützte
+Dateien.</p>
+<h2>Öffnen und speichern</h2>
+<ul>
+<li><strong>Öffnen</strong> (<code>Strg+O</code>) öffnet eine PDF-Datei; Sie können eine Datei auch in das Fenster ziehen.</li>
+<li>Bei passwortgeschützten Dateien werden Sie nach dem Passwort gefragt.</li>
+<li><strong>Speichern</strong> (<code>Strg+S</code>) speichert das PDF mit ausgefüllten Formularfeldern und Ihren Kommentaren: in Chrome/Edge am
+  Desktop direkt in die geöffnete Datei, in Firefox und unter Android als Download (ersetzen Sie die ursprüngliche Datei
+  damit). <code>Strg+Umschalt+S</code> speichert unter einem neuen Namen.</li>
+</ul>
+<h2>Blättern</h2>
+<ul>
+<li>‹ und › blättern zur vorherigen und nächsten Seite; im Seitenfeld können Sie eine Seitenzahl eingeben.</li>
+<li>☰ zeigt die Seitenleiste: <strong>Seiten</strong> zeigt eine Vorschau der Seiten (ein Klick springt zur Seite), <strong>Inhalt</strong> zeigt das
+  Inhaltsverzeichnis des Dokuments, falls es eines hat.</li>
+<li>Links im Dokument funktionieren: interne Links springen zur Zielseite.</li>
+</ul>
+<h2>Zoom und Drehen</h2>
+<p>− und + verkleinern und vergrößern. Die Zoom-Liste bietet <strong>Automatisch</strong>, <strong>Ganze Seite</strong>, <strong>Seitenbreite</strong> und feste
+Größen. ⟳ dreht alle Seiten um 90 Grad (nur die Ansicht; die Datei bleibt unverändert).</p>
+<h2>Suchen</h2>
+<p>🔍 oder <code>Strg+F</code> öffnet die Suchleiste. Der Betrachter hebt alle Treffer hervor und zeigt „1 von 3 Treffern“. <strong>Weiter</strong>
+und <strong>Zurück</strong> wechseln zwischen den Treffern; <strong>Groß-/Kleinschreibung</strong> unterscheidet Groß- und Kleinbuchstaben.</p>
+<h2>Formulare und Kommentare</h2>
+<p>Formularfelder lassen sich direkt ausfüllen. Die Liste <strong>Kommentieren</strong> wechselt den Modus:</p>
+<table>
+<thead>
+<tr>
+<th>Modus</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Auswählen / Formulare ausfüllen</td>
+<td>normaler Modus: Text auswählen, Links anklicken, Formulare ausfüllen</td>
+</tr>
+<tr>
+<td>Markieren</td>
+<td>Text auswählen, um ihn hervorzuheben</td>
+</tr>
+<tr>
+<td>Text</td>
+<td>auf die Seite klicken, um ein Textfeld hinzuzufügen</td>
+</tr>
+<tr>
+<td>Zeichnen</td>
+<td>mit Maus, Stift oder Finger zeichnen</td>
+</tr>
+</tbody>
+</table>
+<p>Speichern Sie die Datei, damit Formulareingaben und Kommentare erhalten bleiben.</p>
+<h3>Unterschreiben</h3>
+<p><strong>✍</strong> öffnet ein Unterschriftsfeld: Zeichnen Sie Ihre Unterschrift mit Maus, Stift oder Finger oder tippen Sie Ihren Namen.
+<strong>Platzieren</strong> schließt das Feld; klicken oder tippen Sie dann auf die Stelle der Seite, an die die Unterschrift soll (<code>Esc</code>
+oder ✍ bricht ab). Die Unterschrift wird als Bild (etwa 6 cm breit) in die Seite eingefügt und lässt sich wie eine
+Seitenoperation rückgängig machen (📄 → Rückgängig). Speichern Sie die Datei, um sie zu behalten.</p>
+<p>Das ist eine sichtbare Unterschrift wie auf Papier, keine digitale (kryptografische) Signatur.</p>
+<h2>Seiten: umordnen, drehen, löschen, extrahieren, zusammenfügen</h2>
+<p>Haken Sie Seiten in der Seitenvorschau an (☰ → Seiten); ohne Haken ist die aktuelle Seite gemeint. <strong>📄 Seiten</strong> bietet dann:</p>
+<table>
+<thead>
+<tr>
+<th>Eintrag</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nach links / rechts drehen</td>
+<td>dreht die Seiten dauerhaft (anders als ⟳, das nur die Ansicht dreht)</td>
+</tr>
+<tr>
+<td>Nach vorne / Nach hinten / An Position verschieben…</td>
+<td>verschiebt die Seiten als Block</td>
+</tr>
+<tr>
+<td>Löschen</td>
+<td>entfernt die Seiten (eine Seite bleibt immer)</td>
+</tr>
+<tr>
+<td>Als neues PDF extrahieren…</td>
+<td>speichert Kopien der Seiten als neue Datei; die geöffnete Datei bleibt unverändert</td>
+</tr>
+<tr>
+<td>PDF dahinter einfügen… / PDF anhängen…</td>
+<td>fügt alle Seiten einer oder mehrerer anderer PDF-Dateien hinter der Auswahl oder am Ende ein (Zusammenfügen)</td>
+</tr>
+<tr>
+<td>Alle Seiten auswählen, Auswahl aufheben</td>
+<td></td>
+</tr>
+<tr>
+<td>Rückgängig</td>
+<td>macht den letzten Seitenschritt rückgängig (auch <code>Strg+Z</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Speichern Sie die Datei, damit die Änderungen erhalten bleiben. Passwortgeschützte PDFs lassen sich lesen und ausfüllen,
+ihre Seiten aber nicht ändern. Formularfelder, Lesezeichen und Metadaten bleiben erhalten; Lesezeichen auf gelöschte Seiten
+führen ins Leere.</p>
+<h2>Digitale Signaturen</h2>
+<p>Enthält eine PDF-Datei digitale Signaturen, zeigt eine Zeile über der Seite das Ergebnis der Prüfung: ✅ <em>signiert von … – die Signatur ist
+gültig</em>, ⚠️ <em>das Dokument wurde nach dem Signieren geändert</em> (nach der Signatur wurden Daten angefügt, z. B. ausgefüllte Formularfelder oder
+weitere Signaturen – die signierte Fassung selbst ist unverändert) oder ❌ <em>die Signatur ist NICHT gültig</em> (der signierte Inhalt wurde
+verändert oder die Signatur gehört nicht zum Zertifikat). Ein Klick auf die Zeile oder ✍ in der Seitenleiste zeigt jede Signatur mit
+Unterzeichner, Datum, Grund, Ort, dem Zertifikat (Aussteller, Gültigkeit, selbst signiert oder abgelaufen) und der in der Signatur
+enthaltenen Zertifikatskette.</p>
+<p>Die Prüfung läuft im Browser (RSA- und ECDSA-Signaturen, SHA-1 bis SHA-512). Ob ein Zertifikat <strong>vertrauenswürdig</strong> ist, wird nicht
+entschieden: offline gibt es keinen Speicher vertrauenswürdiger Stammzertifikate, eine gültige Signatur belegt also nur, dass der Inhalt
+seit dem Signieren mit diesem Zertifikat unverändert ist. Vergleichen Sie im Zweifel das Zertifikat mit dem Unterzeichner.</p>
+<h2>Drucken</h2>
+<p>🖨 bereitet alle Seiten vor und öffnet den Druckdialog des Browsers. Formulareingaben und Kommentare werden mitgedruckt.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+F</code></td>
+<td>Suchen</td>
+</tr>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Letzten Seitenschritt rückgängig machen</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Werkzeugleiste lässt sich seitlich verschieben, die Seitenleiste (☰) öffnet sich über den Seiten und schließt sich, sobald Sie eine Seite oder ein Kapitel wählen (oder daneben tippen). Mit den Zoom-Schaltflächen
+oder der Zoom-Liste stellen Sie die Seitengröße ein.</p>

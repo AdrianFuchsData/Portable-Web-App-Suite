@@ -1,0 +1,23 @@
+{
+  "out": "esm/spell",
+  "packages": {
+    "hunspell-asm": "4.0.2"
+  },
+  "patches": {
+    "hunspell-asm": [
+      ["import*as ag from\"nanoid\"", "import ag from\"nanoid\""],
+      ["yg(u=>Lg(u),Gg,", "yg(u=>Lg(u),MI,"]
+    ],
+    "emscripten-wasm-loader": [
+      ["import*as f from\"nanoid\"", "import f from\"nanoid\""]
+    ]
+  },
+  "data_packages": {
+    "dictionary-en": "4.0.0",
+    "dictionary-de": "3.0.0"
+  },
+  "assets": {
+    "dictionary-en": ["index.aff", "index.dic"],
+    "dictionary-de": ["index.aff", "index.dic"]
+  }
+}

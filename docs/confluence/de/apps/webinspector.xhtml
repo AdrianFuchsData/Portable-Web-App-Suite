@@ -1,0 +1,89 @@
+<!-- Generated from docs/de/apps/webinspector.md by tools/build_docs.py - do not edit. Confluence page title: Web-Inspektor -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Der Web-Inspektor (<code>webinspector.html</code>) ist der „Browser im Browser“ der Suite in der reduzierten Form von Entscheidung
+D-004: Er lädt Webseiten und zeigt, woraus sie bestehen, öffnet HAR-Dateien und bietet ein Entwicklerwerkzeug-Bookmarklet
+für Geräte, auf denen die Entwicklerwerkzeuge des Browsers fehlen oder gesperrt sind.</p>
+<p>Zum Laden von Seiten braucht es für die meisten Websites das <ac:link><ri:page ri:content-title="Portable Web App Suite – Benutzerhandbuch" /><ac:plain-text-link-body><![CDATA[Relay]]></ac:plain-text-link-body></ac:link>
+(Browser lassen Seiten nur andere Websites lesen, die das per CORS erlauben). HAR-Dateien, HTML-Dateien, eingefügte
+Quelltexte und das Bookmarklet funktionieren ohne.</p>
+<h2>Seite</h2>
+<p>Geben Sie eine Adresse ein und drücken Sie <strong>Laden</strong> (<code>https://</code> wird bei Bedarf ergänzt). Wählen Sie den <strong>User-Agent</strong>
+(Standard des Relays, Desktop- oder Mobilbrowser) und ob Weiterleitungen gefolgt wird. <strong>HTML-Datei öffnen</strong> und
+<strong>Quelltext einfügen</strong> untersuchen eine Seite, ohne sie zu laden (optional mit ihrer Adresse, damit relative Links
+funktionieren).</p>
+<ul>
+<li><strong>Vorschau</strong> zeigt die Seite <strong>ohne Skripte</strong>, Frames und Plug-ins; Formulare senden nicht. Über das Relay werden
+  Stylesheets, Bilder, Hintergrundbilder und Schriften geladen und eingebettet (bis zu 80 Ressourcen). Ein Klick auf einen
+  Link lädt diese Seite; <strong>←</strong> führt zur vorherigen zurück. Die <strong>Vorschaugröße</strong> zeigt die Seite statt in voller Breite wie auf
+  einem Smartphone (390 × 844), einem Tablet (820 × 1180) oder einem Desktop (1366 × 768); ⟳ dreht das Gerät. Die
+  CSS-Media-Queries der Seite reagieren auf die Größe.</li>
+<li><strong>Header &amp; Sicherheit</strong> listet die Antwort-Header und prüft HTTPS/HSTS, Content Security Policy (auch Abschwächungen durch
+  <code>'unsafe-inline'</code>/<code>'unsafe-eval'</code>), Schutz vor Einbetten, <code>nosniff</code>, Referrer- und Permissions-Policy, die
+  Cross-Origin-Richtlinien, Cookie-Flags (<code>Secure</code>, <code>HttpOnly</code>, <code>SameSite</code>) und preisgegebene Versionen. ✅ in Ordnung,
+  ⚠️ verbesserungswürdig, ❌ fehlender Schutz, ℹ️ Information.</li>
+<li><strong>Quelltext</strong> zeigt das HTML mit Zeilennummern und Hervorhebung; das Suchfeld filtert Zeilen; <strong>Quelltext speichern</strong> lädt
+  die Datei herunter.</li>
+<li><strong>Struktur</strong> zeigt Titel, Sprache, Zeichensatz, Meta-Tags, die Überschriftengliederung, Links (intern/extern), Bilder,
+  Skripte, Stylesheets, Formulare und Frames sowie Hinweise: fehlendes <code>lang</code>, fehlender Titel oder Viewport, Bilder ohne
+  Alternativtext, mehrere oder keine h1, übersprungene Überschriftenebenen, Formularfelder ohne Beschriftung, Links ohne
+  Text, gemischte Inhalte.</li>
+<li><strong>Anfragen</strong> listet alle Anfragen für die Seite und ihre Vorschau. <strong>Als HAR speichern</strong> speichert sie als HAR-Datei, <strong>Im
+  HAR-Betrachter zeigen</strong> öffnet sie im Reiter HAR. <strong>Anfragen blockieren</strong> nimmt eine Regel je Zeile: einen Host
+  (<code>ads.example.com</code>, blockiert auch seine Subdomains) oder ein Adressmuster mit <code>*</code> (<code>*.woff2</code>, <code>*/tracking/*</code>); Zeilen mit <code>#</code>
+  am Anfang sind Kommentare. Die Regeln gelten für die Ressourcen der Vorschau (nicht für die Seite selbst); <strong>Übernehmen und neu
+  laden</strong> lädt sie erneut, ⊘ neben einer Anfrage blockiert deren Host. Blockierte Anfragen werden durchgestrichen. Die Regeln
+  bleiben in diesem Browser gespeichert.</li>
+<li><strong>Cookies</strong> listet die Cookies, die die Seite und ihre Ressourcen setzen (Name, Wert, Domain, Pfad, Ablauf,
+  <code>Secure</code>/<code>HttpOnly</code>/<code>SameSite</code>, welche Anfrage sie gesetzt hat); Cookies für andere Websites werden wie im Browser abgelehnt.
+  Mit <strong>Cookies behalten</strong> werden sie gespeichert und bei späteren Anfragen mitgeschickt, die zu Domain, Pfad und <code>Secure</code>
+  passen – so lassen sich Seiten hinter einer Anmeldung untersuchen oder ein Sitzungscookie durch eine Website verfolgen.
+  Gespeicherte Cookies lassen sich einzeln oder alle löschen; sie bleiben nur bis zum Schließen der Seite erhalten. Cookies sind
+  nur über das Relay sichtbar (Browser verbergen <code>Set-Cookie</code> vor Seiten). localStorage und ähnliche Speicher werden von
+  Skripten befüllt, die die Vorschau nicht ausführt; das Bookmarklet zeigt sie in der echten Seite.</li>
+</ul>
+<h2>HAR-Betrachter</h2>
+<p>Eine HAR-Datei ist das Netzwerkprotokoll eines Browsers (in den Entwicklerwerkzeugen: Netzwerk → „Alle als HAR
+speichern“). <strong>HAR-Datei öffnen</strong> (oder Ziehen auf das Fenster) zeigt alle Anfragen mit Methode, Datei und Host, Status
+(Fehler rot), Typ, Größe, Zeit und einem Wasserfall; die Summen zeigen Anzahl, übertragene Bytes und Dauer. Filtern nach Text
+oder Typ (Dokument, XHR/JSON, JS, CSS, Bilder, Schriften, Medien, Sonstiges); ein Klick auf eine Spaltenüberschrift sortiert.</p>
+<p>Ein Klick auf eine Anfrage zeigt Details: <strong>Header</strong> (allgemein, Antwort- und Anfrage-Header), <strong>Parameter</strong> (Parameter und
+Anfrageinhalt), <strong>Inhalt</strong> (die Antwort; JSON formatiert, Bilder angezeigt), <strong>Cookies</strong> und <strong>Zeiten</strong> (blockiert, DNS,
+Verbindung, TLS, Senden, Warten, Empfangen). <strong>Als cURL kopieren</strong> kopiert die Anfrage als curl-Befehl.</p>
+<h2>Bookmarklet</h2>
+<p>Das Bookmarklet öffnet am unteren Rand jeder Seite einen kleinen Entwicklerbereich:</p>
+<ul>
+<li><strong>Console</strong>: <code>console.*</code>-Ausgaben und Fehler seit dem Öffnen sowie eine Eingabezeile, die JavaScript in der Seite ausführt.</li>
+<li><strong>Elements</strong>: <strong>Pick element</strong>, dann ein Element der Seite anklicken: CSS-Pfad, Größe und Position, Attribute, berechnete
+  Stile und HTML; <strong>Parent</strong> geht eine Ebene höher.</li>
+<li><strong>Network</strong>: die von der Seite geladenen Ressourcen (aus der Resource Timing API) mit Größe und Zeit.</li>
+<li><strong>Storage</strong>: Cookies, localStorage und sessionStorage.</li>
+<li><strong>Info</strong>: Adresse, Titel, User-Agent, Viewport, Sprache und Meta-Tags.</li>
+</ul>
+<p>Installieren Sie es, indem Sie den Link <strong>🔍 Inspector</strong> in die Lesezeichenleiste ziehen. Auf Smartphones: <strong>Code kopieren</strong>,
+ein Lesezeichen einer beliebigen Seite anlegen, bearbeiten und die Adresse durch den kopierten Code ersetzen; dann die zu
+untersuchende Seite öffnen und das Lesezeichen wählen (in Chrome für Android den Namen des Lesezeichens in die Adresszeile
+tippen und den Vorschlag antippen). Erneutes Wählen blendet den Bereich aus. <strong>Auf dieser Seite ausprobieren</strong> öffnet ihn im
+Inspektor selbst.</p>
+<p>Auf Seiten, deren Content Security Policy <code>eval()</code> verbietet, erscheint der Bereich trotzdem, aber die Konsoleneingabe kann
+dort keinen Code ausführen.</p>
+<h2>Grenzen</h2>
+<p>Die Vorschau ist kein vollständiger Browser: keine Skripte (Seiten, die per JavaScript aufgebaut werden, bleiben leer oder
+unvollständig), keine Anmeldungen (außer mit behaltenen Cookies), keine Formulare. Seiten hinter einer Anmeldung lassen sich
+untersuchen, indem man sie im Browser speichert und die HTML-Datei öffnet oder eine HAR-Datei aufzeichnet.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>

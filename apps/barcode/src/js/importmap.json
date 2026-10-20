@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@app/content.js": "content.js",
+    "@app/render.js": "render.js"
+  }
+}

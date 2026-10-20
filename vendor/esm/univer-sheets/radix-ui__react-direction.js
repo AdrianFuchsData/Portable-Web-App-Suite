@@ -1,0 +1,2 @@
+/* @radix-ui/react-direction@1.1.5 (jsDelivr +esm) */
+import*as o from"react";import{jsx as v}from"react/jsx-runtime";var d=Object.defineProperty,t=(r,e)=>d(r,"name",{value:e,configurable:!0}),u={LTR:"ltr"},i=o.createContext(void 0),n=t(r=>{const{dir:e,children:c}=r;return v(i.Provider,{value:e,children:c})},"DirectionProvider");function a(r){const e=o.useContext(i);return r||e||u.LTR}t(a,"useDirection");export{n as DirectionProvider,n as Provider,a as useDirection};

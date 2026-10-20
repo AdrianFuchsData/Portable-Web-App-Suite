@@ -1,0 +1,327 @@
+<!-- Generated from docs/en/apps/audioeditor.md by tools/build_docs.py - do not edit. Confluence page title: Audio editor -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The audio editor (<code>audioeditor.html</code>) edits sound files like Audacity: several tracks with movable clips, cutting and
+pasting, effects, beat and cue detection for aligning music, recording from the microphone and export as WAV, MP3, FLAC,
+Ogg Opus or M4A.</p>
+<h2>Files</h2>
+<ul>
+<li><strong>Open</strong> (<code>Ctrl+O</code>) opens one or more audio files, each as a track (WAV, MP3, OGG/Opus, FLAC, M4A/AAC, WebM; which
+  compressed formats work depends on the browser). Dropping files onto the window opens them as well; with tracks already
+  open, dropped files are added. <strong>Import</strong> adds files as new tracks.</li>
+<li>All tracks share one sample rate: the rate of the first file (44 100 Hz for generated or recorded audio). Files with
+  another rate are converted when imported.</li>
+<li><strong>Save</strong> (<code>Ctrl+S</code>) writes the mix of all tracks as WAV. If you opened a single WAV file in Chrome/Edge on the desktop,
+  it is overwritten directly with the same bit depth; otherwise the file is downloaded (replace the original with it).</li>
+<li><strong>Export</strong> (<code>Ctrl+Shift+S</code>) chooses the file name, the format, the bit rate (compressed formats), the channels
+  (automatic: stereo if a track is stereo or panned) and the range (everything or only the selection). Exporting does not
+  change which file <strong>Save</strong> writes to.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WAV 16 bit, 24 bit, 32 bit float</td>
+<td>lossless, every browser</td>
+</tr>
+<tr>
+<td>FLAC</td>
+<td>lossless and about half the size of WAV; every browser (built-in encoder)</td>
+</tr>
+<tr>
+<td>MP3</td>
+<td>128–320 kbit/s; every browser (built-in encoder); written at 48 kHz or below</td>
+</tr>
+<tr>
+<td>Ogg Opus</td>
+<td>64–256 kbit/s, always 48 kHz; only if the browser has an Opus encoder (current Chrome, Edge, Firefox)</td>
+</tr>
+<tr>
+<td>M4A (AAC)</td>
+<td>96–320 kbit/s; only if the browser has an AAC encoder (usually Chrome/Edge on Windows and macOS)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Audio projects</strong> (<code>.audioproj</code>): choose <em>Audio project</em> in the export dialog to keep the tracks, clips with their
+positions, beat grids, cues, names, volume, balance, mute and solo for further editing. <strong>Open</strong> reads projects again;
+<strong>Save</strong> then writes the project. A project is a ZIP file with <code>project.json</code> and one lossless WAV file per clip
+(32-bit float), so it is larger than a mixed-down WAV. To play the result elsewhere, export it as audio.</p>
+<p>Formats the browser cannot write are shown greyed out. The MP3 and FLAC encoders are loaded the first time the export
+dialog opens; encoding a long project takes a few seconds (the progress is shown in the transport bar).</p>
+<h2>Selecting</h2>
+<ul>
+<li>Drag over a track to select a time range; drag up or down to include further tracks. <code>Shift</code>+click extends the
+  selection, <code>Ctrl</code>+click adds or removes a track, double-click selects a whole track, <code>Ctrl+A</code> everything.</li>
+<li>A click without dragging sets the cursor (where pasting, generating and playing start).</li>
+<li><strong>Start</strong> and <strong>End</strong> in the transport bar show the selection and can be typed (<code>m:ss.mmm</code> or seconds).</li>
+<li>Click the track header to select a track. Edits apply to the selected tracks, or to all tracks if none is selected.</li>
+<li>With 🧲 (snapping) switched on, the cursor and selection edges snap to clip edges, beats, cues and the playhead when
+  they come within a few pixels (hold <code>Shift</code> to place them freely).</li>
+</ul>
+<h2>Clips</h2>
+<p>Each track contains clips: pieces of audio with their own position. An opened or recorded file is one clip; splitting,
+pasting and generating create further clips. Gaps between clips are silence.</p>
+<ul>
+<li><strong>Move a clip</strong>: drag its title bar (the strip at the top of the clip with its name) left or right, or up or down into
+  another track. <code>Alt</code>+drag anywhere on the clip works as well. With 🧲 on, the clip snaps with its edges, beats and cues
+  to the edges, beats and cues of the other clips and to the playhead; an orange line shows where it snapped.</li>
+<li>A click on the title bar picks the clip (blue frame) and selects its range; double-click on a clip does the same.</li>
+<li><strong>⫶</strong> (<code>Ctrl+I</code>) splits the clips at the cursor (and at the end of the selection, if there is one).</li>
+<li><strong>Clip ▾</strong> → <em>Duplicate clip</em> puts a copy right after it, <em>Remove clip</em> deletes it without moving the other clips,
+  <em>Move to…</em> places it at an exact start time.</li>
+<li>Deleting, cutting and inserting work like Audacity: deleting a range moves the clips after it to the left, pasting or
+  generating moves them to the right.</li>
+</ul>
+<h3>Clip volume, fades and cross-fades</h3>
+<p>These settings do not change the audio itself; they are applied when playing and saving, and can be changed any time:</p>
+<ul>
+<li><strong>Fades</strong>: drag the round handle at the top left corner of a clip to the right to fade it in, the one at the top right
+  corner to the left to fade it out. The fade is drawn as a curve, and the waveform shows the result.</li>
+<li><strong>Clip ▾ → Clip volume…</strong> raises or lowers one clip (in dB; shown in its title bar). <em>Remove fades</em> resets both fades.</li>
+<li><strong>Cross-fade</strong>: drag a clip so that it overlaps the end of the previous one, then choose <strong>Clip ▾ → Cross-fade overlapping
+  clips</strong>: the first clip fades out and the second fades in over the overlap. The fades use equal-power curves, so the
+  loudness does not dip in the middle.</li>
+</ul>
+<h2>Beats and cues</h2>
+<p>For aligning two pieces of music, the editor can find the beats and important points (cues) of a clip. Both belong to
+the clip and move with it.</p>
+<ul>
+<li><strong>Clip ▾ → Detect beats</strong> finds the tempo (BPM) and lays a constant beat grid over the picked clip, or over all
+  clips of the selected tracks if none is picked. The tempo is shown in the title bar; beats are thin lines with a tick
+  in the title bar. Works best for music with a steady tempo; for very slow or fast music the detected tempo may be half
+  or double the real one – correct it in the beat grid.</li>
+<li><strong>Beat grid…</strong> shows and changes the tempo and the position of one beat by numbers; <strong>Put a beat at the cursor</strong> shifts
+  the grid so that a beat lies exactly at the cursor.</li>
+<li><strong>Match tempo…</strong> makes the picked clip faster or slower until it has the target tempo (default: the tempo of another
+  clip with beats). The pitch stays the same; beats and cues are adjusted.</li>
+<li><strong>Detect cues…</strong> marks the first sound and the strongest onsets (drum hits, entries), at least <em>minimum distance</em>
+  apart; a higher <em>sensitivity</em> finds more cues. <strong>Add cue at cursor</strong> (<code>M</code>) sets one by hand. Cues are orange lines with a
+  triangle.</li>
+<li><strong>Remove beats and cues</strong> deletes the markers of the picked clip (or of the selected tracks).</li>
+</ul>
+<p><strong>Aligning two songs</strong>: open both, <em>Detect beats</em>, <em>Match tempo…</em> on the second clip, then drag it by its title bar until
+its beats snap onto the beats of the first one – for example so that its first cue lies on a beat of the first song.
+Use <em>Fade out</em>/<em>Fade in</em> on the overlapping range for a smooth transition.</p>
+<h2>Labels</h2>
+<p>The label strip below the time ruler holds labels for the whole project (sections, chapters, notes):</p>
+<ul>
+<li><strong>Tracks ▾ → Add label</strong> (<code>Ctrl+B</code>) labels the selection, or the cursor position when nothing is selected. A
+  double-click on an empty spot of the strip adds a label there.</li>
+<li>A click on a label selects its range (or puts the cursor on it); a double-click renames it. An empty name removes the
+  label.</li>
+<li><strong>Export labels…</strong> saves the labels as a text file in Audacity's format (start, end and text separated by tabs, times in
+  seconds); <strong>Import labels…</strong> reads such a file (for example from Audacity).</li>
+<li>Labels snap like cues, can be undone and are saved in the project file.</li>
+</ul>
+<h2>Editing</h2>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>Key</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>↶ ↷</td>
+<td><code>Ctrl+Z</code>, <code>Ctrl+Y</code></td>
+<td>undo, redo</td>
+</tr>
+<tr>
+<td>✂ ⧉ 📋</td>
+<td><code>Ctrl+X</code>, <code>Ctrl+C</code>, <code>Ctrl+V</code></td>
+<td>cut, copy, paste (replaces the selection; several copied tracks paste into several tracks)</td>
+</tr>
+<tr>
+<td>⌫</td>
+<td><code>Delete</code></td>
+<td>deletes the selection (the rest moves up)</td>
+</tr>
+<tr>
+<td>⊐⊏</td>
+<td></td>
+<td>trims to the selection</td>
+</tr>
+<tr>
+<td>∅</td>
+<td></td>
+<td>replaces the selection with silence</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Effects</strong> work on the selection, or on the whole track without a selection: amplify (dB), normalize (peak level),
+fade in, fade out, reverse, invert, echo (delay and decay), change speed (changes the length and the pitch), change tempo
+(changes the length but keeps the pitch), low-pass and high-pass filter, and:</p>
+<ul>
+<li><strong>Equaliser</strong>: bass (below 120 Hz), middle (around 1 kHz) and treble (above 6 kHz) up or down in dB.</li>
+<li><strong>Compressor</strong>: above the threshold the level rises only 1/ratio as much (attack and release smooth it, make-up gain
+  raises the result) – evens out speech or vocals. <strong>Limiter</strong>: keeps the peaks below a ceiling.</li>
+<li><strong>Reverb</strong>: room size (reverb time) and amount.</li>
+<li><strong>Change pitch</strong>: up or down by semitones; the length stays the same.</li>
+<li><strong>Noise reduction</strong>: lowers steady background noise (hiss, hum, fans) by the given amount. The noise is measured in the
+  quietest parts of the selection, so select some of the pauses together with the speech or music; a higher noise threshold
+  removes more but may affect quiet sounds.</li>
+</ul>
+<p>Effects that change the length or reverse work
+on the selection as one piece (the clips inside become one clip); without a selection they apply to every clip. <strong>Generate</strong> inserts a tone (sine, square, sawtooth, triangle), noise or silence at the cursor; without
+tracks it creates a new track.</p>
+<h2>Tracks</h2>
+<p>The header of each track has its name (click to rename), <strong>M</strong> (mute), <strong>S</strong> (solo: only solo tracks are heard), ⧉
+(duplicate), 2→1 / 1→2 (make mono or stereo), × (delete), and sliders for volume (dB) and balance (double-click resets).
+Volume, balance, mute and solo apply to playing and to saving. <strong>Tracks ▾</strong> creates an empty track, mixes all tracks down
+to one, or selects everything.</p>
+<p><strong>≋</strong> shows the track as a spectrogram instead of a waveform: time from left to right, frequency from bottom (30 Hz) to
+top on a logarithmic scale, loudness as colour from dark blue (quiet) over red to light yellow (loud). It helps to find
+hum, noise, whistles or clicks. The setting is saved in the project file.</p>
+<p><strong>⤴</strong> switches the track to volume automation: a line over the waveform shows the volume over time (top +6 dB, bottom
+−40 dB). A click on the lane adds a point, dragging moves it, a double-click removes it. Between the points the volume changes
+smoothly; before the first and after the last point it stays at their level. Click ⤴ again to edit the waveform as usual.
+The automation applies to playing, saving and export and is kept in the project file.</p>
+<h2>Playing and recording</h2>
+<p>▶ (or <code>Space</code>) plays the selection, or from the cursor to the end; ⏸ pauses, ⏹ stops, ⏮ ⏭ jump to the start or end. 🔁
+repeats the selection. A click on the time ruler moves the playhead.</p>
+<p>● starts recording from the microphone (the browser asks for permission); the other tracks are played at the same time.
+● again stops; the recording becomes a new track with a clip that starts at the cursor.</p>
+<h2>View</h2>
+<p><code>Ctrl</code>+mouse wheel or <strong>+</strong>/<strong>−</strong> zoom, ⤢ shows everything. <code>Shift</code>+mouse wheel (or the scroll bar below the tracks) scrolls.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Export</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo</td>
+</tr>
+<tr>
+<td><code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code></td>
+<td>Redo</td>
+</tr>
+<tr>
+<td><code>Ctrl+X</code> / <code>Ctrl+C</code> / <code>Ctrl+V</code></td>
+<td>Cut, copy, paste</td>
+</tr>
+<tr>
+<td><code>Ctrl+A</code></td>
+<td>Select all</td>
+</tr>
+<tr>
+<td><code>Delete</code> / <code>Backspace</code></td>
+<td>Delete the selection</td>
+</tr>
+<tr>
+<td><code>Ctrl+I</code></td>
+<td>Split at the cursor</td>
+</tr>
+<tr>
+<td><code>M</code></td>
+<td>Add a cue at the cursor</td>
+</tr>
+<tr>
+<td><code>Ctrl+B</code></td>
+<td>Add a label (selection or cursor)</td>
+</tr>
+<tr>
+<td><code>Alt+Drag</code></td>
+<td>Move a clip (anywhere on it)</td>
+</tr>
+<tr>
+<td><code>Shift+Drag</code></td>
+<td>Move or select without snapping</td>
+</tr>
+</tbody>
+</table>
+<h3>Playback</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Space</code></td>
+<td>Play / pause</td>
+</tr>
+<tr>
+<td><code>Home</code> / <code>End</code></td>
+<td>To the start / end</td>
+</tr>
+</tbody>
+</table>
+<h3>View</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>+</code> / <code>-</code></td>
+<td>Zoom in / out</td>
+</tr>
+<tr>
+<td><code>Ctrl+Wheel</code></td>
+<td>Zoom</td>
+</tr>
+<tr>
+<td><code>Shift+Wheel</code></td>
+<td>Scroll</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>Tap or drag on a track to set the cursor or select; drag a clip by its (slightly taller) title bar to move it. The
+track headers are narrower but keep all buttons and sliders; the toolbar scrolls horizontally.</p>

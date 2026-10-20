@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'unsafe-inline' blob: 'wasm-unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; connect-src http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; form-action 'none'; base-uri 'none'">
+  <title>S-4: SSH and SFTP</title>
+  <link rel="stylesheet" href="../../../vendor/esm/xterm/assets/xterm__xterm/css/xterm.css">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap" data-src="../../../vendor/esm/xterm/importmap.json"></script>
+  <script type="application/octet-stream" id="ssh-engine" data-src="../../../vendor/wasm/ssh-engine.wasm"></script>
+</head>
+<body>
+  <form id="login">
+    <input id="relay-url" value="http://127.0.0.1:8765" title="relay URL">
+    <input id="relay-token" placeholder="relay token">
+    <input id="host" value="localhost" title="host"> <input id="port" value="22" size="5" title="port">
+    <input id="user" placeholder="user">
+    <input id="password" type="password" placeholder="password">
+    <textarea id="key" placeholder="private key (OpenSSH PEM), optional" rows="1"></textarea>
+    <button>Connect</button>
+    <span id="status"></span>
+  </form>
+  <main>
+    <div id="terminal"></div>
+    <aside>
+      <div><input id="path" value="."> <button id="list" type="button">List</button>
+        <label class="upload">Upload <input id="upload" type="file" hidden></label></div>
+      <ul id="files"></ul>
+    </aside>
+  </main>
+  <script src="../../../vendor/wasm/wasm_exec.js"></script>
+  <script src="../../../shared/js/embed.js"></script>
+  <script src="../../../shared/js/relay.js"></script>
+  <script src="../../../shared/js/ssh.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

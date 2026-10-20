@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "emscripten-wasm-loader": "emscripten-wasm-loader.js",
+    "getroot": "getroot.js",
+    "hunspell-asm": "hunspell-asm.js",
+    "nanoid": "nanoid.js"
+  }
+}

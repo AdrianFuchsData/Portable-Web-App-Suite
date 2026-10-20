@@ -1,0 +1,200 @@
+<!-- Generated from docs/en/apps/hexeditor.md by tools/build_docs.py - do not edit. Confluence page title: Hex editor -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The hex editor (<code>hexeditor.html</code>) shows and edits the bytes of any file: hexadecimal and text view, overwrite and
+insert mode, search for byte patterns and text, a data inspector, and undo/redo. It handles files of several hundred
+megabytes; only the visible rows are drawn.</p>
+<h2>Opening, creating and saving</h2>
+<ul>
+<li><strong>Open</strong> (<code>Ctrl+O</code>) opens a file; you can also drag a file onto the window. <strong>New</strong> starts an empty file.</li>
+<li><strong>Save</strong> (<code>Ctrl+S</code>) writes the file: directly into the opened file in Chrome/Edge on the desktop, as a download in
+  Firefox and on Android (replace the original file with it). <strong>Save as</strong> saves under a new name.</li>
+</ul>
+<h2>The view</h2>
+<p>Each row shows the offset (hexadecimal), the bytes in hexadecimal and the same bytes as text (<code>.</code> for bytes that are
+not printable). <strong>Bytes per row</strong> chooses 8, 16 or 32 bytes, or adapts to the window width (Auto).</p>
+<p>The highlighted byte is the cursor. <code>Tab</code> switches between the hexadecimal and the text column.</p>
+<h2>Editing</h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Keys</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Move the cursor</td>
+<td>arrow keys, <code>Page Up</code>/<code>Page Down</code>, <code>Home</code>/<code>End</code> (row), <code>Ctrl+Home</code>/<code>Ctrl+End</code> (file)</td>
+</tr>
+<tr>
+<td>Select</td>
+<td><code>Shift</code> + movement keys, or drag with the mouse; <code>Ctrl+A</code> selects everything</td>
+</tr>
+<tr>
+<td>Change a byte</td>
+<td>type two hexadecimal digits (hex column) or a character (text column)</td>
+</tr>
+<tr>
+<td>Overwrite / insert mode</td>
+<td><code>Insert</code>, or the mode button</td>
+</tr>
+<tr>
+<td>Delete bytes</td>
+<td><code>Delete</code> (byte under the cursor or selection), <code>Backspace</code> (byte before the cursor or selection)</td>
+</tr>
+<tr>
+<td>Undo / redo</td>
+<td><code>Ctrl+Z</code> / <code>Ctrl+Y</code></td>
+</tr>
+<tr>
+<td>Copy as hexadecimal</td>
+<td><code>Ctrl+C</code></td>
+</tr>
+<tr>
+<td>Paste hexadecimal bytes</td>
+<td><code>Ctrl+V</code></td>
+</tr>
+</tbody>
+</table>
+<p>Typing at the end of the file appends bytes. In insert mode, new bytes are inserted before the cursor.</p>
+<h2>Search and go to</h2>
+<ul>
+<li><strong>Find</strong> (<code>Ctrl+F</code>, 🔍) searches for hexadecimal bytes (for example <code>DE AD BE EF</code>) or for text (UTF-8). <strong>Next</strong> and
+  <strong>Previous</strong> jump to the next match; the search continues at the other end of the file.</li>
+<li><strong>Go to</strong> (<code>Ctrl+G</code>, ↧) jumps to an offset, decimal (<code>1024</code>) or hexadecimal (<code>0x400</code>).</li>
+</ul>
+<h2>Data inspector</h2>
+<p>The data inspector interprets the bytes at the cursor: binary, signed and unsigned integers with 8, 16, 32 and 64 bits,
+floating point numbers (32 and 64 bit) and the UTF-8 character. <strong>Little endian</strong> switches the byte order.</p>
+<p><strong>Byte value (hex)</strong> writes the bytes you enter at the cursor (for example <code>FF</code> or <code>48 65 6C</code>). This is the easiest way
+to edit on phones and tablets.</p>
+<h2>Checksums</h2>
+<p><strong>#</strong> shows the checksums of the selection, or of the whole file when nothing is selected: CRC-32, Adler-32, MD5,
+SHA-1, SHA-256 and SHA-512 (hexadecimal). ⧉ copies a value, for example to compare it with a published checksum.</p>
+<h2>Comparing two files</h2>
+<p><strong>⇆</strong> opens a second file and compares it byte by byte with the current one (at the same offsets). Its bytes are shown
+in an additional column next to the hexadecimal column (instead of the text column), both scroll together, and
+differing bytes are highlighted in both. The bar above the view shows the number of differences; <strong>↑</strong> and <strong>↓</strong> jump
+to the previous/next difference. Bytes past the end of the shorter file count as differences. Editing updates the
+comparison; <strong>×</strong> (or ⇆ again) ends it.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo</td>
+</tr>
+<tr>
+<td><code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code></td>
+<td>Redo</td>
+</tr>
+<tr>
+<td><code>Ctrl+C</code> / <code>Ctrl+V</code></td>
+<td>Copy, paste</td>
+</tr>
+<tr>
+<td><code>Ctrl+A</code></td>
+<td>Select all</td>
+</tr>
+<tr>
+<td><code>0–9</code> / <code>A–F</code></td>
+<td>Type a hex digit (hex column)</td>
+</tr>
+<tr>
+<td><code>Insert</code></td>
+<td>Insert / overwrite</td>
+</tr>
+<tr>
+<td><code>Delete</code> / <code>Backspace</code></td>
+<td>Delete bytes</td>
+</tr>
+<tr>
+<td><code>Tab</code></td>
+<td>Switch between the hex and the text column</td>
+</tr>
+</tbody>
+</table>
+<h3>Navigation</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+F</code></td>
+<td>Find</td>
+</tr>
+<tr>
+<td><code>Ctrl+G</code></td>
+<td>Go to offset</td>
+</tr>
+<tr>
+<td><code>←</code> / <code>→</code> / <code>↑</code> / <code>↓</code></td>
+<td>Move (with Shift: select)</td>
+</tr>
+<tr>
+<td><code>Page Up</code> / <code>Page Down</code></td>
+<td>One page up / down</td>
+</tr>
+<tr>
+<td><code>Home</code> / <code>End</code></td>
+<td>Start / end of the row</td>
+</tr>
+<tr>
+<td><code>Ctrl+Home</code> / <code>Ctrl+End</code></td>
+<td>Start / end of the file</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The rows show 8 bytes, the data inspector is below the bytes. Tap a byte to select it, then enter the new value under
+<strong>Byte value (hex)</strong> and tap <strong>Set</strong>.</p>

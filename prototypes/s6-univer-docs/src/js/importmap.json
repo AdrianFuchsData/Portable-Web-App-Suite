@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "app/univer-docx": "../../../../shared/js/univer-docx.js",
+    "app/docx-import": "../../../../shared/js/docx-import.js",
+    "app/doc-toc": "../../../../shared/js/doc-toc.js"
+  }
+}

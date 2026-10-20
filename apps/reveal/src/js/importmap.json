@@ -1,0 +1,14 @@
+{
+  "imports": {
+    "@app/deck.js": "deck.js",
+    "@app/mermaid-svg.js": "mermaid-svg.js",
+    "@diagram/mermaid.js": "../../../diagram/src/js/mermaid.js",
+    "@diagram/layout.js": "../../../diagram/src/js/layout.js",
+    "@diagram/model.js": "../../../diagram/src/js/model.js",
+    "app/pptx-import": "../../../../shared/js/pptx-import.js",
+    "app/pptx-export": "../../../../shared/js/pptx-export.js",
+    "app/deck-convert": "../../../../shared/js/deck-convert.js",
+    "app/spell": "../../../../shared/js/spell.js",
+    "app/spell-dom": "../../../../shared/js/spell-dom.js"
+  }
+}

@@ -1,0 +1,334 @@
+<!-- Generated from docs/de/apps/audioeditor.md by tools/build_docs.py - do not edit. Confluence page title: Audio-Editor -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Der Audio-Editor (<code>audioeditor.html</code>) bearbeitet Tondateien wie Audacity: mehrere Spuren mit verschiebbaren Clips,
+Schneiden und Einfügen, Effekte, Beat- und Cue-Erkennung zum Ausrichten von Musik, Aufnahme mit dem Mikrofon und Export als
+WAV, MP3, FLAC, Ogg Opus oder M4A.</p>
+<h2>Dateien</h2>
+<ul>
+<li><strong>Öffnen</strong> (<code>Strg+O</code>) öffnet eine oder mehrere Audiodateien, jede als Spur (WAV, MP3, OGG/Opus, FLAC, M4A/AAC, WebM;
+  welche komprimierten Formate gehen, hängt vom Browser ab). Auf das Fenster gezogene Dateien werden ebenfalls geöffnet; sind
+  schon Spuren offen, werden sie hinzugefügt. <strong>Importieren</strong> fügt Dateien als neue Spuren hinzu.</li>
+<li>Alle Spuren haben eine gemeinsame Abtastrate: die der ersten Datei (44 100 Hz für erzeugte oder aufgenommene Töne). Dateien
+  mit anderer Rate werden beim Import umgerechnet.</li>
+<li><strong>Speichern</strong> (<code>Strg+S</code>) schreibt die Mischung aller Spuren als WAV. Wurde in Chrome/Edge am Desktop eine einzelne WAV-Datei
+  geöffnet, wird sie direkt mit derselben Bittiefe überschrieben; sonst wird die Datei heruntergeladen (ersetzen Sie das
+  Original damit).</li>
+<li><strong>Exportieren</strong> (<code>Strg+Umschalt+S</code>) wählt Dateiname, Format, Bitrate (komprimierte Formate), Kanäle (automatisch: Stereo,
+  wenn eine Spur stereo oder im Panorama verschoben ist) und Bereich (alles oder nur die Auswahl). Der Export ändert nicht,
+  in welche Datei <strong>Speichern</strong> schreibt.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Hinweise</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WAV 16 Bit, 24 Bit, 32 Bit Gleitkomma</td>
+<td>verlustfrei, jeder Browser</td>
+</tr>
+<tr>
+<td>FLAC</td>
+<td>verlustfrei, etwa halb so groß wie WAV; jeder Browser (eingebauter Encoder)</td>
+</tr>
+<tr>
+<td>MP3</td>
+<td>128–320 kbit/s; jeder Browser (eingebauter Encoder); höchstens 48 kHz</td>
+</tr>
+<tr>
+<td>Ogg Opus</td>
+<td>64–256 kbit/s, immer 48 kHz; nur wenn der Browser einen Opus-Encoder hat (aktuelle Chrome, Edge, Firefox)</td>
+</tr>
+<tr>
+<td>M4A (AAC)</td>
+<td>96–320 kbit/s; nur wenn der Browser einen AAC-Encoder hat (meist Chrome/Edge unter Windows und macOS)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Audio-Projekte</strong> (<code>.audioproj</code>): Wählen Sie im Export-Dialog <em>Audio-Projekt</em>, um Spuren, Clips mit ihren Positionen,
+Beat-Raster, Cues, Namen, Lautstärke, Balance, Stumm und Solo zum Weiterbearbeiten zu behalten. <strong>Öffnen</strong> liest Projekte wieder
+ein; <strong>Speichern</strong> schreibt dann das Projekt. Ein Projekt ist eine ZIP-Datei mit <code>project.json</code> und je einer verlustfreien
+WAV-Datei pro Clip (32 Bit Gleitkomma) und daher größer als ein abgemischtes WAV. Zum Abspielen anderswo exportieren Sie es als
+Audio.</p>
+<p>Formate, die der Browser nicht schreiben kann, sind ausgegraut. Die MP3- und FLAC-Encoder werden beim ersten Öffnen des
+Export-Dialogs geladen; das Kodieren eines langen Projekts dauert einige Sekunden (der Fortschritt steht in der
+Transportleiste).</p>
+<h2>Auswählen</h2>
+<ul>
+<li>Ziehen über eine Spur wählt einen Zeitbereich; Ziehen nach oben oder unten nimmt weitere Spuren dazu. <code>Umschalt</code>+Klick
+  erweitert die Auswahl, <code>Strg</code>+Klick nimmt eine Spur dazu oder heraus, Doppelklick wählt eine ganze Spur, <code>Strg+A</code> alles.</li>
+<li>Ein Klick ohne Ziehen setzt die Einfügemarke (dort beginnen Einfügen, Erzeugen und Abspielen).</li>
+<li><strong>Anfang</strong> und <strong>Ende</strong> in der Transportleiste zeigen die Auswahl und können eingetippt werden (<code>m:ss.mmm</code> oder Sekunden).</li>
+<li>Ein Klick auf den Spurkopf wählt eine Spur. Bearbeitungen wirken auf die gewählten Spuren, ohne Auswahl auf alle.</li>
+<li>Ist 🧲 (Einrasten) eingeschaltet, rasten Einfügemarke und Auswahlgrenzen an Clip-Rändern, Beats, Cues und der
+  Abspielposition ein, sobald sie ihnen auf wenige Pixel nahekommen (<code>Umschalt</code> gedrückt halten: frei setzen).</li>
+</ul>
+<h2>Clips</h2>
+<p>Jede Spur enthält Clips: Audiostücke mit eigener Position. Eine geöffnete oder aufgenommene Datei ist ein Clip; Teilen,
+Einfügen und Erzeugen legen weitere Clips an. Lücken zwischen Clips sind Stille.</p>
+<ul>
+<li><strong>Clip verschieben</strong>: an seiner Titelleiste (dem Streifen oben im Clip mit seinem Namen) nach links oder rechts ziehen,
+  oder nach oben oder unten in eine andere Spur. <code>Alt</code>+Ziehen irgendwo im Clip geht ebenfalls. Mit 🧲 rastet der Clip mit
+  seinen Rändern, Beats und Cues an Rändern, Beats und Cues der anderen Clips und an der Abspielposition ein; eine orange
+  Linie zeigt, wo.</li>
+<li>Ein Klick auf die Titelleiste wählt den Clip (blauer Rahmen) und seinen Bereich aus; ein Doppelklick auf einen Clip ebenso.</li>
+<li><strong>⫶</strong> (<code>Strg+I</code>) teilt die Clips an der Einfügemarke (und am Ende der Auswahl, falls vorhanden).</li>
+<li><strong>Clip ▾</strong> → <em>Clip duplizieren</em> legt eine Kopie direkt dahinter, <em>Clip entfernen</em> löscht ihn, ohne die anderen Clips zu
+  verschieben, <em>Verschieben nach…</em> setzt eine genaue Anfangszeit.</li>
+<li>Löschen, Ausschneiden und Einfügen arbeiten wie in Audacity: Löschen eines Bereichs schiebt die Clips dahinter nach links,
+  Einfügen oder Erzeugen schiebt sie nach rechts.</li>
+</ul>
+<h3>Clip-Lautstärke, Blenden und Überblendungen</h3>
+<p>Diese Einstellungen ändern das Audio selbst nicht; sie wirken beim Abspielen und Speichern und lassen sich jederzeit ändern:</p>
+<ul>
+<li><strong>Blenden</strong>: Ziehen Sie den runden Griff an der linken oberen Ecke eines Clips nach rechts, um ihn einzublenden, den an der
+  rechten oberen Ecke nach links, um ihn auszublenden. Die Blende wird als Kurve gezeichnet, die Wellenform zeigt das Ergebnis.</li>
+<li><strong>Clip ▾ → Clip-Lautstärke…</strong> macht einen Clip lauter oder leiser (in dB; in seiner Titelleiste angezeigt). <em>Blenden entfernen</em>
+  setzt beide Blenden zurück.</li>
+<li><strong>Überblenden</strong>: Ziehen Sie einen Clip so, dass er das Ende des vorigen überlappt, und wählen Sie <strong>Clip ▾ → Überlappende Clips
+  überblenden</strong>: Der erste Clip wird über die Überlappung aus-, der zweite eingeblendet. Die Blenden folgen Kurven gleicher Leistung,
+  die Lautstärke sackt in der Mitte also nicht ab.</li>
+</ul>
+<h2>Beats und Cues</h2>
+<p>Zum Ausrichten zweier Musikstücke findet der Editor die Beats und markante Stellen (Cues) eines Clips. Beide gehören zum
+Clip und wandern mit ihm.</p>
+<ul>
+<li><strong>Clip ▾ → Beats erkennen</strong> ermittelt das Tempo (BPM) und legt ein gleichmäßiges Beat-Raster über den gewählten Clip, ohne
+  gewählten Clip über alle Clips der gewählten Spuren. Das Tempo steht in der Titelleiste; Beats sind dünne Linien mit einem
+  Strich in der Titelleiste. Am besten für Musik mit gleichmäßigem Tempo; bei sehr langsamer oder schneller Musik kann das
+  halbe oder doppelte Tempo erkannt werden – korrigieren Sie es im Beat-Raster.</li>
+<li><strong>Beat-Raster…</strong> zeigt und ändert Tempo und Lage eines Beats als Zahlen; <strong>Beat auf den Cursor legen</strong> verschiebt das
+  Raster so, dass ein Beat genau an der Einfügemarke liegt.</li>
+<li><strong>Tempo angleichen…</strong> macht den gewählten Clip schneller oder langsamer, bis er das Zieltempo hat (vorgeschlagen: das
+  Tempo eines anderen Clips mit Beats). Die Tonhöhe bleibt gleich; Beats und Cues werden angepasst.</li>
+<li><strong>Cues erkennen…</strong> markiert den ersten Ton und die stärksten Einsätze (Schläge, Einsätze von Instrumenten) mit einem
+  <em>Mindestabstand</em>; höhere <em>Empfindlichkeit</em> findet mehr Cues. <strong>Cue am Cursor setzen</strong> (<code>M</code>) setzt einen von Hand. Cues sind
+  orange Linien mit einem Dreieck.</li>
+<li><strong>Beats und Cues entfernen</strong> löscht die Markierungen des gewählten Clips (bzw. der gewählten Spuren).</li>
+</ul>
+<p><strong>Zwei Lieder ausrichten</strong>: beide öffnen, <em>Beats erkennen</em>, <em>Tempo angleichen…</em> auf den zweiten Clip, dann ihn an der
+Titelleiste ziehen, bis seine Beats auf denen des ersten einrasten – etwa so, dass sein erster Cue auf einem Beat des
+ersten Lieds liegt. <em>Ausblenden</em>/<em>Einblenden</em> im überlappenden Bereich ergibt einen weichen Übergang.</p>
+<h2>Beschriftungen</h2>
+<p>Die Beschriftungsleiste unter dem Zeitlineal enthält Beschriftungen für das ganze Projekt (Abschnitte, Kapitel, Notizen):</p>
+<ul>
+<li><strong>Spuren ▾ → Beschriftung hinzufügen</strong> (<code>Strg+B</code>) beschriftet die Auswahl oder – ohne Auswahl – die Cursorposition. Ein
+  Doppelklick auf eine freie Stelle der Leiste fügt dort eine Beschriftung hinzu.</li>
+<li>Ein Klick auf eine Beschriftung wählt ihren Bereich aus (bzw. setzt den Cursor darauf); ein Doppelklick benennt sie um.
+  Ein leerer Name entfernt die Beschriftung.</li>
+<li><strong>Beschriftungen exportieren…</strong> speichert die Beschriftungen als Textdatei im Audacity-Format (Beginn, Ende und Text durch
+  Tabulatoren getrennt, Zeiten in Sekunden); <strong>Beschriftungen importieren…</strong> liest eine solche Datei (etwa aus Audacity).</li>
+<li>Beschriftungen rasten wie Cues ein, lassen sich rückgängig machen und werden in der Projektdatei gespeichert.</li>
+</ul>
+<h2>Bearbeiten</h2>
+<table>
+<thead>
+<tr>
+<th>Schaltfläche</th>
+<th>Taste</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>↶ ↷</td>
+<td><code>Strg+Z</code>, <code>Strg+Y</code></td>
+<td>rückgängig, wiederholen</td>
+</tr>
+<tr>
+<td>✂ ⧉ 📋</td>
+<td><code>Strg+X</code>, <code>Strg+C</code>, <code>Strg+V</code></td>
+<td>ausschneiden, kopieren, einfügen (ersetzt die Auswahl; mehrere kopierte Spuren werden in mehrere Spuren eingefügt)</td>
+</tr>
+<tr>
+<td>⌫</td>
+<td><code>Entf</code></td>
+<td>löscht die Auswahl (der Rest rückt nach)</td>
+</tr>
+<tr>
+<td>⊐⊏</td>
+<td></td>
+<td>schneidet auf die Auswahl zu</td>
+</tr>
+<tr>
+<td>∅</td>
+<td></td>
+<td>ersetzt die Auswahl durch Stille</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Effekte</strong> wirken auf die Auswahl, ohne Auswahl auf die ganze Spur: Verstärken (dB), Normalisieren (Spitzenpegel),
+Einblenden, Ausblenden, Umkehren, Invertieren, Echo (Verzögerung und Abklingen), Geschwindigkeit ändern (ändert Länge und
+Tonhöhe), Tempo ändern (ändert die Länge, behält die Tonhöhe), Tiefpass und Hochpass sowie:</p>
+<ul>
+<li><strong>Equalizer</strong>: Bass (unter 120 Hz), Mitten (um 1 kHz) und Höhen (über 6 kHz) in dB anheben oder absenken.</li>
+<li><strong>Kompressor</strong>: Über der Schwelle steigt der Pegel nur um 1/Verhältnis (Ansprech- und Abklingzeit glätten, die Aufholverstärkung hebt das
+  Ergebnis an) – gleicht Sprache oder Gesang aus. <strong>Limiter</strong>: hält die Spitzen unter einer Obergrenze.</li>
+<li><strong>Hall</strong>: Raumgröße (Nachhallzeit) und Anteil.</li>
+<li><strong>Tonhöhe ändern</strong>: um Halbtöne hinauf oder hinunter; die Länge bleibt gleich.</li>
+<li><strong>Rauschminderung</strong>: senkt gleichmäßige Hintergrundgeräusche (Rauschen, Brummen, Lüfter) um den angegebenen Wert. Das Rauschen wird in den
+  leisesten Teilen der Auswahl gemessen; wählen Sie also einige Pausen mit der Sprache oder Musik aus; eine höhere Rauschschwelle entfernt mehr,
+  kann aber leise Klänge beeinträchtigen.</li>
+</ul>
+<p>Effekte, die die Länge ändern oder
+umkehren, bearbeiten die Auswahl als ein Stück (die Clips darin werden zu einem Clip); ohne Auswahl wirken sie auf jeden Clip. <strong>Erzeugen</strong> fügt an der Einfügemarke einen Ton (Sinus, Rechteck, Sägezahn, Dreieck),
+Rauschen oder Stille ein; ohne Spuren entsteht eine neue Spur.</p>
+<h2>Spuren</h2>
+<p>Der Kopf jeder Spur enthält ihren Namen (zum Umbenennen anklicken), <strong>M</strong> (stumm), <strong>S</strong> (solo: nur Solo-Spuren sind zu
+hören), ⧉ (duplizieren), 2→1 / 1→2 (in Mono oder Stereo umwandeln), × (löschen) sowie Regler für Lautstärke (dB) und
+Balance (Doppelklick setzt zurück). Lautstärke, Balance, Stumm und Solo wirken beim Abspielen und beim Speichern. <strong>Spuren ▾</strong>
+legt eine leere Spur an, mischt alle Spuren zu einer ab oder wählt alles aus.</p>
+<p><strong>≋</strong> zeigt die Spur als Spektrogramm statt als Wellenform: die Zeit von links nach rechts, die Frequenz von unten (30 Hz) nach
+oben auf logarithmischer Skala, die Lautstärke als Farbe von dunkelblau (leise) über rot bis hellgelb (laut). So findet man
+Brummen, Rauschen, Pfeiftöne oder Knackser. Die Einstellung wird in der Projektdatei gespeichert.</p>
+<p><strong>⤴</strong> schaltet die Spur auf Lautstärkeautomation: eine Linie über der Wellenform zeigt die Lautstärke im zeitlichen Verlauf (oben
++6 dB, unten −40 dB). Ein Klick auf die Spur setzt einen Punkt, Ziehen verschiebt ihn, ein Doppelklick entfernt ihn. Zwischen den
+Punkten ändert sich die Lautstärke gleichmäßig, vor dem ersten und nach dem letzten Punkt bleibt sie auf deren Wert. Ein erneuter
+Klick auf ⤴ kehrt zur normalen Bearbeitung zurück. Die Automation wirkt beim Abspielen, Speichern und Exportieren und bleibt in der
+Projektdatei erhalten.</p>
+<h2>Abspielen und Aufnehmen</h2>
+<p>▶ (oder <code>Leertaste</code>) spielt die Auswahl oder ab der Einfügemarke bis zum Ende; ⏸ hält an, ⏹ stoppt, ⏮ ⏭ springen an den
+Anfang bzw. das Ende. 🔁 wiederholt die Auswahl. Ein Klick auf das Zeitlineal setzt die Abspielposition.</p>
+<p>● startet die Aufnahme mit dem Mikrofon (der Browser fragt nach der Erlaubnis); die anderen Spuren werden dabei abgespielt.
+● beendet die Aufnahme; sie wird eine neue Spur mit einem Clip, der an der Einfügemarke beginnt.</p>
+<h2>Ansicht</h2>
+<p><code>Strg</code>+Mausrad oder <strong>+</strong>/<strong>−</strong> zoomen, ⤢ zeigt alles. <code>Umschalt</code>+Mausrad (oder die Bildlaufleiste unter den Spuren) blättert.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Exportieren</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Rückgängig</td>
+</tr>
+<tr>
+<td><code>Strg+Y</code> / <code>Strg+Umschalt+Z</code></td>
+<td>Wiederholen</td>
+</tr>
+<tr>
+<td><code>Strg+X</code> / <code>Strg+C</code> / <code>Strg+V</code></td>
+<td>Ausschneiden, kopieren, einfügen</td>
+</tr>
+<tr>
+<td><code>Strg+A</code></td>
+<td>Alles auswählen</td>
+</tr>
+<tr>
+<td><code>Entf</code> / <code>Rücktaste</code></td>
+<td>Auswahl löschen</td>
+</tr>
+<tr>
+<td><code>Strg+I</code></td>
+<td>Am Cursor teilen</td>
+</tr>
+<tr>
+<td><code>M</code></td>
+<td>Cue am Cursor setzen</td>
+</tr>
+<tr>
+<td><code>Strg+B</code></td>
+<td>Beschriftung hinzufügen (Auswahl oder Cursor)</td>
+</tr>
+<tr>
+<td><code>Alt+Ziehen</code></td>
+<td>Clip verschieben (irgendwo im Clip)</td>
+</tr>
+<tr>
+<td><code>Umschalt+Ziehen</code></td>
+<td>Ohne Einrasten verschieben oder auswählen</td>
+</tr>
+</tbody>
+</table>
+<h3>Wiedergabe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Leertaste</code></td>
+<td>Abspielen / Pause</td>
+</tr>
+<tr>
+<td><code>Pos1</code> / <code>Ende</code></td>
+<td>Zum Anfang / Ende</td>
+</tr>
+</tbody>
+</table>
+<h3>Ansicht</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>+</code> / <code>-</code></td>
+<td>Vergrößern / verkleinern</td>
+</tr>
+<tr>
+<td><code>Strg+Mausrad</code></td>
+<td>Zoomen</td>
+</tr>
+<tr>
+<td><code>Umschalt+Mausrad</code></td>
+<td>Blättern</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Tippen oder Ziehen auf einer Spur setzt die Einfügemarke bzw. wählt aus; ein Clip wird an seiner (etwas höheren)
+Titelleiste verschoben. Die Spurköpfe sind schmaler, behalten aber alle Schaltflächen und Regler; die
+Werkzeugleiste lässt sich waagrecht verschieben.</p>

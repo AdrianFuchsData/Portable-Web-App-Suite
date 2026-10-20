@@ -1,0 +1,14 @@
+/*
+ * Aliases for fonts that office files often use (Microsoft fonts) but that are missing on Linux,
+ * Android and thin clients. The installed original wins; otherwise a metric-compatible font
+ * (Carlito, Caladea, Liberation) or a similar sans-serif/serif font is used. Only local fonts:
+ * nothing is downloaded.
+ */
+@font-face { font-family: "Calibri"; src: local("Calibri"), local("Carlito"), local("Liberation Sans"), local("Arial"), local("DejaVu Sans"), local("Roboto"); }
+@font-face { font-family: "Calibri"; font-weight: bold; src: local("Calibri Bold"), local("Calibri-Bold"), local("Carlito Bold"), local("Liberation Sans Bold"), local("Arial Bold"), local("DejaVu Sans Bold"), local("Roboto Bold"); }
+@font-face { font-family: "Cambria"; src: local("Cambria"), local("Caladea"), local("Liberation Serif"), local("Times New Roman"), local("DejaVu Serif"), local("Noto Serif"); }
+@font-face { font-family: "Arial"; src: local("Arial"), local("Liberation Sans"), local("Arimo"), local("DejaVu Sans"), local("Roboto"); }
+@font-face { font-family: "Arial"; font-weight: bold; src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("Arimo Bold"), local("DejaVu Sans Bold"), local("Roboto Bold"); }
+@font-face { font-family: "Times New Roman"; src: local("Times New Roman"), local("Liberation Serif"), local("Tinos"), local("DejaVu Serif"), local("Noto Serif"); }
+@font-face { font-family: "Courier New"; src: local("Courier New"), local("Liberation Mono"), local("Cousine"), local("DejaVu Sans Mono"), local("Roboto Mono"); }
+@font-face { font-family: "Aptos"; src: local("Aptos"), local("Calibri"), local("Carlito"), local("Liberation Sans"), local("Arial"), local("DejaVu Sans"), local("Roboto"); }

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" data-version="%%BUILD_VERSION%%">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'wasm-unsafe-eval' 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src data: blob:; form-action 'none'; base-uri 'none'">
+  <title>Calendar</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23c62828' d='M7 2h2v2h6V2h2v2h3v18H4V4h3zm-1 7v11h12V9zm2 2h3v3H8z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../../vendor/pico.min.css">
+  <link rel="stylesheet" href="../../../shared/css/suite.css">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap" data-src="../../../vendor/esm/fflate/importmap.json ../../../vendor/esm/spell/importmap.json js/importmap.json"></script>
+  <script type="application/octet-stream" id="dict-en_US-aff" data-src="../../../vendor/esm/spell/assets/dictionary-en/index.aff"></script>
+  <script type="application/octet-stream" id="dict-en_US-dic" data-src="../../../vendor/esm/spell/assets/dictionary-en/index.dic"></script>
+  <script type="application/octet-stream" id="dict-de_DE-aff" data-src="../../../vendor/esm/spell/assets/dictionary-de/index.aff"></script>
+  <script type="application/octet-stream" id="dict-de_DE-dic" data-src="../../../vendor/esm/spell/assets/dictionary-de/index.dic"></script>
+  <script type="application/json" data-shortcuts="calendar"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <noscript>This application requires JavaScript.</noscript>
+  <script src="../../../vendor/htm-preact-standalone.umd.js"></script>
+  <script src="../../../shared/js/i18n.js"></script>
+  <script src="../../../shared/js/files.js"></script>
+  <script src="../../../shared/js/embed.js"></script>
+  <script src="../../../shared/js/bridge.js"></script>
+  <script src="../../../shared/js/history.js"></script>
+  <script src="../../../shared/js/shell.js"></script>
+  <script src="../../../shared/js/autosave.js"></script>
+  <script src="../../../shared/js/ical.js"></script>
+  <script src="js/main.js"></script>
+  <script type="module" src="../../../shared/js/spell-dom.js"></script>
+</body>
+</html>

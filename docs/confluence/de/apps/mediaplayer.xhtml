@@ -1,0 +1,248 @@
+<!-- Generated from docs/de/apps/mediaplayer.md by tools/build_docs.py - do not edit. Confluence page title: Medienplayer -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Der Medienplayer (<code>mediaplayer.html</code>) spielt Audio- und Videodateien sowie Stream-URLs ab, mit Wiedergabelisten, Zufallswiedergabe
+und Wiederholen, Wiedergabegeschwindigkeit, Untertiteln, Vollbild und Bild-in-Bild.</p>
+<h2>Unterstützte Formate</h2>
+<p>Der Player verwendet die Codecs des Browsers. In der Regel unterstützt:</p>
+<table>
+<thead>
+<tr>
+<th>Browser</th>
+<th>Audio</th>
+<th>Video</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chrome, Edge (Desktop, Android)</td>
+<td>MP3, AAC/M4A, WAV, FLAC, Ogg Vorbis, Opus</td>
+<td>MP4 (H.264, AV1), WebM (VP8, VP9, AV1); MKV funktioniert oft</td>
+</tr>
+<tr>
+<td>Firefox</td>
+<td>MP3, AAC/M4A, WAV, FLAC, Ogg Vorbis, Opus</td>
+<td>MP4 (H.264, AV1; abhängig vom System), WebM, Ogg Theora</td>
+</tr>
+</tbody>
+</table>
+<p>Formate wie AVI, WMV/WMA oder MPEG-2 werden meist nicht unterstützt; der Player zeigt dann eine Meldung und überspringt die Datei.
+Titel, Interpret, Album und Cover werden aus ID3 (MP3), FLAC/Ogg-Kommentaren, MP4-Tags und WAV-INFO-Blöcken gelesen.</p>
+<h2>Öffnen</h2>
+<ul>
+<li><strong>Dateien öffnen</strong> (<code>Strg+O</code>) fügt Audio- und Videodateien, Wiedergabelisten und Untertitel hinzu; <strong>Ordner öffnen</strong> fügt alle
+  Mediendateien eines Ordners hinzu (auch aus Unterordnern). Sie können Dateien und Ordner auch auf das Fenster ziehen.</li>
+<li><strong>URL öffnen</strong> (<code>Strg+L</code>) fügt einen Stream oder eine Datei auf einem Webserver hinzu (<code>http://</code>, <code>https://</code>). Der Browser spielt
+  sie direkt ab; der Server muss erreichbar sein.</li>
+<li>Die erste hinzugefügte Datei wird abgespielt, wenn gerade nichts läuft.</li>
+</ul>
+<h2>Wiedergabeliste</h2>
+<ul>
+<li>Ein Doppelklick (am Smartphone: Tippen) auf einen Titel spielt ihn ab. ↑ und ↓ verschieben einen Titel, × entfernt ihn; Titel
+  lassen sich auch an eine neue Position ziehen.</li>
+<li><strong>Filtern</strong> zeigt nur Titel, deren Titel, Interpret oder Album den Text enthält. <strong>Leeren</strong> leert die Wiedergabeliste.</li>
+<li><strong>▦</strong> wechselt zur <strong>Albenansicht</strong>: eine Kachel je Album mit Cover (aus den Tags), Titel ohne Album am Ende; ein Klick spielt
+  das Album. <strong>☰</strong> führt zur Liste zurück.</li>
+<li><strong>Wiedergabelisten</strong> (M3U, M3U8, PLS, XSPF): Öffnen Sie die Wiedergabeliste <strong>zusammen mit den Mediendateien</strong>, auf die sie
+  verweist (alle markieren oder den Ordner öffnen). Die Einträge werden über den Dateinamen zugeordnet. Einträge ohne Datei sind
+  durchgestrichen; wird die Datei später hinzugefügt, nimmt sie ihren Platz in der Liste ein. URLs in einer Wiedergabeliste werden
+  direkt abgespielt.</li>
+<li><strong>Wiedergabeliste speichern</strong> speichert die Liste als M3U8 (lokale Dateien mit ihrem Namen oder ursprünglichen Pfad, Streams mit URL).</li>
+</ul>
+<ac:structured-macro ac:name="info"><ac:rich-text-body><p>Aus Sicherheitsgründen erhält der Player keinen Zugriff auf Dateien, die Sie nicht ausgewählt haben. Daher kann eine
+Wiedergabeliste allein ihre Dateien nicht laden.</p></ac:rich-text-body></ac:structured-macro>
+<h2>Wiedergabe</h2>
+<table>
+<thead>
+<tr>
+<th>Bedienelement</th>
+<th>Taste</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>▶ / ⏸</td>
+<td><code>Leertaste</code>, <code>K</code></td>
+<td>Wiedergabe / Pause (auch ein Klick auf das Bild)</td>
+</tr>
+<tr>
+<td>⏹</td>
+<td><code>S</code></td>
+<td>Stopp</td>
+</tr>
+<tr>
+<td>⏮ / ⏭</td>
+<td><code>P</code> / <code>N</code></td>
+<td>vorheriger / nächster Titel (⏮ springt zuerst an den Anfang des Titels)</td>
+</tr>
+<tr>
+<td>Zeitleiste</td>
+<td><code>←</code> / <code>→</code> (<code>Umschalt</code>: 1 Minute)</td>
+<td>5 Sekunden springen</td>
+</tr>
+<tr>
+<td>🔊 und Regler</td>
+<td><code>M</code>, <code>↑</code> / <code>↓</code></td>
+<td>stumm, Lautstärke</td>
+</tr>
+<tr>
+<td>Geschwindigkeit</td>
+<td><code>[</code> / <code>]</code>, <code>=</code></td>
+<td>0,25× bis 4× (Tonhöhe bleibt), normale Geschwindigkeit</td>
+</tr>
+<tr>
+<td>🔀</td>
+<td></td>
+<td>Zufallswiedergabe: jeder Titel wird einmal in zufälliger Reihenfolge gespielt</td>
+</tr>
+<tr>
+<td>🔁 / 🔂</td>
+<td></td>
+<td>Wiederholen: aus, alle, einen</td>
+</tr>
+<tr>
+<td>Untertitel</td>
+<td><code>V</code></td>
+<td>Untertitel wählen oder ausschalten</td>
+</tr>
+<tr>
+<td>⧉</td>
+<td></td>
+<td>Bild-in-Bild (Chrome, Edge)</td>
+</tr>
+<tr>
+<td>⛶</td>
+<td><code>F</code>, Doppelklick</td>
+<td>Vollbild</td>
+</tr>
+<tr>
+<td>A–B</td>
+<td><code>L</code></td>
+<td>Teil wiederholen: der erste Klick setzt A, der zweite B (der Teil dazwischen wiederholt sich), der dritte beendet es</td>
+</tr>
+<tr>
+<td>⏴ / ⏵ (Videos)</td>
+<td><code>,</code> / <code>.</code></td>
+<td>ein Bild zurück / vor (hält an)</td>
+</tr>
+<tr>
+<td>📷 (Videos)</td>
+<td></td>
+<td>speichert das aktuelle Bild als PNG</td>
+</tr>
+<tr>
+<td>🎚</td>
+<td></td>
+<td>Equalizer (siehe unten)</td>
+</tr>
+</tbody>
+</table>
+<p>Lange Dateien (ab zwei Minuten) werden dort fortgesetzt, wo Sie zuletzt aufgehört haben (die letzten 200 Dateien merkt sich dieser
+Browser).</p>
+<p><strong>Equalizer</strong>: 🎚 öffnet zehn Bänder von 31 Hz bis 16 kHz (±12 dB) mit Voreinstellungen (neutral, Bässe, Höhen, Sprache, Loudness)
+und <strong>Lautstärke angleichen</strong>, das laute und leise Stellen ausgleicht. Er wirkt bei lokalen Dateien; Stream-URLs werden unverändert
+abgespielt (der Browser erlaubt nicht, ihren Ton zu bearbeiten).</p>
+<p>Lautstärke, Stummschaltung, Geschwindigkeit, Zufallswiedergabe, Wiederholen und die Anzeige der Wiedergabeliste werden in diesem
+Browser gespeichert. Medientasten der Tastatur und die Wiedergabe-Benachrichtigung unter Android funktionieren ebenfalls.</p>
+<h2>Untertitel</h2>
+<p>Fügen Sie eine SRT- oder WebVTT-Datei hinzu. Eine Untertiteldatei mit dem Namen eines Videos (<code>film.srt</code> zu <code>film.mp4</code>) gehört zu
+diesem Video; sonst wird sie dem laufenden Titel zugeordnet. Mehrere Untertiteldateien sind möglich; die Liste in der Steuerleiste
+wählt eine aus.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Dateien öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+L</code></td>
+<td>Stream-URL öffnen</td>
+</tr>
+</tbody>
+</table>
+<h3>Wiedergabe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Leertaste</code> / <code>K</code></td>
+<td>Abspielen / Pause</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>Stopp</td>
+</tr>
+<tr>
+<td><code>←</code> / <code>→</code></td>
+<td>5 s zurück / vor (mit Umschalt: 60 s)</td>
+</tr>
+<tr>
+<td><code>↑</code> / <code>↓</code></td>
+<td>Lautstärke</td>
+</tr>
+<tr>
+<td><code>M</code></td>
+<td>Stumm</td>
+</tr>
+<tr>
+<td><code>[</code> / <code>]</code></td>
+<td>Langsamer / schneller</td>
+</tr>
+<tr>
+<td><code>=</code></td>
+<td>Normale Geschwindigkeit</td>
+</tr>
+<tr>
+<td><code>N</code> / <code>P</code></td>
+<td>Nächster / vorheriger Eintrag</td>
+</tr>
+<tr>
+<td><code>F</code></td>
+<td>Vollbild</td>
+</tr>
+<tr>
+<td><code>V</code></td>
+<td>Nächste Untertitelspur</td>
+</tr>
+<tr>
+<td><code>L</code></td>
+<td>A–B-Wiederholung (A setzen, B setzen, aus)</td>
+</tr>
+<tr>
+<td><code>,</code> / <code>.</code></td>
+<td>Ein Bild zurück / vor (Videos)</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Das Bild steht über der Steuerung und der Wiedergabeliste. Tippen auf einen Titel spielt ihn ab; die Schaltflächen ↑, ↓ und × sind
+immer sichtbar.</p>

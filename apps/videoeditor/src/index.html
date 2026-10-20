@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en" data-version="%%BUILD_VERSION%%">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'wasm-unsafe-eval' 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; connect-src data: blob:; worker-src blob:; form-action 'none'; base-uri 'none'">
+  <title>Video editor</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='2' y='5' width='15' height='14' rx='2' fill='%236a1b9a'/%3E%3Cpath fill='%236a1b9a' d='m17 10 5-3v10l-5-3z'/%3E%3Cpath fill='white' d='m8 9 5 3-5 3z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../../vendor/pico.min.css">
+  <link rel="stylesheet" href="../../../shared/css/suite.css">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap" data-src="../../../vendor/esm/video/importmap.json ../../../vendor/esm/fflate/importmap.json ../../../vendor/esm/spell/importmap.json js/importmap.json"></script>
+  <script type="application/octet-stream" id="dict-en_US-aff" data-src="../../../vendor/esm/spell/assets/dictionary-en/index.aff"></script>
+  <script type="application/octet-stream" id="dict-en_US-dic" data-src="../../../vendor/esm/spell/assets/dictionary-en/index.dic"></script>
+  <script type="application/octet-stream" id="dict-de_DE-aff" data-src="../../../vendor/esm/spell/assets/dictionary-de/index.aff"></script>
+  <script type="application/octet-stream" id="dict-de_DE-dic" data-src="../../../vendor/esm/spell/assets/dictionary-de/index.dic"></script>
+  <script type="application/json" data-shortcuts="videoeditor"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <noscript>This application requires JavaScript.</noscript>
+  <script src="../../../vendor/htm-preact-standalone.umd.js"></script>
+  <script src="../../../shared/js/i18n.js"></script>
+  <script src="../../../shared/js/files.js"></script>
+  <script src="../../../shared/js/embed.js"></script>
+  <script src="../../../shared/js/bridge.js"></script>
+  <script src="../../../shared/js/shell.js"></script>
+  <script src="../../../shared/js/autosave.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

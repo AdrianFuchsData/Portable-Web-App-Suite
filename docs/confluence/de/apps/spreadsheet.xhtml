@@ -1,0 +1,174 @@
+<!-- Generated from docs/de/apps/spreadsheet.md by tools/build_docs.py - do not edit. Confluence page title: Tabellenkalkulation -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Die Tabellenkalkulation (<code>spreadsheet.html</code>) bearbeitet Arbeitsmappen wie Excel oder LibreOffice Calc: Zellen mit Werten und Formeln (mehr als 400
+Funktionen), Formatierung, mehrere Blätter, Sortieren, Filter, verbundene Zellen, fixierte Zeilen und Spalten, Suchen und Ersetzen. Die
+Bearbeitungskomponente ist Univer Sheets.</p>
+<h2>Dateien</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Öffnen</th>
+<th>Speichern</th>
+<th>Hinweise</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Excel (<code>.xlsx</code>)</td>
+<td>ja</td>
+<td>ja</td>
+<td>Werte, Formeln, Formate, Zahlenformate, verbundene Zellen, Spaltenbreiten, Zeilenhöhen, fixierte Bereiche, Registerfarben, ausgeblendete Blätter, bedingte Formatierung, Datenüberprüfung</td>
+</tr>
+<tr>
+<td>Excel mit Makros (<code>.xlsm</code>)</td>
+<td>ja</td>
+<td>als <code>.xlsx</code></td>
+<td>Makros können nicht erhalten werden</td>
+</tr>
+<tr>
+<td>OpenDocument (<code>.ods</code>)</td>
+<td>ja</td>
+<td>ja</td>
+<td>Werte, Formeln, verbundene Zellen (ohne Formatierung)</td>
+</tr>
+<tr>
+<td>Excel 97–2003 (<code>.xls</code>)</td>
+<td>ja</td>
+<td>ja</td>
+<td>Werte und Formeln (ohne Formatierung)</td>
+</tr>
+<tr>
+<td>CSV, TSV (<code>.csv</code>, <code>.tsv</code>, <code>.txt</code>)</td>
+<td>ja, mit Optionen</td>
+<td><code>.csv</code></td>
+<td>nur die Werte des ersten Blatts</td>
+</tr>
+<tr>
+<td>Numbers, Flat-ODS</td>
+<td>ja</td>
+<td>–</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Öffnen</strong> (<code>Strg+O</code>) öffnet eine Datei; sie kann auch auf das Fenster gezogen werden. <strong>Neu</strong> beginnt eine leere Arbeitsmappe.</li>
+<li><strong>Speichern</strong> (<code>Strg+S</code>) speichert im Format der Datei: in Chrome/Edge am Desktop direkt in die Datei, in Firefox und unter Android als
+  Download (ersetzen Sie die ursprüngliche Datei damit). <strong>Speichern unter</strong> (<code>Strg+Umschalt+S</code>) fragt nach Name und Format.</li>
+<li>Der Dateiname in der Werkzeugleiste zeigt •, solange es ungespeicherte Änderungen gibt.</li>
+</ul>
+<h3>CSV- und Textdateien importieren</h3>
+<p>Beim Öffnen einer <code>.csv</code>-, <code>.tsv</code>- oder <code>.txt</code>-Datei erscheinen die Importoptionen mit einer Vorschau der ersten Zeilen:</p>
+<ul>
+<li><strong>Kodierung</strong>: wird automatisch erkannt (UTF-8 mit oder ohne BOM, UTF-16 mit BOM, sonst Windows-1252); wählen Sie eine
+  andere, wenn Umlaute falsch aussehen.</li>
+<li><strong>Trennzeichen</strong>: Komma, Strichpunkt, Tabulator oder senkrechter Strich; das wahrscheinlichste ist vorausgewählt.</li>
+<li><strong>Werte</strong>: <em>Zahlen und Datumswerte erkennen</em> wandelt Zahlen (mit dem gewählten <strong>Dezimaltrennzeichen</strong>, <code>1,234.5</code> oder
+  <code>1.234,5</code>, auch mit <code>%</code>), Datumswerte (<code>2026-10-16</code>, <code>16.10.2026</code>, mit oder ohne Uhrzeit) und <code>TRUE</code>/<code>FALSE</code> um. Zahlen mit
+  führenden Nullen (Postleitzahlen, Telefonnummern) bleiben Text. <em>Alles als Text</em> übernimmt jede Zelle genau wie in der Datei.</li>
+</ul>
+<p>Felder in Anführungszeichen dürfen Trennzeichen, Anführungszeichen (<code>""</code>) und Zeilenumbrüche enthalten. <strong>Speichern</strong> schreibt
+die CSV-Datei wieder mit dem Trennzeichen, mit dem sie importiert wurde.</p>
+<h2>Bearbeiten</h2>
+<p>Das Menüband über der Tabelle hat die Reiter <strong>Start</strong> (Zwischenablage, Schrift, Farben, Rahmen, Ausrichtung, Verbinden, Zahlenformate),
+<strong>Formeln</strong> und <strong>Ansicht</strong>. Tippen Sie in eine Zelle und bestätigen Sie mit <code>Eingabe</code>; Formeln beginnen mit <code>=</code>, z. B. <code>=SUMME(B2:B10)</code>. Die
+Bearbeitungsleiste zeigt und bearbeitet den Inhalt der gewählten Zelle. Die Leiste unten fügt Blätter hinzu (+) und wechselt zwischen ihnen; ein
+Rechtsklick auf ein Blattregister benennt es um, färbt, blendet aus oder löscht es. Der Zoom steht rechts unten. Ein Rechtsklick auf Zellen,
+Zeilen und Spalten öffnet weitere Befehle (Einfügen, Löschen, Sortieren, …).</p>
+<p>Die üblichen Tastenkombinationen funktionieren: <code>Strg+C/X/V</code>, <code>Strg+Z/Y</code>, <code>Strg+B/I/U</code>, Pfeiltasten, <code>Tab</code>, <code>F2</code> zum Bearbeiten einer Zelle.</p>
+<p>Die Sprache der Bearbeitungskomponente folgt der Sprachumschaltung der Suite, ebenso das dunkle Design.</p>
+<p>Rückgängig und Wiederholen sind die ersten beiden Schaltflächen der Editor-Werkzeugleiste (auch <code>Strg+Z</code> und <code>Strg+Y</code>).</p>
+<h3>Bedingte Formatierung und Datenüberprüfung</h3>
+<p>Die <strong>bedingte Formatierung</strong> (Reiter <em>Daten</em>, zweites Menü) färbt Zellen nach ihrem Wert: Zellen hervorheben
+(größer/kleiner als, zwischen, Text enthält/beginnt/endet mit, Datumsangaben, obere/untere Werte, über/unter dem Durchschnitt, Duplikate,
+eigene Formel), Farbskalen und Datenbalken. Die <strong>Datenüberprüfung</strong> (Reiter <em>Daten</em>, erstes Menü) schränkt Eingaben ein: eine Liste mit Auswahlfeld,
+ganze oder Dezimalzahlen, Datumsangaben, Textlänge oder eine eigene Formel, mit Eingabehinweis und Fehlermeldung.</p>
+<p>Beides wird aus Excel-Dateien gelesen und in sie geschrieben. Symbolsätze werden aus Excel-Dateien nicht übernommen; „Duplikate“ und
+„eindeutige Werte“ werden als Formelregeln gespeichert, und Listen, die auf Bereiche der Mappe verweisen, bleiben Verweise.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Rückgängig</td>
+</tr>
+<tr>
+<td><code>Strg+Y</code> / <code>Strg+Umschalt+Z</code></td>
+<td>Wiederholen</td>
+</tr>
+<tr>
+<td><code>Strg+X</code> / <code>Strg+C</code> / <code>Strg+V</code></td>
+<td>Ausschneiden, kopieren, einfügen</td>
+</tr>
+<tr>
+<td><code>Strg+B</code> / <code>Strg+I</code> / <code>Strg+U</code></td>
+<td>Fett / kursiv / unterstrichen</td>
+</tr>
+<tr>
+<td><code>F2</code></td>
+<td>Zelle bearbeiten</td>
+</tr>
+<tr>
+<td><code>Eingabe</code> / <code>Tab</code></td>
+<td>Übernehmen und nach unten / rechts</td>
+</tr>
+<tr>
+<td><code>Entf</code></td>
+<td>Zellen leeren</td>
+</tr>
+<tr>
+<td><code>Strg+F</code></td>
+<td>Suchen und ersetzen</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Tabelle lässt sich ansehen, verschieben und bearbeiten; das Menüband lässt sich seitlich verschieben. Für größere Änderungen ist ein größerer
+Bildschirm angenehmer.</p>

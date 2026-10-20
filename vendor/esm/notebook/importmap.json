@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "dompurify": "dompurify.js",
+    "marked": "marked.js"
+  }
+}

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en" data-version="%%BUILD_VERSION%%">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <!-- the preview frame (srcdoc) inherits this policy -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'wasm-unsafe-eval' 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; font-src data:; connect-src data: blob:; frame-src 'self' about:; form-action 'none'; base-uri 'none'">
+  <title>Web slides</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23e7ad52' d='M2 4h20v13H2z'/%3E%3Cpath fill='%23222' d='M6 8h12v2H6zm0 4h8v2H6z'/%3E%3Cpath stroke='%23e7ad52' stroke-width='2' d='M12 17v4M8 21h8'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../../vendor/pico.min.css">
+  <link rel="stylesheet" href="../../../shared/css/suite.css">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap" data-src="../../../vendor/esm/fflate/importmap.json ../../../vendor/esm/spell/importmap.json js/importmap.json"></script>
+  <script type="application/octet-stream" id="dict-en_US-aff" data-src="../../../vendor/esm/spell/assets/dictionary-en/index.aff"></script>
+  <script type="application/octet-stream" id="dict-en_US-dic" data-src="../../../vendor/esm/spell/assets/dictionary-en/index.dic"></script>
+  <script type="application/octet-stream" id="dict-de_DE-aff" data-src="../../../vendor/esm/spell/assets/dictionary-de/index.aff"></script>
+  <script type="application/octet-stream" id="dict-de_DE-dic" data-src="../../../vendor/esm/spell/assets/dictionary-de/index.dic"></script>
+  <script type="application/json" data-shortcuts="reveal"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <noscript>This application requires JavaScript.</noscript>
+  <script type="text/plain" id="asset-reveal" data-src="../../../vendor/reveal/reveal.js"></script>
+  <script type="text/plain" id="asset-RevealHighlight" data-src="../../../vendor/reveal/plugin/highlight.js"></script>
+  <script type="text/plain" id="asset-RevealMarkdown" data-src="../../../vendor/reveal/plugin/markdown.js"></script>
+  <script type="text/plain" id="asset-RevealNotes" data-src="../../../vendor/reveal/plugin/notes.js"></script>
+  <script type="text/plain" id="asset-RevealZoom" data-src="../../../vendor/reveal/plugin/zoom.js"></script>
+  <script type="text/plain" id="asset-RevealSearch" data-src="../../../vendor/reveal/plugin/search.js"></script>
+  <script type="text/plain" id="css-reveal" data-src="../../../vendor/reveal/reveal.css"></script>
+  <script type="text/plain" id="asset-katex" data-src="../../../vendor/katex/katex.min.js"></script>
+  <script type="text/plain" id="asset-katex-auto-render" data-src="../../../vendor/katex/auto-render.min.js"></script>
+  <script type="text/plain" id="css-katex" data-src="../../../vendor/katex/katex.css"></script>
+  <script type="text/plain" id="css-hl-monokai" data-src="../../../vendor/reveal/plugin/highlight/monokai.css"></script>
+  <script type="text/plain" id="css-hl-zenburn" data-src="../../../vendor/reveal/plugin/highlight/zenburn.css"></script>
+  <script type="text/plain" id="css-theme-black" data-src="../../../vendor/reveal/theme/black.css"></script>
+  <script type="text/plain" id="css-theme-white" data-src="../../../vendor/reveal/theme/white.css"></script>
+  <script type="text/plain" id="css-theme-league" data-src="../../../vendor/reveal/theme/league.css"></script>
+  <script type="text/plain" id="css-theme-beige" data-src="../../../vendor/reveal/theme/beige.css"></script>
+  <script type="text/plain" id="css-theme-night" data-src="../../../vendor/reveal/theme/night.css"></script>
+  <script type="text/plain" id="css-theme-serif" data-src="../../../vendor/reveal/theme/serif.css"></script>
+  <script type="text/plain" id="css-theme-simple" data-src="../../../vendor/reveal/theme/simple.css"></script>
+  <script type="text/plain" id="css-theme-sky" data-src="../../../vendor/reveal/theme/sky.css"></script>
+  <script type="text/plain" id="css-theme-solarized" data-src="../../../vendor/reveal/theme/solarized.css"></script>
+  <script type="text/plain" id="css-theme-moon" data-src="../../../vendor/reveal/theme/moon.css"></script>
+  <script type="text/plain" id="css-theme-dracula" data-src="../../../vendor/reveal/theme/dracula.css"></script>
+  <script type="text/plain" id="css-theme-blood" data-src="../../../vendor/reveal/theme/blood.css"></script>
+  <script type="text/plain" id="css-theme-black-contrast" data-src="../../../vendor/reveal/theme/black-contrast.css"></script>
+  <script type="text/plain" id="css-theme-white-contrast" data-src="../../../vendor/reveal/theme/white-contrast.css"></script>
+  <script type="text/plain" id="css-font-league-gothic-7ef6022bdd4d" data-src="../../../vendor/reveal/fonts/league-gothic-7ef6022bdd4d.css"></script>
+  <script type="text/plain" id="css-font-source-sans-pro-511fc923ba21" data-src="../../../vendor/reveal/fonts/source-sans-pro-511fc923ba21.css"></script>
+  <script type="text/plain" id="css-font-source-sans-pro-5b8cc29eb548" data-src="../../../vendor/reveal/fonts/source-sans-pro-5b8cc29eb548.css"></script>
+  <script type="text/plain" id="css-font-source-sans-pro-7d4450ca931a" data-src="../../../vendor/reveal/fonts/source-sans-pro-7d4450ca931a.css"></script>
+  <script type="text/plain" id="css-font-source-sans-pro-c0e113b3a3cc" data-src="../../../vendor/reveal/fonts/source-sans-pro-c0e113b3a3cc.css"></script>
+  <script type="text/plain" id="themes-json" data-src="../../../vendor/reveal/themes.json"></script>
+  <script src="../../../vendor/pptxgen.bundle.js"></script>
+  <script src="../../../vendor/htm-preact-standalone.umd.js"></script>
+  <script src="../../../shared/js/i18n.js"></script>
+  <script src="../../../shared/js/files.js"></script>
+  <script src="../../../shared/js/embed.js"></script>
+  <script src="../../../shared/js/bridge.js"></script>
+  <script src="../../../shared/js/history.js"></script>
+  <script src="../../../shared/js/shell.js"></script>
+  <script src="../../../shared/js/autosave.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!-- Generated from docs/de/apps/http.md by tools/build_docs.py - do not edit. Confluence page title: HTTP-Analyse -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Die HTTP-Analyse (<code>http.html</code>) sendet HTTP-Anfragen und zeigt die Antworten, wie Postman: zum Testen von APIs, Webdiensten und Webservern.
+Anfragen werden in Sammlungen organisiert, die als <strong>Postman-Collection v2.1</strong> gespeichert werden.</p>
+<h2>Anfragen senden</h2>
+<ol>
+<li>Wählen Sie die <strong>Methode</strong> (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS) und geben Sie die <strong>URL</strong> ein.</li>
+<li>Füllen Sie bei Bedarf die Reiter aus:
+   - <strong>Parameter</strong>: Query-Parameter (mit der URL abgeglichen);
+   - <strong>Header</strong>: Anfrage-Header;
+   - <strong>Body</strong>: <em>roh</em> (JSON, XML, Text, HTML, JavaScript, mit Syntaxhervorhebung), <em>x-www-form-urlencoded</em>, <em>form-data</em> (Textfelder und Dateien,
+     als Multipart gesendet) oder eine <em>Datei</em>; der passende <code>Content-Type</code> wird gesetzt, außer Sie setzen einen eigenen;
+   - <strong>Anmeldung</strong>: Basic (Benutzer und Passwort) oder ein Bearer-Token.
+   Zeilen lassen sich mit ihrem Kontrollkästchen abschalten; × entfernt eine Zeile; Tippen in die leere letzte Zeile fügt eine hinzu.</li>
+<li><strong>Senden</strong> (<code>Strg+Eingabe</code>).</li>
+</ol>
+<p><strong>Senden über</strong> wählt den Weg:</p>
+<ul>
+<li><strong>Relay</strong> (empfohlen): Das lokale Relay sendet die Anfrage (siehe Benutzerhandbuch, „Netzwerkfunktionen und das Relay“). Es gibt keine
+  Browser-Grenzen: jede Methode, jeder Header (auch <code>Cookie</code>, <code>Host</code>, …) und jeder Antwort-Header (auch <code>Set-Cookie</code>) funktioniert, und Server
+  ohne CORS-Header sind erreichbar. Optionen unter <strong>Umgebungen… → Relay</strong>: nicht vertrauenswürdige Zertifikate akzeptieren, Weiterleitungen folgen.</li>
+<li><strong>Browser</strong>: Der Browser sendet die Anfrage selbst. Das funktioniert ohne Relay, aber nur bei Servern, die es mit CORS-Headern erlauben; der
+  Browser verbirgt manche Header.</li>
+</ul>
+<h2>Antworten</h2>
+<p>Die Statuszeile zeigt den Statuscode (farbig), die Dauer und die Größe. <strong>Body</strong> zeigt den Inhalt: <strong>Formatiert</strong> (JSON eingerückt,
+Syntaxhervorhebung), <strong>roh</strong> oder <strong>Vorschau</strong> (Bilder, HTML in einer Sandbox ohne Skripte). <strong>Header</strong> listet alle Antwort-Header.
+<strong>Body speichern</strong> lädt den Inhalt herunter.</p>
+<h2>Variablen und Umgebungen</h2>
+<p>Schreiben Sie <code>{{name}}</code> in URL, Header, Body oder Anmeldefelder, um eine Variable zu verwenden. <strong>Umgebungen…</strong> verwaltet Umgebungen (z. B. <em>Test</em>
+und <em>Produktion</em>) mit jeweils eigenen Variablen; die Liste in der Werkzeugleiste wählt die aktive. Variablen der Sammlung (in der
+Sammlungsdatei gespeichert) gelten, wenn die Umgebung keine Variable dieses Namens hat.</p>
+<p>Umgebungen und Relay-Einstellungen liegen in einer Verbindungsdatei (KeePass-Datenbank oder JSON-Datei, <strong>Speichern</strong> und <strong>Öffnen…</strong> im linken
+Bereich), sodass Tokens und Passwörter verschlüsselt gespeichert werden können.</p>
+<h2>Skripte und Tests</h2>
+<p>Der Reiter <strong>Skripte</strong> einer Anfrage enthält zwei JavaScript-Stücke im Stil von Postman (Sammlungen aus Postman behalten sie):</p>
+<ul>
+<li><strong>Vor der Anfrage</strong> läuft vor dem Senden, etwa um einen Wert zu berechnen: <code>pm.environment.set('stamp', Date.now())</code>,
+  <code>pm.variables.set('page', 2)</code> (nur für diese Anfrage), <code>pm.request.headers.add({ key: 'X-Id', value: '1' })</code>.</li>
+<li><strong>Tests</strong> laufen nach der Antwort: <code>pm.test('Status', () =&gt; pm.response.to.have.status(200))</code>,
+  <code>pm.test('Name', () =&gt; pm.expect(pm.response.json().name).to.equal('Anna'))</code>. Die Ergebnisse erscheinen im Reiter <strong>Tests</strong> der
+  Antwort (✓/✗ mit Begründung), dazu die Ausgaben von <code>console.log</code>. Tests können auch Werte für die nächste Anfrage speichern, etwa
+  ein Anmelde-Token: <code>pm.environment.set('token', pm.response.json().token)</code>.</li>
+</ul>
+<p>Verfügbar: <code>pm.environment</code>, <code>pm.collectionVariables</code>, <code>pm.variables</code> (<code>get</code>, <code>set</code>, <code>unset</code>, <code>has</code>), <code>pm.request</code> (<code>method</code>, <code>url</code>,
+<code>headers</code>), <code>pm.response</code> (<code>code</code>, <code>status</code>, <code>responseTime</code>, <code>headers.get()</code>, <code>text()</code>, <code>json()</code>, <code>to.have.status()</code>, <code>to.have.header()</code>,
+<code>to.be.ok</code>, <code>to.be.json</code>), <code>pm.test()</code> und <code>pm.expect()</code> mit den üblichen Prüfungen (<code>to.equal</code>, <code>to.eql</code>, <code>to.include</code>,
+<code>to.have.property</code>, <code>to.be.above</code>/<code>below</code>, <code>to.match</code>, <code>to.be.oneOf</code>, <code>to.be.true</code>, <code>to.exist</code>, <code>to.be.empty</code>, <code>.not</code>, …). Skripte laufen
+abgeschottet von der Suite (kein Zugriff auf ihren Speicher, Dateien oder Passwörter) und werden nach fünf Sekunden beendet.</p>
+<h2>WebSocket</h2>
+<p>Eine URL, die mit <code>ws://</code> oder <code>wss://</code> beginnt, macht die Anfrage zu einer WebSocket-Verbindung: <strong>Verbinden</strong> öffnet sie, die untere
+Hälfte zeigt die Nachrichten (↑ gesendet, ↓ empfangen, mit Uhrzeit; binäre Nachrichten hexadezimal) und ein Feld zum Schreiben
+(<strong>Senden</strong> oder <code>Strg+Eingabe</code>, <code>{{Variablen}}</code> werden ersetzt); <strong>Trennen</strong> schließt sie, Code und Grund des Schließens werden angezeigt.
+Ein Header <code>Sec-WebSocket-Protocol</code> fordert Unterprotokolle an. WebSockets öffnet der Browser direkt, nicht über das Relay.</p>
+<h2>OpenAPI</h2>
+<p><strong>Sammlung öffnen…</strong> liest auch OpenAPI-3- und Swagger-2-Beschreibungen (JSON oder YAML) und erstellt daraus eine Sammlung: ein Ordner je
+Tag und eine Anfrage je Operation mit <code>{{baseUrl}}</code> (vom ersten Server), Pfadparametern als Variablen (<code>/pets/{{petId}}</code>), erforderlichen
+Query-Parametern und Headern mit ihren Beispielen, einem aus dem Schema erzeugten JSON-Beispiel-Body sowie Basic-/Bearer-Anmeldung oder
+API-Key-Headern aus den Sicherheitsschemata (<code>{{token}}</code>, <code>{{username}}</code>, …). Tragen Sie die Werte der Variablen in der Sammlung ein und
+speichern Sie sie (als Postman-Sammlung).</p>
+<h2>Sammlungen</h2>
+<ul>
+<li>Der linke Bereich zeigt die Sammlung: <strong>+ Neue Anfrage</strong>, <strong>+ Neuer Ordner</strong>; beim Zeigen auf einen Eintrag ⧉ duplizieren, ✎ umbenennen und × löschen.</li>
+<li><strong>Sammlung öffnen…</strong> (<code>Strg+O</code>) öffnet eine Postman-Collection (v2.1 JSON); <strong>Sammlung speichern</strong> (<code>Strg+S</code>) speichert sie (in Chrome/Edge am
+  Desktop direkt in die Datei, in Firefox und unter Android als Download).</li>
+<li><strong>Verlauf</strong> listet die in dieser Sitzung gesendeten Anfragen; ein Klick übernimmt eine in die Sammlung.</li>
+</ul>
+<p>Rückgängig (↶, <code>Strg+Z</code>) und Wiederholen (↷, <code>Strg+Y</code>) wirken auf alle Änderungen der Sammlung: Anfragen, Ordner, URL, Header, Body, Anmeldung. Tippen in ein Feld zählt als ein Schritt.</p>
+<h2>cURL</h2>
+<ul>
+<li><strong>cURL importieren…</strong> macht aus einem <code>curl</code>-Befehl (z. B. „Als cURL kopieren“ aus den Entwicklerwerkzeugen des Browsers) eine Anfrage: Methode,
+  URL, Header, Daten, Formularfelder, <code>-u</code>-Benutzer und mehr.</li>
+<li><strong>cURL</strong> neben den Reitern zeigt die aktuelle Anfrage als <code>curl</code>-Befehl (mit aufgelösten Variablen) zum Kopieren.</li>
+</ul>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+O</code></td>
+<td>Sammlung öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Sammlung speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+</tbody>
+</table>
+<h3>Anfrage</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Eingabe</code></td>
+<td>Anfrage senden</td>
+</tr>
+</tbody>
+</table>
+<h3>Bearbeiten</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+Z</code></td>
+<td>Rückgängig</td>
+</tr>
+<tr>
+<td><code>Strg+Y</code> / <code>Strg+Umschalt+Z</code></td>
+<td>Wiederholen</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>☰ öffnet die Sammlung. Die Anfrage steht über der Antwort.</p>

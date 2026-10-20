@@ -1,0 +1,2 @@
+/* unicount@1.1.0 (jsDelivr +esm) */
+var r={},s;function _(){return s||(s=1,Object.defineProperty(r,"__esModule",{value:!0}),r.uniToStrPos=r.strPosToUni=void 0,r.strPosToUni=(n,e=n.length)=>{let t=0,o=0;for(;o<e;o++){const u=n.charCodeAt(o);u>=55296&&u<=57343&&(t++,o++)}if(o!==e)throw Error("Invalid offset - splits unicode bytes");return o-t},r.uniToStrPos=(n,e)=>{let t=0;for(;e>0;e--){const o=n.charCodeAt(t);t+=o>=55296&&o<=57343?2:1}return t}),r}var i=_(),d=i.__esModule,a=i.strPosToUni,c=i.uniToStrPos;export{d as __esModule,i as default,a as strPosToUni,c as uniToStrPos};

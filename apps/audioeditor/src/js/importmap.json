@@ -1,0 +1,11 @@
+{
+  "imports": {
+    "@app/dsp.js": "dsp.js",
+    "@app/clips.js": "clips.js",
+    "@app/beats.js": "beats.js",
+    "@app/encode.js": "encode.js",
+    "@app/project.js": "project.js",
+    "@app/labels.js": "labels.js",
+    "@app/effects.js": "effects.js"
+  }
+}

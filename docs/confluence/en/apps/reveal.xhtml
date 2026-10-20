@@ -1,0 +1,230 @@
+<!-- Generated from docs/en/apps/reveal.md by tools/build_docs.py - do not edit. Confluence page title: Web slides -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p><code>reveal.html</code> creates presentations with <a href="https://revealjs.com">reveal.js</a>, the HTML presentation framework (also used by
+Jupyter's slide export). Presentations are saved as <strong>one HTML file</strong> that plays in any browser – offline, without
+installing anything – and can be edited again.</p>
+<h2>Slides</h2>
+<p>The list on the left shows the slides. reveal.js arranges them in two dimensions: main slides from left to right, and
+<strong>sub-slides</strong> below a main slide (indented in the list, numbered 2.1, 2.2, …).</p>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>+ Slide</td>
+<td>inserts a slide after the current one: title, title and list, section, image, code, quote, blank, Markdown or HTML</td>
+</tr>
+<tr>
+<td>+ Sub-slide</td>
+<td>inserts a sub-slide below the current slide</td>
+</tr>
+<tr>
+<td>↑ ↓</td>
+<td>move the slide (within its level)</td>
+</tr>
+<tr>
+<td>⇥ ⇤</td>
+<td>make a main slide a sub-slide of the previous slide, or a sub-slide a main slide</td>
+</tr>
+<tr>
+<td>⧉ 🗑</td>
+<td>duplicate or delete the slide</td>
+</tr>
+</tbody>
+</table>
+<p>With a mouse, slides can also be <strong>dragged</strong> in the list: dropping on a slide puts the dragged slide before it (at the
+same level); dropping on the right half of a main slide makes it that slide's last sub-slide. A main slide takes its
+sub-slides along.</p>
+<h2>Editing a slide</h2>
+<p>The middle shows the slide as reveal.js displays it. <strong>Click</strong> an element to select it, <strong>double-click</strong> a text (or press
+<code>Enter</code>) to edit it right there; the bar above offers bold, italic, underline, strikethrough, code, link, colour and
+removing formatting. <code>Esc</code> or <strong>Done</strong> ends editing.</p>
+<p><strong>+ Element</strong> adds a heading, text, list, image, code, quote, table, diagram or HTML block after the selected element. The
+<strong>Element</strong> tab of the inspector on the right edits the selected element:</p>
+<ul>
+<li>heading level and “fit text to the slide”, numbered lists, images (file, alternative text, width, fill the remaining height),
+  code (language with syntax highlighting, line numbers and highlighted steps such as <code>1|2-3|5</code>), table rows and columns, HTML;</li>
+<li><strong>appearance (fragment)</strong>: the element appears on click with an effect (fade in, fade up, grow, shrink, highlight, …);
+  lists can show their points one by one; the order decides which comes first;</li>
+<li><strong>auto-animate ID</strong>: elements with the same ID on consecutive auto-animate slides move smoothly from one to the other;</li>
+<li>alignment, size and colour; move, duplicate and delete.</li>
+</ul>
+<p>A slide can also be written in <strong>Markdown</strong> or <strong>HTML</strong> (Slide tab, Content); Markdown supports the reveal.js notation,
+for example <code>&lt;!-- .element: class="fragment" --&gt;</code>.</p>
+<h3>Diagrams</h3>
+<p>A <strong>diagram</strong> block draws a Mermaid flowchart, typed in the inspector, for example
+<code>flowchart LR</code> and lines like <code>A[Idea] --&gt; B{Good?}</code> and <code>B --&gt;|yes| C([Slides])</code>. Boxes, rounded boxes, decisions,
+terminals, databases, hexagons and circles are laid out automatically, like <em>Mermaid import</em> in the diagram editor;
+other Mermaid diagram types show an error. The drawing is stored in the presentation as SVG, so it needs no Mermaid
+library and works offline; it takes the text colour of the theme. Saving as PowerPoint leaves diagrams out.</p>
+<h3>Formulas</h3>
+<p>Mathematical formulas are written in TeX (LaTeX notation) in any text, Markdown or HTML: <code>$$ … $$</code> or <code>\[ … \]</code> for a
+formula on its own line, <code>\( … \)</code> inside a sentence, for example <code>$$\int_0^1 x^2\,dx = \tfrac13$$</code> or
+<code>Pythagoras: \(a^2 + b^2 = c^2\)</code>. A single <code>$</code> stays an ordinary dollar sign. The formulas are typeset with KaTeX in the
+preview and in the saved presentation, also offline; only presentations that contain formulas include KaTeX (about
+0.6 MB). When you edit a text with a formula, you edit its TeX source.</p>
+<h2>Slide and presentation settings</h2>
+<ul>
+<li><strong>Slide</strong> tab: background (colour, CSS gradient, image with size and opacity), transition and speed, auto-animate,
+  visibility (hidden or not counted), vertical position, automatic advance, <strong>speaker notes</strong>, CSS class.</li>
+<li><strong>Presentation</strong> tab: title, theme (14 reveal.js themes), code colours, transitions, slide size (e.g. 16:9), arrow
+  controls, progress bar, slide numbers, vertical centring, loop, slide number in the address, navigation mode, scrolling
+  page view, automatic advance, language and custom CSS.</li>
+</ul>
+<h2>Presenting</h2>
+<p><strong>▶ Present</strong> (<code>F5</code>) shows the presentation from the current slide in full screen. Keys: arrows or <code>Space</code> to move, <code>O</code> or
+<code>Esc</code> overview, <code>S</code> speaker view with notes and timer, <code>F</code> full screen. <strong>↗</strong> presents in a new window (useful with a second
+screen), <strong>🖨</strong> opens the print view to save a PDF (choose “Save as PDF” in the print dialog) – with <em>Print / PDF with speaker notes</em>
+each slide is followed by a page with its notes.</p>
+<h2>Files</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Open</th>
+<th>Save</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>reveal.js presentation (<code>.html</code>)</td>
+<td>yes – own files completely, other reveal.js presentations with their slides as HTML</td>
+<td>yes (Save, <code>Ctrl+S</code>)</td>
+</tr>
+<tr>
+<td>Markdown (<code>.md</code>)</td>
+<td>yes – <code>---</code> separates slides, <code>--</code> sub-slides, <code>Note:</code> starts speaker notes</td>
+<td>Save as → Markdown (texts only)</td>
+</tr>
+<tr>
+<td>Jupyter notebook (<code>.ipynb</code>)</td>
+<td>yes – the slide types of the cells (slide, sub-slide, fragment, skip, notes) like <code>jupyter nbconvert --to slides</code></td>
+<td>–</td>
+</tr>
+<tr>
+<td>PowerPoint (<code>.pptx</code>)</td>
+<td>yes – converted into blocks: titles, texts with formatting, lists, pictures, tables, notes, backgrounds, transitions, entrance animations as fragments</td>
+<td>Save as → PowerPoint (blocks laid out top to bottom)</td>
+</tr>
+</tbody>
+</table>
+<p>Markdown files and notebooks are converted; saving creates a new HTML presentation. In the Python notebook, <strong>Slideshow</strong>
+shows a slide type for each cell and <strong>🎞️ Slides</strong> opens the notebook here. Undo and redo (<code>Ctrl+Z</code>, <code>Ctrl+Y</code>) cover all
+changes.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo</td>
+</tr>
+<tr>
+<td><code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code></td>
+<td>Redo</td>
+</tr>
+<tr>
+<td><code>Enter</code></td>
+<td>Edit the selected element</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Stop editing</td>
+</tr>
+<tr>
+<td><code>Delete</code> / <code>Backspace</code></td>
+<td>Delete the selected element</td>
+</tr>
+</tbody>
+</table>
+<h3>Presenting</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F5</code></td>
+<td>Present</td>
+</tr>
+<tr>
+<td><code>→</code> / <code>←</code> / <code>Space</code></td>
+<td>Next / previous step</td>
+</tr>
+<tr>
+<td><code>↑</code> / <code>↓</code></td>
+<td>Vertical slides</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>Speaker view with notes</td>
+</tr>
+<tr>
+<td><code>O</code> / <code>Esc</code></td>
+<td>Overview of all slides</td>
+</tr>
+<tr>
+<td><code>F</code></td>
+<td>Fullscreen</td>
+</tr>
+<tr>
+<td><code>B</code></td>
+<td>Black screen (pause)</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The preview uses the full width; ‹ and › change the slide, <strong>Slides</strong> opens the slide list and <strong>Panels</strong> the inspector.
+Double-tap a text to edit it.</p>

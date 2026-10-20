@@ -1,0 +1,125 @@
+# Kalender
+
+Der Kalender (`calendar.html`) zeigt und bearbeitet Kalender im iCalendar-Format (`.ics`), dem Format von Outlook, Thunderbird, Google
+Kalender, Apple Kalender und den meisten anderen Kalenderprogrammen. Mehrere Kalender können gleichzeitig geöffnet sein.
+
+## Kalender
+
+- **Öffnen…** (`Strg+O`) öffnet eine oder mehrere `.ics`-Dateien; jede wird ein Kalender in der Liste links. `.ics`-Dateien können auch auf
+  das Fenster gezogen werden. In Chrome/Edge am Desktop öffnet **Zuletzt verwendet** Kalender mit einem Klick erneut.
+- **Neuer Kalender** legt einen leeren Kalender an.
+- Das Kontrollkästchen blendet einen Kalender ein oder aus, das Farbfeld legt seine Farbe fest, ein Doppelklick auf den Namen benennt ihn um.
+  Ein Klick auf den Namen macht ihn zum Kalender für neue und importierte Termine.
+- **Termine importieren…** fügt die Termine einer `.ics`-Datei (z. B. einer per E-Mail erhaltenen Einladung) zum gewählten Kalender hinzu. Ein
+  Termin mit derselben UID ersetzt den vorhandenen, sodass eine aktualisierte Einladung den Termin aktualisiert.
+- 💾 speichert einen Kalender: in Chrome/Edge am Desktop direkt in seine Datei, in Firefox und unter Android als Download (ersetzen Sie die
+  ursprüngliche Datei damit). **Alle speichern** (`Strg+S`) speichert jeden geänderten Kalender; geänderte Kalender sind mit • markiert.
+
+Alles in der Datei, was der Kalender nicht bearbeitet (weitere Erinnerungen, Teilnehmende, Aufgaben, weitere Eigenschaften), bleibt beim Speichern erhalten.
+
+## Ansichten
+
+| Ansicht | Taste | Inhalt |
+|---|---|---|
+| Monat | `M` | sechs Wochen; ein Klick auf eine Tageszahl öffnet den Tag |
+| Woche | `W` | Zeitraster der Woche mit einer Zeile für ganztägige Termine; die rote Linie ist die aktuelle Uhrzeit |
+| Tag | `D` | Zeitraster eines Tages |
+| Liste | `A` | Liste der Termine der nächsten 60 Tage |
+| Verfügbarkeit | `F` | freie und belegte Zeiten der Woche, eine Zeile je Kalender (siehe unten) |
+
+**Heute** (`T`), ‹ und › (`←`/`→`) blättern; der kleine Monat links springt zu einem Datum. Die Woche beginnt am Montag oder Sonntag
+(Einstellung links unten). **Suchen** (`/`) zeigt nur Termine, deren Titel, Ort, Beschreibung oder Kategorien den Text enthalten.
+
+**🖨** druckt die aktuelle Ansicht mit den Namen der angezeigten Kalender und dem Zeitraum als Überschrift (Monat und Woche im
+Querformat, der ganze Tag auf einem Blatt); mit „Als PDF speichern“ als Drucker entsteht ein PDF. Die Suche gilt auch für den Ausdruck.
+
+### Verfügbarkeit (frei/belegt)
+
+Die Ansicht **Verfügbarkeit** hilft, einen Termin zu finden, der für mehrere Kalender passt, z. B. den eigenen Kalender und die
+Kalender oder Frei/Belegt-Dateien von Kolleginnen und Kollegen. Für jeden Tag der Woche zeigt sie die Arbeitszeit mit einem Balken
+je angezeigtem Kalender: belegte Zeiten in der Farbe des Kalenders, vorläufige Termine (Status „vorläufig“) schraffiert. Als „frei“
+(transparent) markierte und abgesagte Termine zählen nicht; ganztägige Termine (Geburtstage, Feiertage, Reisen) zählen nur, wenn
+die Datei sie als belegt markiert. Die grüne Zeile **Frei** zeigt die Zeiten, in denen alle angezeigten Kalender mindestens die
+gewählte **Dauer** frei sind; die Liste darunter wiederholt sie. Ein Klick auf eine freie Zeit legt dort einen neuen Termin an.
+
+**Arbeitszeit** (z. B. 8 bis 18), **Dauer (min)** und **Wochenenden** legen fest, was gesucht wird; die Einstellungen bleiben
+gespeichert. **Frei/Belegt exportieren (.ifb)** speichert die belegten Zeiten der angezeigten Kalender für die nächsten acht Wochen
+als iCalendar-Frei/Belegt-Datei (`VFREEBUSY`) – ohne Titel oder andere Details, sodass man sie weitergeben kann, um mitzuteilen,
+wann man Zeit hat. Frei/Belegt-Dateien anderer (`.ifb`, z. B. von Outlook oder einem Kalenderserver veröffentlicht) lassen sich wie
+Kalender öffnen; ihre belegten Zeiten erscheinen in der Verfügbarkeitsansicht (für die anderen Ansichten haben sie keine Termine)
+und bleiben beim Speichern unverändert erhalten.
+
+## Termine anlegen und ändern
+
+- **Neuer Termin** (`N`), ein Doppelklick auf einen Tag in der Monatsansicht oder **Ziehen** über einen Zeitraum in der Wochen- oder Tagesansicht
+  öffnet den Termindialog.
+- In der Wochen- und Tagesansicht verschiebt Ziehen einen Termin (auch auf einen anderen Tag), Ziehen am unteren Rand ändert das Ende. In der
+  Monatsansicht wird ein Termin auf einen anderen Tag gezogen.
+- Ein Klick auf einen Termin öffnet ihn zum Bearbeiten.
+
+Der Termindialog enthält Titel, Kalender, ganztägig, Beginn und Ende, Zeitzone, Wiederholung, Ort, Beschreibung und Kategorien.
+**Exportieren (.ics)** lädt den Termin als Datei herunter, etwa um ihn per E-Mail zu verschicken.
+
+### Zeitzonen
+
+Neue Termine verwenden die Zeitzone des Computers. Ein Termin behält seine Zeitzone; ein Meeting um 9:00 Uhr in New York wird zum
+entsprechenden Ortszeitpunkt angezeigt. Termine aus Outlook mit Windows-Zeitzonennamen werden richtig umgerechnet. „Unverankerte“ Zeiten haben
+keine Zeitzone und erscheinen immer zur selben Uhrzeit.
+
+### Wiederkehrende Termine
+
+**Wiederholen**: täglich, wöchentlich (an gewählten Wochentagen), monatlich (am selben Tag des Monats oder z. B. am dritten Montag) oder jährlich,
+alle n Tage/Wochen/Monate/Jahre, ohne Ende, nach einer Anzahl von Malen oder an einem Datum. Komplexere Regeln aus anderen Programmen werden als
+„Eigene Regel“ angezeigt und unverändert behalten.
+
+Wenn Sie einen Termin einer Serie ändern, verschieben oder löschen, fragt der Kalender, ob **nur dieser** Termin oder **alle** Termine der
+Serie betroffen sind.
+
+**🔔 Erinnerung** legt eine Erinnerung zu Beginn oder eine Zeit davor fest (5 Minuten bis eine Woche); sie wird als Alarm
+(`VALARM`) in der Datei gespeichert, andere Kalenderprogramme zeigen sie also ebenfalls an. Erinnerungen erscheinen, solange
+der Kalender im Browser geöffnet ist: als Meldung oben im Fenster oder – nach Einschalten von 🔔 in der Werkzeugleiste (der
+Browser fragt um Erlaubnis) – als Systembenachrichtigung. Eine geschlossene Seite kann nicht erinnern. Erinnerungen, die mehr
+als fünf Minuten vor dem Öffnen der Seite fällig waren, werden nicht nachgeholt.
+
+Rückgängig (↶, `Strg+Z`) und Wiederholen (↷, `Strg+Y`) wirken auf neue, geänderte, verschobene und gelöschte Termine, Importe sowie Name und Farbe von Kalendern. Das Öffnen und Schließen von Kalenderdateien wird nicht rückgängig gemacht.
+
+## Tastenkürzel
+
+Auf dem Mac verwenden Sie Cmd statt Strg. `F1` (oder `?`) zeigt diese Liste in der Anwendung.
+
+### Dateien
+
+| Tasten | Funktion |
+|---|---|
+| `Strg+O` | Kalender öffnen |
+| `Strg+S` | Alle Kalender speichern |
+
+### Bearbeiten
+
+| Tasten | Funktion |
+|---|---|
+| `Strg+Z` | Rückgängig |
+| `Strg+Y` / `Strg+Umschalt+Z` | Wiederholen |
+| `N` | Neuer Termin |
+| `Esc` | Dialog schließen |
+
+### Ansicht
+
+| Tasten | Funktion |
+|---|---|
+| `M` / `W` / `D` / `A` / `F` | Monat / Woche / Tag / Agenda / Verfügbarkeit |
+| `T` | Heute |
+| `←` / `K` | Zurück |
+| `→` / `J` | Weiter |
+| `/` | Suchen |
+
+### Hilfe
+
+| Tasten | Funktion |
+|---|---|
+| `F1` / `?` | diese Liste zeigen (außerhalb von Textfeldern) |
+
+## Auf Smartphones und Tablets
+
+Die Listenansicht ist voreingestellt; ☰ öffnet die Kalenderliste und den kleinen Monat. Die anderen Ansichten funktionieren ebenfalls; in der
+Wochenansicht sind die Tage schmal, daher ist die Tagesansicht oft praktischer.

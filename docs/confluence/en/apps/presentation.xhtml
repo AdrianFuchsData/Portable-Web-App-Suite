@@ -1,0 +1,178 @@
+<!-- Generated from docs/en/apps/presentation.md by tools/build_docs.py - do not edit. Confluence page title: Presentation -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The presentation editor (<code>presentation.html</code>) creates and edits slide shows like PowerPoint or LibreOffice Impress: text boxes, shapes,
+images and tables on slides, and presenting in full screen. Files are PowerPoint presentations (<code>.pptx</code>).</p>
+<h2>Files</h2>
+<ul>
+<li><strong>Open</strong> (<code>Ctrl+O</code>) opens a <code>.pptx</code> file (also templates <code>.potx</code> and slide shows <code>.ppsx</code>, which are saved as a new <code>.pptx</code>); you can also drop
+  the file onto the window. <strong>New</strong> starts an empty presentation.</li>
+<li><strong>Save</strong> (<code>Ctrl+S</code>) writes the <code>.pptx</code> file: directly into the file in Chrome/Edge on the desktop, as a download in Firefox and on Android
+  (replace the original file with it). <strong>Save as</strong> (<code>Ctrl+Shift+S</code>) asks for a new name.</li>
+<li><strong>Print / PDF</strong> prints every slide on its own page; choose "Save as PDF" in the print dialog to get a PDF.</li>
+</ul>
+<p>Slides from PowerPoint keep their texts, fonts, colours, positions, shapes, pictures and tables, including the formatting inherited from the
+slide layouts and masters, the speaker notes, slide transitions and entrance animations. Other animation effects, charts, SmartArt and videos are
+not supported. Keep the original file until you have checked the result.</p>
+<p><strong>Web slides</strong> (reveal.js presentations of the <em>Web slides</em> app, <code>.html</code>, or reveal.js Markdown, <code>.md</code>) can be opened as well: their blocks are
+laid out from top to bottom on PowerPoint slides (headings, texts, lists, code, quotes, images, tables), sub-slides follow their main slide,
+speaker notes, background colours, transitions and fragments (as entrance animations) are taken over, and text on dark backgrounds becomes
+white. Saving then creates a <code>.pptx</code> file next to the original. In the <em>Web slides</em> app, PowerPoint files can be opened and web slides saved as
+<code>.pptx</code> in the same way.</p>
+<h2>Slides</h2>
+<p>The thumbnails on the left show all slides: click one to edit it, drag it to another position to reorder. <strong>+ New slide</strong> adds an empty slide
+after the current one. Without a selected element, the panel on the right sets the <strong>background</strong> of the slide and the <strong>slide size</strong> (16:9 or
+4:3), and duplicates, deletes or moves the slide (↑ ↓). <code>Page Up</code> and <code>Page Down</code> switch slides.</p>
+<h2>Elements</h2>
+<ul>
+<li><strong>Text box</strong>, <strong>Shape</strong> (rectangle, rounded rectangle, ellipse, triangle, diamond, hexagon, arrow, star, line), <strong>Image</strong> (from a file) and
+  <strong>Table</strong> (3 × 3) add an element in the middle of the slide.</li>
+<li>Click an element to select it; drag it to move it, drag the handles to resize, drag the round handle to rotate. Guides help to align it with
+  the slide and other elements. Arrow keys move it by one point (<code>Shift</code>: 10 points).</li>
+<li>Double-click a text (or press <code>Enter</code>) to edit it; double-click a table cell to edit the cell. A click outside ends the editing.</li>
+<li>The panel on the right shows position, size and rotation, fill and line colours, the font, size and colour of the text, bold, italic,
+  underline, horizontal and vertical alignment, and <strong>To front</strong>, <strong>To back</strong>, <strong>Duplicate</strong> and <strong>Delete</strong>. While a text is being edited, bold,
+  italic, underline, font and colour apply to the selected words.</li>
+<li><code>Ctrl+C</code>, <code>Ctrl+X</code>, <code>Ctrl+V</code> copy, cut and paste elements, <code>Ctrl+D</code> duplicates, <code>Delete</code> removes, <code>Ctrl+Z</code>/<code>Ctrl+Y</code> undo and redo.</li>
+</ul>
+<h2>Presenting</h2>
+<p><strong>▶ Present</strong> (or <code>F5</code> from the first slide, <code>Shift+F5</code> from the current slide) shows the presentation in full screen. Next slide: click,
+<code>→</code>, <code>↓</code>, <code>Page Down</code>, <code>Space</code>, <code>Enter</code>, or swipe left on touch screens; previous slide: <code>←</code>, <code>↑</code>, <code>Page Up</code>, <code>Backspace</code> or swipe right. <code>Home</code> and
+<code>End</code> jump to the first and last slide, <code>Escape</code> ends the presentation.</p>
+<p><strong>Transitions</strong>: with no element selected, <em>Transition</em> in the panel sets how the slide appears: fade, push, wipe, cover or
+zoom, the direction (push, wipe, cover), the duration and, optionally, <em>Next slide after</em> a number of seconds (otherwise the next
+slide comes on click). <strong>Apply to all slides</strong> copies the transition to every slide.</p>
+<p><strong>Animations</strong>: select an element and choose an <em>Entrance</em> effect (appear, fade in, fly in, zoom) and when it starts: <em>on click</em>,
+<em>with previous</em> or <em>after previous</em>. In the show, the elements wait until their click; going back hides them again. With no element
+selected, the panel lists the animations of the slide in playing order (↑ ↓ change the order, × removes one). Transitions and
+animations are saved in the PPTX file and read from PowerPoint files (other PowerPoint effects are read as the nearest one, e.g. a
+split as a wipe; emphasis and exit effects are not taken over).</p>
+<p><strong>Speaker notes</strong>: with no element selected, the panel on the right has a field <em>Speaker notes</em> for the current slide. Notes
+are saved in the PPTX file and read from PowerPoint files.</p>
+<p><strong>🎤 Presenter view</strong> (<code>Alt+F5</code>) opens the slides in a second window – move it to the projector or external screen and make it
+full screen there (<code>F11</code>) – and shows a console in this window: the current slide, the next slide, the notes in large print,
+the time since the start (⏸ pauses, ⟲ restarts it), the clock and the slide number. The keys above work in both windows;
+<strong>End</strong> (or <code>Escape</code>) closes the second window. If the browser blocks the second window, allow pop-ups for the page.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo</td>
+</tr>
+<tr>
+<td><code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code></td>
+<td>Redo</td>
+</tr>
+<tr>
+<td><code>Ctrl+X</code> / <code>Ctrl+C</code> / <code>Ctrl+V</code></td>
+<td>Cut, copy, paste</td>
+</tr>
+<tr>
+<td><code>Ctrl+D</code></td>
+<td>Duplicate the element</td>
+</tr>
+<tr>
+<td><code>Delete</code> / <code>Backspace</code></td>
+<td>Delete the element</td>
+</tr>
+<tr>
+<td><code>Enter</code> / <code>F2</code></td>
+<td>Edit the text</td>
+</tr>
+<tr>
+<td><code>←</code> / <code>→</code> / <code>↑</code> / <code>↓</code></td>
+<td>Move the element by 1 (with Shift: 10)</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Deselect</td>
+</tr>
+<tr>
+<td><code>Page Up</code> / <code>Page Down</code></td>
+<td>Previous / next slide</td>
+</tr>
+</tbody>
+</table>
+<h3>Presenting</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F5</code> / <code>Shift+F5</code></td>
+<td>Present from the start / from the current slide</td>
+</tr>
+<tr>
+<td><code>Alt+F5</code></td>
+<td>Presenter view (notes, timer, next slide)</td>
+</tr>
+<tr>
+<td><code>→</code> / <code>Space</code> / <code>Enter</code> / <code>N</code></td>
+<td>Next slide</td>
+</tr>
+<tr>
+<td><code>←</code> / <code>Backspace</code> / <code>P</code></td>
+<td>Previous slide</td>
+</tr>
+<tr>
+<td><code>Home</code> / <code>End</code></td>
+<td>First / last slide</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>End the show</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The thumbnails are shown below the slide; <strong>Format</strong> opens the panel. Presenting works with swipe gestures.</p>

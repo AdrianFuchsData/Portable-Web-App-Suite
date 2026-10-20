@@ -1,0 +1,2 @@
+/* @univerjs/preset-sheets-conditional-formatting@1.0.4 (jsDelivr +esm) */
+import{UniverSheetsConditionalFormattingPlugin as i}from"@univerjs/sheets-conditional-formatting";export*from"@univerjs/sheets-conditional-formatting";import{UniverSheetsConditionalFormattingUIPlugin as o}from"@univerjs/sheets-conditional-formatting-ui";export*from"@univerjs/sheets-conditional-formatting-ui";import"@univerjs/sheets-conditional-formatting/facade";function r(){return{plugins:[i,o].filter(t=>!!t)}}export{r as UniverSheetsConditionalFormattingPreset};

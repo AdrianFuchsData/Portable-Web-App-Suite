@@ -1,0 +1,40 @@
+{
+  "out": "esm/univer-docs",
+  "packages": {
+    "@univerjs/presets": "1",
+    "@univerjs/preset-docs-core": "1",
+    "react": "18",
+    "react-dom": "18",
+    "rxjs": "7",
+    "@univerjs/preset-docs-drawing": "1"
+  },
+  "modules": [
+    "@univerjs/preset-docs-core/locales/en-US",
+    "@univerjs/preset-docs-core/locales/de-DE",
+    "react-dom/client",
+    "@univerjs/preset-docs-drawing/locales/en-US",
+    "@univerjs/preset-docs-drawing/locales/de-DE"
+  ],
+  "exclude": [
+    "@univerjs/engine-render/lib/es/*"
+  ],
+  "include": [
+    "@univerjs/engine-render/lib/es/de-*",
+    "@univerjs/engine-render/lib/es/en-gb-*"
+  ],
+  "assets": {
+    "@univerjs/preset-docs-core": [
+      "lib/index.css"
+    ],
+    "@univerjs/preset-docs-drawing": [
+      "lib/index.css"
+    ]
+  },
+  "stub": {
+    "template": "export const {name} = [\"\", \"{}\", []];",
+    "name": {
+      "regex": "^.*/lib/es/(.+)-[A-Za-z0-9_-]{8}\\.js$",
+      "pascal": true
+    }
+  }
+}

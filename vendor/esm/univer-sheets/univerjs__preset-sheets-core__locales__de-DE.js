@@ -1,0 +1,2 @@
+/* @univerjs/preset-sheets-core@1.0.4/locales/de-DE (jsDelivr +esm) */
+import r from"@univerjs/design/locale/de-DE";import e from"@univerjs/docs-ui/locale/de-DE";import i from"@univerjs/engine-formula/locale/de-DE";import s from"@univerjs/sheets/locale/de-DE";import m from"@univerjs/sheets-formula/locale/de-DE";import o from"@univerjs/sheets-formula-ui/locale/de-DE";import u from"@univerjs/sheets-numfmt-ui/locale/de-DE";import t from"@univerjs/sheets-ui/locale/de-DE";import f from"@univerjs/ui/locale/de-DE";var n=Object.assign({},r,e,i,s,m,o,u,t,f);export{n as default};

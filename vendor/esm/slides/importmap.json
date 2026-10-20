@@ -1,0 +1,20 @@
+{
+  "imports": {
+    "@daybrush/utils": "daybrush__utils.js",
+    "@egjs/agent": "egjs__agent.js",
+    "@egjs/children-differ": "egjs__children-differ.js",
+    "@egjs/list-differ": "egjs__list-differ.js",
+    "@scena/dragscroll": "scena__dragscroll.js",
+    "@scena/event-emitter": "scena__event-emitter.js",
+    "@scena/matrix": "scena__matrix.js",
+    "croact": "croact.js",
+    "croact-css-styled": "croact-css-styled.js",
+    "croact-moveable": "croact-moveable.js",
+    "css-styled": "css-styled.js",
+    "css-to-mat": "css-to-mat.js",
+    "framework-utils": "framework-utils.js",
+    "gesto": "gesto.js",
+    "moveable": "moveable.js",
+    "overlap-area": "overlap-area.js"
+  }
+}

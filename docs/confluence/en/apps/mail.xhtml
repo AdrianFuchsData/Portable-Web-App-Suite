@@ -1,0 +1,212 @@
+<!-- Generated from docs/en/apps/mail.md by tools/build_docs.py - do not edit. Confluence page title: Mail -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The mail client (<code>mail.html</code>) reads and writes e-mail like Thunderbird or Outlook: IMAP folders and messages, sending
+through SMTP, drafts, an address book and calendar invitations. Without a mail account it opens and writes <code>.eml</code> and
+<code>.mbox</code> files.</p>
+<p>Connections to mail servers need the <ac:link><ri:page ri:content-title="Portable Web App Suite – User Guide" /><ac:plain-text-link-body><![CDATA[relay]]></ac:plain-text-link-body></ac:link>. Everything else (files,
+composing, contacts) works without it.</p>
+<h2>Accounts</h2>
+<ol>
+<li>Open <strong>Relay</strong> in the side bar and enter the relay address and token.</li>
+<li>Click <strong>+ Account</strong> and enter your e-mail address. Server names (<code>imap.&lt;domain&gt;</code>, <code>smtp.&lt;domain&gt;</code>) and the user name are
+   suggested; correct them with the values of your provider.</li>
+<li>Choose the security of each server: <strong>SSL/TLS</strong> (ports 993 and 465), <strong>STARTTLS</strong> (ports 143 and 587) or none. If the
+   SMTP server needs a different login, untick "Same user name and password as IMAP".</li>
+<li><strong>Save and connect</strong>.</li>
+</ol>
+<p>The password is only stored with the account if you tick <strong>Save the password with the account</strong>; otherwise the client asks
+for it when connecting. Accounts and contacts are kept in the connections file: <strong>Save</strong> it as an encrypted KeePass database
+(recommended) or as a JSON file, and open it again next time with <strong>Open…</strong> (see the user guide).</p>
+<p>"Accept untrusted certificates" is only meant for servers with self-signed certificates in your own network.</p>
+<h3>Several accounts and all inboxes</h3>
+<p>Click further accounts in the list to connect them as well: every connected account stays connected (● in front of its name,
+with the number of unread messages in its inbox), and a click on it shows its folders again without logging in anew. ⏏
+disconnects an account.</p>
+<p>With two or more connected accounts, <strong>📥 All inboxes</strong> appears above the accounts: the newest messages of every inbox in one
+list, newest first, each with the name of its account. Messages can be read, flagged, marked as read or unread and deleted
+there (into the trash of their account); <strong>Reply</strong>, <strong>Reply all</strong> and <strong>Forward</strong> write from the account the message belongs
+to (signature, sender, its <em>Sent</em> folder). The search field filters the combined list; ⟳ reloads it, and it is also updated
+when new mail arrives. To move messages into folders, open the account.</p>
+<h2>Reading</h2>
+<ul>
+<li>Click a folder in the side bar; the number shows unread messages. The newest 50 messages are loaded, <strong>Load older
+  messages</strong> loads more. New mail is checked every minute and with <strong>⟳</strong>.</li>
+<li>Click a message to read it. Formatted (HTML) messages are shown without scripts, forms and <strong>remote images</strong> (which are
+  often used for tracking); <strong>Plain text</strong> shows the text version. Links open in a new tab.</li>
+<li>Attachments are listed above the text: click one to save it.</li>
+<li><strong>Search</strong> searches the subject, sender and text of the current folder on the server (press Enter; clear the field to
+  return to the folder).</li>
+<li><code>Ctrl</code>+click selects several messages, <code>Shift</code>+click a range.</li>
+<li><strong>🧵</strong> groups the list by <strong>conversation</strong> (on by default): a message and its replies form one row with the number of
+  messages (▸ 4), sorted by the newest message; click the number to show the replies, indented below each other.
+  Replies are found by their references (as Thunderbird does) and, for clients that drop them, by the subject
+  ("Re:", "AW:", "Fwd:" …). Only the loaded messages are grouped; <strong>Load older messages</strong> may add earlier ones.</li>
+</ul>
+<h2>Organizing</h2>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>Key</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🗑 Delete</td>
+<td><code>Delete</code></td>
+<td>moves to the trash; in the trash, deletes for good</td>
+</tr>
+<tr>
+<td>✉̸</td>
+<td><code>u</code></td>
+<td>marks as read/unread</td>
+</tr>
+<tr>
+<td>★</td>
+<td><code>s</code></td>
+<td>flags/unflags</td>
+</tr>
+<tr>
+<td>📁</td>
+<td></td>
+<td>moves to another folder (or drag the messages onto a folder in the side bar)</td>
+</tr>
+<tr>
+<td>Save as .eml</td>
+<td></td>
+<td>saves the message as a file</td>
+</tr>
+<tr>
+<td></td>
+<td><code>↑</code> <code>↓</code> / <code>j</code> <code>k</code></td>
+<td>previous/next message</td>
+</tr>
+</tbody>
+</table>
+<p>With an account connected, <strong>＋</strong> above the folders creates a folder; ✎ and × rename and delete the selected folder
+(not the standard folders).</p>
+<h3>Rules</h3>
+<p>Under <strong>Rules</strong> in the account settings (✎ next to the account), messages can be sorted automatically: a rule checks
+whether <strong>From</strong>, <strong>To</strong> or the <strong>Subject</strong> contains a text (upper/lower case does not matter) and then <strong>moves</strong> the
+message to a folder, <strong>flags</strong> it, <strong>marks it as read</strong> or <strong>deletes</strong> it. The first matching rule counts.</p>
+<p>Rules work on new, unread messages in the inbox while the mail client is open (when the inbox is opened and when new
+mail arrives); they do not run on the server. <strong>⚙</strong> next to the search applies the rules to all messages of the current
+folder.</p>
+<h2>Writing</h2>
+<p><strong>✉ New message</strong> (<code>n</code>), <strong>Reply</strong> (<code>r</code>), <strong>Reply all</strong> (<code>a</code>) and <strong>Forward</strong> (<code>f</code>) open the editor:</p>
+<ul>
+<li>Addresses are separated by commas. While you type, matching contacts are suggested (choose with ↑ ↓ and Enter).
+  <strong>Bcc</strong> adds a field for blind copies.</li>
+<li><strong>Formatted (HTML)</strong> switches to rich text with bold, italic, underline, lists, quotes and links; pasted pictures are
+  embedded. Otherwise the message is plain text. Your signature from the account is added.</li>
+<li><strong>📎 Attach…</strong> or dragging files onto the editor adds attachments; forwarding keeps the attachments of the original.</li>
+<li><strong>Send</strong> sends the message through SMTP and puts a copy into the "Sent" folder. Replied messages are marked ↩.</li>
+<li><strong>Save draft</strong> stores the message in the "Drafts" folder; open the draft there and click <strong>Edit draft</strong> to continue.
+  Without an account, the draft is saved as an <code>.eml</code> file.</li>
+<li><strong>Save as .eml</strong> saves the message as a file (it can be opened again, or sent with another program).</li>
+<li><strong>Save as template</strong> stores subject and text with the account (named after the subject). Once templates exist,
+  <strong>📋 Templates</strong> next to <strong>✉ New message</strong> starts a new message from one; they are removed in the account settings.</li>
+</ul>
+<p><strong>Spelling:</strong> with a language chosen in the <strong>ABC</strong> selector of the header, the subject and the text (plain or formatted)
+are checked while you write; right-click an underlined word for suggestions (<ac:link><ri:page ri:content-title="Portable Web App Suite – User Guide" /><ac:plain-text-link-body><![CDATA[Spelling]]></ac:plain-text-link-body></ac:link>).</p>
+<h2>Contacts</h2>
+<p><strong>👤 Contacts</strong> opens the address book: search, add (<strong>+ Contact</strong>), edit (click the name), delete, and write to a contact
+(✉). <strong>Import .vcf</strong> reads vCard files (from Outlook, Thunderbird, Android, …), <strong>Export .vcf</strong> saves the (filtered) list
+as a vCard file. In a message, <strong>＋👤</strong> next to the sender adds the sender to the contacts. Contacts are saved with the
+connections file.</p>
+<h2>Calendar invitations</h2>
+<p>Invitations (iCalendar) show a box with the title, time, place and organizer. <strong>Accept</strong>, <strong>Maybe</strong> and <strong>Decline</strong> send
+the answer to the organizer (needs a connected account). <strong>Save .ics</strong> saves the event; open it in the
+<ac:link><ri:page ri:content-title="Calendar" /><ac:plain-text-link-body><![CDATA[calendar]]></ac:plain-text-link-body></ac:link> to add it to your calendar file.</p>
+<h2>Files without an account</h2>
+<p><strong>📂 Open .eml/.mbox</strong> (or dropping files onto the window) opens single messages and mailbox files (exported from
+Thunderbird and others). They appear under "Opened files" in the side bar; you can read, search, reply, forward and save
+them. With an account connected, 📁 copies them into an IMAP folder.</p>
+<p>↗ next to an attachment (<strong>Open with…</strong>) opens it in another application of the suite: attachments of received messages as a copy, attachments of a message being written so that saving replaces the attachment.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Messages</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>N</code></td>
+<td>New message</td>
+</tr>
+<tr>
+<td><code>R</code> / <code>A</code></td>
+<td>Reply / reply to all</td>
+</tr>
+<tr>
+<td><code>F</code></td>
+<td>Forward</td>
+</tr>
+<tr>
+<td><code>Delete</code></td>
+<td>Delete</td>
+</tr>
+<tr>
+<td><code>U</code></td>
+<td>Mark as read / unread</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>Flag</td>
+</tr>
+<tr>
+<td><code>↓</code> / <code>J</code></td>
+<td>Next message</td>
+</tr>
+<tr>
+<td><code>↑</code> / <code>K</code></td>
+<td>Previous message</td>
+</tr>
+</tbody>
+</table>
+<h3>Writing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>↑</code> / <code>↓</code> / <code>Enter</code> / <code>Tab</code></td>
+<td>Choose an address suggestion</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>One column is shown at a time: ☰ shows the folders, a message opens full-screen and ← returns to the list. An opened <code>.eml</code> file is shown right away. To move a message to
+another folder, open it and use 📁 (dragging onto a folder needs the wide layout). The editor uses
+the whole screen.</p>
+<h2>Limits</h2>
+<ul>
+<li>Messages are not stored offline; the client works on the server (IMAP) while connected.</li>
+<li>No OAuth sign-in: providers that only allow OAuth (e.g. Gmail and Microsoft 365 with modern authentication) need an
+  app password.</li>
+<li>No encryption or signatures (S/MIME, OpenPGP).</li>
+</ul>

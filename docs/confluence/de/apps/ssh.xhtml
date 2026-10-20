@@ -1,0 +1,77 @@
+<!-- Generated from docs/de/apps/ssh.md by tools/build_docs.py - do not edit. Confluence page title: SSH-Client -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Der SSH-Client (<code>ssh.html</code>) öffnet Terminalsitzungen auf SSH-Servern und überträgt Dateien über SFTP. Er arbeitet wie PuTTY mit einem
+eingebauten Dateibereich. Verbindungen laufen über das <strong>lokale Relay</strong> (siehe Benutzerhandbuch, „Netzwerkfunktionen und das Relay“).</p>
+<h2>Verbinden</h2>
+<ol>
+<li><strong>Neue Verbindung</strong> öffnet den Verbindungsdialog: Name, Host, Port (22), Benutzer und die Anmeldung:
+   - <strong>Privater Schlüssel</strong>: Schlüssel einfügen (OpenSSH-Format <code>-----BEGIN OPENSSH PRIVATE KEY-----</code> oder PEM) oder die Schlüsseldatei laden;
+     bei einem geschützten Schlüssel die Passphrase eingeben. Unterstützt werden Ed25519-, ECDSA- und RSA-Schlüssel.
+   - <strong>Passwort</strong> (wird auch für die Keyboard-Interactive-Anmeldung verwendet).</li>
+<li>Tragen Sie einmal Adresse und Token des Relays ein (sie werden mit den Verbindungen gespeichert).</li>
+<li><strong>Verbinden</strong> öffnet einen neuen Reiter; <strong>Verbindung speichern</strong> fügt die Verbindung den <strong>Gespeicherten Verbindungen</strong> hinzu (Passwort und
+   Passphrase nur, wenn das Kästchen angehakt ist; ein privater Schlüssel wird immer mit der Verbindung gespeichert).</li>
+</ol>
+<h3>Host-Schlüssel</h3>
+<p>Beim ersten Verbinden zeigt der Client den Fingerabdruck des Serverschlüssels (<code>SHA256:…</code>). Vergleichen Sie ihn mit dem Fingerabdruck, den Ihnen
+die Administration nennt (<code>ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub</code> auf dem Server):</p>
+<ul>
+<li><strong>Akzeptieren und speichern</strong> speichert den Fingerabdruck mit der gespeicherten Verbindung; spätere Verbindungen werden ohne Rückfrage akzeptiert.</li>
+<li><strong>Einmal akzeptieren</strong> verbindet, ohne ihn zu speichern.</li>
+<li><strong>Ablehnen</strong> bricht die Verbindung ab.</li>
+</ul>
+<p>Ändert sich der Fingerabdruck einer gespeicherten Verbindung, erscheint eine <strong>Warnung</strong> – möglicherweise wird die Verbindung abgehört. Akzeptieren
+Sie den neuen Schlüssel nur, wenn Sie den Grund kennen (z. B. wurde der Server neu installiert).</p>
+<h2>Terminal</h2>
+<p>Jede Verbindung öffnet einen Reiter mit einem Terminal (xterm-kompatibel, Farben, Maus, Größenänderung). Der farbige Punkt zeigt den Zustand:
+grün verbunden, gelb verbinde, rot geschlossen. <strong>Neu verbinden</strong> öffnet eine geschlossene Sitzung erneut; × schließt einen Reiter.</p>
+<ul>
+<li>Markierten Text kopiert ⧉ (oder die Kopier-Tastenkombination des Browsers); 📋 fügt die Zwischenablage in die Sitzung ein.</li>
+<li><strong>Schriftgröße</strong> ändert die Größe aller Terminals.</li>
+<li><strong>⏺</strong> zeichnet die Sitzung ab jetzt auf; ein zweiter Klick (<strong>⏹</strong>, mit der aufgezeichneten Größe) beendet die Aufzeichnung und speichert das
+  Protokoll als Textdatei (ohne Farbcodes). <strong>⤓</strong> speichert, was das Terminal gerade enthält (samt Verlauf von bis zu 5000 Zeilen).</li>
+<li>Auf Touch-Geräten bietet eine Tastenleiste Esc, Tab, Strg (gilt für die nächste Taste, z. B. Strg und dann C), die Pfeiltasten und einige
+  Zeichen, die auf Smartphone-Tastaturen schwer zu tippen sind.</li>
+</ul>
+<h2>Dateien (SFTP)</h2>
+<p><strong>📁 Dateien</strong> öffnet den Dateibereich der Sitzung (er beginnt im Home-Verzeichnis):</p>
+<ul>
+<li>Ein Klick auf einen Ordner öffnet ihn, <code>..</code> führt nach oben; einen Pfad eintippen und <code>Eingabe</code> drücken springt dorthin; ⟳ lädt neu.</li>
+<li>Ein Klick auf eine Datei (oder ⬇) lädt sie herunter.</li>
+<li><strong>Hochladen…</strong> lädt Dateien in den aktuellen Ordner hoch; Dateien können auch auf den Bereich gezogen werden.</li>
+<li><strong>Neuer Ordner</strong>, ✎ umbenennen und × löschen (Ordner müssen leer sein).</li>
+</ul>
+<h2>Gespeicherte Verbindungen</h2>
+<p>Gespeicherte Verbindungen und die Relay-Einstellungen liegen in einer Verbindungsdatei, einer <strong>KeePass-Datenbank</strong> (verschlüsselt, empfohlen)
+oder einer <strong>JSON-Datei</strong> (unverschlüsselt). Verwenden Sie <strong>Speichern</strong> und <strong>Öffnen…</strong> im linken Bereich. In KeePass ist jede Verbindung ein
+Eintrag in der Gruppe „Portable Web App Suite/ssh“ mit dem privaten Schlüssel und dem Fingerabdruck des Host-Schlüssels als zusätzlichen Feldern
+(der Schlüssel geschützt). Ein Klick auf eine gespeicherte Verbindung verbindet; ✎ bearbeitet und × löscht sie.</p>
+<p>Im Dateibereich öffnet ↗ (<strong>Öffnen mit…</strong>) eine entfernte Datei in einer anderen Anwendung der Suite; Speichern dort schreibt sie über SFTP zurück.</p>
+<p><strong>Bekannte Host-Schlüssel</strong>: Der linke Bereich listet die mit Verbindungen gespeicherten Fingerabdrücke; × vergisst einen, die nächste Verbindung
+fragt dann erneut (etwa nachdem der Server neu installiert wurde).</p>
+<h3>Ein Schlüsselpaar erzeugen</h3>
+<p><strong>🔑 Neues Schlüsselpaar…</strong> erzeugt einen Schlüssel für die Anmeldung ohne Passwort: Ed25519 (empfohlen), ECDSA P-256 oder RSA 4096, mit einem
+Kommentar und einer optionalen Passphrase, die den privaten Schlüssel verschlüsselt. Danach zeigt der Dialog den öffentlichen Schlüssel und seinen
+Fingerabdruck: Tragen Sie ihn auf dem Server in <code>~/.ssh/authorized_keys</code> ein (oder speichern Sie ihn als <code>.pub</code>), speichern Sie den privaten Schlüssel
+(<code>id_ed25519</code>, OpenSSH-Format, verwendbar mit OpenSSH und PuTTYgen), und <strong>In neuer Verbindung verwenden</strong> übernimmt ihn in den Verbindungsdialog.
+Portweiterleitung ist im Browser nicht möglich (eine Seite kann nicht auf lokalen Ports lauschen).</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>☰ öffnet die gespeicherten Verbindungen. Der Dateibereich teilt sich den Bildschirm mit dem Terminal (darunter). Nutzen Sie die Tastenleiste für Tasten, die der
+Bildschirmtastatur fehlen.</p>

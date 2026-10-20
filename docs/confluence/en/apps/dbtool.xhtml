@@ -1,0 +1,140 @@
+<!-- Generated from docs/en/apps/dbtool.md by tools/build_docs.py - do not edit. Confluence page title: Database tool -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The database tool (<code>dbtool.html</code>) opens <strong>SQLite</strong> database files and connects to <strong>PostgreSQL</strong> servers: browse the schema, write and
+run SQL, view and edit table data, export results.</p>
+<h2>SQLite databases</h2>
+<ul>
+<li><strong>New SQLite</strong> creates an empty database, <strong>Open SQLite…</strong> (<code>Ctrl+O</code>) opens a database file (<code>.sqlite</code>, <code>.db</code>, …); you can also drop the
+  file onto the window. Several databases can be open at the same time (list <strong>Open databases</strong> on the left).</li>
+<li>The database is edited in memory. <strong>Save database</strong> (<code>Ctrl+S</code>) writes it back: directly into the file in Chrome/Edge on the desktop,
+  as a download in Firefox and on Android (replace the original file with it). Changed databases are marked with •.</li>
+</ul>
+<p>SQLite works completely offline.</p>
+<h2>PostgreSQL servers</h2>
+<p>A Postgres server is reached through the <strong>local relay</strong> (see the user guide, "Network functions and the relay").</p>
+<ol>
+<li><strong>Connect to Postgres…</strong> opens the connection dialog: name, host, port (5432), database, user, password, SSL (prefer, require, disable;
+   optionally accept self-signed certificates) and the relay address and token. <strong>Test</strong> checks the relay.</li>
+<li><strong>Connect</strong> opens the connection; <strong>Save connection</strong> adds it to <strong>Saved connections</strong> (the password only if you tick the box).</li>
+<li>A click on a saved connection connects (or asks for the password if it was not saved); ✎ edits and × deletes a connection.</li>
+</ol>
+<p>Password, MD5 and SCRAM-SHA-256 authentication are supported.</p>
+<h3>Saving connections</h3>
+<p>Saved connections and the relay settings are kept in a <strong>connections file</strong>. <strong>Save</strong> in the "Connections" area asks for the format:</p>
+<ul>
+<li><strong>KeePass database</strong> (encrypted with a password; recommended) — every connection becomes a KeePass entry in the group
+  "Portable Web App Suite/dbtool" and can also be seen in KeePass;</li>
+<li><strong>JSON file</strong> (not encrypted; passwords would be readable).</li>
+</ul>
+<p><strong>Open…</strong> opens such a file again (KeePass asks for the password). The same file can hold the connections of the other suite applications.</p>
+<h2>Schema and SQL</h2>
+<ul>
+<li><strong>Schema</strong> lists the tables (▦) and views (👁) of the active database; unfold a table to see its columns (🔑 = primary key, types, NOT NULL).
+  ⟳ reloads the schema; it is reloaded automatically after <code>CREATE</code>, <code>ALTER</code> and <code>DROP</code>.</li>
+<li>The SQL editor highlights SQL and completes keywords, table and column names (<code>Ctrl+Space</code>).</li>
+<li><strong>Run</strong> (<code>Ctrl+Enter</code>) runs the selected text, or the statement at the cursor; <strong>Run all</strong> (<code>Ctrl+Shift+Enter</code>) runs all statements.</li>
+<li>Every statement with a result gets a result tab. The message line shows the number of changed rows, the duration or the error
+  (for Postgres with SQL state code, detail and hint).</li>
+<li><strong>CSV</strong> and <strong>JSON</strong> export the shown result.</li>
+<li><strong>⛁ ER diagram</strong> (above the schema) draws the tables and views with their columns (🔑 primary key, → foreign key) and the
+  foreign-key relations, and opens the drawing in the diagram editor (referenced tables above the referencing ones), where it
+  can be arranged, edited, printed or exported.</li>
+<li><strong>Explain</strong> shows how the database runs the current statement: for SQLite the query plan as a tree (<code>SCAN</code> = reads the
+  whole table, <code>SEARCH … USING INDEX</code> = uses an index), for Postgres the text of <code>EXPLAIN</code>.</li>
+<li><strong>History</strong> in the side bar lists the last statements you ran (failed ones are underlined). A click puts a statement
+  back into the editor, a double-click runs it again. The history is kept only in this browser; × deletes it.</li>
+</ul>
+<h2>Browsing and editing tables</h2>
+<p><strong>Browse</strong> next to a table shows its rows (200 per page, ‹ and › page).</p>
+<ul>
+<li>Double-click a cell to edit it; <code>Enter</code> saves, <code>Escape</code> cancels, <code>Ctrl+Delete</code> sets the value to NULL.</li>
+<li><strong>Add row</strong> opens a form with a field per column (empty fields use the column's default).</li>
+<li>× deletes a row (after a confirmation).</li>
+</ul>
+<p>Editing needs a primary key (SQLite tables without one are edited by their <code>rowid</code>). Every change is executed immediately as an
+<code>UPDATE</code>, <code>INSERT</code> or <code>DELETE</code> statement, which is shown in the message line.</p>
+<p>Undo (↶, <code>Ctrl+Z</code> outside the SQL editor) and redo (↷, <code>Ctrl+Y</code>): in SQLite databases for every change, also by executed SQL statements (up to 20 steps, for databases up to 32 MiB); on PostgreSQL servers for the changes made in the result table (changed cells, deleted rows). The table is reloaded after undoing.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open a SQLite file</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save the SQLite file</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+</tbody>
+</table>
+<h3>SQL</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Enter</code></td>
+<td>Run the statement at the cursor (or the selection)</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+Enter</code></td>
+<td>Run all statements</td>
+</tr>
+</tbody>
+</table>
+<h3>Table</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Enter</code></td>
+<td>Store the edited cell</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Cancel editing</td>
+</tr>
+<tr>
+<td><code>Ctrl+Delete</code></td>
+<td>Set the cell to NULL</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>☰ opens the list of databases, the schema and the saved connections. Results can be scrolled sideways.</p>

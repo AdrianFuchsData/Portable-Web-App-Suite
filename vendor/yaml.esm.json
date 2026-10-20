@@ -1,0 +1,6 @@
+{
+  "out": "esm/yaml",
+  "packages": {
+    "js-yaml": "4.1.0"
+  }
+}

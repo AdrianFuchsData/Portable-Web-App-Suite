@@ -1,0 +1,234 @@
+<!-- Generated from docs/en/apps/archive.md by tools/build_docs.py - do not edit. Confluence page title: Archive manager -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The archive manager (<code>archive.html</code>) opens, creates and edits archives: browse folders, preview files, extract files,
+add files and folders, create folders, rename, delete and convert between formats.</p>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Open</th>
+<th>Save</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ZIP (also <code>.jar</code>, <code>.docx</code>, <code>.xlsx</code>, <code>.odt</code>, <code>.epub</code>, <code>.apk</code>, <code>.whl</code> and other ZIP-based files)</td>
+<td>yes, incl. ZIP64</td>
+<td>yes (up to 4 GiB and 65,535 entries)</td>
+</tr>
+<tr>
+<td>TAR</td>
+<td>yes (ustar, pax, GNU long names, symbolic links)</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>TAR.GZ / TGZ</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>GZ (a single compressed file)</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>7z</td>
+<td>yes</td>
+<td>yes (without encryption)</td>
+</tr>
+<tr>
+<td>RAR (versions 4 and 5)</td>
+<td>yes</td>
+<td>– (save as 7z or ZIP)</td>
+</tr>
+<tr>
+<td>TAR.XZ, TAR.BZ2, TAR.ZST, TAR.LZMA</td>
+<td>yes</td>
+<td>–</td>
+</tr>
+<tr>
+<td>ISO, CAB, DEB, RPM, CPIO, AR, XAR</td>
+<td>yes</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p>7z, RAR and the further formats are read with libarchive (built into the application). The whole archive is unpacked when it
+is opened, so large archives need as much memory as their content. <strong>Save</strong> on a format that can only be read opens <strong>Save as</strong>
+with 7z suggested. Encrypted 7z and RAR archives cannot be opened (a message says so; encrypted ZIP archives are supported, see
+below), and a single compressed file without an archive inside (e.g. <code>notes.txt.xz</code>) cannot be opened either.</p>
+<h2>Opening and creating</h2>
+<ul>
+<li><strong>Open</strong> (<code>Ctrl+O</code>) opens an archive. You can also drop an archive onto the window while no archive is open.</li>
+<li><strong>New</strong> starts an empty ZIP archive. Dropping files onto the window while nothing is open also starts a new archive.</li>
+<li>In Chrome/Edge on the desktop the start page lists recently used archives.</li>
+</ul>
+<h2>Browsing</h2>
+<ul>
+<li>The list shows the content of the current folder: name, size (for folders the number of items), packed size (ZIP) and
+  modification date. Click a column header to sort.</li>
+<li>Double-click (on phones: tap) a folder to open it. ↑, <code>Backspace</code> or the path above the list go back.</li>
+<li>Double-click (tap) a file to preview it: text, images, audio and video. <strong>Download</strong> in the preview saves the file.</li>
+</ul>
+<h2>Selecting</h2>
+<p>Click selects one item, <code>Ctrl</code>+click adds or removes items, <code>Shift</code>+click selects a range, <code>Ctrl+A</code> selects all items of the
+folder. The checkboxes select items too (on phones and tablets they are the way to select).</p>
+<h2>Extracting</h2>
+<ul>
+<li><strong>Extract</strong> extracts the selected items, <strong>Extract all</strong> the whole current folder.</li>
+<li>A single file is downloaded directly.</li>
+<li>In Chrome/Edge on the desktop you choose a target folder; the files are written into it with their subfolders.</li>
+<li>In Firefox and on Android, several files are downloaded together as one ZIP file.</li>
+</ul>
+<p><strong>✓ Test</strong> checks the whole archive: every file is decompressed and, for ZIP archives, compared with its stored checksum
+(CRC-32). The result lists damaged files with the reason; nothing is extracted or changed. Encrypted files need the
+password.</p>
+<h2>Editing</h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Add files / Add folder</td>
+<td>adds files or a whole folder into the current folder; you can also drop files and folders onto the window</td>
+</tr>
+<tr>
+<td>New folder</td>
+<td>creates a folder and lets you enter its name</td>
+</tr>
+<tr>
+<td>Rename (<code>F2</code>)</td>
+<td>renames the selected file or folder</td>
+</tr>
+<tr>
+<td>Delete (<code>Del</code>)</td>
+<td>removes the selected items from the archive</td>
+</tr>
+</tbody>
+</table>
+<p>Existing files with the same name are replaced after a confirmation.</p>
+<p>Undo (↶, <code>Ctrl+Z</code>) and redo (↷, <code>Ctrl+Y</code>) work for adding, renaming, deleting and new folders.</p>
+<p><strong>Open with…</strong> (toolbar or preview) opens the selected file in another application of the suite; saving there replaces the file in the archive (undoable). Save the archive afterwards.</p>
+<h2>Saving</h2>
+<ul>
+<li><strong>Save</strong> (<code>Ctrl+S</code>) writes the archive in its format: directly into the opened file in Chrome/Edge on the desktop, as a
+  download in Firefox and on Android (replace the original file with it).</li>
+<li><strong>Save as</strong> (<code>Ctrl+Shift+S</code>) asks for the file name and the <strong>format</strong> (ZIP, TAR, TAR.GZ, GZ). This converts an archive, for
+  example a <code>.tar.gz</code> into a <code>.zip</code>. A GZ file holds exactly one file.</li>
+<li><strong>Compression</strong> in the status bar sets the compression of new and changed files: Store, Fastest, Normal, Maximum. Unchanged
+  files of an opened ZIP archive are copied as they are, so saving is fast.</li>
+</ul>
+<h2>Encrypted ZIP archives</h2>
+<p>Encrypted files are marked with 🔒 (the tooltip names the method). Previewing, extracting or opening such a file asks for
+the password; it is remembered until another archive is opened. Both methods in use are supported: <strong>AES</strong> (WinZip AES,
+128/192/256 bit, used by 7-Zip, WinZip and others) and <strong>ZipCrypto</strong> (the old method that Windows can open without extra
+software).</p>
+<ul>
+<li>After you entered the password of an archive, files you add or change are encrypted the same way when saving
+  (shown as 🔒 in the status bar). Unchanged files are kept as they are.</li>
+<li><strong>Save as</strong> offers the <strong>encryption</strong> of a ZIP archive: none, AES-256 (recommended) or ZipCrypto (weak; choose it only for
+  the Windows Explorer), with the password entered twice. All files that are not encrypted yet are then encrypted;
+  files that already were keep their password. Choosing "none" saves new and changed files without encryption.</li>
+<li>File names and the list of files are not encrypted in ZIP archives, only the contents.</li>
+</ul>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+O</code></td>
+<td>Open</td>
+</tr>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+</tbody>
+</table>
+<h3>Editing</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Undo</td>
+</tr>
+<tr>
+<td><code>Ctrl+Y</code> / <code>Ctrl+Shift+Z</code></td>
+<td>Redo</td>
+</tr>
+<tr>
+<td><code>Ctrl+A</code></td>
+<td>Select everything in the folder</td>
+</tr>
+<tr>
+<td><code>F2</code></td>
+<td>Rename</td>
+</tr>
+<tr>
+<td><code>Delete</code></td>
+<td>Delete</td>
+</tr>
+</tbody>
+</table>
+<h3>Navigation</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Enter</code></td>
+<td>Open the folder / preview the file</td>
+</tr>
+<tr>
+<td><code>Backspace</code> / <code>Alt+↑</code></td>
+<td>Parent folder</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Close the preview</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The toolbar can be scrolled sideways. The list shows name and size; tap a folder to open it and a file to preview it, use the
+checkboxes to select.</p>

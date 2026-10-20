@@ -1,0 +1,104 @@
+<!-- Generated from docs/de/apps/ftp.md by tools/build_docs.py - do not edit. Confluence page title: FTP/SFTP-Client -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Der FTP/SFTP-Client (<code>ftp.html</code>) überträgt Dateien zwischen Ihrem Computer und Servern, wie FileZilla. Er unterstützt <strong>SFTP</strong> (über SSH),
+<strong>FTPS</strong> (FTP über TLS, explizit und implizit) und einfaches <strong>FTP</strong>. Verbindungen laufen über das <strong>lokale Relay</strong> (siehe Benutzerhandbuch,
+„Netzwerkfunktionen und das Relay“).</p>
+<h2>Verbinden</h2>
+<p>Die Leiste oben verbindet direkt: Protokoll wählen, Host, Port (wird zum Protokoll ausgefüllt), Benutzer und Passwort eingeben und
+<strong>Verbinden</strong> klicken.</p>
+<table>
+<thead>
+<tr>
+<th>Protokoll</th>
+<th>Port</th>
+<th>Hinweise</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SFTP (SSH)</td>
+<td>22</td>
+<td>Passwort oder privater Schlüssel (in das Schlüsselfeld einfügen); beim ersten Verbinden wird der Host-Schlüssel des Servers angezeigt</td>
+</tr>
+<tr>
+<td>FTPS (explizites TLS)</td>
+<td>21</td>
+<td>nach <code>AUTH TLS</code> verschlüsselt; das übliche sichere FTP</td>
+</tr>
+<tr>
+<td>FTPS (implizites TLS)</td>
+<td>990</td>
+<td>von Anfang an verschlüsselt</td>
+</tr>
+<tr>
+<td>FTP (unverschlüsselt)</td>
+<td>21</td>
+<td>Passwörter und Dateien werden im Klartext übertragen – nur in vertrauenswürdigen Netzen verwenden</td>
+</tr>
+</tbody>
+</table>
+<p>Für FTPS mit einem selbst signierten Serverzertifikat haken Sie <strong>Nicht vertrauenswürdige Zertifikate akzeptieren</strong> an. FTP verwendet immer den
+passiven Modus; die Datenverbindungen gehen zum selben Host wie die Steuerverbindung.</p>
+<p><strong>Server speichern</strong> legt die aktuellen Einstellungen unter einem Namen in der Liste <strong>Server</strong> ab; ein Klick auf einen Server verbindet, ✎ lädt
+ihn in die Leiste, × löscht ihn. Server und Relay-Einstellungen liegen in einer Verbindungsdatei (KeePass-Datenbank oder JSON-Datei,
+<strong>Speichern</strong> und <strong>Öffnen…</strong> unter der Liste).</p>
+<h2>Lokale und entfernte Dateien</h2>
+<p>Das Fenster zeigt zwei Listen: <strong>Lokal</strong> links, <strong>Server</strong> rechts.</p>
+<ul>
+<li><strong>Lokal</strong> (Chrome/Edge am Desktop): <strong>Lokalen Ordner wählen…</strong> öffnet einen Ordner Ihres Computers. Doppelklick öffnet Ordner, ↑ führt nach oben.
+  Downloads werden in diesen Ordner geschrieben; Ordner werden mit ihrem Inhalt heruntergeladen.</li>
+<li>In Firefox und auf Smartphones können keine lokalen Ordner geöffnet werden: <strong>Dateien hochladen…</strong> lädt Dateien hoch, Downloads landen im
+  Download-Ordner des Browsers.</li>
+<li><strong>Server</strong>: Doppelklick öffnet einen Ordner, ↑ führt nach oben, oder einen Pfad eintippen und <code>Eingabe</code> drücken; ⟳ lädt neu.</li>
+</ul>
+<p>Klick wählt einen Eintrag, <code>Strg</code>+Klick mehrere.</p>
+<h2>Übertragungen</h2>
+<ul>
+<li><strong>Hochladen →</strong> lädt die gewählten lokalen Einträge (Ordner mit Inhalt) in den aktuellen Serverordner; Einträge können auch aus der lokalen
+  Liste (oder Dateien vom Desktop) auf die Serverliste gezogen werden.</li>
+<li><strong>← Herunterladen</strong> lädt die gewählten Servereinträge herunter; ein Doppelklick auf eine Serverdatei lädt sie herunter; Servereinträge können
+  auch auf die lokale Liste gezogen werden.</li>
+<li>Vorhandene Dateien auf dem Server werden nach einer Bestätigung überschrieben.</li>
+</ul>
+<p>Die Liste <strong>Übertragungen</strong> zeigt jede Übertragung mit Fortschritt, Größe und Ergebnis; <strong>Erledigte entfernen</strong> entfernt die fertigen.</p>
+<p><strong>Fortsetzen</strong>: Schlägt eine Übertragung fehl (z. B. weil die Verbindung abbrach), setzt <strong>↻ Fortsetzen</strong> daneben sie an der Stelle
+fort, an der sie stehen blieb – ein Download behält den bereits empfangenen Teil und fordert vom Server nur den Rest an, ein Upload
+macht nach dem Teil weiter, den der Server schon hat. Liegt beim Hochladen eine kleinere Datei gleichen Namens auf dem Server, fragt
+der Client, ob das Hochladen fortgesetzt werden soll; enthält beim Herunterladen der lokale Ordner eine kleinere Datei gleichen Namens,
+fragt er, ob der Download fortgesetzt werden soll. Fortsetzen funktioniert mit SFTP und mit FTP-Servern, die <code>REST</code> und <code>APPE</code>
+unterstützen (fast alle).</p>
+<h2>Ordner vergleichen und synchronisieren</h2>
+<p>Mit geöffnetem lokalem Ordner (Chrome/Edge am Desktop) und einer Verbindung vergleicht <strong>⇄ Vergleichen / synchronisieren</strong> den lokalen
+Ordner mit dem aktuellen Serverordner samt allen Unterordnern. Die Liste zeigt jede abweichende Datei: <em>nur lokal</em>, <em>nur auf dem
+Server</em>, <em>lokal neuer</em>, <em>Server neuer</em> oder <em>andere Größe</em> (wenn die Zeiten nicht verraten, welche neuer ist), mit Größe und
+Änderungszeit auf beiden Seiten; <strong>Gleiche Dateien zeigen</strong> ergänzt die übereinstimmenden Dateien.</p>
+<p>Jede Datei erhält eine Aktion – <strong>hochladen</strong>, <strong>herunterladen</strong> oder <strong>überspringen</strong> –, die sich ändern lässt. <strong>Richtung</strong> schlägt
+die Aktionen vor: <em>in beide Richtungen</em> (die neuere Datei gewinnt), <em>nur hochladen</em> (der Server wird an den lokalen Ordner angeglichen)
+oder <em>nur herunterladen</em>. <strong>Synchronisieren</strong> stellt die Übertragungen in die Warteschlange; fehlende Ordner werden angelegt. Dateien
+werden nie gelöscht.</p>
+<p>Dateien gleicher Größe gelten als gleich; mit <strong>Bei gleicher Größe die Änderungszeiten vergleichen</strong> werden auch ihre Zeiten verglichen.
+Uploads übernehmen die lokale Änderungszeit auf den Server (FTP <code>MFMT</code>, SFTP), sodass sie danach als gleich gelten. Ein Browser kann
+die Zeit einer heruntergeladenen Datei nicht setzen: heruntergeladene Dateien erhalten die aktuelle Zeit, deshalb stützt sich der
+Vergleich standardmäßig auf die Größen. Je Seite werden höchstens 5000 Dateien verglichen.</p>
+<h2>Dateien auf dem Server verwalten</h2>
+<p><strong>Neuer Ordner</strong>, <strong>Umbenennen</strong> (ein gewählter Eintrag) und <strong>Löschen</strong> (gewählte Einträge; Ordner werden nach einer Bestätigung mit Inhalt gelöscht).</p>
+<p><strong>Öffnen mit…</strong> öffnet die gewählte entfernte Datei in einer anderen Anwendung der Suite; Speichern dort lädt sie wieder hoch (in der Übertragungsliste sichtbar).</p>
+<h2>Tastenkürzel</h2>
+<p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Listen stehen untereinander; ☰ <strong>Server</strong> öffnet die gespeicherten Server.</p>
