@@ -97,6 +97,32 @@ def test_open_with_inside_the_overview(app_page, tmp_path):
     assert page.errors == []
 
 
+def test_open_several_files_with_one_app_inside_the_overview(app_page, tmp_path):
+    page = app_page("overview", init_script=NO_PICKERS)
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("one.bin", b"\x01")
+        z.writestr("two.bin", b"\x02\x02")
+    (tmp_path / "demo.zip").write_bytes(buf.getvalue())
+    archive = start_tab(page, "archive")
+    with page.expect_file_chooser() as chooser:
+        archive.locator("[data-testid=open]").click()
+    chooser.value.set_files(str(tmp_path / "demo.zip"))
+    for name in ("one.bin", "two.bin"):
+        archive.locator("[data-testid=row]", has_text=name).locator("[data-testid=select]").check()
+    archive.locator("[data-testid=open-with]").click()
+    archive.locator("[data-testid=open-with-dialog] button[data-app=hexeditor]").click()
+    hexed = frame(page, "hexeditor")  # one tab of the overview with both files
+    expect(page.locator("[data-testid=tab][data-app=hexeditor]")).to_have_count(1)
+    expect(hexed.locator("[data-testid=tab-name]")).to_have_text(["one.bin", "two.bin"], timeout=30000)
+    hexed.locator("[data-testid=view]").focus()
+    page.keyboard.type("ee")
+    page.keyboard.press("Control+s")
+    page.locator("[data-testid=tab][data-app=archive] button").first.click()
+    expect(archive.locator("[data-testid=toast]").last).to_contain_text("“two.bin” was updated in the archive")
+    assert page.errors == []
+
+
 def test_open_local_file_with_an_app(app_page, tmp_path):
     page = app_page("overview", init_script=NO_PICKERS)
     (tmp_path / "data.csv").write_text("a,b\n1,2\n")

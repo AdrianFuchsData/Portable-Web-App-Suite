@@ -9,7 +9,8 @@ ready.</p>
 <h2>Notebooks</h2>
 <ul>
 <li><strong>Open</strong> (<code>Ctrl+O</code>) opens a Jupyter notebook (<code>.ipynb</code>) or a Python script. In scripts, <code># %%</code> starts a code cell and <code># %% [markdown]</code> a
-  text cell (the format of VS Code, Spyder and Jupytext); a script without markers becomes one cell.</li>
+  text cell (the format of VS Code, Spyder and Jupytext); a script without markers becomes one cell. Raw cells (for nbconvert) are
+  shown as plain text, marked <em>Raw</em>, and saved unchanged.</li>
 <li><strong>Save</strong> (<code>Ctrl+S</code>) saves the notebook as <code>.ipynb</code> (with outputs): directly into the file in Chrome/Edge on the desktop, as a download in
   Firefox and on Android. <strong>Save as</strong> saves under a new name. <strong>Export…</strong> downloads the notebook as a Python script (<code>.py</code>), as an <strong>HTML page</strong>
   with code, Markdown and outputs (tables, charts) that opens in any browser, as an <strong>HTML page without code</strong> (a report of the
@@ -169,8 +170,8 @@ runs again; the same applies after a restart. Custom widget libraries (e.g. <cod
 <td>Insert a cell above / below</td>
 </tr>
 <tr>
-<td><code>M</code> / <code>Y</code></td>
-<td>Make it Markdown / code</td>
+<td><code>M</code> / <code>Y</code> / <code>R</code></td>
+<td>Make it Markdown / code / raw (kept unchanged for nbconvert)</td>
 </tr>
 <tr>
 <td><code>↑</code> / <code>↓</code></td>

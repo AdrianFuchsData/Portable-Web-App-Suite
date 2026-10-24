@@ -184,6 +184,27 @@ def test_open_remote_file_with_text_editor(app_page, relay, ftp_server):
     assert (root / "hello.txt").read_text(encoding="utf-8") == "hello ftp – edited"
 
 
+def test_open_several_remote_files_in_editor_tabs(app_page, relay, ftp_server):
+    from helpers.bridge import open_with, edit_and_save_text
+    port, root = ftp_server
+    (root / "notes.md").write_text("# notes")
+    page = app_page("ftp", init_script=NO_PICKERS)
+    relay_setup(page, relay)
+    quick_connect(page, "ftp", port)
+    page.locator("[data-testid=entry]", has_text="hello.txt").click(timeout=20000)
+    page.locator("[data-testid=entry]", has_text="notes.md").click(modifiers=["Control"])
+    editor = open_with(page, "texteditor", lambda: page.click("[data-testid=remote-open-with]"))
+    expect(editor.locator("[data-testid=tab-name]")).to_have_text(["hello.txt", "notes.md"], timeout=20000)
+    expect(editor.locator(".cm-content")).to_have_text("# notes")
+    edit_and_save_text(editor, " – edited")
+    expect(page.locator("[data-testid=toast]").last).to_contain_text("“notes.md” was uploaded to the server")
+    assert (root / "notes.md").read_text(encoding="utf-8") == "# notes – edited"
+    assert (root / "hello.txt").read_text(encoding="utf-8") == "hello ftp"
+    # a folder in the selection: not possible
+    page.locator("[data-testid=entry]", has_text="docs").click(modifiers=["Control"])
+    expect(page.locator("[data-testid=remote-open-with]")).to_be_disabled()
+
+
 @pytest.mark.parametrize("ftp_server, protocol", [("explicit", "ftps"), ("implicit", "ftpsi")], indirect=["ftp_server"])
 def test_ftps(app_page, relay, ftp_server, protocol):
     port, root = ftp_server

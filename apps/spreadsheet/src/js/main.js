@@ -12,6 +12,11 @@ import cfDeDE from '@univerjs/preset-sheets-conditional-formatting/locales/de-DE
 import { UniverSheetsDataValidationPreset } from '@univerjs/preset-sheets-data-validation';
 import dvEnUS from '@univerjs/preset-sheets-data-validation/locales/en-US';
 import dvDeDE from '@univerjs/preset-sheets-data-validation/locales/de-DE';
+import { UniverSheetsDrawingPreset } from '@univerjs/preset-sheets-drawing';
+import drawingEnUS from '@univerjs/preset-sheets-drawing/locales/en-US';
+import drawingDeDE from '@univerjs/preset-sheets-drawing/locales/de-DE';
+import { IUndoRedoService } from '@univerjs/core';
+import { IDrawingManagerService } from '@univerjs/drawing';
 
 const { html } = Suite.shell;
 const t = Suite.t;
@@ -26,7 +31,7 @@ const FORMATS = {
 
 Suite.i18n.register({
   en: {
-    'app.title': 'Spreadsheet', 'ss.new': 'New', 'ss.open': 'Open', 'ss.save': 'Save', 'ss.saveAs': 'Save as', 'ss.fileName': 'File name', 'ss.format': 'Format',
+    'app.title': 'Spreadsheet', 'ss.new': 'New', 'ss.open': 'Open', 'ss.save': 'Save', 'ss.saveAs': 'Save as', 'ss.diagram': 'Diagram', 'ss.diagramGone': 'The diagram is no longer in the workbook.', 'ss.fileName': 'File name', 'ss.format': 'Format',
     'ss.cancel': 'Cancel', 'ss.untitled': 'Spreadsheet', 'ss.discard': 'Discard the unsaved changes?', 'ss.loading': 'Opening “{0}”…',
     'ss.csvNote': 'CSV and XLS files keep only values and formulas: formatting, and for CSV all sheets but the first, are lost.',
     'ss.xlsmNote': 'Macros cannot be kept: the workbook is saved as .xlsx.', 'ss.cannotOpen': '“{0}” cannot be opened: {1}',
@@ -35,7 +40,7 @@ Suite.i18n.register({
     'ss.typesText': 'Everything as text', 'ss.decimal': 'Decimal separator', 'ss.preview': 'Preview ({0} rows)', 'ss.import': 'Import',
   },
   de: {
-    'app.title': 'Tabellenkalkulation', 'ss.new': 'Neu', 'ss.open': 'Öffnen', 'ss.save': 'Speichern', 'ss.saveAs': 'Speichern unter', 'ss.fileName': 'Dateiname', 'ss.format': 'Format',
+    'app.title': 'Tabellenkalkulation', 'ss.new': 'Neu', 'ss.open': 'Öffnen', 'ss.save': 'Speichern', 'ss.saveAs': 'Speichern unter', 'ss.diagram': 'Diagramm', 'ss.diagramGone': 'Das Diagramm ist nicht mehr in der Arbeitsmappe.', 'ss.fileName': 'Dateiname', 'ss.format': 'Format',
     'ss.cancel': 'Abbrechen', 'ss.untitled': 'Tabelle', 'ss.discard': 'Die ungespeicherten Änderungen verwerfen?', 'ss.loading': '„{0}“ wird geöffnet…',
     'ss.csvNote': 'CSV- und XLS-Dateien behalten nur Werte und Formeln: Formatierung und bei CSV alle Blätter außer dem ersten gehen verloren.',
     'ss.xlsmNote': 'Makros können nicht erhalten werden: Die Arbeitsmappe wird als .xlsx gespeichert.', 'ss.cannotOpen': '„{0}“ kann nicht geöffnet werden: {1}',
@@ -68,9 +73,9 @@ const locale = () => (Suite.i18n.language === 'de' ? LocaleType.DE_DE : LocaleTy
 
 const { univerAPI } = createUniver({
   locale: locale(),
-  locales: { [LocaleType.EN_US]: mergeLocales(enUS, cfEnUS, dvEnUS), [LocaleType.DE_DE]: mergeLocales(deDE, cfDeDE, dvDeDE) },
+  locales: { [LocaleType.EN_US]: mergeLocales(enUS, cfEnUS, dvEnUS, drawingEnUS), [LocaleType.DE_DE]: mergeLocales(deDE, cfDeDE, dvDeDE, drawingDeDE) },
   darkMode: dark(),
-  presets: [UniverSheetsCorePreset({ container: host }), UniverSheetsConditionalFormattingPreset(), UniverSheetsDataValidationPreset()],
+  presets: [UniverSheetsCorePreset({ container: host }), UniverSheetsConditionalFormattingPreset(), UniverSheetsDataValidationPreset(), UniverSheetsDrawingPreset()],
 });
 let workbook = univerAPI.createWorkbook({ name: t('ss.untitled') });
 let loadedAt = performance.now(); // mutations count as edits only after user input that follows the latest load
@@ -98,7 +103,80 @@ function load(data, name, handle = null, format = 'xlsx') {
   Object.assign(state, { name, handle, format, dirty: false });
   Suite.shell.setDirty(false);
   loadedAt = performance.now(); // Univer emits set-up mutations for a while after creating a unit: they are not edits
+  if (data.images) insertImportedImages(workbook, data.images).catch((e) => console.warn(e));
   render();
+}
+
+/** Pictures of an imported file (shared/js/univer-xlsx.js): placed by Univer, then not part of the undo history. */
+async function insertImportedImages(wb, images) {
+  for (const [sheetId, list] of Object.entries(images)) {
+    const ws = wb.getSheetBySheetId(sheetId);
+    if (!ws) continue;
+    const drawings = [];
+    for (const img of list) {
+      drawings.push(await ws.newOverGridImage().setSource(img.source, 'BASE64').setColumn(img.column).setColumnOffset(img.columnOffset).setRow(img.row)
+        .setRowOffset(img.rowOffset).setWidth(img.width).setHeight(img.height).buildAsync());
+    }
+    if (drawings.length) ws.insertImages(drawings);
+  }
+  univerAPI._injector.get(IUndoRedoService).clearUndoRedo(wb.getId());
+  loadedAt = performance.now();
+}
+
+// ---- diagrams (shared/js/diagram-embed.js: a PNG with the draw.io diagram inside, edited in the diagram editor) ------
+
+univerAPI._injector.get(IDrawingManagerService).focus$.subscribe(() => render()); // "Edit diagram" follows the selected picture
+
+const markChanged = () => { state.dirty = true; Suite.shell.setDirty(true); render(); };
+
+/** The selected picture if it carries a diagram: { sheet, id, src } or null. */
+function focusedDiagram() {
+  try {
+    const ws = workbook.getActiveSheet();
+    const [active] = ws.getActiveImages(); // (not an image object: its id leads to one)
+    const id = active && (typeof active.getId === 'function' ? active.getId() : active.drawingId);
+    const img = id && ws.getImageById(id);
+    const src = img && img.toBuilder().getSource(); // (the image object itself has no getSource)
+    return src && Suite.diagrams.isDiagram(src) ? { sheet: ws, id, src } : null;
+  } catch (e) { return null; }
+}
+
+/** The stored size of a picture (the drawing resource of the workbook). */
+function drawingOf(sheetId, id) {
+  const r = (workbook.save().resources || []).find((x) => x.name === 'SHEET_DRAWING_PLUGIN');
+  try { return JSON.parse(r.data)[sheetId].data[id]; } catch (e) { return null; }
+}
+
+/** A new picture from the diagram editor: same anchor and scale (one undo step). */
+async function replaceDiagram(ws, id, res) {
+  const img = ws.getImageById(id);
+  const old = drawingOf(ws.getSheetId(), id);
+  if (!img || !old) return false;
+  const size = Suite.diagrams.newSize(old.source, old.width || res.width, res);
+  ws.updateImages([await img.toBuilder().setSource(res.src, 'BASE64').setWidth(size.width).setHeight(size.height).buildAsync()]);
+  markChanged();
+  return true;
+}
+
+function insertDiagram() {
+  const ws = workbook.getActiveSheet();
+  const range = ws.getActiveRange();
+  const at = { row: range ? range.getRow() : 0, column: range ? range.getColumn() : 0 };
+  let id = null;
+  Suite.diagrams.insert({
+    onSave: async (res) => {
+      if (id && await replaceDiagram(ws, id, res)) return;
+      const drawing = await ws.newOverGridImage().setSource(res.src, 'BASE64').setColumn(at.column).setRow(at.row).setWidth(res.width).setHeight(res.height).buildAsync();
+      ws.insertImages([drawing]);
+      id = drawing.drawingId;
+      markChanged();
+    },
+  });
+}
+
+function editDiagram() {
+  const f = focusedDiagram();
+  if (f) Suite.diagrams.edit({ src: f.src, onSave: async (res) => { if (!(await replaceDiagram(f.sheet, f.id, res))) throw new Error(t('ss.diagramGone')); } });
 }
 
 // recovery copies of unsaved work (shared/js/autosave.js): the Univer snapshot
@@ -232,6 +310,8 @@ function Toolbar() {
     <${Suite.shell.Recent} app=${APP} before=${confirmDiscard} onOpen=${(p) => openPicked(p)} />
     <button class=${state.dirty ? '' : 'secondary outline'} data-testid="save" onClick=${() => save()}>${t('ss.save')}</button>
     <button class="secondary outline" data-testid="save-as" onClick=${() => { state.dialog = { stem: state.name.replace(/\.[^.]+$/, ''), format: state.format }; render(); }}>${t('ss.saveAs')}</button>
+    <button class="secondary outline" data-testid="add-diagram" title=${t('dia.insert')} onClick=${insertDiagram}>📐 ${t('ss.diagram')}</button>
+    ${focusedDiagram() ? html`<button class="secondary" data-testid="edit-diagram" onClick=${editDiagram}>📐 ${t('dia.edit')}</button>` : null}
     <span class="ss-name" data-testid="file-name">${state.name}${state.dirty ? ' •' : ''}</span>
   </nav>`;
 }
@@ -251,7 +331,7 @@ Suite.bridge.receive((picked) => openPicked(picked), { app: 'spreadsheet' }); //
 
 // for tests
 window.SS = {
-  univerAPI, state, get workbook() { return workbook; },
+  univerAPI, state, get workbook() { return workbook; }, insertDiagram, editDiagram, focusedDiagram, drawingManager: () => univerAPI._injector.get(IDrawingManagerService),
   async importBase64(b64, name) { const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)); load(await Suite.univerXlsx.importFile(bin.buffer, name), name); },
 };
 document.body.dataset.ready = 'true';

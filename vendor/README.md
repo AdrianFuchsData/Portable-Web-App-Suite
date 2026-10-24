@@ -12,7 +12,7 @@ version per package, rewrites imports to bare specifiers and writes an import ma
 | Manifest | Output | Content |
 |---|---|---|
 | `codemirror.esm.json` | `esm/codemirror/` | CodeMirror 6 with languages, the One Dark theme and `@codemirror/merge` (comparing two texts) |
-| `univer-sheets.esm.json` | `esm/univer-sheets/` | Univer Sheets 1.0 (presets, sheets core preset, German/English locales) with React 18 and RxJS; hyphenation dictionaries other than German/English excluded |
+| `univer-sheets.esm.json` | `esm/univer-sheets/` | Univer Sheets 1.0 (presets, sheets core, conditional formatting, data validation and drawing presets – pictures –, German/English locales) with React 18 and RxJS; hyphenation dictionaries other than German/English excluded |
 | `univer-docs.esm.json` | `esm/univer-docs/` | Univer Docs 1.0 (presets, docs core and docs drawing presets, German/English locales and hyphenation dictionaries) with React 18 and RxJS |
 | `docx.esm.json` | `esm/docx/` | docx 9 (DOCX writer) |
 | `univer-slides.esm.json` | `esm/univer-slides/` | Univer Slides 1.0 with the plugins it needs (only for the S-7 evaluation) |
@@ -24,6 +24,8 @@ version per package, rewrites imports to bare specifiers and writes an import ma
 | `video.esm.json` | `esm/video/` | Mediabunny 1 (MPL-2.0; media demuxing/muxing with WebCodecs) for the video editor |
 | `pdflib.esm.json` | `esm/pdflib/` | pdf-lib 1.17 (MIT, with pako, tslib) for the page operations of the PDF viewer |
 | `yaml.esm.json` | `esm/yaml/` | js-yaml 4.1 (MIT) for OpenAPI descriptions in YAML (HTTP analyzer) |
+| `symbols.esm.json` | `esm/symbols/` | data only: emojibase-data 17.0 (MIT; emoji names and keywords EN/DE, groups, skin tones, emoticons, GitHub and CLDR shortcodes) and cldr-annotations-full 48.2 (Unicode-3.0; names of symbols EN/DE) as `data_packages`; `tools/build_symbols.py` turns them (with Python's `unicodedata`) into `symbols.json`, embedded into every app for the emoji and symbol picker |
+| `sqlformat.esm.json` | `esm/sqlformat/` | sql-formatter 15.9 (MIT; with nearley 2.20, MIT) for formatting SQL in the text editor |
 | `spell.esm.json` | `esm/spell/` | hunspell-asm 4.0 (MIT; contains Hunspell 1.7 compiled to WebAssembly, MPL-1.1/GPL-2.0/LGPL-2.1, used under LGPL-2.1; with emscripten-wasm-loader, getroot, nanoid – two `patches` fix jsDelivr's conversion of namespace imports) and the Hunspell dictionaries of dictionary-en 4.0 (English (US), MIT AND BSD, SCOWL) and dictionary-de 3.0 (German, igerman98, GPL-2.0 OR GPL-3.0; unmodified) as `data_packages` (only `index.aff`/`index.dic`), for spell checking (eleven apps) |
 | `psd.esm.json` | `esm/psd/` | ag-psd 31.0 (MIT, with pako, base64-js) for Photoshop files with layers (image editor) |
 | `audio.esm.json` | `esm/audio/` | Mediabunny 1 with the MP3 (LAME, LGPL) and FLAC (libFLAC, BSD) WebAssembly encoder extensions (MPL-2.0) for the audio editor's export |
@@ -57,6 +59,8 @@ python3 tools/vendor_esm.py vendor/pdflib.esm.json
 python3 tools/vendor_esm.py vendor/notebook.esm.json
 python3 tools/vendor_esm.py vendor/psd.esm.json
 python3 tools/vendor_esm.py vendor/yaml.esm.json
+python3 tools/vendor_esm.py vendor/sqlformat.esm.json
+python3 tools/vendor_esm.py vendor/symbols.esm.json && python3 tools/build_symbols.py
 python3 tools/vendor_esm.py vendor/spell.esm.json
 python3 build.py && .venv/bin/pytest
 ```

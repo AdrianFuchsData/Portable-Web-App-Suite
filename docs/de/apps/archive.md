@@ -9,7 +9,7 @@ Dateien und Ordner hinzufügen, Ordner anlegen, umbenennen, löschen und zwische
 | TAR | ja (ustar, pax, lange GNU-Namen, symbolische Verknüpfungen) | ja |
 | TAR.GZ / TGZ | ja | ja |
 | GZ (eine einzelne komprimierte Datei) | ja | ja |
-| 7z | ja | ja (ohne Verschlüsselung) |
+| 7z | ja | ja (ohne Verschlüsselung; Dateinamen nur aus ASCII-Zeichen) |
 | RAR (Version 4 und 5) | ja | – (als 7z oder ZIP speichern) |
 | TAR.XZ, TAR.BZ2, TAR.ZST, TAR.LZMA | ja | – |
 | ISO, CAB, DEB, RPM, CPIO, AR, XAR | ja | – |
@@ -63,7 +63,7 @@ Vorhandene Dateien mit gleichem Namen werden nach einer Bestätigung ersetzt.
 
 Rückgängig (↶, `Strg+Z`) und Wiederholen (↷, `Strg+Y`) wirken auf Hinzufügen, Umbenennen, Löschen und neue Ordner.
 
-**Öffnen mit…** (Werkzeugleiste oder Vorschau) öffnet die gewählte Datei in einer anderen Anwendung der Suite; Speichern dort ersetzt die Datei im Archiv (rückgängig machbar). Speichern Sie danach das Archiv.
+**Öffnen mit…** (Werkzeugleiste oder Vorschau) öffnet die gewählte Datei in einer anderen Anwendung der Suite; Speichern dort ersetzt die Datei im Archiv (rückgängig machbar). Speichern Sie danach das Archiv. Sind **mehrere Dateien** gewählt, bietet Öffnen mit… die Anwendungen mit Tabs an – Texteditor und Hex-Editor –, die alle in einem Fenster öffnen, jede in einem eigenen Tab (Ordner lassen sich so nicht öffnen).
 
 ## Speichern
 
@@ -87,6 +87,10 @@ das Windows ohne Zusatzprogramm öffnen kann).
   den Windows-Explorer), mit zweimal eingegebenem Passwort. Alle noch nicht verschlüsselten Dateien werden dann verschlüsselt;
   bereits verschlüsselte behalten ihr Passwort. „keine“ speichert neue und geänderte Dateien unverschlüsselt.
 - In ZIP-Archiven werden nur die Inhalte verschlüsselt, nicht die Dateinamen und die Dateiliste.
+- Mit AES verschlüsselte Dateien, die mit Version 1.0.0 oder früher der Suite gespeichert wurden, konnte nur die Suite selbst
+  lesen (andere Programme wie 7-Zip meldeten nach den ersten Kilobytes einen Datenfehler). Die Suite öffnet sie weiterhin;
+  nach Eingabe des Passworts verschlüsselt das Speichern des Archivs diese Dateien wieder korrekt. Von anderen Programmen
+  verschlüsselte Archive waren nicht betroffen.
 
 ## Tastenkürzel
 

@@ -70,3 +70,11 @@
 .te-split-pane { display: flex; border-left: 2px solid var(--pico-muted-border-color); }
 .te-split-pane > .cm-editor { flex: 1; height: 100%; min-width: 0; }
 @media (max-width: 760px) { .te-editor.te-split { flex-direction: column; } .te-split-pane { border-left: 0; border-top: 2px solid var(--pico-muted-border-color); } }
+
+/* "Format SQL" options */
+.te-sql-dialog article { width: min(52rem, 96vw); max-width: none; }
+.te-sql-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: .2rem .8rem; }
+.te-sql-options label { font-size: .85rem; margin: 0; }
+.te-sql-options select, .te-sql-options input { margin: .15rem 0 .4rem; padding: .25rem .5rem; height: auto; font-size: .85rem; }
+.te-sql-preview-label { margin: .3rem 0 .2rem; font-size: .85rem; color: var(--pico-muted-color); }
+.te-sql-preview { max-height: 16rem; overflow: auto; margin: 0; padding: .5rem .7rem; font-size: .8rem; white-space: pre; }

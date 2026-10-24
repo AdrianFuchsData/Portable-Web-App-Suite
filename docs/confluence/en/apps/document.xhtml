@@ -64,11 +64,18 @@ Univer Docs.</p>
 browser, so they can differ from the editor's pages; inserted page breaks are kept. Links stay clickable in the PDF, including the
 entries of a table of contents.</p>
 <p>Documents from Word and LibreOffice are converted when they are opened; very complex layouts (text boxes, columns, tracked changes,
-comments) may look simpler. Keep the original file until you have checked the result.</p>
+comments) may look simpler. Keep the original file until you have checked the result.
+A "word" of more than 20,000 characters without a space (such as pasted base64 data) gets an invisible break point (U+200B)
+every 1,000 characters so that it can be shown; they are saved with the document.</p>
 <h2>Editing</h2>
 <p>The ribbon has the tabs <strong>Start</strong> (clipboard, bold/italic/underline/strike, sub- and superscript, paragraph style, size, font, colours,
 alignment, lists, checklists) and <strong>Insert</strong> (tables, images, page breaks, headers and footers). The usual shortcuts work: <code>Ctrl+B/I/U</code>,
 <code>Ctrl+Z/Y</code>, <code>Ctrl+C/X/V</code>, <code>Ctrl+F</code> to find. The status bar shows the word count and the zoom.</p>
+<p><strong>📐 Diagram</strong> in the toolbar opens an empty diagram in the diagram editor (a new window or tab); its first <strong>Save</strong> inserts
+the diagram as a picture at the cursor, later saves update it. When a diagram picture is selected (a click on it), <strong>📐 Edit
+diagram</strong> opens it in the diagram editor again. An updated picture keeps its place and scale (at most the width of the text);
+<code>Ctrl+Z</code> undoes it. The diagram travels inside the picture (a PNG with the draw.io file), so it stays editable in the <code>.docx</code>
+file; Word shows the picture.</p>
 <p>The language of the editing component follows the suite's language switch, and it follows the dark theme too.</p>
 <p>Undo and redo are the first two buttons of the editor toolbar (also <code>Ctrl+Z</code> and <code>Ctrl+Y</code>).</p>
 <h3>Table of contents and footnotes</h3>

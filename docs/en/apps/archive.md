@@ -9,7 +9,7 @@ add files and folders, create folders, rename, delete and convert between format
 | TAR | yes (ustar, pax, GNU long names, symbolic links) | yes |
 | TAR.GZ / TGZ | yes | yes |
 | GZ (a single compressed file) | yes | yes |
-| 7z | yes | yes (without encryption) |
+| 7z | yes | yes (without encryption; file names of ASCII characters only) |
 | RAR (versions 4 and 5) | yes | – (save as 7z or ZIP) |
 | TAR.XZ, TAR.BZ2, TAR.ZST, TAR.LZMA | yes | – |
 | ISO, CAB, DEB, RPM, CPIO, AR, XAR | yes | – |
@@ -61,7 +61,7 @@ Existing files with the same name are replaced after a confirmation.
 
 Undo (↶, `Ctrl+Z`) and redo (↷, `Ctrl+Y`) work for adding, renaming, deleting and new folders.
 
-**Open with…** (toolbar or preview) opens the selected file in another application of the suite; saving there replaces the file in the archive (undoable). Save the archive afterwards.
+**Open with…** (toolbar or preview) opens the selected file in another application of the suite; saving there replaces the file in the archive (undoable). Save the archive afterwards. With **several files** selected, Open with… offers the applications with tabs – the text editor and the hex editor – which open all of them in one window, each in its own tab (folders cannot be opened this way).
 
 ## Saving
 
@@ -85,6 +85,10 @@ software).
   the Windows Explorer), with the password entered twice. All files that are not encrypted yet are then encrypted;
   files that already were keep their password. Choosing "none" saves new and changed files without encryption.
 - File names and the list of files are not encrypted in ZIP archives, only the contents.
+- AES-encrypted files saved with version 1.0.0 or earlier of the suite could only be read by the suite itself (other
+  programs such as 7-Zip reported a data error after the first few kilobytes). The suite still opens them; once you have
+  entered the password, saving the archive encrypts these files again correctly. Archives that other programs encrypted
+  were not affected.
 
 ## Keyboard shortcuts
 

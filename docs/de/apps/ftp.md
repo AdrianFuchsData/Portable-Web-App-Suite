@@ -73,7 +73,7 @@ Vergleich standardmäßig auf die Größen. Je Seite werden höchstens 5000 Date
 
 **Neuer Ordner**, **Umbenennen** (ein gewählter Eintrag) und **Löschen** (gewählte Einträge; Ordner werden nach einer Bestätigung mit Inhalt gelöscht).
 
-**Öffnen mit…** öffnet die gewählte entfernte Datei in einer anderen Anwendung der Suite; Speichern dort lädt sie wieder hoch (in der Übertragungsliste sichtbar).
+**Öffnen mit…** öffnet die gewählte entfernte Datei in einer anderen Anwendung der Suite; Speichern dort lädt sie wieder hoch (in der Übertragungsliste sichtbar). Sind **mehrere Dateien** gewählt (`Strg+Klick`), öffnet der Texteditor oder der Hex-Editor alle in einem Fenster, jede in einem eigenen Tab.
 
 ## Tastenkürzel
 

@@ -21,7 +21,7 @@ imports <strong>Excalidraw</strong> drawings.</p>
 <tr>
 <td>SVG and PNG with an embedded diagram (<code>.drawio.svg</code>, <code>.drawio.png</code>)</td>
 <td>yes</td>
-<td><strong>SVG</strong> / <strong>PNG</strong> export</td>
+<td><strong>Save</strong> writes the image again (first page), <strong>SVG</strong> / <strong>PNG</strong> export</td>
 </tr>
 <tr>
 <td>Excalidraw (<code>.excalidraw</code>)</td>
@@ -36,13 +36,16 @@ imports <strong>Excalidraw</strong> drawings.</p>
 </tbody>
 </table>
 <p>The SVG and PNG exports show the current page as a picture and contain the whole diagram, like draw.io's "editable" exports:
-open them again in this editor (or in draw.io) to continue editing. Dropping a diagram file onto the window opens it; dropping
+open them again in this editor (or in draw.io) to continue editing. A diagram opened from such a picture is saved as that kind
+of picture again (with the first page as the picture) – this is how diagrams in presentations, documents and spreadsheets
+are edited (<em>Insert diagram</em> and <em>Edit diagram</em> there). Dropping a diagram file onto the window opens it; dropping
 an image inserts it.</p>
 <p><strong>🖨</strong> prints the diagram: every page on its own sheet with its name, scaled to the width of the sheet. Choose "Save as PDF" as
 the printer to get a PDF.</p>
 <ac:structured-macro ac:name="info"><ac:rich-text-body><p>draw.io has many more shapes and options. Shapes this editor does not know are shown as rectangles, and labels are plain
 text (bold or coloured parts of a label are not kept). Style settings that the editor does not use are kept when you save, so
-a round trip through this editor does not remove them.</p></ac:rich-text-body></ac:structured-macro>
+a round trip through this editor does not remove them. Routing points of draw.io connectors are kept and the connector is
+drawn through them; they move with the connector, not with the shapes.</p></ac:rich-text-body></ac:structured-macro>
 <h2>Drawing</h2>
 <ul>
 <li>The shape bar on the left adds a shape in the middle of the view; you can also drag a shape onto the drawing.</li>
@@ -93,6 +96,10 @@ All of them are saved as the corresponding draw.io shapes and arrows.</p>
 <li>Click selects, <code>Shift</code>+click adds or removes, dragging on an empty place selects everything inside the frame, <code>Ctrl+A</code> selects all.</li>
 <li>Drag to move (on the grid; hold <code>Alt</code> for free positioning), drag the handles to resize (<code>Shift</code> keeps the proportions). The arrow keys
   move by one point, with <code>Shift</code> by one grid step.</li>
+<li><strong>Rotate:</strong> drag the round handle above the selection (<code>Shift</code>: in steps of 15°; near 0°, 90°, 180° and 270° it snaps), or
+  enter the angle under <strong>Rotation</strong> in the format panel, or use ⟲ / ⟳ there to turn by 90°. One shape turns around its centre,
+  several shapes (for example a group) turn together around the centre of the selection. Connectors stay attached to the
+  rotated shapes, and the handles resize a rotated shape along its own sides.</li>
 <li><code>Delete</code> removes the selection (connectors of removed shapes are removed too). <code>Ctrl+D</code> duplicates, <code>Ctrl+C</code>, <code>Ctrl+X</code> and <code>Ctrl+V</code>
   copy, cut and paste — also between this editor and draw.io, because the clipboard holds draw.io XML. Pasted plain text becomes a text.</li>
 <li>Undo <code>Ctrl+Z</code>, redo <code>Ctrl+Y</code> (or <code>Ctrl+Shift+Z</code>).</li>
@@ -100,7 +107,17 @@ All of them are saved as the corresponding draw.io shapes and arrows.</p>
 <h3>Groups, locking and layers</h3>
 <ul>
 <li><strong>Group</strong> (<code>Ctrl+G</code>, in the format panel) joins the selected shapes and connectors: a click on one of them selects the whole
-  group, which then moves together; <code>Alt</code>+click selects a single member. <strong>Ungroup</strong> (<code>Ctrl+Shift+G</code>) separates them again.</li>
+  group, which then moves together; <code>Alt</code>+click selects a single member. Groups can contain groups: grouping a group together
+  with further shapes (or with another group) makes a new group around them, so a hierarchy arises. <strong>Ungroup</strong>
+  (<code>Ctrl+Shift+G</code>) dissolves the outermost selected group (its members stay in the enclosing group); a single member selected
+  with <code>Alt</code>+click leaves its group.</li>
+<li><strong>Elements</strong> (☰ above the shapes in the left sidebar) shows the page as a tree: the layers (top layer first), in them the
+  groups with their members and the single shapes and connectors, the top-most first (▸ / ▾ folds a layer or group). A click
+  on an entry selects it in the diagram – a group or layer stands for all its content –, <code>Ctrl</code>+click adds or removes,
+  <code>Shift</code>+click adds; moving, styles, rotating and the other functions then apply to all of them. A double-click (or <code>F2</code>)
+  edits the label in place: the text of a shape or connector, the name of a group or layer. <code>Enter</code> keeps it (for labels with
+  several lines <code>Shift+Enter</code> adds a line), <code>Esc</code> cancels; each change can be undone. With the keyboard: <code>↑</code> <code>↓</code> move, <code>→</code> <code>←</code>
+  open and close a layer or group, <code>Enter</code> selects.</li>
 <li><strong>Lock</strong> (<code>Ctrl+L</code>) fixes the selection: locked objects cannot be selected, moved or deleted by accident (clicks go through
   them). <strong>Unlock all</strong> in the <em>Diagram</em> panel (nothing selected) or <code>Ctrl+Shift+L</code> releases them.</li>
 <li><strong>Layers</strong> (in the <em>Diagram</em> panel, top layer first): ◉ chooses the layer new shapes go to, 👁 shows or hides a layer (hidden
@@ -108,7 +125,8 @@ All of them are saved as the corresponding draw.io shapes and arrows.</p>
   content moves to the layer below), <strong>+ Add layer</strong> adds one. With several layers, <strong>Move to layer</strong> in the format panel moves
   the selection.</li>
 </ul>
-<p>Groups, locks and layers are saved in the draw.io file and are understood by draw.io.</p>
+<p>Groups (with their names and nesting), rotation, locks and layers are saved in the draw.io file and are understood by
+draw.io; groups and angles of Excalidraw files are taken over when they are opened.</p>
 <h3>Automatic layout and Mermaid</h3>
 <p><strong>Automatic layout</strong> (in the format panel when nothing is selected – or with several shapes selected, for just those)
 arranges the shapes in layers along their connectors: top to bottom, left to right, bottom to top or right to left.
@@ -148,7 +166,7 @@ Subgraphs, styles and classes are ignored; other Mermaid diagram types (sequence
 </tr>
 <tr>
 <td>Position and size</td>
-<td>X, Y, width and height of a single shape</td>
+<td>X, Y, width and height of a single shape; rotation in degrees (all selected shapes), ⟲ / ⟳ by 90°</td>
 </tr>
 <tr>
 <td>Arrange</td>
@@ -218,6 +236,10 @@ shows the whole page.</p>
 <tr>
 <td><code>Ctrl+G</code> / <code>Ctrl+Shift+G</code></td>
 <td>Group / ungroup</td>
+</tr>
+<tr>
+<td><code>Alt+Click</code></td>
+<td>Select one member of a group</td>
 </tr>
 <tr>
 <td><code>Ctrl+L</code> / <code>Ctrl+Shift+L</code></td>

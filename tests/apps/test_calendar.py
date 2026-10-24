@@ -114,7 +114,13 @@ def column(page, iso):
     return page.locator(f"[data-testid=column][data-date='{iso}']")
 
 
+def wait_scrolled(page):
+    """The week and day views scroll to the morning in the next frame: measure positions after that."""
+    page.wait_for_function("() => (document.querySelector('.cal-tg-body')?.scrollTop ?? 0) > 0")
+
+
 def drag_in_column(page, iso, from_min, to_min):
+    wait_scrolled(page)
     box = column(page, iso).bounding_box()
     x = box["x"] + box["width"] / 2
     page.mouse.move(x, box["y"] + from_min / 60 * 44 + 2)
@@ -249,7 +255,7 @@ def test_drag_move_and_resize(cal_page, team_ics, tmp_path):
     page = cal_page()
     open_ics(page, team_ics)
     page.click("[data-testid=view-week]")
-    page.wait_for_function("() => (document.querySelector('.cal-tg-body')?.scrollTop ?? 0) > 0")  # scrolled to the morning (next frame)
+    wait_scrolled(page)
     review = column(page, "2026-10-14").locator("[data-testid=event]", has_text="Review")
     box = review.bounding_box()
     target = column(page, "2026-10-15").bounding_box()

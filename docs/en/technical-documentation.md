@@ -33,7 +33,7 @@ decision log, spike results) are in `docs/planning/` (English only).
 | `testbeds/` | Pages that only exist for tests |
 | `tools/` | Vendoring, engine build, PWA and documentation tools |
 | `tests/` | pytest + Playwright tests |
-| `docs/` | Documentation (Markdown, Confluence storage format, planning) |
+| `docs/` | Documentation (Markdown, Confluence storage format, planning, release notes in `docs/release-notes/` – the text of the GitHub release) |
 | `build.py` | Builds every `apps/*`, `prototypes/*` and `testbeds/*` into `dist/<name>.html` |
 | `LICENSE`, `LICENSE-de.txt`, `NOTICE.md` | EUPL-1.2 (English, German) and the licensor's notice; a file `MODIFIED` marks a modified version |
 
@@ -87,8 +87,8 @@ extended by `manifest-src 'self'` and `'self'` in `worker-src`/`img-src`; next t
 list in `shared/js/bridge.js`) and `index.html` forwarding to the overview. The service worker uses one cache: the overview,
 manifests and icons are added on installation, every other file on its first load; requests are answered from the cache
 and refreshed in the background (stale-while-revalidate, query strings ignored). Files opened through a file handler
-arrive at `window.launchQueue`; `Suite.bridge.receive` passes the first one with its real `FileSystemFileHandle` to the
-app (so saving writes back). Serve `.webmanifest` as `application/manifest+json`. Test: `tests/apps/test_pwa.py` (output,
+arrive at `window.launchQueue`; `Suite.bridge.receive` passes the first one (apps with tabs: all of them) with its real
+`FileSystemFileHandle` to the app (so saving writes back). Serve `.webmanifest` as `application/manifest+json`. Test: `tests/apps/test_pwa.py` (output,
 offline reload and the forwarding index in Chromium, the launch queue with a stub).
 
 ### Releases and the public repository
@@ -100,7 +100,8 @@ A release sets `VERSION` (shown in the about dialogs), rebuilds `dist/` and the 
 <github@adrianfuchs.at>", with the tracked files of the tag (`git archive`) but without `dist/` (the built apps and
 `SHA256SUMS` are attached to the GitHub release instead). The development history is not published. Before committing,
 the tool refuses files with private information: e-mail addresses other than example domains and the public address
-(outside `vendor/`), private keys, access tokens, local home paths.
+(outside `vendor/`), private keys, access tokens, local home paths. The release notes, `docs/release-notes/v<version>.md`, are
+the text of the GitHub release (`gh release create … --notes-file`): what changed since the previous version, the downloads.
 
 ### Platform restrictions of `file://`
 
@@ -118,6 +119,7 @@ the tool refuses files with private information: e-mail addresses other than exa
   optional stub modules for excluded lazily loaded modules.
 - Pyodide and Python packages: `tools/vendor_pyodide.py vendor/pyodide.json` (SHA-256 checked).
 - The SSH/SFTP engine: `tools/build_engine_ssh.py` (needs Go; the result is committed).
+- Emoji and symbol data: `tools/build_symbols.py` after vendoring `vendor/symbols.esm.json` (the result is committed).
 
 ## Shared modules
 
@@ -131,7 +133,8 @@ ES modules that applications import through their import maps.
 | `kdbx.js` | `Suite.kdbx` | KeePass databases with kdbxweb and hash-wasm Argon2: open, create (KDBX 4, Argon2id), groups by path, entries, protected fields, attachments, group create/move/delete, recycle bin, entry history, master key change, verified saving |
 | `ical.js` | `Suite.ical` | iCalendar: tolerant parsing and folding/serialising (unknown properties and components kept), events, time zones (TZID via `Intl`, Windows zone names, generated `VTIMEZONE`), RRULE expansion with EXDATE and RECURRENCE-ID overrides |
 | `history.js` | `Suite.UndoHistory` | Undo/redo history of snapshots (custom clone function, merging of steps with the same key within a second, size limit) and the common shortcut check `UndoHistory.key(event)` (`Ctrl/Cmd+Z`, `Ctrl/Cmd+Y`, `Ctrl/Cmd+Shift+Z`; not while a text field has the focus) |
-| `bridge.js` | `Suite.bridge` | “Open with…” between apps: app registry (ids, names, extensions), app chooser dialog, `openIn`/`openWith` (source) and `receive` (target) with a file-handle stand-in that saves back through a `MessagePort`; detects the overview (`hub()`) |
+| `diagram-embed.js` | `Suite.diagrams` | Diagrams as PNG pictures with the draw.io file inside: detect, insert and edit through the diagram editor (see *Diagrams in other applications*) |
+| `bridge.js` | `Suite.bridge` | “Open with…” between apps: app registry (ids, names, extensions, `multi` for apps with tabs), app chooser dialog, `openIn`/`openWith`/`openWithMany` (source) and `receive` (target) with a file-handle stand-in that saves back through a `MessagePort`; detects the overview (`hub()`) |
 | `appdata.js` | `Suite.appdata` | UI for the application data file of apps with connections: in-memory store until the user opens or saves a JSON/KeePass file (`settings.js`), password dialog, relay settings shared by all apps (app `suite`), components `Bar`, `Dialog`, `RelayFields` |
 | `settings.js` | `Suite.settings` | Application data store in a JSON file or a KeePass database (group `Portable Web App Suite/<app>`) |
 | `shell.js` | `Suite.shell` | Common frame with Preact + htm: header, language and theme switch, about dialog, toasts, banner, confirm dialog, unsaved-changes warning |
@@ -142,9 +145,13 @@ ES modules that applications import through their import maps.
 | `univer-xlsx.js`, `univer-docx.js`, `docx-import.js` | | Spreadsheet and document import/export for Univer |
 | `pptx-import.js`, `pptx-export.js`, `slide-render.js` | | Presentation model, PPTX import/export, rendering |
 | `autosave.js` | `Suite.autosave` | Recovery copies of unsaved work in IndexedDB (see *Recovery copies*) |
+| `colorpicker.js` | `Suite.colors` | Colour picker dialog; takes over every `<input type="color">` unless the browser's own is chosen (see *Colour picker*) |
+| `symbols.js` | `Suite.symbols` | Emoji and symbols in all text fields: picker, codes while typing, Alt+X, settings (see *Emoji and symbols*) |
 
 | ES module | Purpose |
 |---|---|
+| `cm-colors.js` | Colour swatches in front of hex colours in CodeMirror, edited with the colour picker |
+| `cm-symbols.js` | Emoji and symbols in CodeMirror editors (adapter for `symbols.js`) |
 | `spell.js`, `spell-dom.js`, `cm-spell.js` | Spell checking: Hunspell service, marks and menu in text fields and contenteditable elements, header selector; CodeMirror extension (see *Spell checking*) |
 | `odt.js`, `doc-toc.js`, `doc-html.js` | Document editor: OpenDocument text, table of contents, HTML rendering for printing and saving |
 | `deck-convert.js` | Conversion between PowerPoint decks and web slides |
@@ -184,6 +191,49 @@ compounds and suggestions in the text editor, personal words, code mode, textare
 menu, ignore and Shift, the setting shared between apps, an `.oxt` in ISO-8859-1 from the header, the menu on a phone),
 spelling cells in `test_notebook.py`, the panel in `test_document.py`.
 
+### Emoji and symbols
+
+`shared/js/symbols.js` (a classic script after `shell.js` in every app except the overview) adds emoji and symbols to all
+text fields. Its data, `vendor/esm/symbols/symbols.json`, is generated by `tools/build_symbols.py` from the vendored data
+packages (`vendor/symbols.esm.json`: emojibase-data 17 – emoji with English and German names and keywords, groups, skin
+tone variants, emoticons, GitHub and German CLDR shortcodes – and the CLDR annotations 48.2 with English and German names of
+symbols) and Python's `unicodedata` for the names of the other symbols (curated blocks: punctuation, currency, arrows,
+mathematics, letterlike and technical, Greek, Latin, shapes, dingbats; German names of Latin and Greek letters are derived
+from the Unicode names; nose variants such as `:-)` are added). Each app embeds it as `#suite-symbols` (gzip + base64, about
+120 KB); it is decoded the first time a text field gets the focus.
+
+Fields are reached through adapters: `<input>` (text, search, no type) and `<textarea>` keep their selection while the picker
+has the focus and are changed with `execCommand('insertText')` (browser undo, `input` events for the app), contenteditable
+elements through a saved `Range` and `Selection.modify()`, CodeMirror editors through `shared/js/cm-symbols.js` (an ES
+module of the text editor, notebook, database tool and HTTP analyzer that registers `EditorView.findFromDOM`; one
+transaction with `isolateHistory`). Fields inside `[data-no-symbols]` (KeePass secrets) and `.xterm` are left out, as are
+passwords and other input types. The picker is plain DOM (role `dialog`, a `listbox` grid with roving `tabindex`), placed
+below or above the field (on screens below 600 px a sheet at the bottom). Search ranks code points, emoticons and shortcodes
+first, then names (exact, prefix, all words – shorter names first), keywords, and keeps the data order otherwise. Keys are
+handled in the capture phase: `Ctrl+.` (open/close), `Alt+X` (code point ⇄ character, as in Word), and while the
+suggestion list is open the arrow keys, `Enter`/`Tab` and `Esc`. `input` events of type `insertText` drive the inline
+conversions (`:name:` on the closing colon after a space or the start, `U+XXXX`/`UXXXX` and – if switched on – emoticons
+with punctuation before a typed space); not in code editors. Settings: `suite.symbols.button`, `suite.symbols.emoticons`
+(about dialog, part of the exported preferences), `suite.symbols.recent`, `suite.symbols.skin`. Tests:
+`tests/apps/test_symbols.py` (search in English and German, keyboard, recently used, skin tones, inline codes and
+suggestions, times and URLs left alone, Alt+X, rich text, settings and their persistence, code editor with undo, opted-out
+fields, phone sheet).
+
+### Colour picker
+
+`shared/js/colorpicker.js` (a classic script after `symbols.js` in every app except the overview) provides
+`Suite.colors.pick({ value, alpha, anchor, onInput })` – a dialog of plain DOM (saturation/brightness area and hue and opacity
+sliders with pointer capture and `role="slider"` keys, hex and RGB(A) fields, old/new comparison, recently used colours in
+`suite.colors.recent`, basic colours, the `EyeDropper` API where available) that resolves to `#rrggbb` (`#rrggbbaa` with
+`alpha` and opacity below 100 %) or `null`; `onInput` reports every change after the first rendering. A capturing `click`
+handler takes over every `<input type="color">` (unless inside `[data-native-color]`): it sets the input's value and fires
+`input` (live) and `change` (on OK), so the apps need no changes; cancelling restores the value. The global setting
+`suite.colors.native` (about dialog) switches to the browser's picker: then `pick()` uses a hidden `<input type="color">`
+with `showPicker()` and keeps the original opacity. `shared/js/cm-colors.js` (text editor) decorates hex colours with a
+widget (`MatchDecorator`, regular expression with lookbehind; all-digit forms skipped in text/Markdown) and edits them
+through `pick()`: live changes with `Transaction.addToHistory.of(false)`, then the original and the result as one undo step
+(`input.color`); the form of the text is kept (`styled()`). Tests: `tests/apps/test_colors.py`.
+
 ### Undo and redo
 
 Every editor has undo/redo with toolbar buttons (`data-testid` `undo`/`redo`, needed on touch devices) and the
@@ -211,8 +261,13 @@ shortcuts of `Suite.UndoHistory.key`. Text fields keep the browser's own undo. S
    blockers). The target calls `Suite.bridge.receive(onOpen)` at start and posts `{ suite: 'suite-bridge', type: 'ready' }`
    to its opener; the source answers with `{ type: 'open', name, fileType, bytes, writable, source }` and, for writable
    files, transfers one end of a `MessageChannel`. **In the overview** (window name `suite-hub-app`), the source sends
-   `{ type: 'open-in', app, … }` to the overview instead, which opens a tab and forwards file and port when the tab is
-   ready.
+   `{ type: 'open-in', app, files: [{ name, fileType, bytes, writable, source, port }] }` to the overview instead (`port`:
+   index into the transferred ports, -1 for read-only copies), which opens one tab and forwards the files and ports when
+   the tab is ready.
+   **Several files:** `Suite.bridge.openWithMany([{ name, data, save }, …], { source, exclude })` (and `openIn(app, [...])`)
+   offers only the apps with `multi: true` (text and hex editor; preferred are those that open every extension) and
+   sends one `open` message per file to the same window or tab. `receive` processes the files one after the other (a
+   promise queue) and shows one message at the end.
 3. The target gets `{ file, handle }`. The handle (`bridged: true`) implements `getFile`, `queryPermission`,
    `requestPermission` and `createWritable`; `Suite.files.save()` writes through it, which sends
    `{ type: 'save', id, bytes }` over the port. The source's `save(bytes)` callback writes the data back (archive entry,
@@ -221,6 +276,27 @@ shortcuts of `Suite.UndoHistory.key`. Text fields keep the browser's own undo. S
 
 Sources: archive manager, FTP/SFTP client, SSH file panel, KeePass attachments, mail attachments, notebook files, the
 overview. Targets: every app that opens files.
+
+### Diagrams in other applications
+
+`shared/js/diagram-embed.js` (`Suite.diagrams`, a classic script of the presentation, web slides, document and spreadsheet apps)
+implements spike S-11: a diagram is a PNG with the draw.io XML in a `tEXt` chunk `mxfile` (draw.io's "editable PNG"), which PPTX
+(pptxgenjs, own importer), DOCX (`docx`, own importer), XLSX (ExcelJS) and the HTML/Markdown of the web slides keep byte for byte.
+`isDiagram()` looks for the chunk (or an SVG `content` with `<mxfile`); `insert()` starts from a 1×1 PNG with an empty diagram, `edit()`
+from the picture; both call `Suite.bridge.openIn('diagram', { name: '….drawio.png', data, save })`. The diagram editor keeps the image
+format of a file it opened from a PNG/SVG and saves the first page as a 2× PNG with the diagram inside, so every **Save** there calls the
+host's `onSave({ src, width, height })` (`width`/`height`: half the pixels). Hosts insert the first picture and update it afterwards;
+`newSize()` keeps the scale of an updated picture (at most the page/slide width):
+
+| Host | Insert | Edit / update |
+|---|---|---|
+| Presentation | image element on the slide | `el.image.src`, `w`/`h`; double-click or panel button; `record()` = one undo step |
+| Web slides | image block (`📐 Diagram (draw.io)`) | `block.src` |
+| Document | `FDocument.insertImage` at the cursor (saved before the window opens) | focused drawing (`IDrawingManagerService.getFocusDrawings`, `focus$` re-renders the toolbar); a `RichTextEditingMutation` with JSON1 `replaceOp`s on `drawings/<id>/source`, `docTransform.size` and `transform` and `historyAction: UpdateImage` – one Univer undo step (the facade has no "set source") |
+| Spreadsheet | `newOverGridImage()…buildAsync()` + `insertImages` at the active cell | `getActiveImages()` (an id; the source via `getImageById(id).toBuilder().getSource()`), `toBuilder().setSource().setWidth().setHeight()` + `updateImages` |
+
+Tests: `tests/apps/test_diagram_embedding.py` (insert, second save, edit, undo, file round trips per host, XLSX pictures),
+`tests/apps/test_embedded_diagrams.py` (byte preservation of the formats).
 
 ### Application data format
 
@@ -251,11 +327,18 @@ with different preferences is opened, shows a banner to apply them. Test: `tests
 |---|---|
 | `js/encoding.js` | `TE.encoding`: detection (BOM, valid UTF-8, UTF-16 without BOM by zero bytes, else Windows-1252) and encoding of UTF-8 (± BOM), UTF-16 LE/BE (± BOM), Windows-1252; line endings LF/CRLF/CR. The editor works with `\n` internally and converts when saving. |
 | `js/languages.js` | Module `app/languages`: language by file name/extension, CodeMirror language support (lang-* packages and legacy modes). |
+| `js/sas.js` | Module `app/sas`: SAS as a CodeMirror stream parser (state: block/statement comment, start of statement, running step, DATALINES, indentation depth). Statement words count at the start of a statement or after THEN/ELSE, `do`/`to`/`end` … anywhere, SQL words anywhere inside PROC SQL; `x=` is an option, `lib.member` one name, `name9.` a format. `indent()` uses the depth (DATA/PROC … RUN/QUIT, DO/SELECT/CASE … END, %MACRO/%DO … %MEND/%END); `languageData.autocomplete` completes by context (after PROC, CALL, %, &; else statements, functions and the program's names, in the typed case; nothing inside comments and strings, from the syntax tree). |
 | split view | A second `EditorView` with its own state on the same document: both views get a custom `dispatch` that forwards document changes to the other one, marked with an `Annotation` so they are not echoed back (with the original user event, so the main view's history groups them). Only the main view keeps the history; the second view maps undo/redo to it. |
 | find in files | `runFind()` searches the `EditorState` documents of all tabs, or – with a `FileSystemDirectoryHandle` from `showDirectoryPicker` – the files of a folder (async generator, debounced input, a newer search cancels an older one); matches keep their document offsets so that a click selects them. |
-| `@codemirror/merge` | Comparing: `MergeView` (two editors; the left one read-only, `revertControls: "a-to-b"`) or, below 760 px, `unifiedMergeView` in one editor; `getChunks` counts the differences, `goToNextChunk`/`goToPreviousChunk` navigate. The result replaces the document in one transaction when the comparison ends. |
-| `js/tools.js` | Module `app/tools`: text tools as pure string functions (`apply(id, text)`); line tools sort with `Intl.Collator` (numeric, base sensitivity, stable), XML is re-indented from a `DOMParser` tree. `main.js` applies a tool to the selection (extended to whole lines for line tools) or the document as one transaction (`userEvent: input.tool`). |
+| `@codemirror/merge` | Comparing: `MergeView` (two editors; the left one read-only, `revertControls: "a-to-b"`) or, below 760 px, `unifiedMergeView` in one editor; both with `diffConfig: { override: lineDiff }` (`js/linediff.js`: Myers' diff on whole lines after trimming common lines at the start and end, then the character diff of `@codemirror/merge` inside each changed block up to 20 000 characters – its own character diff alone gives up after its scan limit and reports one change from the first difference to the end); `getChunks` counts the differences, `goToNextChunk`/`goToPreviousChunk` navigate. The result replaces the document in one transaction when the comparison ends. |
+| `js/tools.js` | Module `app/tools`: text tools as pure string functions (`apply(id, text, options)`); SQL with sql-formatter (`formatSql`: dialect, keyword/function/data type case, indentation, `indentStyle`, `logicalOperatorNewline`, `expressionWidth`; parse errors become `ToolError`) and `minifySql` (a small scanner: strings, quoted names, dollar quotes and `/*+` hints kept, comments dropped, whitespace collapsed); tools with `options: "sql"` open the options dialog with a preview first (`SqlDialog` in `main.js`, options in the preferences); line tools sort with `Intl.Collator` (numeric, base sensitivity, stable), XML is re-indented from a `DOMParser` tree. `main.js` applies a tool to the selection (extended to whole lines for line tools) or the document as one transaction (`userEvent: input.tool`). |
 | `js/main.js` | One CodeMirror `EditorView`; every tab keeps its own `EditorState` (undo history, selection), swapped with `setState`. Settings (wrap, whitespace, font size, dark theme) are compartments that are reconfigured when switching tabs. Toolbar, tabs and status bar are Preact components in the shared shell. |
+
+Indentation is per document (`doc.indent`: `s2`/`s4`/`s8` spaces or `t2`/`t4`/`t8` tabs) in a compartment with `indentUnit`
+and `tabSize`; `detectIndent()` takes tabs if most indented lines start with one, else the most frequent step (2/4/8)
+between consecutive lines; the last choice is the default for new documents. Tab runs `indentOrInsert` (selection:
+`indentMore`; else spaces up to the next stop or a tab), Shift+Tab `indentLess`, `Ctrl+Alt+I` inserts `\t`. CodeMirror's
+tab focus mode keeps the editor accessible: after `Esc` (2 s) or with `Ctrl+M`, Tab moves the focus.
 
 Multiple cursors use CodeMirror's built-in support (`allowMultipleSelections`, `Ctrl+click`, rectangular selection
 with `Alt+drag`, `selectNextOccurrence`). A document counts as changed if its text differs from the last saved text
@@ -263,7 +346,9 @@ with `Alt+drag`, `selectNextOccurrence`). A document counts as changed if its te
 
 Tests: `tests/apps/test_texteditor.py` (languages, encoding round trips, conversion, tabs, search/replace, go to
 line, multiple cursors, preferences, German interface, phone layout, write-back with the File System Access API, text
-tools on the document and the selection, encoders/formatters, invalid input, comparing with an open document and a file, split view (changes both ways, shared undo, following the tab), find in open files (case, regular expressions, errors) and in a folder (OPFS
+tools on the document and the selection, encoders/formatters, invalid input, SQL formatting (options, preview, remembered
+options, selection, parse error) and SQL on one line, SAS highlighting, completion and indentation, indentation setting,
+detection and Tab keys (incl. leaving the editor with Esc, Tab), comparing with an open document and a file, split view (changes both ways, shared undo, following the tab), find in open files (case, regular expressions, errors) and in a folder (OPFS
 directory standing in for the picker; `.git` and binary files skipped)).
 
 ### Hex editor (`apps/hexeditor`)
@@ -272,14 +357,15 @@ directory standing in for the picker; `.git` and binary files skipped)).
 |---|---|
 | `js/buffer.js` | `HE.ByteBuffer`: bytes in a growable `Uint8Array` with the operations replace, insert and remove; every operation returns its inverse, which gives undo/redo (the two nibbles of a typed byte are one undo step). `find()` searches forwards/backwards, `HE.parseHex()` parses hexadecimal input, `HE.inspect()` interprets bytes for the data inspector (`DataView`, `BigInt`). |
 | `js/checksum.js` | `HE.checksums()`: CRC-32 and Adler-32 (tables/loops), MD5 (RFC 1321, WebCrypto has none) and SHA-1/256/512 via `crypto.subtle.digest`; `HE.differences()` counts differing bytes of two arrays. |
-| `js/main.js` | UI in the shared shell: virtualized view (only visible rows plus a margin are rendered into an absolutely positioned spacer; row height 22 px), keyboard and pointer handling, search bar, go-to bar, inspector, status bar, checksum dialog, comparison (second column rendered per visible row, so scrolling is shared; the difference count is recomputed when the buffer version changes, next/previous difference scans from the cursor). |
+| `js/main.js` | UI in the shared shell: tabs (`state` holds the active document; `docs` keeps the fields in `DOC_KEYS` – buffer, name, handle, cursor, selection, scroll position, comparison – of the others, swapped by `activate()`), virtualized view (only visible rows plus a margin are rendered into an absolutely positioned spacer; row height 22 px), keyboard and pointer handling, search bar, go-to bar, inspector, status bar, checksum dialog, comparison (second column rendered per visible row, so scrolling is shared; the difference count is recomputed when the buffer version changes, next/previous difference scans from the cursor). |
 
-The whole file is kept in memory; files above 256 MiB trigger a warning. Bytes per row default to 8 (narrow screens),
+The whole file is kept in memory; files above 256 MiB trigger a warning. Opening adds a tab (an untouched empty file is
+replaced; a file that is open already is shown); the recovery copy (autosave) holds every changed tab. Bytes per row default to 8 (narrow screens),
 16 or 32 (wide screens). Preferences (bytes per row, byte order) are stored in `localStorage` (`hexeditor.prefs`).
 
 Tests: `tests/apps/test_hexeditor.py` (overwrite, ASCII input, appending, insert, delete, undo/redo, search, go to,
 inspector, saving, 16 MiB file, mouse selection and copy, German interface, phone editing via the inspector,
-write-back, checksums against Python's `hashlib`/`zlib` incl. MD5 padding edge cases, comparison with navigation and
+write-back, tabs (several files, own state and undo per tab, open files shown, closing with confirmation), checksums against Python's `hashlib`/`zlib` incl. MD5 padding edge cases, comparison with navigation and
 recount after editing).
 
 ### PDF viewer (`apps/pdfviewer`)
@@ -376,6 +462,12 @@ other formats and writes 7z through libarchive.js 2.0 (libarchive as WebAssembly
   WinZip AES (method 99, extra field 0x9901): PBKDF2-HMAC-SHA1 with 1000 iterations derives key, HMAC key and the 2-byte
   verifier from password (UTF-8) and salt; data = salt + verifier + AES-CTR data + 10 bytes HMAC-SHA1; AE-2 (no CRC) is
   written with AES-256. ZipCrypto: the 12th header byte checks the password against the CRC (or the DOS time with flag 3).
+  The counter is incremented with an explicit carry over the first 8 bytes (`++nonce[j]` on a `Uint8Array` evaluates to
+  256, not to the stored 0). Versions up to 1.0.0 did not carry, so their key stream repeated after 256 blocks (4 KiB)
+  and other tools could not read their AES entries. Such entries are recognised by the writer's mark – made by `0x031e`,
+  AE-2, exactly the extra fields 0x5455 and 0x9901 (`legacyAes`); new entries are made by `0x033f`. They are decrypted with
+  the old key stream (deflated entries are inflated with the other key stream if that fails) and, once the password is
+  known, encrypted again correctly on saving; locked ones are copied raw and keep their mark.
   `archive.js` keeps the entered passwords (`addPassword`), `locked(entry)` checks them cheaply with the verifier, and
   `write(..., { encryption: { password, method, all } })` encrypts new and changed (with `all` also unchanged
   unencrypted) entries; encrypted unchanged entries are copied raw.
@@ -389,7 +481,9 @@ Tests: `tests/apps/test_archive.py` creates archives with `zipfile`, `tarfile` a
 test) and checks every saved file with them: browsing, preview, sorting, adding, folders, renaming, deleting, raw copy of unchanged
 entries, compression level, TAR.GZ long/Unicode names and symbolic links, conversion to TAR and ZIP, GZ, ZipCrypto password
 prompt and encryption of added files (checked with `zipfile`), AES archives from pyzipper read and written as AES-256 and
-ZipCrypto (checked with pyzipper and `zipfile`),
+ZipCrypto (checked with pyzipper and `zipfile`), entries larger than 4 KiB (stored and deflated) exchanged with pyzipper
+and, if installed, 7-Zip (`7z a -mem=AES256`, `7z t`), AES entries of older versions (built by the test with the old key
+stream) read and repaired on saving,
 extraction (download, ZIP, folder via OPFS), integrity test (intact archive, stored entry with a changed byte), unsupported formats, drag and drop, German interface, phone layout.
 
 ### Media player (`apps/mediaplayer`)
@@ -488,20 +582,38 @@ ES modules: `model.js` (shapes, geometry, routing, text layout, history), `drawi
   `rhombus`. Classes and entities are one cell with an HTML label (bold title, `<hr>`, lines; `--` lines become further `<hr>`),
   as draw.io's own class shape. Crow's foot and hollow arrow heads map to `ERmandOne`… and `block`/`diamond` with `endFill=0`; hollow
   heads are filled with white so the line does not show through.
+- **Groups and rotation** (`model.js`): `page.groups` = `[{ id, name, parent }]`; an object's `group` is its innermost group,
+  `parent` nests groups. `groupsOf()` adds entries for group ids without one (older documents) and drops groups without members;
+  `ancestors()` and `groupMembers()` walk the hierarchy. A click selects all members of the outermost group (`withGroups`), Alt+click
+  one object. `group()` finds the common enclosing group of the selection and makes a new group in it whose children are the selected
+  sub-groups (or the sub-groups of selected members) and single objects; `ungroup()` dissolves the outermost fully selected groups
+  (children move to the enclosing group). Shapes have `rotation` (degrees, clockwise around the centre): rendered as
+  `rotate(r, w/2, h/2)`; `shapePoint()` (ports, fixed anchors), the outline polygon (floating ends), `containsPoint()` (hit test),
+  `shapeBounds()` (band selection, page bounds, group boxes) apply it; the exit direction of a fixed anchor is rotated and snapped to the
+  nearest axis for the orthogonal router. The selection overlay and handles are drawn in the shape's frame; resizing a rotated shape
+  works in local coordinates and keeps the opposite side in place; the rotation handle turns one shape around its centre or several
+  around the centre of their box (positions, angles and free edge ends), Shift in 15° steps, 0/90/180/270 attract.
+- **Element tree** (`Elements` in the left sidebar): `elementTree()` builds layer nodes (top first) with the groups and objects ordered
+  by drawing order (a group by its top-most member); rows are `role="treeitem"` with `aria-level`/`aria-expanded`/`aria-selected` and a
+  roving `tabindex`; `selectItems()` maps rows to the selection (a group or layer = its content). `TreeLabelEditor` edits a row's label
+  in place (an input, a text area for multi-line texts); `setLabel()` writes the object's `text`, `group.name` or the layer name as one
+  undo step.
 - **Rendering**: Preact renders SVG; the same `PageContent` component renders into a detached element for the SVG export. Text is wrapped
   with canvas `measureText` and drawn as `<tspan>` lines (no `foreignObject`, which would taint the canvas of the PNG export).
 - **Interaction**: one pointer handler on the SVG with pointer capture (double-clicks are hit-tested with `elementsFromPoint`), drag modes
   for move, resize, band selection, connect and end re-attachment, grid snapping, two-finger pinch. Connection ports are drawn below the
   end handles of a selected edge (an attached end lies on a port).
 - **draw.io**: `<mxfile>` with one `<diagram>` per page; compressed diagrams (Base64, raw deflate, URI encoding) are read. Layer cells
-  (children of the root) become `page.layers` (`visible="0"`, `locked=1`); a shape or edge gets the id of its layer and of its outermost
-  `group` ancestor (`group`, absolute geometry: child geometry is relative to the parent); `locked=1` sets `locked`. Writing creates the
-  layer cells and one `group` cell per group (bounding box of the members, members relative to it). The model functions `layersOf`,
+  (children of the root) become `page.layers` (`visible="0"`, `locked=1`); a shape or edge gets the id of its layer and of its innermost
+  `group` ancestor, every `group` cell becomes an entry of `page.groups` (its label as name, the enclosing group cell as parent;
+  absolute geometry: child geometry is relative to the parent); `locked=1` sets `locked`, `rotation=…` the rotation. Writing creates the
+  layer cells and one named `group` cell per group, nested like the groups (bounding box of the members, cells relative to their group). The model functions `layersOf`,
   `layerOf`, `isShown`, `isSelectable` and `inLayerOrder` decide drawing order, visibility and what clicks, the selection frame and
   `Ctrl+A` may select; new objects get the active layer in `changed()`, pasted groups get new ids. `UserObject` labels, HTML labels (converted to text), edge label cells, `exitX/entryX`
   anchors and the usual shape styles are mapped. Style keys the editor does not use are stored in `extra` and written back. The clipboard
   holds an `<mxGraphModel>` like draw.io's. SVG exports carry the file in the `content` attribute, PNG exports in a `tEXt` chunk `mxfile`.
-- **Excalidraw**: rectangles, ellipses, diamonds, text (also inside containers), arrows/lines with bindings, images from `files`.
+- **Excalidraw**: rectangles, ellipses, diamonds, text (also inside containers), arrows/lines with bindings, images from `files`;
+  `angle` (radians) becomes the rotation, `groupIds` (innermost first) nested groups.
 - **History**: `structuredClone` snapshots of the document (100 steps), coalesced for quick property changes and nudging.
 - **Automatic layout** (`js/layout.js`): a small layered layout like Graphviz `dot`: cycles broken by reversing back edges
   (depth-first search), ranks by longest path, eight barycenter sweeps to reduce crossings, ranks as rows or columns with the
@@ -736,6 +848,15 @@ WARNING=2. ExcelJS writes containsText rules without the `text` attribute, so re
   consistent column count over 20 rows), an RFC 4180 parser (line breaks inside quotes become `\n`) and value conversion; the rows go through
   `Suite.univerXlsx.importRows()` (SheetJS `aoa_to_sheet` → XLSX → ExcelJS → Univer). Dates are written as serial numbers computed in UTC with a
   `yyyy-mm-dd` format, because SheetJS would convert `Date` objects in the local zone. CSV export passes the import's separator to SheetJS (`FS`).
+
+- **Pictures** come from `@univerjs/preset-sheets-drawing` (1.0.4); Univer keeps them in the resource `SHEET_DRAWING_PLUGIN`
+  (`{ sheetId: { data: { id: drawing }, order } }`, a drawing with `source`, `column`/`row` + offsets, `width`/`height`, `sheetTransform`,
+  `transform`). `univer-xlsx.js` reads ExcelJS's `getImages()` (anchor: `nativeCol`/`nativeColOff` in EMU, `ext` or the `br` anchor for the
+  size) into a non-enumerable `data.images`; the app inserts them after loading through the facade (Univer computes the placement) and then
+  clears the undo history. Export writes `workbook.addImage({ base64 })` + `addImage(id, { tl, ext, editAs: 'oneCell' })` with the
+  unchanged bytes. Before ExcelJS reads a file, `normalizeRelationships()` rewrites what it cannot read in files of other writers
+  (openpyxl): absolute `.rels` targets become relative, drawings in the default namespace get the `xdr:` prefix (a small ZIP rewrite with
+  `DecompressionStream`; changed parts stored, the others copied).
 
 Tests: `tests/apps/test_spreadsheet.py` — opening, typing with recalculation, dirty marker, saving XLSX (checked with openpyxl), ODS, CSV, XLS, XLSM,
 discarding changes, language and theme, phone layout, CSV import dialog (Windows-1252, semicolons, decimal comma, quoted line breaks, leading
@@ -1093,6 +1214,14 @@ reveal.js builds, plugins, stylesheets, themes and fonts are embedded as text (`
   highlight theme and custom CSS, the slides, the editor model as `<script type="application/json"
   id="suite-reveal-deck">`, reveal.js and the plugins inline, and `Reveal.initialize` with the deck configuration. Saved
   presentations therefore play offline and open again losslessly.
+- **Scripts in slides** (hardening): `renderPage` starts the page with a Content Security Policy
+  `script-src 'nonce-…'; object-src 'none'; base-uri 'none'; form-action 'none'` with a new random nonce per page; only the
+  editor's own `<script>` elements (reveal.js, plugins, initialisation, KaTeX, the `extraHead`/`extraBody` parts) carry it.
+  Inline scripts, event handlers and `javascript:` URLs from slide HTML, Markdown or imported files are therefore blocked in
+  the preview, while presenting, in the print window and in the saved file. `hasActiveContent(deck)` detects such markup
+  (not in code blocks and notes); `main.js` then asks (`askTrust`) whether to trust the file. `state.trusted` (not saved,
+  reset on every opened file) renders without the policy (`renderPage(…, { trusted: true })`); the toolbar button
+  `[data-testid=scripts]` switches it. Tests: `tests/security/test_malicious_files.py`.
 - **Preview**: the same page with `editable: true` (blocks carry `data-block`) in an `<iframe srcdoc>` (same origin,
   inherits the app's CSP), configured `embedded`, without fragments, transitions and auto-slide. The editor attaches to
   the frame's document: clicks select blocks, double-clicks make them `contentEditable` (keyboard navigation of reveal.js
@@ -1173,6 +1302,37 @@ with `--mobile`.
 `SUITE_DIST=<directory>` makes `build.py` write the apps to another directory (the overview embeds the apps from
 there as well) and the tests open them from there, so that changes can be built and tested while another test run
 uses `dist/`.
+
+### Hardening, fuzzing and conformance
+
+Three test folders check files that do not come from the suite itself:
+
+- `tests/security/` – **malicious files**: every app opens files whose texts, names, links, metadata and markup carry
+  payloads (`tests/helpers/hostile.py`: `<script>`, event handlers, `javascript:` URLs, `srcdoc` frames, SVG with
+  scripts, mXSS forms). A payload that runs sets `top.__pwned`; `assert_safe()` also scans the page and every frame that
+  can run scripts in the app's origin for event handlers, scripts and `javascript:` URLs of a payload (a document whose
+  Content Security Policy blocks inline scripts is inert and skipped). PDFs with JavaScript, previews in the archive
+  manager, printing, presenting in a new window and exports are covered as well. Web slides must block scripts unless the
+  user allowed them (`test_web_slides_trusted_scripts`). The shell refuses clicks on `javascript:`/`vbscript:` links and such
+  URLs passed to `window.open` in every app, whichever component (Univer, viewers) opens a link from a file
+  (`test_script_links_are_refused`).
+- `tests/robustness/test_fuzz.py` – **fuzzing the file readers**: seed files of every format the apps open are made by
+  other software (`tests/helpers/corpus.py`: python-docx, openpyxl, python-pptx, LibreOffice for ODT/ODS, py7zr,
+  pykeepass, SQLite, Pillow, hand-written PDF, iCalendar, e-mail, HAR, Postman, OpenAPI, …).
+  `tests/helpers/fuzz.py` makes deterministic mutants: byte level (truncation, bit flips, overwritten, inserted,
+  deleted and repeated ranges, extreme values), text level (noise characters, dropped/duplicated/shuffled lines,
+  unbalanced brackets, a 200 000 character line, deep nesting) and container level (a part inside a ZIP is changed,
+  dropped or duplicated and the archive is rebuilt with valid checksums). Every app opens the mutants one after another;
+  no uncaught exception or unhandled rejection may occur, the page must stay responsive, and afterwards the intact file
+  must open. `FUZZ_COUNT` (default 12) and `FUZZ_SEED` change the number and the set of mutants; failing mutants are
+  written to the test's `tmp_path`.
+- `tests/conformance/test_formats.py` – **round trips checked by other software**: an app opens a file made by other
+  software, saves it in each format it writes, and LibreOffice (conversion to text, CSV, PDF), 7-Zip and unzip, ffprobe,
+  pdfinfo/pdftotext, xmllint, SQLite (`integrity_check`), python-docx, openpyxl, python-pptx, icalendar, pykeepass,
+  nbformat, Pillow, psd-tools and pypdf read the result; texts, values, formulas, entries and events must survive. The
+  text and hex editors must save unchanged files byte for byte (encodings, BOM, line ends).
+
+Fuzzing and conformance run on the desktop layout only (`--mobile` skips them).
 
 ### Recovery copies (autosave)
 

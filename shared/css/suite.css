@@ -119,3 +119,66 @@ dialog.pico[open] { z-index: 2000; }
 .suite-components li { list-style: none; margin: 0; }
 .suite-modified { border-left: 4px solid #e65100; padding: .4rem .6rem; background: rgba(230, 81, 0, .1); }
 .suite-modified-badge { font-size: .65rem; font-weight: 600; color: #fff; background: #e65100; border-radius: .3rem; padding: .05rem .35rem; vertical-align: middle; white-space: nowrap; }
+
+/* ---- emoji and symbols (shared/js/symbols.js) ---------------------------------------------------- */
+.suite-symbols { position: fixed; z-index: 2003; width: min(25rem, calc(100vw - 16px)); height: 22rem; display: flex; flex-direction: column;
+  background: var(--pico-background-color); color: var(--pico-color); border: 1px solid var(--pico-muted-border-color); border-radius: .5rem;
+  box-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .25); font-size: .9rem; }
+.suite-symbols.sheet { left: 0 !important; right: 0; bottom: 0; top: auto !important; width: 100%; height: min(24rem, 60vh); border-radius: .75rem .75rem 0 0; }
+.suite-symbols-head { display: flex; gap: .3rem; padding: .4rem .4rem .2rem; }
+.suite-symbols .suite-symbols-search { flex: 1; margin: 0; height: 2.1rem; padding: .2rem .6rem; font-size: .9rem; }
+.suite-symbols .suite-symbols-close { margin: 0; width: auto; padding: 0 .6rem; height: 2.1rem; line-height: 1; }
+.suite-symbols-tabs { display: flex; gap: .1rem; overflow-x: auto; padding: 0 .3rem; border-bottom: 1px solid var(--pico-muted-border-color); flex: none; scrollbar-width: thin; }
+.suite-symbols .suite-symbols-tab { margin: 0; width: auto; padding: .15rem .35rem; border: 0; border-radius: .3rem .3rem 0 0; background: none; color: inherit;
+  font-size: 1.05rem; line-height: 1.4; opacity: .65; flex: none; }
+.suite-symbols .suite-symbols-tab[aria-selected="true"] { opacity: 1; box-shadow: inset 0 -2px 0 var(--pico-primary); }
+.suite-symbols-grid { flex: 1; overflow-y: auto; padding: .3rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(2.2rem, 1fr)); align-content: start; gap: .1rem; }
+.suite-symbols .suite-symbols-cell { margin: 0; width: auto; height: 2.2rem; padding: 0; border: 0; border-radius: .3rem; background: none; color: inherit;
+  font-size: 1.35rem; line-height: 1; font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Symbol", system-ui, sans-serif; }
+.suite-symbols .suite-symbols-cell:hover, .suite-symbols .suite-symbols-cell:focus { background: var(--suite-selected); outline: none; }
+.suite-symbols .suite-symbols-cell:focus-visible { box-shadow: 0 0 0 2px var(--pico-primary); }
+.suite-symbols-empty { grid-column: 1 / -1; margin: .6rem; color: var(--pico-muted-color); font-size: .85rem; }
+.suite-symbols-foot { display: flex; gap: .4rem; align-items: center; padding: .25rem .4rem; border-top: 1px solid var(--pico-muted-border-color); flex: none; }
+.suite-symbols-info { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .8rem; color: var(--pico-muted-color); }
+.suite-symbols .suite-symbols-skin { margin: 0; width: auto; height: 1.8rem; padding: 0 1.6rem 0 .4rem; font-size: .8rem; background-position: right .3rem center; }
+.suite-symbols-button { position: fixed; z-index: 2000; width: 22px; height: 22px; margin: 0; padding: 0; border: 0; border-radius: 50%; line-height: 22px; font-size: 15px;
+  background: transparent; color: var(--pico-muted-color); opacity: .55; cursor: pointer; }
+.suite-symbols-button:hover { opacity: 1; background: var(--suite-selected); color: var(--pico-color); }
+.suite-symbols-button[hidden] { display: none; }
+.suite-symbols-suggest { position: fixed; z-index: 2003; min-width: 12rem; max-width: calc(100vw - 8px); padding: .2rem; background: var(--pico-background-color);
+  color: var(--pico-color); border: 1px solid var(--pico-muted-border-color); border-radius: .4rem; box-shadow: 0 .3rem 1rem rgba(0, 0, 0, .2); font-size: .85rem; }
+.suite-symbols-option { padding: .15rem .4rem; border-radius: .25rem; cursor: pointer; white-space: nowrap; }
+.suite-symbols-option.active, .suite-symbols-option:hover { background: var(--suite-selected); }
+.suite-symbols-option-char { font-size: 1.1rem; margin-right: .2rem; }
+.suite-prefs-symbols { margin: .6rem 0 0; padding: 0; border: 0; } .suite-prefs-symbols legend { font-size: .85rem; font-weight: 600; margin-bottom: .2rem; }
+.suite-prefs-symbols label { font-size: .85rem; margin-bottom: .25rem; }
+
+/* ---- colour picker (shared/js/colorpicker.js) ---------------------------------------------------- */
+.suite-color { --checker: repeating-conic-gradient(#c8c8c8 0 25%, #fff 0 50%) 0 0 / 10px 10px;
+  position: fixed; z-index: 2004; width: 16.5rem; padding: .6rem; display: flex; flex-direction: column; gap: .5rem; background: var(--pico-background-color);
+  color: var(--pico-color); border: 1px solid var(--pico-muted-border-color); border-radius: .5rem; box-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .25); font-size: .85rem; }
+.suite-color.sheet { left: 0 !important; right: 0; bottom: 0; top: auto !important; width: 100%; border-radius: .75rem .75rem 0 0; }
+.suite-color-area { position: relative; height: 9.5rem; border-radius: .3rem; cursor: crosshair; touch-action: none;
+  background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, var(--hue, red)); }
+.suite-color-area-thumb { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border: 2px solid #fff; border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .6); pointer-events: none; }
+.suite-color-hue, .suite-color-alpha { position: relative; height: .9rem; border-radius: .45rem; cursor: pointer; touch-action: none; }
+.suite-color-hue { background: linear-gradient(to right, red, #ff0, lime, cyan, blue, #f0f, red); }
+.suite-color-alpha { background: var(--checker); }
+.suite-color-alpha-fill { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(to right, transparent, var(--solid, #000)); }
+.suite-color-slider-thumb { position: absolute; top: 50%; width: 12px; height: 18px; margin: -9px 0 0 -6px; border: 2px solid #fff; border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .6); pointer-events: none; }
+.suite-color-area:focus-visible, .suite-color-hue:focus-visible, .suite-color-alpha:focus-visible { outline: 2px solid var(--pico-primary); outline-offset: 2px; }
+.suite-color-row { display: flex; gap: .4rem; align-items: center; }
+.suite-color-compare { display: flex; flex: none; border-radius: .3rem; overflow: hidden; border: 1px solid var(--pico-muted-border-color); background: var(--checker); }
+.suite-color-old, .suite-color-new { width: 1.6rem; height: 1.9rem; background: var(--c); }
+.suite-color-old { cursor: pointer; }
+.suite-color .suite-color-hex { flex: 1; min-width: 0; margin: 0; height: 1.9rem; padding: .1rem .4rem; font-family: ui-monospace, monospace; font-size: .85rem; }
+.suite-color .suite-color-eyedropper { margin: 0; width: auto; height: 1.9rem; padding: 0 .45rem; }
+.suite-color .suite-color-channel { margin: 0; min-width: 0; flex: 1; height: 1.8rem; padding: .1rem .3rem; font-size: .8rem; }
+.suite-color-swatches { display: grid; grid-template-columns: repeat(8, 1fr); gap: .2rem; }
+.suite-color .suite-color-swatch { margin: 0; width: auto; height: 1.3rem; padding: 0; border: 1px solid var(--pico-muted-border-color); border-radius: .2rem;
+  background: linear-gradient(var(--c), var(--c)), var(--checker); }
+.suite-color-buttons { display: flex; justify-content: flex-end; gap: .4rem; }
+.suite-color-buttons button { margin: 0; width: auto; padding: .25rem .8rem; font-size: .85rem; }
+.suite-prefs-colors { display: block; margin-top: .4rem; font-size: .85rem; } .suite-prefs-colors select { margin: .2rem 0 0; padding: .2rem 1.8rem .2rem .5rem; height: auto; font-size: .85rem; }

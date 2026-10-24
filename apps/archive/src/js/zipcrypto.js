@@ -128,13 +128,19 @@ export function aesEncryptBlock({ w, rounds }, input, out) {
   return out;
 }
 
-/** AES-CTR with a little-endian counter in the first 8 bytes, starting at 1 (encryption = decryption). */
-function ctrGladman(key, data) {
+/**
+ * AES-CTR with a little-endian counter in the first 8 bytes, starting at 1 (encryption = decryption).
+ * legacy: the counter of suite versions up to 1.0.0, which did not carry into the second byte (its key stream repeats
+ * after 256 blocks), only for reading entries written by those versions.
+ */
+function ctrGladman(key, data, legacy = false) {
   const ks = aesKey(key);
   const out = new Uint8Array(data.length);
   const nonce = new Uint8Array(16), stream = new Uint8Array(16);
   for (let pos = 0; pos < data.length; pos += 16) {
-    for (let j = 0; j < 8 && !++nonce[j]; j++);
+    if (legacy) nonce[0]++;
+    // (++nonce[j] would evaluate to 256, not to the wrapped byte: compare the stored value)
+    else for (let j = 0; j < 8; j++) { nonce[j]++; if (nonce[j] !== 0) break; }
     aesEncryptBlock(ks, nonce, stream);
     const n = Math.min(16, data.length - pos);
     for (let i = 0; i < n; i++) out[pos + i] = data[pos + i] ^ stream[i];
@@ -163,8 +169,11 @@ export function aesCheck(data, strength, password) {
   return verifier[0] === data[sl] && verifier[1] === data[sl + 1];
 }
 
-/** Decrypt the data of an AES entry; throws PasswordError for a wrong password, Error on an authentication failure. */
-export function aesDecrypt(data, strength, password) {
+/**
+ * Decrypt the data of an AES entry; throws PasswordError for a wrong password, Error on an authentication failure.
+ * legacy: the faulty key stream of suite versions up to 1.0.0 (see ctrGladman).
+ */
+export function aesDecrypt(data, strength, password, legacy = false) {
   const sl = AES_SALT[strength];
   const { key, macKey, verifier } = aesKeys(password, data.subarray(0, sl), strength);
   if (verifier[0] !== data[sl] || verifier[1] !== data[sl + 1]) throw new PasswordError('wrong password');
@@ -172,7 +181,7 @@ export function aesDecrypt(data, strength, password) {
   const mac = hmacSha1(macKey)(cipher);
   const stored = data.subarray(data.length - 10);
   for (let i = 0; i < 10; i++) if (mac[i] !== stored[i]) throw new Error('authentication failed (damaged data)');
-  return ctrGladman(key, cipher);
+  return ctrGladman(key, cipher, legacy);
 }
 
 export function aesEncrypt(plain, password, strength = 3) {

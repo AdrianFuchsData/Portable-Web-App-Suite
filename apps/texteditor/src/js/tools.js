@@ -1,12 +1,14 @@
 /*
  * Text tools of the editor ("TextFX"): line operations, case conversion, encoding and formatting.
  *
- *   TOOLS: [{ id, group, kind: 'lines' | 'text' }]
- *   apply(id, text) -> new text (throws ToolError for input that cannot be converted)
+ *   TOOLS: [{ id, group, kind: 'lines' | 'text', options }]   (options: the tool asks for options first, e.g. 'sql')
+ *   apply(id, text, options) -> new text (throws ToolError for input that cannot be converted)
  *
  * 'lines' tools work on whole lines (the lines touched by the selection, or the whole document); 'text' tools on the
  * selected text (or the whole document).
  */
+
+import { format as sqlFormatter } from "sql-formatter";
 
 export class ToolError extends Error {
   constructor(key, detail = "") { super(key); this.key = key; this.detail = detail; }
@@ -94,6 +96,80 @@ function formatXml(s, indentUnit = "  ") {
   return out.join("\n");
 }
 
+// ---- SQL (sql-formatter, in the manner of PoorSQL) ----------------------------------------------
+
+/** SQL dialects of sql-formatter: [id, label]. */
+export const SQL_DIALECTS = [
+  ["sql", "Standard SQL"], ["transactsql", "T-SQL (SQL Server)"], ["postgresql", "PostgreSQL"], ["mysql", "MySQL"], ["mariadb", "MariaDB"],
+  ["sqlite", "SQLite"], ["plsql", "Oracle PL/SQL"], ["db2", "IBM Db2"], ["duckdb", "DuckDB"], ["bigquery", "BigQuery"], ["snowflake", "Snowflake"],
+  ["redshift", "Amazon Redshift"], ["spark", "Spark SQL"], ["hive", "Hive"], ["trino", "Trino / Presto"],
+];
+
+export const SQL_DEFAULTS = { language: "sql", keywordCase: "upper", indent: "2", indentStyle: "standard", logicalOperatorNewline: "before", expressionWidth: 50, linesBetweenQueries: 1 };
+
+/**
+ * Format SQL: one clause per line, indented sub-queries and lists, keywords (and function names and data types) in the
+ * chosen case. options: SQL_DEFAULTS (indent: "2", "4" or "tab").
+ */
+export function formatSql(text, options = {}) {
+  const o = { ...SQL_DEFAULTS, ...options };
+  const caseOf = o.keywordCase === "preserve" ? "preserve" : o.keywordCase;
+  try {
+    return sqlFormatter(text, {
+      language: o.language, keywordCase: caseOf, dataTypeCase: caseOf, functionCase: caseOf,
+      tabWidth: o.indent === "tab" ? 4 : Number(o.indent) || 2, useTabs: o.indent === "tab", indentStyle: o.indentStyle,
+      logicalOperatorNewline: o.logicalOperatorNewline, expressionWidth: Number(o.expressionWidth) || 50, linesBetweenQueries: Number(o.linesBetweenQueries) || 1,
+    });
+  } catch (e) {
+    throw new ToolError("te.toolBadSql", String(e.message || e).split("\n")[0]);
+  }
+}
+
+/**
+ * SQL on one line: comments removed (except optimizer hints /*+ … *\/), whitespace collapsed to single spaces;
+ * strings, quoted names and PostgreSQL dollar quotes stay as they are. Statements stay separated by their semicolons.
+ */
+export function minifySql(text) {
+  let out = "";
+  let space = false;
+  const word = (c) => /[\p{L}\p{N}_@#$]/u.test(c || "");
+  // whitespace becomes one space, except after "(" and "." and before ")", ",", "." and ";"
+  const emit = (piece) => {
+    if (space && out && !/[(.]$/.test(out) && !/^[),.;]/.test(piece)) out += " ";
+    out += piece;
+    space = false;
+  };
+  for (let i = 0; i < text.length;) {
+    const c = text[i], rest = text.slice(i, i + 2);
+    if (/\s/.test(c)) { space = true; i++; continue; }
+    if (rest === "--") { const end = text.indexOf("\n", i); i = end < 0 ? text.length : end; space = true; continue; }
+    if (rest === "/*") {
+      const end = text.indexOf("*/", i + 2);
+      const stop = end < 0 ? text.length : end + 2;
+      if (text[i + 2] === "+") emit(text.slice(i, stop)); else space = true;
+      i = stop; continue;
+    }
+    const dollar = c === "$" && /^\$[A-Za-z_]*\$/.exec(text.slice(i));
+    if (dollar) {
+      const end = text.indexOf(dollar[0], i + dollar[0].length);
+      const stop = end < 0 ? text.length : end + dollar[0].length;
+      emit(text.slice(i, stop)); i = stop; continue;
+    }
+    const close = { "'": "'", '"': '"', "`": "`", "[": "]" }[c];
+    if (close) {
+      let j = i + 1;
+      for (; j < text.length; j++) {
+        if (text[j] === close) { if (close !== "]" && text[j + 1] === close) { j++; continue; } break; } // '' and "" escape
+      }
+      emit(text.slice(i, j + 1)); i = j + 1; continue;
+    }
+    let j = i + 1;
+    if (word(c)) while (j < text.length && word(text[j])) j++;
+    emit(text.slice(i, j)); i = j;
+  }
+  return out.trim();
+}
+
 const textTools = {
   upper: (s) => s.toUpperCase(),
   lower: (s) => s.toLowerCase(),
@@ -108,18 +184,20 @@ const textTools = {
   jsonFormat: (s) => json(s, 2),
   jsonMinify: (s) => json(s, 0),
   xmlFormat: (s) => formatXml(s),
+  sqlFormat: (s, options) => formatSql(s, options),
+  sqlMinify: (s) => minifySql(s),
 };
 
 export const TOOLS = [
   ...Object.keys(lineTools).map((id) => ({ id, group: "lines", kind: "lines" })),
   ...["upper", "lower", "title", "invert"].map((id) => ({ id, group: "case", kind: "text" })),
   ...["base64Encode", "base64Decode", "urlEncode", "urlDecode", "htmlEscape", "htmlUnescape"].map((id) => ({ id, group: "encode", kind: "text" })),
-  ...["jsonFormat", "jsonMinify", "xmlFormat"].map((id) => ({ id, group: "format", kind: "text" })),
+  ...["jsonFormat", "jsonMinify", "xmlFormat", "sqlFormat", "sqlMinify"].map((id) => ({ id, group: "format", kind: "text", options: id === "sqlFormat" ? "sql" : undefined })),
 ];
 
-export function apply(id, text) {
+export function apply(id, text, options = {}) {
   if (lineTools[id]) return lineTools[id](text.split("\n")).join("\n");
-  if (textTools[id]) return textTools[id](text);
+  if (textTools[id]) return textTools[id](text, options);
   throw new Error(`unknown tool ${id}`);
 }
 

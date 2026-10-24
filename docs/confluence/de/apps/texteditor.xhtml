@@ -1,7 +1,7 @@
 <!-- Generated from docs/de/apps/texteditor.md by tools/build_docs.py - do not edit. Confluence page title: Texteditor -->
 <ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
 <p>Der Texteditor (<code>texteditor.html</code>) bearbeitet Textdateien und Quellcode: mehrere Dateien in Registerkarten,
-Syntaxhervorhebung für mehr als 40 Sprachen, Suchen und Ersetzen, mehrere Cursor sowie Kontrolle über Kodierung und
+Syntaxhervorhebung für mehr als 40 Sprachen (darunter SAS, mit Code-Vervollständigung), Suchen und Ersetzen, mehrere Cursor sowie Kontrolle über Kodierung und
 Zeilenenden.</p>
 <h2>Dateien öffnen und anlegen</h2>
 <ul>
@@ -53,8 +53,16 @@ eine Registerkarte mit × oder <code>Alt+W</code>; bei ungespeicherten Änderung
 <td><code>Strg+Z</code> / <code>Strg+Y</code> oder <code>Strg+Umschalt+Z</code></td>
 </tr>
 <tr>
-<td>Auswahl einrücken / ausrücken</td>
+<td>Einrücken: die gewählten Zeilen oder am Cursor bis zur nächsten Einrückstufe / ausrücken</td>
 <td><code>Tab</code> / <code>Umschalt+Tab</code></td>
+</tr>
+<tr>
+<td>Tabulatorzeichen einfügen (unabhängig von der Einrückung)</td>
+<td><code>Strg+Alt+I</code></td>
+</tr>
+<tr>
+<td>Den Editor mit der Tastatur verlassen (Tab springt weiter)</td>
+<td><code>Esc</code>, dann <code>Tab</code>; oder <code>Strg+M</code> schaltet das ein und aus</td>
 </tr>
 <tr>
 <td>Auskommentieren / einkommentieren</td>
@@ -83,7 +91,8 @@ Höchstens 2000 Treffer werden aufgelistet.</p>
 <h2>Vergleichen</h2>
 <p><strong>⇔</strong> vergleicht das aktuelle Dokument mit einem anderen geöffneten Dokument oder einer Datei. Auf breiten Bildschirmen stehen
 beide Texte nebeneinander – links der andere Text (schreibgeschützt), rechts das aktuelle Dokument –, geänderte Zeilen und Wörter
-sind hervorgehoben und gleiche Teile ausgerichtet; <strong>→</strong> dazwischen übernimmt eine Änderung des linken Textes ins Dokument. Am
+sind hervorgehoben und gleiche Teile ausgerichtet (die geänderten Zeilen werden Zeile für Zeile ermittelt, wie es <code>diff</code> oder
+<code>git</code> tun, und darin die geänderten Wörter – auch in langen Texten mit vielen Änderungen); <strong>→</strong> dazwischen übernimmt eine Änderung des linken Textes ins Dokument. Am
 Smartphone zeigt eine Ansicht die gelöschten Zeilen im Text mit <strong>Accept</strong>/<strong>Reject</strong> je Änderung. <strong>↑</strong>/<strong>↓</strong> springen zwischen den
 Unterschieden; <strong>Fertig</strong> (oder erneut ⇔) beendet den Vergleich, Änderungen in der Zwischenzeit sind ein Rückgängig-Schritt.</p>
 <h2>Werkzeuge</h2>
@@ -111,12 +120,37 @@ Werkzeug lässt sich mit <code>Strg+Z</code> rückgängig machen.</p>
 </tr>
 <tr>
 <td>Formatieren</td>
-<td>JSON formatieren (einrücken) oder verkleinern, XML formatieren</td>
+<td>JSON formatieren (einrücken) oder verkleinern, XML formatieren, SQL formatieren, SQL in eine Zeile</td>
 </tr>
 </tbody>
 </table>
 <p>Zeilenwerkzeuge arbeiten immer mit ganzen Zeilen: denen, die die Auswahl berührt. Ungültige Eingaben (etwa fehlerhaftes JSON)
 zeigen eine Meldung und lassen den Text unverändert.</p>
+<p><strong>SQL formatieren…</strong> arbeitet wie der PoorSQL-Formatierer: jede Klausel in einer eigenen Zeile, Listen und Unterabfragen
+eingerückt, Schlüsselwörter, Funktionsnamen und Datentypen in GROSSBUCHSTABEN. Ein Dialog legt die Optionen fest, mit einer
+Vorschau des Ergebnisses: Dialekt (Standard-SQL, T-SQL/SQL Server, PostgreSQL, MySQL, MariaDB, SQLite, Oracle PL/SQL, Db2,
+DuckDB, BigQuery, Snowflake, Redshift, Spark, Hive, Trino), Schreibweise der Schlüsselwörter (groß, klein, wie geschrieben),
+Einrückung (2 oder 4 Leerzeichen, Tabulator), Anordnung (Standard oder Schlüsselwörter in einer eigenen Spalte, links- oder
+rechtsbündig), AND/OR am Zeilenanfang oder -ende, die Breite, bis zu der Klammern in einer Zeile bleiben, und die Leerzeilen
+zwischen Anweisungen. Die Optionen bleiben gespeichert. <strong>SQL in eine Zeile</strong> entfernt Kommentare (Optimierer-Hinweise
+<code>/*+ … */</code> bleiben) und Zeilenumbrüche; Zeichenketten und Namen in Anführungszeichen bleiben unverändert.</p>
+<h2>Farben im Text</h2>
+<p>Vor jeder hexadezimalen Farbe (<code>#6cf</code>, <code>#6cff</code>, <code>#66ccff</code>, <code>#66ccffff</code>; in reinem Text und Markdown nicht vor rein numerischen
+Formen wie Ticketnummern <code>#123</code>) steht ein kleines Quadrat in dieser Farbe. Ein Klick darauf öffnet die Farbauswahl der Suite:
+Die Farbe im Text ändert sich während der Auswahl, <strong>OK</strong> macht daraus einen Schritt, den <code>Strg+Z</code> rückgängig macht,
+<strong>Abbrechen</strong> stellt sie wieder her. Die Farbe behält ihre Form – kurz oder lang, Groß- oder Kleinbuchstaben –, ein Anteil für
+die Deckkraft wird bei Bedarf ergänzt oder entfernt.</p>
+<h2>SAS-Programme</h2>
+<p>Dateien mit der Endung <code>.sas</code> werden als SAS hervorgehoben: Anweisungen, Prozedurnamen, Funktionen und CALL-Routinen,
+Makroanweisungen (<code>%let</code>, <code>%macro</code> …), Makrovariablen (<code>&amp;name.</code>), Formate (<code>date9.</code>), Zeichenketten mit ihren Suffixen
+(<code>'01jan2024'd</code>), beide Arten von Kommentaren (<code>/* … */</code> und <code>* … ;</code>) und die Zeilen von DATALINES/CARDS-Blöcken. Zeilen in
+DATA- und PROC-Schritten, DO-Blöcken und Makros werden automatisch eingerückt; <code>run;</code>, <code>quit;</code>, <code>end;</code> und <code>%mend;</code> rücken
+wieder aus.</p>
+<p>Die <strong>Code-Vervollständigung</strong> schlägt vor, was an der Stelle passt: Prozedurnamen nach <code>PROC</code>, CALL-Routinen nach <code>CALL</code>,
+Makroanweisungen und -funktionen nach <code>%</code>, Makrovariablen nach <code>&amp;</code> (die aus <code>%let</code>, <code>%global</code>, <code>%local</code>, <code>call symputx</code> und
+Makroparametern im Programm sowie die automatischen wie <code>&amp;sysdate9</code>), sonst Anweisungen, Funktionen und die im Programm
+verwendeten Namen (Datensätze, Variablen). Die Vorschläge folgen der getippten Schreibweise (<code>PROC PR</code> → <code>PRINT</code>). <code>Strg+Leertaste</code>
+öffnet die Liste jederzeit; <code>Enter</code> übernimmt einen Vorschlag, <code>Esc</code> schließt die Liste.</p>
 <h2>Statusleiste</h2>
 <p>Die Statusleiste zeigt die Cursorposition (Zeile und Spalte), die Länge der Auswahl und die Anzahl der Cursor. Außerdem
 können Sie dort ändern:</p>
@@ -126,6 +160,8 @@ können Sie dort ändern:</p>
   Kodierung automatisch erkannt. Wurde eine Datei falsch erkannt, liest <strong>Neu laden mit Kodierung</strong> sie mit einer
   anderen Kodierung ein (Chrome/Edge am Desktop).</li>
 <li><strong>Zeilenenden</strong> beim Speichern: LF (Linux, macOS), CRLF (Windows) oder CR.</li>
+<li><strong>Einrückung</strong>: 2, 4 oder 8 Leerzeichen oder Tabulatoren (2, 4 oder 8 Zeichen breit angezeigt). Sie wird beim Öffnen einer
+  Datei erkannt; die letzte Wahl gilt für neue Dokumente. <code>Tab</code> rückt damit ein; <code>Strg+Alt+I</code> fügt immer ein Tabulatorzeichen ein.</li>
 </ul>
 <ac:structured-macro ac:name="info"><ac:rich-text-body><p>Windows-1252 kann nicht alle Zeichen speichern. Der Editor warnt, bevor er solche Zeichen durch „?“ ersetzt.</p></ac:rich-text-body></ac:structured-macro>
 <h2>Tastenkürzel</h2>
@@ -209,6 +245,14 @@ können Sie dort ändern:</p>
 <tr>
 <td><code>Tab</code> / <code>Umschalt+Tab</code></td>
 <td>Einrücken / ausrücken</td>
+</tr>
+<tr>
+<td><code>Strg+Alt+I</code></td>
+<td>Tabulatorzeichen einfügen</td>
+</tr>
+<tr>
+<td><code>Esc</code>, <code>Tab</code> / <code>Strg+M</code></td>
+<td>Fokus aus dem Editor bewegen / Tab bewegt den Fokus (ein/aus)</td>
 </tr>
 <tr>
 <td><code>Strg+/</code></td>

@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "nearley": "nearley.js",
+    "sql-formatter": "sql-formatter.js"
+  }
+}

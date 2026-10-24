@@ -29,12 +29,20 @@ im PDF anklickbar, auch die Einträge eines Inhaltsverzeichnisses.
 
 Dokumente aus Word und LibreOffice werden beim Öffnen umgewandelt; sehr komplexe Layouts (Textfelder, Spalten, Änderungsverfolgung, Kommentare)
 können einfacher aussehen. Behalten Sie die ursprüngliche Datei, bis Sie das Ergebnis geprüft haben.
+Ein „Wort“ mit mehr als 20.000 Zeichen ohne Leerzeichen (etwa eingefügte Base64-Daten) erhält alle 1.000 Zeichen eine unsichtbare
+Umbruchstelle (U+200B), damit es angezeigt werden kann; sie wird mit dem Dokument gespeichert.
 
 ## Bearbeiten
 
 Das Menüband hat die Reiter **Start** (Zwischenablage, fett/kursiv/unterstrichen/durchgestrichen, Hoch- und Tiefstellung, Absatzformat, Größe,
 Schrift, Farben, Ausrichtung, Listen, Checklisten) und **Einfügen** (Tabellen, Bilder, Seitenumbrüche, Kopf- und Fußzeilen). Die üblichen
 Tastenkombinationen funktionieren: `Strg+B/I/U`, `Strg+Z/Y`, `Strg+C/X/V`, `Strg+F` zum Suchen. Die Statusleiste zeigt die Wortanzahl und den Zoom.
+
+**📐 Diagramm** in der Werkzeugleiste öffnet ein leeres Diagramm im Diagramm-Editor (ein neues Fenster oder ein neuer Tab); das erste
+**Speichern** dort fügt das Diagramm als Bild an der Schreibmarke ein, spätere Speichervorgänge aktualisieren es. Ist ein Diagrammbild
+ausgewählt (ein Klick darauf), öffnet **📐 Diagramm bearbeiten** es wieder im Diagramm-Editor. Ein aktualisiertes Bild behält Stelle und
+Maßstab (höchstens die Textbreite); `Strg+Z` macht es rückgängig. Das Diagramm steckt im Bild (ein PNG mit der draw.io-Datei) und bleibt
+daher in der `.docx`-Datei bearbeitbar; Word zeigt das Bild.
 
 Die Sprache der Bearbeitungskomponente folgt der Sprachumschaltung der Suite, ebenso das dunkle Design.
 

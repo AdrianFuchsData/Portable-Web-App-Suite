@@ -474,3 +474,64 @@ result again (`Input`, `CanvasSink`). Test: `tests/prototypes/test_s10_webcodecs
   report. H.264/AAC is missing only in Playwright's open-source browser builds; Chrome and Edge have it.
 - Firefox for Android has no WebCodecs video encoding (see the study): the editor works there, but cannot export.
 - Test media are made with ffmpeg from the `imageio-ffmpeg` package (bundled binary), so the tests need no system ffmpeg.
+
+## S-11: Diagrams in presentations, documents and spreadsheets ✅ (presentation, web slides, document) / larger (spreadsheet)
+
+> **Implemented** (all four hosts and pictures in the spreadsheet): see *Diagrams in other applications* in the technical documentation.
+> Further findings while implementing: ExcelJS cannot read pictures in files written by openpyxl (absolute relationship targets,
+> drawings in the default namespace) – they are rewritten before loading; the Univer Sheets facade 1.0.4 has no `getSource()` on an
+> image (its builder has); an updated picture keeps its scale rather than its width (a growing diagram would otherwise shrink).
+
+**Question:** How much effort is it to insert diagrams into the presentation editor, the document editor and the spreadsheet,
+so that they can be edited again later with the diagram editor?
+
+**Approach:** the way draw.io itself integrates with Office and Confluence: the diagram is stored as an ordinary **PNG image
+that carries the draw.io XML** in a `tEXt` chunk `mxfile` (the diagram editor already writes such PNGs with "PNG" export and
+opens them). Editing goes through the app bridge ("Open with…"): the host app opens the image in the diagram editor and gets
+the new image back when the user saves there. The spike checked the file formats with the built apps
+(`tests/apps/test_embedded_diagrams.py`): a PNG with a diagram was put into a presentation, saved as PPTX and imported again,
+and a DOCX with that picture was opened in the document editor and saved again.
+
+**Results:**
+
+| Step | Result |
+|---|---|
+| Presentation: image element → PPTX (pptxgenjs) | ✅ the PNG in `ppt/media/` still contains the diagram |
+| PPTX → presentation (own importer, data URL) | ✅ diagram kept |
+| DOCX → document editor (Univer drawing, data URL) | ✅ diagram kept |
+| Document editor → DOCX (`docx` library, `ImageRun`) | ✅ the PNG in `word/media/` still contains the diagram |
+| Web slides (reveal.js), notebook Markdown | images are data URLs in HTML/Markdown: kept unchanged (no conversion step) |
+| Spreadsheet | ❌ no images at all yet: Univer Sheets runs without the drawing preset, the XLSX import/export (ExcelJS) ignores pictures |
+
+Further findings:
+
+- **Gap in the diagram editor:** a diagram opened from a PNG (or SVG) is always saved as `.drawio` XML, so a host app would get
+  XML instead of an image back. Saving must write the format it was opened from (PNG: render at 2×, add the `mxfile` chunk – the
+  code of the PNG export).
+- **Univer Docs** (document editor): its facade lists, inserts and reads images (`getImages`, `insertImage`, `getSource`) but cannot
+  replace one; the focused image comes from the drawing manager (`getFocusDrawings`, like `DocSelectionManagerService` already used
+  for spelling). The app already reloads a changed document snapshot as a new unit (table of contents), which also works for a new
+  image source.
+- **Univer Sheets:** `@univerjs/preset-sheets-drawing` exists in the vendored version 1.0.4 (Apache-2.0; `sheets-drawing-ui` alone
+  about 280 KB) – roughly +0.5–0.8 MB per spreadsheet file and in the overview. ExcelJS can read and write worksheet images
+  (`getImages`/`addImage`, bytes unchanged).
+- **Compatibility:** draw.io (diagrams.net) uses the same chunk for its "editable PNG"; diagrams made there can be edited in the
+  suite and the other way round, also when the PPTX/DOCX is opened in PowerPoint or Word (they show the PNG).
+
+**Effort estimate** (implementation, tests in Chromium/Firefox and on phones, user and technical documentation EN/DE):
+
+| Part | Work | Effort |
+|---|---|---|
+| Diagram editor | save in the opened format (PNG with diagram; optionally SVG with `content`), crop to the content | S (½ day) |
+| Shared module `diagram-embed.js` | detect a diagram image, "Insert diagram" (empty diagram) and "Edit diagram" through `Suite.bridge.openIn('diagram', …)` with a save callback, message when the diagram editor cannot be started | S (½ day) |
+| Presentation | toolbar *Insert diagram*, *Edit diagram* (button, double-click) on image elements with a diagram, new source keeps position and width (height from the new aspect ratio), one undo step | S–M (½–1 day) |
+| Web slides | the same for image blocks | S (½ day) |
+| Document editor | insert through `insertImage`, edit the focused image (drawing manager), replace its source (snapshot reload or remove/insert at the same position), keep the size | M (1–2 days; risk: Univer internals) |
+| Spreadsheet | vendor the drawing preset; images in XLSX import/export via ExcelJS (anchors, sizes); then insert/edit diagrams like in the document | L (3–5 days; also brings ordinary images to the spreadsheet) |
+
+**Total:** presentation, web slides and document about **3–4 days**; with the spreadsheet about **6–9 days**.
+
+**Recommendation:** start with the diagram editor fix, the shared module and the presentation (proves the edit loop end to end,
+lowest risk), then web slides and the document editor; do the spreadsheet as a separate step together with general image
+support. PNG at 2× is the safest format for all targets (PPTX needs a PNG fallback for SVG, Univer's SVG support is uncertain);
+SVG can be offered later for web slides.

@@ -11,7 +11,8 @@ ready.
 ## Notebooks
 
 - **Open** (`Ctrl+O`) opens a Jupyter notebook (`.ipynb`) or a Python script. In scripts, `# %%` starts a code cell and `# %% [markdown]` a
-  text cell (the format of VS Code, Spyder and Jupytext); a script without markers becomes one cell.
+  text cell (the format of VS Code, Spyder and Jupytext); a script without markers becomes one cell. Raw cells (for nbconvert) are
+  shown as plain text, marked *Raw*, and saved unchanged.
 - **Save** (`Ctrl+S`) saves the notebook as `.ipynb` (with outputs): directly into the file in Chrome/Edge on the desktop, as a download in
   Firefox and on Android. **Save as** saves under a new name. **Export…** downloads the notebook as a Python script (`.py`), as an **HTML page**
   with code, Markdown and outputs (tables, charts) that opens in any browser, as an **HTML page without code** (a report of the
@@ -130,7 +131,7 @@ On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the applicat
 |---|---|
 | `Enter` | Edit the cell |
 | `A` / `B` | Insert a cell above / below |
-| `M` / `Y` | Make it Markdown / code |
+| `M` / `Y` / `R` | Make it Markdown / code / raw (kept unchanged for nbconvert) |
 | `↑` / `↓` | Previous / next cell |
 | `Delete` | Delete the cell |
 | `Z` / `Shift+Z` | Undo / redo cell operations |

@@ -9,8 +9,11 @@ from helpers.paths import dist_url
 CASES = {
     "texteditor": ("TE.app.view.dispatch({ changes: { from: 0, insert: 'Recovered text' } })",
                    "TE.app.docs.some((d) => d.state.doc.toString().includes('Recovered text') && TE.app.isDirty(d))"),
-    "hexeditor": ("(() => { HE.app.load('data.bin', new Uint8Array([1, 2, 3]), null); HE.app.state.buffer.replace(0, new Uint8Array([0x41])); Suite.shell.setDirty(true); })()",
-                  "HE.app.state.name === 'data.bin' && HE.app.state.buffer.bytes()[0] === 0x41 && HE.app.state.buffer.dirty"),
+    # two changed tabs
+    "hexeditor": ("(() => { HE.app.load('data.bin', new Uint8Array([1, 2, 3]), null); HE.app.state.buffer.replace(0, new Uint8Array([0x41]));"
+                  " HE.app.newFile(); HE.app.state.buffer.insert(0, new Uint8Array([0x42])); Suite.shell.setDirty(true); })()",
+                  "(() => { const d = HE.app.docs.map((x, i) => (i === HE.app.active ? HE.app.state : x)); return d.length === 2 && d[0].name === 'data.bin'"
+                  " && d[0].buffer.bytes()[0] === 0x41 && d[0].buffer.dirty && d[1].buffer.bytes()[0] === 0x42 && d[1].buffer.dirty; })()"),
     "diagram": ("document.querySelector('[data-testid=shape-rect]').click()",
                 "DG.page().shapes.length === 1 && DG.app.dirty"),
     "presentation": ("(() => { PR.state.deck.slides.push(structuredClone(PR.state.deck.slides[0])); PR.state.dirty = true; Suite.shell.setDirty(true); })()",

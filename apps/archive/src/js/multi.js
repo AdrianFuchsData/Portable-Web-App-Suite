@@ -117,6 +117,9 @@ export async function readMulti(bytes, name, askPassword) {
 
 /** A 7z archive of the files (folders are implied by the paths; libarchive's 7z writer has no encryption). */
 export async function write7z(entries) {
+  // the WebAssembly libarchive runs in the "C" locale: it stores every non-ASCII character of a name as U+FFFD
+  const odd = entries.find((e) => /[^\x20-\x7e]/.test(e.path));
+  if (odd) throw new ArchiveError('ar.7zNames', odd.path);
   await start();
   const files = entries.filter((e) => !e.dir && !e.link).map((e) => ({ file: new File([e.load()], e.path.split('/').pop(), { lastModified: e.mtime ? +e.mtime : Date.now() }), pathname: e.path }));
   // libarchive.js has no working "no filter" option: the 7z stream is written through gzip and unpacked here

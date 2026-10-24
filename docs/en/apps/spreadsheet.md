@@ -8,7 +8,7 @@ Univer Sheets.
 
 | Format | Open | Save | Notes |
 |---|---|---|---|
-| Excel (`.xlsx`) | yes | yes | values, formulas, styles, number formats, merged cells, column widths, row heights, frozen panes, tab colours, hidden sheets, conditional formatting, data validation |
+| Excel (`.xlsx`) | yes | yes | values, formulas, styles, number formats, merged cells, column widths, row heights, frozen panes, tab colours, hidden sheets, conditional formatting, data validation, pictures |
 | Excel with macros (`.xlsm`) | yes | as `.xlsx` | macros cannot be kept |
 | OpenDocument (`.ods`) | yes | yes | values, formulas, merged cells (no formatting) |
 | Excel 97–2003 (`.xls`) | yes | yes | values and formulas (no formatting) |
@@ -40,6 +40,14 @@ The ribbon above the table has the tabs **Start** (clipboard, font, colours, bor
 **View**. Type into a cell and confirm with `Enter`; formulas start with `=`, e.g. `=SUM(B2:B10)`. The formula bar shows and edits the content
 of the selected cell. The bar at the bottom adds (+) and switches sheets; right-click a sheet tab to rename, colour, hide or delete it. The zoom
 is at the bottom right. Right-clicking cells, rows and columns opens further commands (insert, delete, sort, …).
+
+**Pictures** float above the cells: insert one from the ribbon (**Insert** → image), drag it to move it, drag its handles to resize it. In
+`.xlsx` files they keep their cell, offset and size (also pictures from other programs, including files written by Python's openpyxl).
+
+**📐 Diagram** in the toolbar opens an empty diagram in the diagram editor (a new window or tab); its first **Save** puts the diagram as a
+picture at the selected cell, later saves update it. When a diagram picture is selected (a click on it), **📐 Edit diagram** opens it in
+the diagram editor again; an updated picture keeps its place and scale. The diagram travels inside the picture (a PNG with the draw.io
+file), so it stays editable in the `.xlsx` file; Excel shows the picture.
 
 The common keyboard shortcuts work: `Ctrl+C/X/V`, `Ctrl+Z/Y`, `Ctrl+B/I/U`, arrow keys, `Tab`, `F2` to edit a cell.
 

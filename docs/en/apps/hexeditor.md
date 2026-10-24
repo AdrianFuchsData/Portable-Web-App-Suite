@@ -1,12 +1,15 @@
 # Hex editor
 
 The hex editor (`hexeditor.html`) shows and edits the bytes of any file: hexadecimal and text view, overwrite and
-insert mode, search for byte patterns and text, a data inspector, and undo/redo. It handles files of several hundred
-megabytes; only the visible rows are drawn.
+insert mode, search for byte patterns and text, a data inspector, and undo/redo, with several files in tabs. It handles
+files of several hundred megabytes; only the visible rows are drawn.
 
 ## Opening, creating and saving
 
-- **Open** (`Ctrl+O`) opens a file; you can also drag a file onto the window. **New** starts an empty file.
+- **Open** (`Ctrl+O`) opens one or more files; you can also drag files onto the window. **New** starts an empty file.
+- Every file opens in its own **tab**; a dot (●) on a tab shows unsaved changes. Each tab keeps its own cursor,
+  selection, undo history and comparison. Close a tab with × or `Alt+W`; if it has unsaved changes, you are asked first.
+  Files opened from other applications (*Open with…*, for example several files of an archive) also open in tabs.
 - **Save** (`Ctrl+S`) writes the file: directly into the opened file in Chrome/Edge on the desktop, as a download in
   Firefox and on Android (replace the original file with it). **Save as** saves under a new name.
 
@@ -70,6 +73,7 @@ On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the applicat
 | `Ctrl+O` | Open |
 | `Ctrl+S` | Save |
 | `Ctrl+Shift+S` | Save as |
+| `Alt+W` | Close the file (tab) |
 
 ### Editing
 

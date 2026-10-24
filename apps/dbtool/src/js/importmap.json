@@ -2,6 +2,7 @@
   "imports": {
     "@app/drivers.js": "drivers.js",
     "@app/er.js": "er.js",
-    "@app/layout.js": "../../../diagram/src/js/layout.js"
+    "@app/layout.js": "../../../diagram/src/js/layout.js",
+    "app/cm-symbols": "../../../../shared/js/cm-symbols.js"
   }
 }

@@ -222,13 +222,48 @@ function mathPart(assets, editable) {
   };
 }
 
-export function renderPage(deck, assets, { editable = false, config = {}, extraHead = '', extraBody = '' } = {}) {
+/** A random nonce for the scripts of one rendered page. */
+function newNonce() {
+  const b = crypto.getRandomValues(new Uint8Array(18));
+  return btoa(String.fromCharCode(...b)).replace(/[+/=]/g, (c) => ({ '+': '-', '/': '_', '=': '' }[c]));
+}
+
+const ACTIVE = /<\s*(script|iframe|frame|object|embed|base|meta|form)\b|\son[a-z]+\s*=|(?:href|src|action|data)\s*=\s*["']?\s*(?:javascript|vbscript):|srcdoc\s*=/i;
+
+/**
+ * Does the deck carry markup that could run code (scripts, event handlers, javascript: links, frames, …)? Code blocks and
+ * notes are shown as text and do not count. The question is only for asking the user – the protection is the page's
+ * Content Security Policy (renderPage), which blocks such content in any case unless the deck is trusted.
+ */
+export function hasActiveContent(deck) {
+  const walk = (v, key) => {
+    if (typeof v === 'string') return key !== 'code' && key !== 'notes' && ACTIVE.test(v);
+    if (Array.isArray(v)) return v.some((x) => walk(x, key));
+    if (v && typeof v === 'object') return Object.entries(v).some(([k, x]) => walk(x, k));
+    return false;
+  };
+  return walk(deck && deck.slides, '');
+}
+
+/**
+ * The page of a deck. Only the editor's own scripts (reveal.js, plugins, math, the parts in extraHead/extraBody) carry the
+ * page's nonce; the Content Security Policy allows no other script, so markup in the slides (HTML blocks, Markdown, imported
+ * presentations) cannot run code – neither inline scripts nor event handlers nor javascript: links – also when the saved
+ * file is opened in a browser. A trusted deck (the user allowed its scripts) gets no policy: its own scripts run.
+ */
+export function renderPage(deck, assets, { editable = false, config = {}, extraHead = '', extraBody = '', trusted = false } = {}) {
   const plugins = ['RevealHighlight', 'RevealMarkdown', 'RevealNotes', 'RevealZoom', 'RevealSearch'].filter((p) => assets.plugins[p]);
   const model = JSON.stringify(deck);
-  const math = assets.math && assets.math.katex && usesMath(deck) ? mathPart(assets, editable) : { head: '', body: '' };
+  const math0 = assets.math && assets.math.katex && usesMath(deck) ? mathPart(assets, editable) : { head: '', body: '' };
+  const nonce = newNonce();
+  const own = (part) => String(part || '').replace(/<script(?=[\s>])/g, `<script nonce="${nonce}"`); // (never applied to slide content)
+  const math = { head: own(math0.head), body: own(math0.body) };
+  extraHead = own(extraHead);
+  extraBody = own(extraBody);
   return `<!doctype html>
 <html lang="${esc(deck.lang || 'en')}">
 <head>
+${trusted ? '' : `<meta http-equiv="Content-Security-Policy" content="script-src 'nonce-${nonce}'; object-src 'none'; base-uri 'none'; form-action 'none'">`}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="generator" content="Portable Web App Suite – reveal.js editor">
@@ -247,9 +282,9 @@ ${extraHead}
 ${renderSlides(deck, editable)}
 </div></div>
 <script type="application/json" id="suite-reveal-deck">${scriptText(model)}</script>
-<script>${scriptText(assets.reveal)}</script>
-${plugins.map((p) => `<script>${scriptText(assets.plugins[p])}</script>`).join('\n')}
-<script>
+<script nonce="${nonce}">${scriptText(assets.reveal)}</script>
+${plugins.map((p) => `<script nonce="${nonce}">${scriptText(assets.plugins[p])}</script>`).join('\n')}
+<script nonce="${nonce}">
 Reveal.initialize(Object.assign(${scriptText(JSON.stringify(revealConfig(deck, config)))}, { plugins: [${plugins.join(', ')}] }));
 </script>
 ${math.body}

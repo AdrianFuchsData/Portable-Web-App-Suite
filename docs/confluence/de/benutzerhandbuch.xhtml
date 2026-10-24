@@ -185,6 +185,10 @@ Dateimanager): Die Datei öffnet sich in der Anwendung, und <strong>Speichern</s
 <td>?</td>
 <td>Informationen über die Anwendung und ihre Tastenkürzel (auch <code>F1</code>, oder <code>?</code> außerhalb von Textfeldern)</td>
 </tr>
+<tr>
+<td>☺</td>
+<td>In einem Textfeld mit Fokus: Emoji und Symbole (auch <code>Strg+.</code>, siehe Emoji und Symbole)</td>
+</tr>
 </tbody>
 </table>
 <p>Die Anwendungen merken sich Sprache und Design in Ihrem Browser.</p>
@@ -256,6 +260,47 @@ alle diese Anwendungen.</p>
 </ul>
 <p>Chrome und Edge teilen die Einstellung zwischen allen aus Dateien geöffneten Anwendungen; Firefox hält sie je
 Anwendungsdatei getrennt.</p>
+<h3>Emoji und Symbole</h3>
+<p>Jedes Textfeld der Suite – einzeilige Felder, Textbereiche, formatierter Text und die Code-Editoren – nimmt Emoji und
+andere Unicode-Zeichen auf (Pfeile, Währungszeichen, mathematische Symbole, griechische Buchstaben, Buchstaben mit
+Akzenten, Formen …).</p>
+<ul>
+<li><strong><code>Strg+.</code></strong> (oder die Schaltfläche <strong>☺</strong> am rechten Rand des Feldes mit dem Fokus) öffnet die Auswahl neben dem Feld (am
+  Smartphone unten am Bildschirm). Sie zeigt die zuletzt verwendeten Zeichen (<strong>🕘</strong>, neueste zuerst; wie die
+  Rechtschreib-Einstellung für alle Anwendungen), die Emoji-Gruppen und die Symbolgruppen.</li>
+<li><strong>Suchen</strong> bei offener Auswahl: nach Name oder Stichwort auf Deutsch oder Englisch (<code>glücklich</code>, <code>Pfeil rechts</code>,
+  <code>Euro</code>), nach Code (<code>:wave:</code>), nach Emoticon (<code>:)</code>) oder nach Codepunkt (<code>U+1F60A</code>, <code>1F60A</code>). <code>Enter</code> fügt das erste
+  Ergebnis ein; <code>↓</code> wechselt zu den Zeichen, die Pfeiltasten bewegen sich darin, <code>Enter</code> oder ein Klick fügt ein und
+  schließt die Auswahl, <strong><code>Umschalt+Enter</code></strong> oder <strong>Umschalt+Klick</strong> fügt ein und lässt sie offen. Die Auswahl unten legt
+  die <strong>Hautfarbe</strong> von Personen und Händen fest. <code>Esc</code> schließt die Auswahl.</li>
+<li><strong>Im Text tippen</strong> (nicht in Code-Editoren): <strong><code>:name:</code></strong> wird zum Emoji, sobald Sie den schließenden Doppelpunkt
+  tippen (<code>:smile:</code> → 😄, <code>:thumbsup:</code> → 👍; auch deutsche Codes und Stichwörter wie <code>:winkende_hand:</code>), und während Sie
+  <code>:wav</code> tippen, erscheint eine Liste passender Emoji (<code>↑</code>/<code>↓</code>, <code>Enter</code> oder <code>Tab</code> übernimmt, <code>Esc</code> schließt). Ein
+  Codepunkt wie <strong><code>U+1F60A</code></strong> oder <strong><code>U1F60A</code></strong> gefolgt von einem Leerzeichen wird zum Zeichen (😊).</li>
+<li><strong><code>Alt+X</code></strong> wandelt den Codepunkt vor dem Cursor (z. B. <code>2192</code>) in das Zeichen (→) und ein Zeichen zurück in seinen
+  Codepunkt – wie in Word; das geht auch in den Code-Editoren.</li>
+<li><strong>Emoticons</strong> wie <code>:)</code>, <code>;-)</code> oder <code>&lt;3</code> werden zu Emoji, wenn ein Leerzeichen folgt – nur wenn Sie das einschalten
+  (siehe unten), weil sie anderswo gewöhnlicher Text sind.</li>
+</ul>
+<p><strong>Einstellungen:</strong> im Info-Dialog (<code>F1</code> oder <strong>?</strong>) unter <strong>⚙ Einstellungen → Emoji und Symbole</strong>: <strong>Die Schaltfläche ☺ in
+Textfeldern zeigen</strong> (standardmäßig an) und <strong>Text-Emoticons wie :) beim Tippen durch Emoji ersetzen</strong> (standardmäßig aus).
+Sie bleiben im Browser gespeichert, gelten für alle Anwendungen (in Firefox je Anwendungsdatei) und sind Teil der
+exportierten Einstellungen. Passwortfelder und das Terminal des SSH-Clients erhalten nie Emoji. Wie Emoji aussehen, hängt
+von den Schriften des Systems ab; auf einem Rechner ohne Emoji-Schrift erscheinen sie als Kästchen.</p>
+<h3>Farben</h3>
+<p>Wo eine Anwendung nach einer Farbe fragt (Bildbearbeitung, Diagramm-Editor, Video-Editor, Präsentation und Web-Folien,
+Kalenderfarben, Barcodes, Notebook-Widgets …), öffnet sich die <strong>Farbauswahl</strong> der Suite: eine Fläche für Sättigung und
+Helligkeit, ein Regler für den Farbton (und, wo die Farbe durchscheinend sein darf, einer für die Deckkraft), der
+hexadezimale Wert und die Werte R, G, B (und Deckkraft in %) zum Eintippen, die bisherige und die neue Farbe nebeneinander
+(ein Klick auf die bisherige kehrt zu ihr zurück), zuletzt verwendete Farben und Grundfarben sowie – in Chrome und Edge –
+<strong>💧</strong>, um eine Farbe irgendwo vom Bildschirm aufzunehmen. Änderungen sind sofort zu sehen; <strong>OK</strong> (oder <code>Enter</code>) behält die
+Farbe, <strong>Abbrechen</strong> (oder <code>Esc</code> oder ein Klick daneben) stellt die bisherige wieder her. Mit der Tastatur bewegen die
+Pfeiltasten den Punkt in der Fläche und die Regler (<code>Umschalt</code>: in größeren Schritten). Am Smartphone erscheint die Auswahl
+unten am Bildschirm.</p>
+<p>Der Texteditor zeigt vor jeder hexadezimalen Farbe im Text (<code>#6cf</code>, <code>#6cff</code>, <code>#66ccff</code>, <code>#66ccffff</code>) ein kleines Quadrat; ein
+Klick darauf öffnet die Farbauswahl und ändert die Farbe im Text (siehe Texteditor).</p>
+<p>Im Info-Dialog unter <strong>⚙ Einstellungen → Farbauswahl</strong> wählt <strong>Die des Browsers</strong> stattdessen den Farbdialog des Browsers (ohne
+Deckkraft und zuletzt verwendete Farben).</p>
 <h3>Rückgängig und Wiederholen</h3>
 <p>Alle Editoren können Änderungen rückgängig machen und wiederholen: mit den Schaltflächen ↶ und ↷ in der Werkzeugleiste
 (auch auf Smartphones und Tablets) oder mit <code>Strg+Z</code> (rückgängig) und <code>Strg+Y</code> oder <code>Strg+Umschalt+Z</code> (wiederholen);
@@ -267,9 +312,18 @@ KeePass- oder E-Mail-Anhang, eine Datei des Python-Notebooks – lassen sich mit
 Anwendung öffnen. Wählen Sie die Anwendung; sie öffnet sich in einem neuen Tab (wenn aus der Übersicht gestartet) oder
 einem neuen Fenster. <strong>Speichern</strong> in dieser Anwendung schreibt die Datei dorthin zurück, woher sie kam (Archiv, Server,
 Datenbank, …); speichern Sie danach das Archiv bzw. die Datenbank, um die Änderung zu behalten. Anhänge empfangener
-E-Mails öffnen sich als Kopie.</p>
+E-Mails öffnen sich als Kopie. Mehrere im Archivmanager oder FTP/SFTP-Client gewählte Dateien öffnen sich gemeinsam im Texteditor oder Hex-Editor,
+jede in einem eigenen Tab eines Fensters.</p>
 <p>Bei Anwendungen, die als einzelne Dateien gestartet werden, legen Sie die HTML-Dateien <strong>mit ihren ursprünglichen Namen
 in einen Ordner</strong> (<code>texteditor.html</code>, <code>archive.html</code>, …), damit eine Anwendung die andere findet.</p>
+<h3>Diagramme in Präsentationen, Dokumenten und Tabellen</h3>
+<p>Präsentations-Editor, Web-Folien, Dokument-Editor und Tabellenkalkulation können Diagramme des Diagramm-Editors enthalten: <strong>📐 Diagramm</strong>
+öffnet ein leeres Diagramm im Diagramm-Editor, und jedes <strong>Speichern</strong> dort setzt es als Bild in die Präsentation, das Dokument oder die
+Arbeitsmappe (das erste Speichern fügt es ein, spätere aktualisieren es). <strong>📐 Diagramm bearbeiten</strong> (oder ein Doppelklick in der Präsentation)
+öffnet ein Diagrammbild wieder im Diagramm-Editor. Das Diagramm steckt im Bild – ein PNG, das auch die draw.io-Datei enthält, wie das
+„bearbeitbare PNG“ von draw.io – und bleibt daher in den gespeicherten <code>.pptx</code>-, <code>.docx</code>- und <code>.xlsx</code>-Dateien bearbeitbar, während
+PowerPoint, Word und Excel einfach das Bild zeigen. Mit draw.io erstellte Diagrammbilder lassen sich ebenso bearbeiten. Wie bei <em>Öffnen mit…</em>
+muss der Diagramm-Editor im selben Ordner liegen, oder die Anwendung wird aus der Übersicht gestartet.</p>
 <h2>Dateien öffnen und speichern</h2>
 <p>Sie öffnen Dateien mit der Öffnen-Schaltfläche einer Anwendung oder indem Sie sie in das Anwendungsfenster ziehen.</p>
 <p>Wie gespeichert wird, hängt vom Browser ab:</p>

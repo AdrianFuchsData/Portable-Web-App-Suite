@@ -255,6 +255,15 @@ def test_export_svg_png_and_reopen(app_page, tmp_path):
         open_file(other, path)
         expect(other.locator("[data-testid=page-name]")).to_have_text(["Flow", "Second"])
         assert [x["type"] for x in shapes(other)] == ["terminator", "diamond"]
+        # saved in the format it was opened from: the image again, with the (changed) diagram inside
+        other.evaluate("DG.page().shapes[0].text = 'Changed'; DG.app.dirty = true; DG.render()")
+        again = save_download(other, tmp_path)
+        assert again.suffix == path.suffix
+        if path.suffix == ".png":
+            img = Image.open(again)
+            assert img.format == "PNG" and "Changed" in urllib.parse.unquote(img.text["mxfile"])
+        else:
+            assert "Changed" in ET.parse(again).getroot().get("content")
 
 
 def test_excalidraw_import(app_page, tmp_path):
@@ -522,3 +531,224 @@ def test_shape_libraries_and_er_arrows(app_page, tmp_path):
     assert page2.evaluate("DG.page().shapes[0].text") == cls["text"]
     assert page2.evaluate("DG.page().edges.map((e) => [e.style.startArrow, e.style.endArrow])") == [["er-mand-one", "er-zero-many"], ["none", "block-open"]]
     assert page.errors == [] and page2.errors == []
+
+
+def four_shapes(page):
+    for _ in range(4):
+        page.click("[data-testid=shape-rect]")
+    page.evaluate("DG.page().shapes.forEach((s, i) => { s.x = 40 + i * 160; s.y = 60; s.text = 'S' + i; }); DG.app.selection = new Set(); DG.render()")
+    page.click("[data-testid=zoom-fit]")
+    return page.evaluate("DG.page().shapes.map((s) => s.id)")
+
+
+def center_of(page, i):
+    s = page.evaluate(f"(() => {{ const s = DG.page().shapes[{i}]; return [s.x + s.w / 2, s.y + s.h / 2]; }})()")
+    return screen(page, *s)
+
+
+def click_at(page, point, key=None):
+    """A click at a screen point, with a modifier key held."""
+    if key:
+        page.keyboard.down(key)
+    page.mouse.click(*point)
+    if key:
+        page.keyboard.up(key)
+
+
+def tree_rows(page):
+    return page.evaluate("""Array.from(document.querySelectorAll('[data-testid=tree-item]')).map((r) =>
+      [Number(r.getAttribute('aria-level')), r.dataset.kind, r.querySelector('[data-testid=tree-name], [data-testid=tree-edit]').textContent || '', r.getAttribute('aria-selected') === 'true'])""")
+
+
+def test_nested_groups_and_element_tree(app_page, tmp_path):
+    page = app_page("diagram", init_script=NO_PICKERS)
+    ids = four_shapes(page)
+    # S0+S1 -> Group 1; Group 1 + S2 -> Group 2 (a group of a group)
+    page.mouse.click(*center_of(page, 0))
+    click_at(page, center_of(page, 1), "Shift")
+    page.keyboard.press("Control+g")
+    click_at(page, center_of(page, 2), "Shift")
+    page.keyboard.press("Control+g")
+    groups = page.evaluate("DG.page().groups")
+    inner = next(g for g in groups if g.get("parent"))
+    outer = next(g for g in groups if not g.get("parent"))
+    assert inner["parent"] == outer["id"] and [inner["name"], outer["name"]] == ["Group 1", "Group 2"]
+    # the tree: top-most first, groups with their members
+    page.click("[data-testid=sidebar-elements]")
+    expect(page.locator("[data-testid=elements]")).to_be_visible()
+    assert [r[:3] for r in tree_rows(page)] == [[1, "layer", "Background"], [2, "shape", "S3"], [2, "group", "Group 2"], [3, "shape", "S2"], [3, "group", "Group 1"],
+                                                [4, "shape", "S1"], [4, "shape", "S0"]]
+    # a click on the canvas selects the outermost group, Alt+click one shape
+    page.mouse.click(*center_of(page, 0))
+    assert page.evaluate("[...DG.app.selection].length") == 3
+    assert [r[3] for r in tree_rows(page)][1:4] == [False, True, True]
+    click_at(page, center_of(page, 0), "Alt")
+    assert page.evaluate("[...DG.app.selection]") == [ids[0]]
+    # choosing in the tree selects in the diagram: styles and moving apply to all selected
+    page.locator("[data-testid=tree-item][data-kind=group]", has_text="Group 1").click()
+    assert sorted(page.evaluate("[...DG.app.selection]")) == sorted(ids[:2])
+    page.fill("[data-testid=fmt-fill]", "#ff0000")
+    assert page.evaluate("DG.page().shapes.map((s) => s.style.fill)") == ["#ff0000", "#ff0000", "#ffffff", "#ffffff"]
+    page.locator("[data-testid=tree-item][data-kind=shape]", has_text="S3").click(modifiers=["Control"])
+    xs = page.evaluate("DG.page().shapes.map((s) => s.x)")
+    page.locator("[data-testid=canvas]").focus()
+    page.keyboard.press("ArrowRight")
+    assert page.evaluate("DG.page().shapes.map((s) => s.x)") == [xs[0] + 1, xs[1] + 1, xs[2], xs[3] + 1]
+    # rename a group (double-click), collapse it, keyboard in the tree
+    page.locator("[data-testid=tree-item][data-kind=group]", has_text="Group 1").dblclick()
+    page.fill("[data-testid=tree-edit]", "Pair")
+    page.keyboard.press("Enter")
+    assert any(g["name"] == "Pair" for g in page.evaluate("DG.page().groups"))
+    page.locator("[data-testid=tree-item][data-kind=group]", has_text="Pair").locator("[data-testid=tree-toggle]").click()
+    expect(page.locator("[data-testid=tree-item]")).to_have_count(5)
+    page.locator("[data-testid=tree-item]").nth(1).focus()
+    page.keyboard.press("ArrowDown")
+    page.keyboard.press("Enter")
+    assert len(page.evaluate("[...DG.app.selection]")) == 3  # Group 2
+    # saved with nested, named group cells; opened again with the same hierarchy
+    path = save_download(page, tmp_path)
+    root = ET.parse(path).getroot().find("diagram/mxGraphModel/root")
+    group_cells = {c.get("value"): c for c in root.iter("mxCell") if c.get("style") == "group"}
+    assert group_cells["Pair"].get("parent") == group_cells["Group 2"].get("id")
+    page.evaluate("(x) => DG.setDoc(DG.readDrawio(x), 'again.drawio')", path.read_text(encoding="utf-8"))
+    page.click("[data-testid=sidebar-elements]")
+    expect(page.locator("[data-testid=tree-item]")).to_have_count(5)  # (Pair stays folded)
+    # ungroup the outer group: the inner one stays
+    page.mouse.click(*center_of(page, 2))
+    page.keyboard.press("Control+Shift+g")
+    assert [g["name"] for g in page.evaluate("DG.page().groups")] == ["Pair"]
+    assert page.evaluate("DG.page().groups[0].parent") is None
+    # duplicated groups are new groups with the same structure
+    page.mouse.click(*center_of(page, 0))
+    page.keyboard.press("Control+d")
+    assert len(page.evaluate("DG.page().groups")) == 2
+    assert page.errors == []
+
+
+def test_rotation(app_page, tmp_path):
+    page = app_page("diagram", init_script=NO_PICKERS)
+    four_shapes(page)
+    page.mouse.click(*center_of(page, 0))
+    # the field and the 90° buttons
+    page.fill("[data-testid=fmt-rotation]", "30")
+    page.keyboard.press("Enter")
+    assert page.evaluate("DG.page().shapes[0].rotation") == 30
+    page.click("[data-testid=rotate-right]")
+    assert page.evaluate("DG.page().shapes[0].rotation") == 120
+    page.click("[data-testid=rotate-left]")
+    page.click("[data-testid=rotate-left]")
+    assert page.evaluate("DG.page().shapes[0].rotation") == -60
+    page.fill("[data-testid=fmt-rotation]", "0")
+    page.keyboard.press("Enter")
+    assert page.evaluate("DG.page().shapes[0].rotation ?? 0") == 0
+    # the rotation handle: Shift snaps to 15°
+    handle = page.locator("[data-testid=handle-rotate]").bounding_box()
+    cx, cy = center_of(page, 0)
+    page.mouse.move(handle["x"] + handle["width"] / 2, handle["y"] + handle["height"] / 2)
+    page.mouse.down()
+    page.keyboard.down("Shift")
+    page.mouse.move(cx + 200, cy - 190, steps=8)  # about 45° clockwise
+    page.mouse.up()
+    page.keyboard.up("Shift")
+    assert page.evaluate("DG.page().shapes[0].rotation") == 45
+    page.keyboard.press("Control+z")
+    assert page.evaluate("DG.page().shapes[0].rotation ?? 0") == 0
+    # several shapes turn around their common centre
+    page.evaluate("DG.app.selection = new Set(DG.page().shapes.slice(0, 2).map((s) => s.id)); DG.rotateSelection(90)")
+    a, b = page.evaluate("DG.page().shapes.slice(0, 2).map((s) => [s.x + s.w / 2, s.y + s.h / 2, s.rotation])")
+    assert abs(a[0] - b[0]) < 0.01 and abs(abs(a[1] - b[1]) - 160) < 0.01 and a[2] == b[2] == 90
+    # rotated shapes: a click inside selects, connectors attach to the rotated port, the box of the selection
+    page.evaluate("DG.app.selection = new Set(); DG.page().shapes[3].rotation = 90; DG.render()")
+    page.wait_for_function("() => (document.querySelector(`[data-id='${DG.page().shapes[3].id}']`).getAttribute('transform') || '').includes('rotate(90')")
+    s3 = page.evaluate("(() => { const s = DG.page().shapes[3]; return { x: s.x, y: s.y, w: s.w, h: s.h }; })()")
+    page.mouse.click(*screen(page, s3["x"] + s3["w"] / 2, s3["y"] + s3["h"] / 2 + 50))  # inside only when rotated (h = 60)
+    assert page.evaluate("[...DG.app.selection]") == page.evaluate("[DG.page().shapes[3].id]")
+    page.evaluate("""(() => { const p = DG.page(); p.edges.push({ id: 'e1', from: { id: p.shapes[3].id, ax: 1, ay: 0.5 }, to: { x: 0, y: 0 }, text: '', route: 'straight',
+      style: { stroke: '#000000', strokeWidth: 1, dash: false, startArrow: 'none', endArrow: 'classic', fontSize: 11, fontColor: '#000000', opacity: 1 }, extra: {} }); DG.render(); })()""")
+    # resizing a rotated shape keeps the opposite side in place
+    page.evaluate("DG.app.selection = new Set([DG.page().shapes[3].id]); DG.render()")
+    he = page.locator("[data-testid=handle-e]").bounding_box()
+    page.mouse.move(he["x"] + he["width"] / 2, he["y"] + he["height"] / 2)
+    page.mouse.down()
+    page.mouse.move(he["x"] + he["width"] / 2, he["y"] + he["height"] / 2 + 40 * page.evaluate("DG.app.view.zoom"), steps=4)
+    page.mouse.up()
+    after = page.evaluate("(() => { const s = DG.page().shapes[3]; return { x: s.x, y: s.y, w: s.w, h: s.h, r: s.rotation }; })()")
+    assert after["r"] == 90 and abs(after["w"] - (s3["w"] + 40)) < 1
+    # draw.io: rotation=… written and read
+    path = save_download(page, tmp_path)
+    styles = [c.get("style") for c in cells(path)]
+    assert any("rotation=90" in st for st in styles)
+    page.evaluate("(x) => DG.setDoc(DG.readDrawio(x), 'again.drawio')", path.read_text(encoding="utf-8"))
+    assert page.evaluate("DG.page().shapes.map((s) => s.rotation || 0)") == [90, 90, 0, 90]
+    assert page.errors == []
+
+
+def test_excalidraw_groups_and_angles(app_page):
+    page = app_page("diagram", init_script=NO_PICKERS)
+    data = {"type": "excalidraw", "elements": [
+        {"id": "a", "type": "rectangle", "x": 0, "y": 0, "width": 100, "height": 50, "angle": 0.7853981634, "groupIds": ["inner", "outer"]},
+        {"id": "b", "type": "ellipse", "x": 200, "y": 0, "width": 60, "height": 60, "groupIds": ["inner", "outer"]},
+        {"id": "c", "type": "diamond", "x": 400, "y": 0, "width": 60, "height": 60, "groupIds": ["outer"]},
+    ]}
+    doc = page.evaluate("(j) => DG.readExcalidraw(j)", json.dumps(data))
+    p = doc["pages"][0]
+    assert round(p["shapes"][0]["rotation"]) == 45
+    assert {g["id"]: g.get("parent") for g in p["groups"]} == {"inner": "outer", "outer": None}
+    assert [s["group"] for s in p["shapes"]] == ["inner", "inner", "outer"]
+    assert page.errors == []
+
+
+def test_element_tree_on_a_phone(app_page):
+    page = app_page("diagram", mobile=True, init_script=NO_PICKERS)
+    page.evaluate("""(() => { for (let i = 0; i < 2; i++) document.querySelector('[data-testid=shape-rect]').click(); })()""")
+    page.evaluate("DG.app.selection = new Set(DG.page().shapes.map((s) => s.id)); DG.group(); DG.app.selection = new Set(); DG.render()")
+    page.click("[data-testid=sidebar-elements]")
+    rows = page.locator("[data-testid=tree-item]")
+    expect(rows).to_have_count(4)  # the layer, the group, its two shapes
+    rows.nth(1).click()
+    assert len(page.evaluate("[...DG.app.selection]")) == 2
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    assert page.errors == []
+
+
+def test_edit_labels_in_the_element_tree(app_page):
+    page = app_page("diagram", init_script=NO_PICKERS)
+    four_shapes(page)
+    page.evaluate("DG.page().shapes[1].text = 'two\\nlines'; DG.app.selection = new Set(DG.page().shapes.slice(2).map((s) => s.id)); DG.group(); DG.app.selection = new Set(); DG.render()")
+    page.click("[data-testid=sidebar-elements]")
+    item = lambda kind, text: page.locator(f"[data-testid=tree-item][data-kind={kind}]", has_text=text)
+    # a shape label (double-click), Escape keeps the old text
+    item("shape", "S0").dblclick()
+    page.fill("[data-testid=tree-edit]", "Start")
+    page.keyboard.press("Enter")
+    assert page.evaluate("DG.page().shapes[0].text") == "Start"
+    expect(item("shape", "Start")).to_be_focused()
+    page.keyboard.press("F2")
+    page.fill("[data-testid=tree-edit]", "nothing")
+    page.keyboard.press("Escape")
+    assert page.evaluate("DG.page().shapes[0].text") == "Start"
+    # a multi-line label: a text area, Shift+Enter adds a line, Enter keeps it
+    item("shape", "two").dblclick()
+    editor = page.locator("textarea[data-testid=tree-edit]")
+    expect(editor).to_have_value("two\nlines")
+    editor.press("End")
+    page.keyboard.press("Control+End")
+    page.keyboard.press("Shift+Enter")
+    page.keyboard.type("three")
+    page.keyboard.press("Enter")
+    assert page.evaluate("DG.page().shapes[1].text") == "two\nlines\nthree"
+    # a group and the layer
+    item("group", "Group 1").dblclick()
+    page.fill("[data-testid=tree-edit]", "Right side")
+    page.keyboard.press("Enter")
+    assert page.evaluate("DG.page().groups[0].name") == "Right side"
+    item("layer", "Background").dblclick()
+    page.fill("[data-testid=tree-edit]", "Base")
+    page.locator("[data-testid=canvas]").click(position={"x": 5, "y": 5})  # leaving the field keeps the name
+    assert page.evaluate("DG.page().layers[0].name") == "Base"
+    # every change is one undo step; a layer row selects the layer's content
+    page.keyboard.press("Control+z")
+    assert page.evaluate("DG.page().layers[0].name") == "Background"
+    item("layer", "Background").click()
+    assert len(page.evaluate("[...DG.app.selection]")) == 4
+    assert page.errors == []

@@ -18,7 +18,7 @@ Bearbeitungskomponente ist Univer Sheets.</p>
 <td>Excel (<code>.xlsx</code>)</td>
 <td>ja</td>
 <td>ja</td>
-<td>Werte, Formeln, Formate, Zahlenformate, verbundene Zellen, Spaltenbreiten, Zeilenhöhen, fixierte Bereiche, Registerfarben, ausgeblendete Blätter, bedingte Formatierung, Datenüberprüfung</td>
+<td>Werte, Formeln, Formate, Zahlenformate, verbundene Zellen, Spaltenbreiten, Zeilenhöhen, fixierte Bereiche, Registerfarben, ausgeblendete Blätter, bedingte Formatierung, Datenüberprüfung, Bilder</td>
 </tr>
 <tr>
 <td>Excel mit Makros (<code>.xlsm</code>)</td>
@@ -76,6 +76,12 @@ die CSV-Datei wieder mit dem Trennzeichen, mit dem sie importiert wurde.</p>
 Bearbeitungsleiste zeigt und bearbeitet den Inhalt der gewählten Zelle. Die Leiste unten fügt Blätter hinzu (+) und wechselt zwischen ihnen; ein
 Rechtsklick auf ein Blattregister benennt es um, färbt, blendet aus oder löscht es. Der Zoom steht rechts unten. Ein Rechtsklick auf Zellen,
 Zeilen und Spalten öffnet weitere Befehle (Einfügen, Löschen, Sortieren, …).</p>
+<p><strong>Bilder</strong> schweben über den Zellen: Einfügen über das Menüband (<strong>Einfügen</strong> → Bild), Ziehen verschiebt sie, Ziehen an den Griffen ändert die
+Größe. In <code>.xlsx</code>-Dateien behalten sie Zelle, Versatz und Größe (auch Bilder aus anderen Programmen, darunter Dateien von Pythons openpyxl).</p>
+<p><strong>📐 Diagramm</strong> in der Werkzeugleiste öffnet ein leeres Diagramm im Diagramm-Editor (ein neues Fenster oder ein neuer Tab); das erste
+<strong>Speichern</strong> dort setzt das Diagramm als Bild an die gewählte Zelle, spätere Speichervorgänge aktualisieren es. Ist ein Diagrammbild
+ausgewählt (ein Klick darauf), öffnet <strong>📐 Diagramm bearbeiten</strong> es wieder im Diagramm-Editor; ein aktualisiertes Bild behält Stelle und
+Maßstab. Das Diagramm steckt im Bild (ein PNG mit der draw.io-Datei) und bleibt daher in der <code>.xlsx</code>-Datei bearbeitbar; Excel zeigt das Bild.</p>
 <p>Die üblichen Tastenkombinationen funktionieren: <code>Strg+C/X/V</code>, <code>Strg+Z/Y</code>, <code>Strg+B/I/U</code>, Pfeiltasten, <code>Tab</code>, <code>F2</code> zum Bearbeiten einer Zelle.</p>
 <p>Die Sprache der Bearbeitungskomponente folgt der Sprachumschaltung der Suite, ebenso das dunkle Design.</p>
 <p>Rückgängig und Wiederholen sind die ersten beiden Schaltflächen der Editor-Werkzeugleiste (auch <code>Strg+Z</code> und <code>Strg+Y</code>).</p>

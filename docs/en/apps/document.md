@@ -29,12 +29,20 @@ entries of a table of contents.
 
 Documents from Word and LibreOffice are converted when they are opened; very complex layouts (text boxes, columns, tracked changes,
 comments) may look simpler. Keep the original file until you have checked the result.
+A "word" of more than 20,000 characters without a space (such as pasted base64 data) gets an invisible break point (U+200B)
+every 1,000 characters so that it can be shown; they are saved with the document.
 
 ## Editing
 
 The ribbon has the tabs **Start** (clipboard, bold/italic/underline/strike, sub- and superscript, paragraph style, size, font, colours,
 alignment, lists, checklists) and **Insert** (tables, images, page breaks, headers and footers). The usual shortcuts work: `Ctrl+B/I/U`,
 `Ctrl+Z/Y`, `Ctrl+C/X/V`, `Ctrl+F` to find. The status bar shows the word count and the zoom.
+
+**📐 Diagram** in the toolbar opens an empty diagram in the diagram editor (a new window or tab); its first **Save** inserts
+the diagram as a picture at the cursor, later saves update it. When a diagram picture is selected (a click on it), **📐 Edit
+diagram** opens it in the diagram editor again. An updated picture keeps its place and scale (at most the width of the text);
+`Ctrl+Z` undoes it. The diagram travels inside the picture (a PNG with the draw.io file), so it stays editable in the `.docx`
+file; Word shows the picture.
 
 The language of the editing component follows the suite's language switch, and it follows the dark theme too.
 

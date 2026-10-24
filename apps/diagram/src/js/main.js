@@ -5,6 +5,7 @@
 import {
   SHAPES, LIBRARIES, ALL_TYPES, LABEL_BELOW, COMPARTMENTS, PRESETS, ARROWS, PORTS, FONT, newDoc, newPage, makeShape, makeEdge, shapePath, edgeGeometry, edgePathD, edgeMidpoint, arrowPath, arrowFrom,
   wrapText, textWidth, pageBounds, History, newId, newLayer, layersOf, layerOf, isShown, isSelectable, inLayerOrder,
+  groupsOf, groupById, ancestors, groupMembers, rotatePoint, normalizeAngle, shapePoint, containsPoint, shapeBounds,
 } from '@app/model.js';
 import { readDrawio, writeDrawio, writeModel, readModel, drawioFromSvg, drawioFromPng, pngWithDrawio, readExcalidraw } from '@app/drawio.js';
 import { layout } from '@app/layout.js';
@@ -43,7 +44,9 @@ Suite.i18n.register({
     'dg.discard': 'Discard the unsaved changes?', 'dg.cannotOpen': '“{0}” cannot be opened: {1}', 'dg.fit': 'Fit', 'dg.panels': 'Format',
     'dg.insertImage': 'Insert image', 'dg.untitled': 'diagram', 'dg.empty': 'Drag a shape from the left, or double-click to add text.',
     'dg.selected': '{0} selected', 'dg.copy': 'Copy', 'dg.paste': 'Paste', 'dg.cut': 'Cut',
-    'dg.group': 'Group (Ctrl+G)', 'dg.ungroup': 'Ungroup (Ctrl+Shift+G)', 'dg.lock': 'Lock (Ctrl+L)', 'dg.unlockAll': 'Unlock all ({0})',
+    'dg.group': 'Group (Ctrl+G)', 'dg.ungroup': 'Ungroup (Ctrl+Shift+G)', 'dg.groupName': 'Group {0}', 'dg.groupUnnamed': 'Group', 'dg.renameGroup': 'Name of the group', 'dg.renameLayer': 'Name of the layer', 'dg.editLabel': 'Label',
+    'dg.shapesTab': 'Shapes', 'dg.elements': 'Elements', 'dg.noElements': 'The page is empty.', 'dg.elementsHint': 'Click selects (Ctrl: add or remove); double-click or F2 edits the label of a layer, group or element.',
+    'dg.rotate': 'Rotate (Shift: steps of 15°)', 'dg.rotation': 'Rotation (°)', 'dg.rotateLeft': 'Rotate 90° to the left', 'dg.rotateRight': 'Rotate 90° to the right', 'dg.lock': 'Lock (Ctrl+L)', 'dg.unlockAll': 'Unlock all ({0})',
     'dg.layers': 'Layers', 'dg.addLayer': 'Add layer', 'dg.layerName': 'Layer {0}', 'dg.layerVisible': 'Show / hide', 'dg.layerLocked': 'Lock / unlock',
     'dg.layerActive': 'New shapes go to this layer', 'dg.layerUp': 'Move up', 'dg.layerDown': 'Move down', 'dg.deleteLayer': 'Delete the layer (its content moves to the layer below)',
     'dg.moveToLayer': 'Move to layer', 'dg.locked': 'Locked objects cannot be selected; unlock them in the Diagram panel.',
@@ -73,7 +76,9 @@ Suite.i18n.register({
     'dg.discard': 'Die ungespeicherten Änderungen verwerfen?', 'dg.cannotOpen': '„{0}“ kann nicht geöffnet werden: {1}', 'dg.fit': 'Einpassen', 'dg.panels': 'Format',
     'dg.insertImage': 'Bild einfügen', 'dg.untitled': 'diagramm', 'dg.empty': 'Ziehen Sie eine Form von links herein oder doppelklicken Sie für Text.',
     'dg.selected': '{0} ausgewählt', 'dg.copy': 'Kopieren', 'dg.paste': 'Einfügen', 'dg.cut': 'Ausschneiden',
-    'dg.group': 'Gruppieren (Strg+G)', 'dg.ungroup': 'Gruppierung aufheben (Strg+Umschalt+G)', 'dg.lock': 'Sperren (Strg+L)', 'dg.unlockAll': 'Alle entsperren ({0})',
+    'dg.group': 'Gruppieren (Strg+G)', 'dg.ungroup': 'Gruppierung aufheben (Strg+Umschalt+G)', 'dg.groupName': 'Gruppe {0}', 'dg.groupUnnamed': 'Gruppe', 'dg.renameGroup': 'Name der Gruppe', 'dg.renameLayer': 'Name der Ebene', 'dg.editLabel': 'Beschriftung',
+    'dg.shapesTab': 'Formen', 'dg.elements': 'Elemente', 'dg.noElements': 'Die Seite ist leer.', 'dg.elementsHint': 'Klick wählt aus (Strg: hinzu oder weg); Doppelklick oder F2 ändert die Beschriftung einer Ebene, Gruppe oder eines Elements.',
+    'dg.rotate': 'Drehen (Umschalt: in 15°-Schritten)', 'dg.rotation': 'Drehung (°)', 'dg.rotateLeft': 'Um 90° nach links drehen', 'dg.rotateRight': 'Um 90° nach rechts drehen', 'dg.lock': 'Sperren (Strg+L)', 'dg.unlockAll': 'Alle entsperren ({0})',
     'dg.layers': 'Ebenen', 'dg.addLayer': 'Ebene hinzufügen', 'dg.layerName': 'Ebene {0}', 'dg.layerVisible': 'Zeigen / ausblenden', 'dg.layerLocked': 'Sperren / entsperren',
     'dg.layerActive': 'Neue Formen kommen auf diese Ebene', 'dg.layerUp': 'Nach oben', 'dg.layerDown': 'Nach unten', 'dg.deleteLayer': 'Ebene löschen (ihr Inhalt kommt auf die Ebene darunter)',
     'dg.moveToLayer': 'Auf Ebene verschieben', 'dg.locked': 'Gesperrte Objekte lassen sich nicht auswählen; entsperren Sie sie im Bereich Diagramm.',
@@ -86,6 +91,7 @@ const app = {
   doc: newDoc(), name: '', handle: null, dirty: false, history: new History(),
   selection: new Set(), tool: 'select', view: { zoom: 1, x: 40, y: 40 }, grid: true, snap: true,
   drag: null, editing: null, hover: null, clipboard: null, panels: false, renamingPage: null, pasteCount: 0,
+  sidebar: 'shapes', collapsed: new Set(), treeFocus: null, treeEdit: null, // the left sidebar: shapes or the element tree (treeEdit: id of the row being edited)
   libraries: new Set((() => { try { return JSON.parse(localStorage.getItem('suite.diagram.libraries')) || []; } catch (e) { return []; } })()),
 };
 app.name = `${t('dg.untitled')}.drawio`;
@@ -118,6 +124,7 @@ function changed() {
   const p = page();
   const target = activeLayer(p).id;
   for (const o of [...p.shapes, ...p.edges]) if (o.layer === undefined) o.layer = target;
+  groupsOf(p); // drops groups that became empty
   app.dirty = true;
   Suite.shell.setDirty(true);
   render();
@@ -190,27 +197,132 @@ function deleteSelection() {
 
 function selectAll() { app.selection = new Set([...page().shapes, ...page().edges].filter((o) => isSelectable(page(), o)).map((o) => o.id)); render(); }
 
-/** Ids plus the other members of their groups. */
+/** Ids plus the other members of their outermost groups. */
 function withGroups(ids) {
-  const groups = new Set([...ids].map((id) => (find(id) || {}).group).filter(Boolean));
-  if (!groups.size) return new Set(ids);
-  return new Set([...ids, ...[...page().shapes, ...page().edges].filter((o) => groups.has(o.group)).map((o) => o.id)]);
+  const p = page();
+  const tops = new Set([...ids].map((id) => { const o = find(id); const chain = o ? ancestors(p, o) : []; return chain[chain.length - 1]; }).filter(Boolean));
+  if (!tops.size) return new Set(ids);
+  return new Set([...ids, ...[...tops].flatMap((g) => groupMembers(p, g)).map((o) => o.id)]);
 }
 
+/**
+ * Group the selection. The new group takes the place of the selected parts in their common enclosing group: selected
+ * sub-groups (or the sub-groups of selected members) and single objects become its children, so groups of groups arise.
+ */
 function group() {
+  const p = page();
   const objs = [...selectedShapes(), ...selectedEdges()];
   if (objs.length < 2) return;
+  const chains = objs.map((o) => ancestors(p, o).reverse()); // outermost first
+  let common = 0;
+  while (chains.every((c) => c.length > common && c[common] === chains[0][common])) common++;
+  const parent = common ? chains[0][common - 1] : null;
+  const subGroups = new Set(), singles = [];
+  objs.forEach((o, i) => { if (chains[i][common]) subGroups.add(chains[i][common]); else singles.push(o); });
+  if (subGroups.size + singles.length < 2) return; // already one group
   record();
   const id = newId();
-  for (const o of objs) o.group = id;
+  const list = groupsOf(p);
+  // (memberships first: the group list drops groups without members)
+  for (const gid of subGroups) list.find((g) => g.id === gid).parent = id;
+  for (const o of singles) o.group = id;
+  list.push({ id, name: t('dg.groupName', list.length + 1), ...(parent ? { parent } : {}) });
   changed();
+  return id;
 }
 
+/** Dissolve the outermost groups that are completely selected; selected members of other groups leave their group. */
 function ungroup() {
+  const p = page();
   const objs = [...selectedShapes(), ...selectedEdges()].filter((o) => o.group);
   if (!objs.length) return;
   record();
-  for (const o of objs) delete o.group;
+  const full = (gid) => groupMembers(p, gid).every((o) => app.selection.has(o.id));
+  const dissolve = new Set();
+  for (const o of objs) {
+    const g = ancestors(p, o).reverse().find(full);
+    if (g) dissolve.add(g);
+  }
+  for (const gid of dissolve) {
+    const g = groupById(p, gid);
+    for (const child of p.groups) if (child.parent === gid) { if (g.parent) child.parent = g.parent; else delete child.parent; }
+    for (const o of [...p.shapes, ...p.edges]) if (o.group === gid) { if (g.parent) o.group = g.parent; else delete o.group; }
+    p.groups = p.groups.filter((x) => x.id !== gid);
+  }
+  if (!dissolve.size) {
+    // members selected alone: out of their group (into the enclosing one)
+    for (const o of objs) { const g = groupById(p, o.group); if (g && g.parent) o.group = g.parent; else delete o.group; }
+  }
+  changed();
+}
+
+function renameGroup(gid, name) {
+  const g = groupById(page(), gid);
+  if (!g || g.name === name) return;
+  record();
+  g.name = name;
+  changed();
+}
+
+/** Select objects (from the element tree): a group stands for all its members. */
+function selectItems(items, mode = 'replace') {
+  const p = page();
+  const membersOf = (it) => (it.kind === 'group' ? groupMembers(p, it.id) : it.kind === 'layer' ? [...p.shapes, ...p.edges].filter((o) => layerOf(p, o).id === it.id) : [find(it.id)]);
+  const ids = items.flatMap(membersOf).filter((o) => o && isSelectable(p, o)).map((o) => o.id);
+  if (mode === 'replace') app.selection = new Set(ids);
+  else if (mode === 'toggle' && ids.every((id) => app.selection.has(id))) for (const id of ids) app.selection.delete(id);
+  else for (const id of ids) app.selection.add(id);
+  render();
+}
+
+// ---- rotation ------------------------------------------------------------------------------------------------
+
+/** Bounding box of the selected shapes (rotated shapes: their outer box). */
+function selectionBounds() {
+  const boxes = selectedShapes().map(shapeBounds);
+  if (!boxes.length) return null;
+  const x = Math.min(...boxes.map((b) => b.x)), y = Math.min(...boxes.map((b) => b.y));
+  return { x, y, w: Math.max(...boxes.map((b) => b.x + b.w)) - x, h: Math.max(...boxes.map((b) => b.y + b.h)) - y };
+}
+
+/** Rotate the selection by delta degrees: one shape around its centre, several around the centre of the selection. */
+function rotateSelection(delta, { orig = null, recordIt = true } = {}) {
+  const shapes = selectedShapes();
+  if (!shapes.length || !delta) return;
+  if (recordIt) record();
+  const start = orig || snapshotRotation();
+  const c = start.center;
+  for (const sh of shapes) {
+    const o = start.shapes.get(sh.id);
+    if (!o) continue;
+    const mid = rotatePoint({ x: o.x + o.w / 2, y: o.y + o.h / 2 }, c, delta);
+    sh.x = mid.x - o.w / 2; sh.y = mid.y - o.h / 2;
+    const r = normalizeAngle((o.rotation || 0) + delta);
+    if (r) sh.rotation = r; else delete sh.rotation;
+  }
+  for (const ed of selectedEdges()) for (const end of ['from', 'to']) {
+    const o = start.ends.get(`${ed.id}:${end}`);
+    if (o) Object.assign(ed[end], rotatePoint(o, c, delta));
+  }
+  changed();
+}
+
+function snapshotRotation() {
+  const shapes = selectedShapes();
+  const b = selectionBounds();
+  const center = shapes.length === 1 ? { x: shapes[0].x + shapes[0].w / 2, y: shapes[0].y + shapes[0].h / 2 } : { x: b.x + b.w / 2, y: b.y + b.h / 2 };
+  const ends = new Map();
+  for (const ed of selectedEdges()) for (const end of ['from', 'to']) if (!ed[end].id) ends.set(`${ed.id}:${end}`, { x: ed[end].x, y: ed[end].y });
+  return { center, shapes: new Map(shapes.map((x) => [x.id, { x: x.x, y: x.y, w: x.w, h: x.h, rotation: x.rotation || 0 }])), ends };
+}
+
+/** Set the rotation of every selected shape (each around its own centre). */
+function setRotation(deg) {
+  const shapes = selectedShapes();
+  if (!shapes.length) return;
+  record();
+  const r = normalizeAngle(deg);
+  for (const sh of shapes) { if (r) sh.rotation = r; else delete sh.rotation; }
   changed();
 }
 
@@ -290,7 +402,7 @@ function copyable() {
 async function copy() {
   const { shapes, edges } = copyable();
   if (!shapes.length && !edges.length) return;
-  const xml = writeModel(shapes, edges);
+  const xml = writeModel(shapes, edges, { groups: page().groups || [] });
   app.clipboard = xml;
   app.pasteCount = 0;
   try { await navigator.clipboard.writeText(xml); } catch (e) { /* internal clipboard only */ }
@@ -305,14 +417,17 @@ function pasteXml(xml, offset) {
   record();
   const tmp = newPage();
   readModel(root, tmp, { withLayers: false });
-  // pasted objects go to the active layer and form new groups (not the groups of the originals)
-  const regroup = new Map();
+  // pasted objects go to the active layer and form new groups (not the groups of the originals), nested as they were
+  const regroup = new Map((tmp.groups || []).map((g) => [g.id, newId()]));
+  const fresh = (gid) => { if (!regroup.has(gid)) regroup.set(gid, newId()); return regroup.get(gid); };
   for (const o of [...tmp.shapes, ...tmp.edges]) {
     delete o.layer;
-    if (o.group) { if (!regroup.has(o.group)) regroup.set(o.group, newId()); o.group = regroup.get(o.group); }
+    if (o.group) o.group = fresh(o.group);
   }
+  groupsOf(page());
+  for (const g of tmp.groups || []) page().groups.push({ id: fresh(g.id), name: g.name || '', ...(g.parent ? { parent: fresh(g.parent) } : {}) });
   for (const s of tmp.shapes) { s.x += offset; s.y += offset; }
-  for (const e of tmp.edges) for (const end of [e.from, e.to]) if (!end.id) { end.x += offset; end.y += offset; }
+  for (const e of tmp.edges) for (const end of [e.from, e.to, ...(e.waypoints || [])]) if (!end.id) { end.x += offset; end.y += offset; }
   page().shapes.push(...tmp.shapes);
   page().edges.push(...tmp.edges);
   app.selection = new Set([...tmp.shapes, ...tmp.edges].map((o) => o.id));
@@ -350,7 +465,7 @@ document.addEventListener('paste', async (e) => {
 document.addEventListener('copy', (e) => {
   if (app.editing || /^(INPUT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName) || !app.selection.size) return;
   const { shapes, edges } = copyable();
-  app.clipboard = writeModel(shapes, edges);
+  app.clipboard = writeModel(shapes, edges, { groups: page().groups || [] });
   app.pasteCount = 0;
   e.clipboardData.setData('text/plain', app.clipboard);
   e.preventDefault();
@@ -358,7 +473,7 @@ document.addEventListener('copy', (e) => {
 document.addEventListener('cut', (e) => {
   if (app.editing || /^(INPUT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName) || !app.selection.size) return;
   const { shapes, edges } = copyable();
-  app.clipboard = writeModel(shapes, edges);
+  app.clipboard = writeModel(shapes, edges, { groups: page().groups || [] });
   e.clipboardData.setData('text/plain', app.clipboard);
   e.preventDefault();
   deleteSelection();
@@ -366,7 +481,7 @@ document.addEventListener('cut', (e) => {
 
 function duplicate() {
   const { shapes, edges } = copyable();
-  if (shapes.length || edges.length) pasteXml(writeModel(shapes, edges), GRID * 2);
+  if (shapes.length || edges.length) pasteXml(writeModel(shapes, edges, { groups: page().groups || [] }), GRID * 2);
 }
 
 function reorder(front) {
@@ -598,7 +713,8 @@ async function parseFile(file) {
 async function openPicked({ file, handle }) {
   try {
     const doc = await parseFile(file);
-    const editable = /\.(drawio|xml)$/i.test(file.name);
+    // draw.io files, and PNG/SVG images with a diagram inside (saved as such images again)
+    const editable = /\.(drawio|xml|png|svg)$/i.test(file.name);
     setDoc(doc, editable ? file.name : `${file.name.replace(/(\.drawio)?\.[^.]+$/i, '')}.drawio`, editable ? handle : null);
     if (handle && editable) Suite.files.remember(APP, handle);
   } catch (e) { console.warn(e); Suite.shell.toast(t('dg.cannotOpen', file.name, e.message), 'error'); }
@@ -617,12 +733,21 @@ async function newDiagram() {
 
 function report(result) { if (result.mode === 'downloaded') Suite.shell.banner(result.message); else Suite.shell.toast(result.message); }
 
+/** The format a diagram is saved in: an image with the diagram inside when it was opened from one (e.g. from a presentation). */
+/** Pictures of image shapes: embedded (data:image/…, blob:) or from the web – no javascript: or other schemes from opened files. */
+const safeImage = (src) => typeof src === 'string' && /^\s*(data:image\/|blob:|https?:)/i.test(src);
+const imageFormat = () => (/\.png$/i.test(app.name) ? 'png' : /\.svg$/i.test(app.name) ? 'svg' : null);
+
 async function save(as = false) {
   commitEditing();
   try {
-    const bytes = new TextEncoder().encode(writeDrawio(app.doc, { version: '%%BUILD_VERSION%%' }));
-    const types = [{ description: 'draw.io', accept: { 'application/vnd.jgraph.mxfile': ['.drawio'] } }];
-    const result = as || !app.handle ? await Suite.files.saveAs(bytes, { suggestedName: app.name, types, type: 'application/xml' }) : await Suite.files.save({ name: app.name, handle: app.handle }, bytes, { type: 'application/xml' });
+    const format = imageFormat();
+    const bytes = format === 'png' ? await pngBytes(app.doc.pages[0]) : format === 'svg' ? new TextEncoder().encode(exportSvgText(app.doc.pages[0]).svg)
+      : new TextEncoder().encode(writeDrawio(app.doc, { version: '%%BUILD_VERSION%%' }));
+    const types = format === 'png' ? [{ description: 'PNG', accept: { 'image/png': ['.png'] } }] : format === 'svg' ? [{ description: 'SVG', accept: { 'image/svg+xml': ['.svg'] } }]
+      : [{ description: 'draw.io', accept: { 'application/vnd.jgraph.mxfile': ['.drawio'] } }];
+    const type = format === 'png' ? 'image/png' : format === 'svg' ? 'image/svg+xml' : 'application/xml';
+    const result = as || !app.handle ? await Suite.files.saveAs(bytes, { suggestedName: app.name, types, type }) : await Suite.files.save({ name: app.name, handle: app.handle }, bytes, { type });
     if (!result) return;
     report(result);
     if (result.handle) app.handle = result.handle;
@@ -670,7 +795,7 @@ function printDiagram() {
   setTimeout(() => { if (box.isConnected && !window.matchMedia('print').matches) done(); }, 1000);
 }
 
-const stem = () => app.name.replace(/(\.drawio)?\.[^.]+$/i, '');
+const stem = () => app.name.replace(/(\.drawio)?\.[^.]+$/i, '').replace(/\.drawio$/i, '');
 
 async function exportSvg() {
   const { svg } = exportSvgText();
@@ -678,8 +803,9 @@ async function exportSvg() {
   if (result) report(result);
 }
 
-async function exportPng(scale = 2) {
-  const { svg, width, height } = exportSvgText();
+/** A page as PNG (scale 2 = sharp on high-resolution screens) with the whole diagram inside (tEXt chunk "mxfile", like draw.io). */
+async function pngBytes(p = page(), scale = 2) {
+  const { svg, width, height } = exportSvgText(p);
   const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
   try {
     const img = new Image();
@@ -693,10 +819,16 @@ async function exportPng(scale = 2) {
     ctx.fillRect(0, 0, c.width, c.height);
     ctx.drawImage(img, 0, 0, c.width, c.height);
     const blob = await new Promise((r) => c.toBlob(r, 'image/png'));
-    const png = pngWithDrawio(new Uint8Array(await blob.arrayBuffer()), writeDrawio(app.doc));
+    return pngWithDrawio(new Uint8Array(await blob.arrayBuffer()), writeDrawio(app.doc));
+  } finally { URL.revokeObjectURL(url); }
+}
+
+async function exportPng(scale = 2) {
+  try {
+    const png = await pngBytes(page(), scale);
     const result = await Suite.files.saveAs(png, { suggestedName: `${stem()}.drawio.png`, types: [{ description: 'PNG', accept: { 'image/png': ['.png'] } }], type: 'image/png' });
     if (result) report(result);
-  } catch (e) { fail(e); } finally { URL.revokeObjectURL(url); }
+  } catch (e) { fail(e); }
 }
 
 function undo() { commitEditing(); const snap = app.history.undo(app.doc); if (snap) { app.doc = snap; app.selection = new Set([...app.selection].filter((id) => find(id))); changed(); } }
@@ -735,7 +867,7 @@ function shapeAt(p, exclude = null) {
   const shapes = inLayerOrder(page(), page().shapes);
   for (let i = shapes.length - 1; i >= 0; i--) {
     const s = shapes[i];
-    if (s.id !== exclude && p.x >= s.x && p.x <= s.x + s.w && p.y >= s.y && p.y <= s.y + s.h) return s;
+    if (s.id !== exclude && containsPoint(s, p)) return s;
   }
   return null;
 }
@@ -745,7 +877,8 @@ function portAt(s, p) {
   const reach = 12 / app.view.zoom;
   let best = null;
   for (const port of PORTS) {
-    const d = Math.hypot(s.x + port.ax * s.w - p.x, s.y + port.ay * s.h - p.y);
+    const pt = shapePoint(s, port.ax, port.ay);
+    const d = Math.hypot(pt.x - p.x, pt.y - p.y);
     if (d <= reach && (!best || d < best.d)) best = { ...port, d };
   }
   return best && { ax: best.ax, ay: best.ay };
@@ -771,7 +904,13 @@ function onPointerDown(e) {
     return;
   }
   if (handle === 'from' || handle === 'to') { record(); app.drag = { kind: 'edge-end', id: target.dataset.edge, end: handle, cur: p }; return; }
-  if (handle) { const s = find(target.dataset.shape); record(); app.drag = { kind: 'resize', handle, id: s.id, start: p, orig: { x: s.x, y: s.y, w: s.w, h: s.h } }; return; }
+  if (handle === 'rotate') {
+    record();
+    const orig = snapshotRotation();
+    app.drag = { kind: 'rotate', orig, startAngle: Math.atan2(p.y - orig.center.y, p.x - orig.center.x), delta: 0 };
+    return;
+  }
+  if (handle) { const s = find(target.dataset.shape); record(); app.drag = { kind: 'resize', handle, id: s.id, start: p, orig: { x: s.x, y: s.y, w: s.w, h: s.h, rotation: s.rotation || 0 } }; return; }
   if (app.tool.startsWith('shape:')) { app.drag = { kind: 'create', type: app.tool.slice(6), start: p, cur: p }; return; }
   if (app.tool === 'edge') {
     const s = shapeAt(p);
@@ -787,10 +926,11 @@ function onPointerDown(e) {
     if (e.shiftKey || e.ctrlKey || e.metaKey) {
       const remove = app.selection.has(id);
       for (const x of ids) if (remove) app.selection.delete(x); else app.selection.add(x);
-    } else if (!app.selection.has(id)) app.selection = ids;
+    } else if (!app.selection.has(id) || e.altKey) app.selection = ids; // (Alt: this member alone, also inside a selected group)
     const orig = new Map();
     for (const s of selectedShapes()) orig.set(s.id, { x: s.x, y: s.y });
     for (const ed of selectedEdges()) for (const end of ['from', 'to']) if (!ed[end].id) orig.set(`${ed.id}:${end}`, { x: ed[end].x, y: ed[end].y });
+    for (const ed of selectedEdges()) if (ed.waypoints) orig.set(`${ed.id}:waypoints`, ed.waypoints.map((p) => ({ ...p })));
     app.drag = { kind: 'move', start: p, orig, moved: false };
   } else {
     if (!e.shiftKey) app.selection = new Set();
@@ -831,6 +971,35 @@ function onPointerMove(e) {
     if (first && !e.altKey) { const o = d.orig.get(first.id); dx = snapV(o.x + dx) - o.x; dy = snapV(o.y + dy) - o.y; }
     for (const s of selectedShapes()) { const o = d.orig.get(s.id); if (o) { s.x = o.x + dx; s.y = o.y + dy; } }
     for (const ed of selectedEdges()) for (const end of ['from', 'to']) { const o = d.orig.get(`${ed.id}:${end}`); if (o) { ed[end].x = o.x + dx; ed[end].y = o.y + dy; } }
+    for (const ed of selectedEdges()) { const o = d.orig.get(`${ed.id}:waypoints`); if (o) ed.waypoints = o.map((p) => ({ x: p.x + dx, y: p.y + dy })); }
+    changed();
+    return;
+  }
+  if (d.kind === 'rotate') {
+    const angle = ((Math.atan2(p.y - d.orig.center.y, p.x - d.orig.center.x) - d.startAngle) * 180) / Math.PI;
+    let delta = e.shiftKey ? Math.round(angle / 15) * 15 : Math.round(angle); // Shift: steps of 15°
+    if (!e.shiftKey && !e.altKey) { // 0/90/180/270 attract (a single shape: its angle; several: the turn)
+      const base = d.orig.shapes.size === 1 ? (d.orig.shapes.values().next().value.rotation || 0) : 0;
+      const near = Math.round((base + delta) / 90) * 90;
+      if (Math.abs(base + delta - near) < 4) delta = near - base;
+    }
+    d.delta = delta;
+    rotateSelection(delta, { orig: d.orig, recordIt: false });
+    return;
+  }
+  if (d.kind === 'resize' && d.orig.rotation) {
+    // in the shape's own (rotated) frame; the opposite side stays where it is
+    const s = find(d.id);
+    const o = d.orig;
+    const local = rotatePoint({ x: p.x - d.start.x, y: p.y - d.start.y }, { x: 0, y: 0 }, -o.rotation);
+    let x0 = 0, y0 = 0, x1 = o.w, y1 = o.h;
+    if (d.handle.includes('e')) x1 = Math.max(10, o.w + local.x);
+    if (d.handle.includes('s')) y1 = Math.max(10, o.h + local.y);
+    if (d.handle.includes('w')) x0 = Math.min(o.w - 10, local.x);
+    if (d.handle.includes('n')) y0 = Math.min(o.h - 10, local.y);
+    const w = x1 - x0, h = y1 - y0;
+    const c = rotatePoint({ x: o.x + (x0 + x1) / 2, y: o.y + (y0 + y1) / 2 }, { x: o.x + o.w / 2, y: o.y + o.h / 2 }, o.rotation);
+    Object.assign(s, { x: c.x - w / 2, y: c.y - h / 2, w, h });
     changed();
     return;
   }
@@ -883,7 +1052,7 @@ function onPointerUp(e) {
   } else if (d.kind === 'connect') {
     const s = shapeAt(p);
     const fromShape = d.from.id ? find(d.from.id) : null;
-    const start = fromShape ? { x: fromShape.x + (d.from.ax ?? 0.5) * fromShape.w, y: fromShape.y + (d.from.ay ?? 0.5) * fromShape.h } : d.from;
+    const start = fromShape ? shapePoint(fromShape, d.from.ax ?? 0.5, d.from.ay ?? 0.5) : d.from;
     // a click (no drag) or a release on the start shape creates nothing
     if (!s && Math.hypot(p.x - start.x, p.y - start.y) * app.view.zoom < 8) { render(); return; }
     if (s && fromShape && s.id === fromShape.id && !portAt(s, p)) { render(); return; }
@@ -899,7 +1068,7 @@ function onPointerUp(e) {
     if ((x1 - x0) * app.view.zoom > 3 || (y1 - y0) * app.view.zoom > 3) {
       const inside = (q) => q.x >= x0 && q.x <= x1 && q.y >= y0 && q.y <= y1;
       const pg = page();
-      for (const s of pg.shapes) if (isSelectable(pg, s) && s.x >= x0 && s.y >= y0 && s.x + s.w <= x1 && s.y + s.h <= y1) app.selection.add(s.id);
+      for (const s of pg.shapes) { const b = shapeBounds(s); if (isSelectable(pg, s) && b.x >= x0 && b.y >= y0 && b.x + b.w <= x1 && b.y + b.h <= y1) app.selection.add(s.id); }
       const map = shapeMap();
       for (const ed of pg.edges) if (isSelectable(pg, ed) && edgeGeometry(ed, map).points.every(inside)) app.selection.add(ed.id);
       app.selection = new Set([...withGroups(app.selection)].filter((x) => isSelectable(pg, find(x))));
@@ -964,9 +1133,9 @@ function ShapeText({ s }) {
 function Shape({ s, exporting }) {
   const st = s.style;
   const editingThis = app.editing && app.editing.id === s.id;
-  return html`<g data-id=${exporting ? null : s.id} transform=${`translate(${s.x},${s.y})`} opacity=${st.opacity < 1 ? st.opacity : null} class=${exporting ? null : 'dg-shape'}>
+  return html`<g data-id=${exporting ? null : s.id} transform=${`translate(${s.x},${s.y})${s.rotation ? ` rotate(${s.rotation} ${s.w / 2} ${s.h / 2})` : ''}`} opacity=${st.opacity < 1 ? st.opacity : null} class=${exporting ? null : 'dg-shape'}>
     ${s.type === 'image'
-      ? html`${st.image ? html`<image href=${st.image} width=${s.w} height=${s.h} preserveAspectRatio="none" />` : null}<rect width=${s.w} height=${s.h} fill=${exporting ? 'none' : 'transparent'} stroke=${st.stroke === 'none' ? 'none' : st.stroke} />`
+      ? html`${safeImage(st.image) ? html`<image href=${st.image} width=${s.w} height=${s.h} preserveAspectRatio="none" />` : null}<rect width=${s.w} height=${s.h} fill=${exporting ? 'none' : 'transparent'} stroke=${st.stroke === 'none' ? 'none' : st.stroke} />`
       : html`<path d=${shapePath(s)} fill=${s.type === 'actor' ? (st.fill === 'none' ? 'transparent' : st.fill) : st.fill === 'none' ? (exporting ? 'none' : 'transparent') : st.fill}
           stroke=${st.stroke} stroke-width=${st.strokeWidth} stroke-dasharray=${st.dash ? `${st.strokeWidth * 3} ${st.strokeWidth * 3}` : null} stroke-linejoin="round" />`}
     ${editingThis ? null : html`<${ShapeText} s=${s} />`}
@@ -1009,17 +1178,31 @@ function Overlay() {
   if (portShape && !isEdge(portShape) && (!app.drag || app.drag.kind === 'connect') && (app.tool === 'select' || app.tool === 'edge')) {
     for (const port of PORTS) {
       parts.push(html`<circle class="dg-port" data-handle="port" data-shape=${portShape.id} data-ax=${port.ax} data-ay=${port.ay} data-testid="port"
-        cx=${portShape.x + port.ax * portShape.w} cy=${portShape.y + port.ay * portShape.h} r=${5 / z} stroke-width=${1 / z} />`);
+        cx=${shapePoint(portShape, port.ax, port.ay).x} cy=${shapePoint(portShape, port.ax, port.ay).y} r=${5 / z} stroke-width=${1 / z} />`);
     }
   }
+  const frame = (s) => `rotate(${s.rotation || 0} ${s.x + s.w / 2} ${s.y + s.h / 2})`;
   for (const s of selectedShapes()) {
-    parts.push(html`<rect class="dg-sel" x=${s.x} y=${s.y} width=${s.w} height=${s.h} stroke-width=${1 / z} />`);
+    parts.push(html`<rect class="dg-sel" x=${s.x} y=${s.y} width=${s.w} height=${s.h} transform=${frame(s)} stroke-width=${1 / z} />`);
   }
+  const rotating = app.drag && app.drag.kind === 'rotate';
   if (single && !isEdge(single)) {
     const s = single;
     const handles = { nw: [0, 0], n: [0.5, 0], ne: [1, 0], e: [1, 0.5], se: [1, 1], s: [0.5, 1], sw: [0, 1], w: [0, 0.5] };
-    for (const [name, [hx, hy]] of Object.entries(handles)) {
-      parts.push(html`<rect class=${`dg-handle h-${name}`} data-handle=${name} data-shape=${s.id} data-testid=${`handle-${name}`} x=${s.x + hx * s.w - hs / 2} y=${s.y + hy * s.h - hs / 2} width=${hs} height=${hs} stroke-width=${1 / z} />`);
+    const items = rotating ? [] : Object.entries(handles).map(([name, [hx, hy]]) => html`<rect class=${`dg-handle h-${name}`} data-handle=${name} data-shape=${s.id} data-testid=${`handle-${name}`}
+      x=${s.x + hx * s.w - hs / 2} y=${s.y + hy * s.h - hs / 2} width=${hs} height=${hs} stroke-width=${1 / z} />`);
+    // the rotation handle above the top edge
+    const ry = s.y - 24 / z;
+    items.push(html`<path class="dg-rotate-line" d=${`M${s.x + s.w / 2},${s.y}V${ry}`} stroke-width=${1 / z} />`);
+    items.push(html`<circle class="dg-handle dg-rotate" data-handle="rotate" data-shape=${s.id} data-testid="handle-rotate" cx=${s.x + s.w / 2} cy=${ry} r=${hs / 1.6} stroke-width=${1 / z}><title>${t('dg.rotate')}</title></circle>`);
+    parts.push(html`<g transform=${frame(s)}>${items}</g>`);
+  } else if (selectedShapes().length > 1) {
+    // several shapes (e.g. a group): one rotation handle above the selection
+    const b = rotating ? null : selectionBounds();
+    if (b) {
+      parts.push(html`<rect class="dg-sel dg-sel-group" x=${b.x} y=${b.y} width=${b.w} height=${b.h} stroke-width=${1 / z} />`);
+      parts.push(html`<path class="dg-rotate-line" d=${`M${b.x + b.w / 2},${b.y}V${b.y - 24 / z}`} stroke-width=${1 / z} />`);
+      parts.push(html`<circle class="dg-handle dg-rotate" data-handle="rotate" data-testid="handle-rotate" cx=${b.x + b.w / 2} cy=${b.y - 24 / z} r=${hs / 1.6} stroke-width=${1 / z}><title>${t('dg.rotate')}</title></circle>`);
     }
   }
   for (const ed of selectedEdges()) {
@@ -1107,17 +1290,168 @@ function shapeButton(type, testid) {
 // the open libraries are remembered in this browser
 function saveLibraries() { try { localStorage.setItem('suite.diagram.libraries', JSON.stringify([...app.libraries])); } catch (e) { /* storage blocked */ } }
 
+// ---- element tree (sidebar) -------------------------------------------------------------------------------------------
+
+/** The page as a tree for the sidebar: per layer (top first) groups and objects, the top-most first. */
+function elementTree(p = page()) {
+  const groups = groupsOf(p);
+  const objects = [...p.shapes, ...p.edges]; // drawing order: shapes, then edges
+  const z = new Map(objects.map((o, i) => [o.id, i]));
+  const label = (o) => {
+    if (!isEdge(o)) return (String(o.text || '').split('\n')[0].trim()) || t(`shape.${o.type}`);
+    const end = (e) => (e.id && find(e.id) ? (String(find(e.id).text || '').split('\n')[0].trim() || t(`shape.${find(e.id).type}`)) : '·');
+    return o.text ? String(o.text).split('\n')[0] : `${end(o.from)} → ${end(o.to)}`;
+  };
+  return layersOf(p).slice().reverse().map((layer) => {
+    const inLayer = objects.filter((o) => layerOf(p, o).id === layer.id);
+    const node = (o) => ({ kind: isEdge(o) ? 'edge' : 'shape', id: o.id, label: label(o), z: z.get(o.id), type: o.type, locked: !!o.locked });
+    const build = (gid) => {
+      const kids = [
+        ...groups.filter((g) => (g.parent || null) === gid).map((g) => { const n = build(g.id); return n.children.length ? { kind: 'group', id: g.id, label: g.name || t('dg.groupUnnamed'), children: n.children, z: Math.max(...n.children.map((c) => c.z)) } : null; }).filter(Boolean),
+        ...inLayer.filter((o) => (o.group || null) === gid || (gid === null && o.group && !groups.some((g) => g.id === o.group))).map(node),
+      ];
+      return { children: kids.sort((a, b) => b.z - a.z) };
+    };
+    const children = build(null).children;
+    return { kind: 'layer', id: layer.id, label: layer.name, layer, children, z: Infinity, hidden: layer.visible === false, locked: !!layer.locked };
+  });
+}
+
+/** Change the label of a tree row: the text of a shape or connector, the name of a group or layer (one undo step). */
+function setLabel(it, value) {
+  const p = page();
+  if (it.kind === 'layer') { const l = layersOf(p).find((x) => x.id === it.id); if (l && value.trim() && value.trim() !== l.name) setLayer(l, { name: value.trim() }); return; }
+  if (it.kind === 'group') { renameGroup(it.id, value.trim()); return; }
+  const o = find(it.id);
+  if (!o || o.text === value) return;
+  record();
+  o.text = value;
+  changed();
+}
+
+/** Rows of the tree that are shown (collapsed layers and groups hide their children). */
+function treeRows() {
+  const rows = [];
+  const walk = (items, depth) => { for (const it of items) { rows.push({ ...it, depth }); if (it.children && !app.collapsed.has(it.id)) walk(it.children, depth + 1); } };
+  walk(elementTree(), 0);
+  return rows;
+}
+
+const rowSelected = (it) => {
+  if (it.kind === 'shape' || it.kind === 'edge') return app.selection.has(it.id);
+  const p = page();
+  const m = it.kind === 'group' ? groupMembers(p, it.id) : [...p.shapes, ...p.edges].filter((o) => layerOf(p, o).id === it.id && isSelectable(p, o));
+  return m.length > 0 && m.every((o) => app.selection.has(o.id));
+};
+
+function onTreeKey(e) {
+  if (e.target.closest('input, textarea')) return;
+  const rows = treeRows();
+  const focused = e.target.closest('[data-testid=tree-item]');
+  if (focused) app.treeFocus = focused.dataset.id; // the row that has the focus (also after a click)
+  const i = rows.findIndex((r) => r.id === app.treeFocus);
+  const cur = rows[i];
+  const focus = (r) => {
+    if (!r) return;
+    app.treeFocus = r.id;
+    const el = document.querySelector(`[data-testid=tree-item][data-id="${r.id}"]`);
+    if (el) el.focus();
+    render();
+  };
+  const handled = () => { e.preventDefault(); e.stopPropagation(); };
+  if (e.key === 'ArrowDown') { handled(); focus(rows[Math.min(rows.length - 1, i + 1)] || rows[0]); }
+  else if (e.key === 'ArrowUp') { handled(); focus(rows[Math.max(0, i - 1)] || rows[0]); }
+  else if (e.key === 'Home') { handled(); focus(rows[0]); }
+  else if (e.key === 'End') { handled(); focus(rows[rows.length - 1]); }
+  else if (e.key === 'ArrowRight' && cur && cur.children) { handled(); if (app.collapsed.has(cur.id)) { app.collapsed.delete(cur.id); render(); } else focus(rows[i + 1]); }
+  else if (e.key === 'ArrowLeft' && cur) {
+    handled();
+    if (cur.children && !app.collapsed.has(cur.id)) { app.collapsed.add(cur.id); render(); }
+    else focus(rows.slice(0, i).reverse().find((r) => r.depth === cur.depth - 1));
+  } else if ((e.key === 'Enter' || e.key === ' ') && cur) { handled(); selectItems([cur], e.ctrlKey || e.metaKey ? 'toggle' : e.shiftKey ? 'add' : 'replace'); }
+  else if (e.key === 'F2' && cur) { handled(); app.treeEdit = cur.id; render(); }
+  else if (e.key === 'Delete' && app.selection.size) { handled(); deleteSelection(); }
+}
+
+/** The label of a row being edited: one line in an input, several lines in a text area (Enter keeps, Shift+Enter: new line). */
+function TreeLabelEditor({ it }) {
+  const p = page();
+  const value = it.kind === 'layer' ? (layersOf(p).find((l) => l.id === it.id) || {}).name || ''
+    : it.kind === 'group' ? (groupById(p, it.id) || {}).name || '' : (find(it.id) || {}).text || '';
+  const multi = (it.kind === 'shape' || it.kind === 'edge') && value.includes('\n');
+  let done = false;
+  const finish = (el, keep) => {
+    if (done) return;
+    done = true;
+    app.treeEdit = null;
+    if (keep) setLabel(it, el.value); else render();
+    requestAnimationFrame(() => { const row = document.querySelector(`[data-testid=tree-item][data-id="${it.id}"]`); if (row) row.focus(); });
+  };
+  const keys = (ev) => {
+    ev.stopPropagation();
+    if (ev.key === 'Escape') { ev.preventDefault(); finish(ev.target, false); }
+    else if (ev.key === 'Enter' && !(multi && ev.shiftKey)) { ev.preventDefault(); finish(ev.target, true); }
+  };
+  const props = { class: 'dg-tree-edit', 'data-testid': 'tree-edit', 'aria-label': t(it.kind === 'layer' ? 'dg.renameLayer' : it.kind === 'group' ? 'dg.renameGroup' : 'dg.editLabel'),
+    defaultValue: value, autofocus: true, onClick: (ev) => ev.stopPropagation(), onDblClick: (ev) => ev.stopPropagation(), onKeyDown: keys, onBlur: (ev) => finish(ev.target, true),
+    ref: (el) => { if (el && !el.dataset.focused) { el.dataset.focused = '1'; requestAnimationFrame(() => { el.focus(); el.select(); }); } } };
+  return multi ? html`<textarea rows=${Math.min(6, value.split('\n').length)} ...${props}></textarea>` : html`<input ...${props} />`;
+}
+
+function Elements() {
+  const tree = elementTree();
+  const empty = tree.every((l) => !l.children.length) && tree.length === 1;
+  const rows = treeRows();
+  if (!rows.some((r) => r.id === app.treeFocus) && rows.length) app.treeFocus = rows[0].id;
+  const row = (it, depth) => {
+    const parent = !!it.children;
+    const open = parent && !app.collapsed.has(it.id);
+    const sel = rowSelected(it);
+    const click = (e) => { app.treeFocus = it.id; selectItems([it], e.ctrlKey || e.metaKey ? 'toggle' : e.shiftKey ? 'add' : 'replace'); };
+    const icon = it.kind === 'layer' ? '◫' : it.kind === 'group' ? '▣' : it.kind === 'edge' ? '⟶' : '▭';
+    const count = it.kind === 'group' ? groupMembers(page(), it.id).length : it.kind === 'layer' ? it.children.length : null;
+    const li = html`<li role="treeitem" aria-level=${depth + 1} aria-selected=${sel ? 'true' : 'false'} aria-expanded=${parent ? String(open) : null}
+        tabindex=${app.treeFocus === it.id ? 0 : -1} class=${`dg-tree-row dg-tree-${it.kind}${sel ? ' selected' : ''}${it.locked ? ' locked' : ''}${it.hidden ? ' hidden' : ''}`}
+        data-testid="tree-item" data-kind=${it.kind} data-id=${it.id}
+        style=${`padding-left:${0.3 + depth * 0.9}rem`} onClick=${click} onDblClick=${() => { app.treeEdit = it.id; render(); }}>
+      ${parent ? html`<span class="dg-tree-toggle" data-testid="tree-toggle" aria-hidden="true" onClick=${(ev) => { ev.stopPropagation(); if (open) app.collapsed.add(it.id); else app.collapsed.delete(it.id); render(); }}>${open ? '▾' : '▸'}</span>` : html`<span class="dg-tree-toggle"></span>`}
+      <span class="dg-tree-icon" aria-hidden="true">${icon}</span>
+      ${app.treeEdit === it.id ? html`<${TreeLabelEditor} it=${it} />` : html`<span class="dg-tree-name" data-testid="tree-name">${it.label}</span>`}
+      ${count != null ? html`<small class="dg-tree-count">${count}</small>` : null}
+      ${it.locked ? html`<span aria-label=${t('dg.lock')}>🔒</span>` : null}
+    </li>`;
+    return [li, ...(open ? it.children.flatMap((c) => row(c, depth + 1)) : [])];
+  };
+  return html`<div class="dg-elements" data-testid="elements">
+    ${empty ? html`<p class="dg-tree-empty">${t('dg.noElements')}</p>` : html`<ul role="tree" class="dg-tree" aria-label=${t('dg.elements')} aria-multiselectable="true" onKeyDown=${onTreeKey}>
+      ${tree.flatMap((l) => row(l, 0))}
+    </ul>`}
+    <p class="dg-tree-hint"><small>${t('dg.elementsHint')}</small></p>
+  </div>`;
+}
+
 function Library() {
   const tools = [['select', '↖', 'dg.select'], ['hand', '✋', 'dg.hand'], ['edge', '⟶', 'dg.connector']];
-  return html`<aside class="dg-library" data-testid="library">
+  const tab = app.sidebar || 'shapes';
+  return html`<aside class=${`dg-library${tab === 'elements' ? ' elements' : ''}`} data-testid="library">
     <div class="dg-tools">${tools.map(([id, icon, label]) => html`<button class=${app.tool === id ? '' : 'secondary outline'} title=${t(label)} aria-pressed=${app.tool === id}
       data-testid=${`tool-${id}`} onClick=${() => { app.tool = id; render(); }}>${icon}</button>`)}</div>
+    <div class="dg-side-tabs" role="tablist">
+      ${[['shapes', 'dg.shapesTab', '◇'], ['elements', 'dg.elements', '☰']].map(([id, label, icon]) => html`<button role="tab" aria-selected=${tab === id ? 'true' : 'false'} class=${tab === id ? '' : 'secondary outline'}
+        title=${t(label)} aria-label=${t(label)} data-testid=${`sidebar-${id}`} onClick=${() => { app.sidebar = id; render(); }}>${icon}${tab === 'elements' ? html` <span>${t(label)}</span>` : null}</button>`)}
+    </div>
+    ${tab === 'elements' ? html`<${Elements} />` : html`<${ShapePalette} />`}
+  </aside>`;
+}
+
+function ShapePalette() {
+  return html`<div class="dg-palette">
     <div class="dg-shapes">${SHAPES.map((type) => shapeButton(type, `shape-${type}`))}</div>
     ${Object.entries(LIBRARIES).map(([lib, types]) => html`<details class="dg-lib" data-testid=${`library-${lib}`} open=${app.libraries.has(lib)}
         onToggle=${(e) => { if (e.target.open) app.libraries.add(lib); else app.libraries.delete(lib); saveLibraries(); }}>
       <summary>${t(`dg.lib.${lib}`)}</summary>
       <div class="dg-shapes">${types.map((type) => shapeButton(type, `shape-${lib}-${type}`))}</div></details>`)}
-  </aside>`;
+  </div>`;
 }
 
 function ColorField({ label, value, onChange, allowNone, testid }) {
@@ -1178,6 +1512,12 @@ function Format() {
       ${['top', 'middle', 'bottom'].map((a) => html`<button class=${st.valign === a ? '' : 'secondary outline'} title=${t('dg.align')} data-testid=${`fmt-valign-${a}`} onClick=${() => setStyle('valign', a)}>${{ top: '⤒', middle: '↕', bottom: '⤓' }[a]}</button>`)}
     </div>` : null}
     ${s ? html`<strong>${t('dg.geometry')}</strong><div class="dg-row dg-geom">${num('X', 'x', s, 'fmt-x')}${num('Y', 'y', s, 'fmt-y')}</div><div class="dg-row dg-geom">${num('dg.width', 'w', s, 'fmt-w')}${num('H', 'h', s, 'fmt-h')}</div>` : null}
+    ${shapes.length ? html`<div class="dg-row dg-rotation">
+      <label>${t('dg.rotation')}<input type="number" min="-360" max="360" step="1" key=${`rot-${shapes.map((x) => x.id).join()}-${shapes[0].rotation || 0}`} defaultValue=${Math.round((shapes[0].rotation || 0) * 10) / 10}
+        data-testid="fmt-rotation" onChange=${(e) => setRotation(+e.target.value || 0)} /></label>
+      <button class="secondary outline" title=${t('dg.rotateLeft')} aria-label=${t('dg.rotateLeft')} data-testid="rotate-left" onClick=${() => rotateSelection(-90)}>⟲</button>
+      <button class="secondary outline" title=${t('dg.rotateRight')} aria-label=${t('dg.rotateRight')} data-testid="rotate-right" onClick=${() => rotateSelection(90)}>⟳</button>
+    </div>` : null}
     <strong>${t('dg.arrange')}</strong>
     <div class="dg-buttons">
       <button class="secondary outline" data-testid="to-front" onClick=${() => reorder(true)}>${t('dg.toFront')}</button>
@@ -1303,7 +1643,7 @@ document.addEventListener('keydown', (e) => {
     const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0, dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
     record('nudge');
     for (const s of selectedShapes()) { s.x += dx; s.y += dy; }
-    for (const ed of selectedEdges()) for (const end of [ed.from, ed.to]) if (!end.id) { end.x += dx; end.y += dy; }
+    for (const ed of selectedEdges()) for (const end of [ed.from, ed.to, ...(ed.waypoints || [])]) if (!end.id) { end.x += dx; end.y += dy; }
     run(changed);
     return;
   }
@@ -1317,5 +1657,5 @@ Suite.files.recent(APP);
 Suite.bridge.receive((picked) => openPicked(picked), { app: 'diagram' }); // files opened from other apps ("Open with…")
 
 // for tests
-window.DG = { app, page, setDoc, readDrawio, writeDrawio, exportSvgText, render, parseMermaid, autoLayout, group, ungroup, lockSelection, unlockAll };
+window.DG = { app, page, setDoc, readDrawio, writeDrawio, exportSvgText, render, parseMermaid, autoLayout, group, ungroup, lockSelection, unlockAll, rotateSelection, setRotation, selectItems, readExcalidraw };
 document.body.dataset.ready = 'true';

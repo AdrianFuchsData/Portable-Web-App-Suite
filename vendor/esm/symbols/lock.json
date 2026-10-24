@@ -1,0 +1,10 @@
+{
+  "cldr-annotations-full": {
+    "version": "48.2.0",
+    "license": "Unicode-3.0"
+  },
+  "emojibase-data": {
+    "version": "17.0.0",
+    "license": "MIT"
+  }
+}

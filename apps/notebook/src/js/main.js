@@ -13,6 +13,7 @@ import DOMPurify from 'dompurify';
 import { createWidgets, VIEW_MIME } from '@app/widgets.js';
 import 'app/spell-dom'; // spelling selector in the header, marks in text fields (shared/js/spell-dom.js)
 import { spellChecking } from 'app/cm-spell';
+import 'app/cm-symbols'; // emoji and symbols insert through the editor (shared/js/cm-symbols.js)
 
 const { html } = Suite.shell;
 const t = Suite.t;
@@ -24,7 +25,7 @@ Suite.i18n.register({
   en: {
     'nb.editorLabel': 'Cell content',
     'app.title': 'Python notebook',
-    'nb.new': 'New', 'nb.open': 'Open', 'nb.save': 'Save', 'nb.saveAs': 'Save as', 'nb.exportPy': 'Export .py', 'nb.code': '+ Code', 'nb.markdown': '+ Markdown',
+    'nb.new': 'New', 'nb.open': 'Open', 'nb.save': 'Save', 'nb.saveAs': 'Save as', 'nb.exportPy': 'Export .py', 'nb.code': '+ Code', 'nb.markdown': '+ Markdown', 'nb.raw': 'Raw',
     'nb.runAll': '▶▶ Run all', 'nb.restart': '⟲ Restart', 'nb.notebook': 'Notebook', 'nb.console': 'Console', 'nb.files': 'Files', 'nb.upload': 'Upload…',
     'nb.wheel': 'Install wheel…', 'nb.refresh': 'Refresh', 'nb.delete': 'Delete', 'nb.deleteConfirm': 'Delete “{0}”?', 'nb.starting': 'Starting Python…',
     'nb.ready': 'Python {0} ready', 'nb.busy': 'busy', 'nb.untitled': 'Untitled', 'nb.discard': 'Discard the unsaved changes?', 'nb.run': 'Run', 'nb.moveUp': 'Move up',
@@ -38,7 +39,7 @@ Suite.i18n.register({
   de: {
     'nb.editorLabel': 'Zelleninhalt',
     'app.title': 'Python-Notebook',
-    'nb.new': 'Neu', 'nb.open': 'Öffnen', 'nb.save': 'Speichern', 'nb.saveAs': 'Speichern unter', 'nb.exportPy': 'Als .py exportieren', 'nb.code': '+ Code', 'nb.markdown': '+ Markdown',
+    'nb.new': 'Neu', 'nb.open': 'Öffnen', 'nb.save': 'Speichern', 'nb.saveAs': 'Speichern unter', 'nb.exportPy': 'Als .py exportieren', 'nb.code': '+ Code', 'nb.markdown': '+ Markdown', 'nb.raw': 'Roh',
     'nb.runAll': '▶▶ Alle ausführen', 'nb.restart': '⟲ Neu starten', 'nb.notebook': 'Notebook', 'nb.console': 'Konsole', 'nb.files': 'Dateien', 'nb.upload': 'Hochladen…',
     'nb.wheel': 'Wheel installieren…', 'nb.refresh': 'Aktualisieren', 'nb.delete': 'Löschen', 'nb.deleteConfirm': '„{0}“ löschen?', 'nb.starting': 'Python startet…',
     'nb.ready': 'Python {0} bereit', 'nb.busy': 'beschäftigt', 'nb.untitled': 'Unbenannt', 'nb.discard': 'Die ungespeicherten Änderungen verwerfen?', 'nb.run': 'Ausführen', 'nb.moveUp': 'Nach oben',
@@ -143,7 +144,7 @@ function cellStep(redo) {
   const kind = stack[stack.length - 1].snap.kind;
   const snap = redo ? cellHistory.redo({ kind, cells: state.cells }) : cellHistory.undo({ kind, cells: state.cells });
   for (const { cell, type, outputs, count } of snap.cells) {
-    if (cell.type !== type) { cell.type = type; cell.rendered = false; cell.view.setLanguage(type === 'code' ? python() : markdown()); }
+    if (cell.type !== type) { cell.type = type; cell.rendered = false; cell.view.setLanguage(langOf(type)); }
     if (kind === 'outputs') { cell.outputs = outputs; cell.count = count; }
   }
   state.cells = snap.cells.map((s) => s.cell);
@@ -155,10 +156,13 @@ function cellStep(redo) {
 let nextCellId = 1;
 const cellId = () => `c${Date.now().toString(36)}${(nextCellId++).toString(36)}`;
 
+/** The editor language of a cell type (raw cells: plain text). */
+const langOf = (type) => (type === 'code' ? python() : type === 'markdown' ? markdown() : []);
+
 function newCell(type = 'code', source = '', { outputs = [], count = null, id = null, metadata = {} } = {}) {
   const cell = { id: id || cellId(), type, outputs, count, metadata, running: false, rendered: type === 'markdown' && !!source };
   const run = (mode) => () => { runCell(cell, mode); return true; };
-  cell.view = makeEditor(source, type === 'code' ? python() : markdown(), [
+  cell.view = makeEditor(source, langOf(type), [
     { key: 'Shift-Enter', run: run('advance') }, { key: 'Mod-Enter', run: run('stay') }, { key: 'Alt-Enter', run: run('insert') },
     { key: 'Escape', run: () => { cell.view.contentDOM.blur(); document.querySelector(`[data-cell="${cell.id}"]`)?.focus(); return true; } },
   ], changed, () => (cell.type === 'markdown' ? 'prose' : 'code'));
@@ -187,7 +191,7 @@ function setType(cell, type) {
   cell.outputs = [];
   cell.count = null;
   cell.rendered = false;
-  cell.view.setLanguage(type === 'code' ? python() : markdown());
+  cell.view.setLanguage(langOf(type));
   changed();
   render();
 }
@@ -236,8 +240,8 @@ async function execute(code, outputs) {
 }
 
 async function runCell(cell, mode = 'stay') {
-  if (cell.type === 'markdown') {
-    cell.rendered = true;
+  if (cell.type !== 'code') { // (raw cells are kept as they are)
+    cell.rendered = cell.type === 'markdown';
     render();
   } else {
     cell.outputs = [];
@@ -369,7 +373,7 @@ function toNotebook() {
   return {
     cells: state.cells.map((c) => (c.type === 'code'
       ? { cell_type: 'code', id: c.id, execution_count: c.count, metadata: c.metadata || {}, outputs: c.outputs, source: lines(c.view.state.doc.toString()) }
-      : { cell_type: 'markdown', id: c.id, metadata: c.metadata || {}, source: lines(c.view.state.doc.toString()) })),
+      : { cell_type: c.type === 'raw' ? 'raw' : 'markdown', id: c.id, metadata: c.metadata || {}, source: lines(c.view.state.doc.toString()) })),
     metadata: {
       kernelspec: { name: 'python3', display_name: 'Python 3 (Pyodide)', language: 'python' },
       language_info: { name: 'python', file_extension: '.py', mimetype: 'text/x-python' },
@@ -385,8 +389,8 @@ function fromNotebook(nb) {
   widgets.fromMetadata(nb.metadata); // saved widget state: shown inactive until the cells run again
   const cells = [];
   for (const c of nb.cells) {
-    if (c.cell_type === 'raw') continue;
-    cells.push(newCell(c.cell_type === 'markdown' ? 'markdown' : 'code', text(c.source), { outputs: c.outputs || [], count: c.execution_count ?? null, id: typeof c.id === 'string' ? c.id : null, metadata: c.metadata && typeof c.metadata === 'object' ? c.metadata : {} }));
+    // raw cells (for nbconvert, e.g. LaTeX or reStructuredText) are kept as plain text and saved unchanged
+    cells.push(newCell(c.cell_type === 'markdown' || c.cell_type === 'raw' ? c.cell_type : 'code', text(c.source), { outputs: c.outputs || [], count: c.execution_count ?? null, id: typeof c.id === 'string' ? c.id : null, metadata: c.metadata && typeof c.metadata === 'object' ? c.metadata : {} }));
   }
   return cells;
 }
@@ -397,16 +401,16 @@ function fromPython(source) {
   const cells = [];
   if (parts[0].trim()) cells.push(newCell('code', parts[0].trim()));
   for (let i = 1; i < parts.length; i += 2) {
-    const markdownCell = /\[markdown\]/i.test(parts[i]);
+    const kind = /\[(markdown|raw)\]/i.exec(parts[i]);
     let body = parts[i + 1].replace(/^\n/, '').replace(/\n+$/, '');
-    if (markdownCell) body = body.split('\n').map((l) => l.replace(/^# ?/, '')).join('\n');
-    cells.push(newCell(markdownCell ? 'markdown' : 'code', body));
+    if (kind) body = body.split('\n').map((l) => l.replace(/^# ?/, '')).join('\n');
+    cells.push(newCell(kind ? kind[1].toLowerCase() : 'code', body));
   }
   return cells.length ? cells : [newCell('code', source)];
 }
 
 function toPython() {
-  return `${state.cells.map((c) => (c.type === 'code' ? `# %%\n${c.view.state.doc.toString()}` : `# %% [markdown]\n${c.view.state.doc.toString().split('\n').map((l) => `# ${l}`.trimEnd()).join('\n')}`)).join('\n\n')}\n`;
+  return `${state.cells.map((c) => (c.type === 'code' ? `# %%\n${c.view.state.doc.toString()}` : `# %% [${c.type}]\n${c.view.state.doc.toString().split('\n').map((l) => `# ${l}`.trimEnd()).join('\n')}`)).join('\n\n')}\n`;
 }
 
 // recovery copies of unsaved work (shared/js/autosave.js)
@@ -485,6 +489,7 @@ function toHtml({ code = true } = {}) {
   const cells = state.cells.map((cell) => {
     const src = cell.view.state.doc.toString();
     if (cell.type === 'markdown') return `<section class="cell md">${clean(marked.parse(src))}</section>`;
+    if (cell.type === 'raw') return ''; // (like nbconvert: raw cells are not part of a web page)
     const input = code ? `<div class="prompt">In [${cell.count ?? ' '}]:</div><pre class="src">${escHtml(src)}</pre>` : '';
     const outs = cell.outputs.length ? `<div class="out">${cell.outputs.map(outputHtml).join('')}</div>` : '';
     return input || outs ? `<section class="cell code">${input}${outs}</section>` : '';
@@ -516,7 +521,7 @@ function Cell({ cell }) {
   const selected = state.selected === cell;
   return html`<div class=${`nb-cell ${cell.type} ${selected ? 'selected' : ''} ${cell.running ? 'running' : ''}`} data-testid="cell" data-type=${cell.type} data-cell=${cell.id} tabindex="-1"
       onClick=${() => { if (!selected) { state.selected = cell; render(); } }}>
-    <div class="nb-prompt" data-testid="prompt">${cell.type === 'code' ? `[${cell.running ? '*' : cell.count ?? ' '}]` : ''}</div>
+    <div class="nb-prompt" data-testid="prompt">${cell.type === 'code' ? `[${cell.running ? '*' : cell.count ?? ' '}]` : cell.type === 'raw' ? t('nb.raw') : ''}</div>
     <div class="nb-body">
       ${cell.type === 'markdown' && cell.rendered
         ? html`<div class="nb-markdown" data-testid="markdown" onDblClick=${() => { cell.rendered = false; render(); requestAnimationFrame(() => cell.view.focus()); }}
@@ -676,7 +681,7 @@ document.addEventListener('keydown', (e) => {
   const i = state.cells.indexOf(cell);
   const keys = {
     Enter: () => { if (cell.type === 'markdown') cell.rendered = false; render(); requestAnimationFrame(() => cell.view.focus()); },
-    a: () => insertCell('code', i), b: () => insertCell('code', i + 1), m: () => setType(cell, 'markdown'), y: () => setType(cell, 'code'),
+    a: () => insertCell('code', i), b: () => insertCell('code', i + 1), m: () => setType(cell, 'markdown'), y: () => setType(cell, 'code'), r: () => setType(cell, 'raw'),
     ArrowUp: () => { state.selected = state.cells[Math.max(0, i - 1)]; render(); }, ArrowDown: () => { state.selected = state.cells[Math.min(state.cells.length - 1, i + 1)]; render(); },
     Delete: () => deleteCell(cell),
   };

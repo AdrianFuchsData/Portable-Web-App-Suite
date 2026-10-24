@@ -2,8 +2,12 @@
   "imports": {
     "app/languages": "languages.js",
     "app/tools": "tools.js",
+    "app/linediff": "linediff.js",
+    "app/sas": "sas.js",
     "app/spell": "../../../../shared/js/spell.js",
     "app/spell-dom": "../../../../shared/js/spell-dom.js",
-    "app/cm-spell": "../../../../shared/js/cm-spell.js"
+    "app/cm-spell": "../../../../shared/js/cm-spell.js",
+    "app/cm-symbols": "../../../../shared/js/cm-symbols.js",
+    "app/cm-colors": "../../../../shared/js/cm-colors.js"
   }
 }

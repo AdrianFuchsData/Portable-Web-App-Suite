@@ -26,8 +26,8 @@ def test_shortcut_list(app, app_page):
     rows = page.locator("[data-testid=about-dialog] [data-testid=shortcut]")
     expect(rows).to_have_count(len(documented(app, "en")))
     expect(rows.last).to_contain_text("F1")
-    page.keyboard.press("Escape")
-    page.click("[data-testid=about-dialog] footer button")
+    page.keyboard.press("Escape")  # closes the dialog
+    expect(page.locator("[data-testid=about-dialog]")).to_have_count(0)
     # German
     page.click("[data-testid=language]")
     page.keyboard.press("F1")

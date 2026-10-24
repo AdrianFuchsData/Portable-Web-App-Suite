@@ -34,7 +34,7 @@ Suite.i18n.register({
     'ar.truncated': 'Only the first 2 MiB are shown.', 'ar.saveAsTitle': 'Save archive as', 'ar.fileName': 'File name', 'ar.format': 'Format',
     'ar.untitled': 'archive', 'ar.discard': 'Discard the unsaved changes of the current archive?', 'ar.newFolderName': 'New folder',
     'ar.unknownFormat': 'This file is not a supported archive (ZIP, 7Z, RAR, TAR, GZ, XZ, BZ2, ISO, …).', 'ar.unsupportedFormat': '{0} archives are not supported.',
-    'ar.libarchive': 'The archive cannot be read: {0}', 'ar.encryptedUnsupported': 'Encrypted {0} archives cannot be opened (only encrypted ZIP archives are supported).',
+    'ar.libarchive': 'The archive cannot be read: {0}', 'ar.7zNames': 'A 7Z archive can only be written with names of plain ASCII characters (“{0}” has others). Save it as ZIP or TAR instead, which keep all names.', 'ar.encryptedUnsupported': 'Encrypted {0} archives cannot be opened (only encrypted ZIP archives are supported).',
     'ar.singleCompressed': 'This {0} file contains no archive (e.g. a TAR archive): single compressed files cannot be opened.', 'ar.cancelled': 'Cancelled.', 'ar.sevenZipHint': '7z archives are written without encryption; folders are taken from the paths.',
     'ar.corrupt': 'The archive is damaged or incomplete.', 'ar.needPassword': '“{0}” is encrypted: a password is needed.', 'ar.wrongPassword': 'Wrong password for “{0}”.',
     'ar.passwordTitle': 'Password', 'ar.passwordPrompt': '“{0}” is encrypted. Enter the password:', 'ar.passwordWrong': 'The password is wrong. Try again:',
@@ -63,7 +63,7 @@ Suite.i18n.register({
     'ar.truncated': 'Nur die ersten 2 MiB werden angezeigt.', 'ar.saveAsTitle': 'Archiv speichern unter', 'ar.fileName': 'Dateiname', 'ar.format': 'Format',
     'ar.untitled': 'archiv', 'ar.discard': 'Die ungespeicherten Änderungen des aktuellen Archivs verwerfen?', 'ar.newFolderName': 'Neuer Ordner',
     'ar.unknownFormat': 'Diese Datei ist kein unterstütztes Archiv (ZIP, 7Z, RAR, TAR, GZ, XZ, BZ2, ISO, …).', 'ar.unsupportedFormat': '{0}-Archive werden nicht unterstützt.',
-    'ar.libarchive': 'Das Archiv kann nicht gelesen werden: {0}', 'ar.encryptedUnsupported': 'Verschlüsselte {0}-Archive lassen sich nicht öffnen (unterstützt werden nur verschlüsselte ZIP-Archive).',
+    'ar.libarchive': 'Das Archiv kann nicht gelesen werden: {0}', 'ar.7zNames': 'Ein 7Z-Archiv lässt sich nur mit Namen aus einfachen ASCII-Zeichen schreiben („{0}“ enthält andere). Speichern Sie es stattdessen als ZIP oder TAR, die alle Namen erhalten.', 'ar.encryptedUnsupported': 'Verschlüsselte {0}-Archive lassen sich nicht öffnen (unterstützt werden nur verschlüsselte ZIP-Archive).',
     'ar.singleCompressed': 'Diese {0}-Datei enthält kein Archiv (z. B. ein TAR-Archiv): einzelne komprimierte Dateien lassen sich nicht öffnen.', 'ar.cancelled': 'Abgebrochen.', 'ar.sevenZipHint': '7z-Archive werden ohne Verschlüsselung geschrieben; Ordner ergeben sich aus den Pfaden.',
     'ar.corrupt': 'Das Archiv ist beschädigt oder unvollständig.', 'ar.needPassword': '„{0}“ ist verschlüsselt: ein Passwort wird benötigt.', 'ar.wrongPassword': 'Falsches Passwort für „{0}“.',
     'ar.passwordTitle': 'Passwort', 'ar.passwordPrompt': '„{0}“ ist verschlüsselt. Geben Sie das Passwort ein:', 'ar.passwordWrong': 'Das Passwort ist falsch. Bitte erneut versuchen:',
@@ -506,25 +506,30 @@ async function preview(node) {
   } catch (e) { fail(e); }
 }
 
-/** "Open with…": edit a file of the archive in another app; saving there writes it back into the archive. */
-async function openWith(entry) {
-  if (!entry || entry.dir || entry.link) return;
-  if (!(await unlock([entry]))) return;
-  const path = entry.path;
-  Suite.bridge.openWith(baseName(path), {
-    exclude: APP,
-    source: state.name,
-    data: () => entry.load(),
-    save: async (bytes) => {
-      if (!state.entries) throw new Error(t('ar.discard'));
-      recordUndo();
-      let target = state.entries.find((e) => e.path === path && !e.dir);
-      if (!target) { target = { path, dir: false, mode: 0o644 }; state.entries.push(target); ensureFolders(path); }
-      Object.assign(target, { size: bytes.length, csize: null, mtime: new Date(), modified: true, encrypted: false, load: () => bytes });
-      setDirty();
-      Suite.shell.toast(t('ar.updated', baseName(path)));
-    },
+/**
+ * "Open with…": edit files of the archive in another app; saving there writes them back into the archive. Several
+ * files are offered to the apps with tabs (text and hex editor), which open all of them in one window.
+ */
+async function openWith(entries) {
+  entries = [].concat(entries).filter((e) => e && !e.dir && !e.link);
+  if (!entries.length || !(await unlock(entries))) return;
+  const items = entries.map((entry) => {
+    const path = entry.path;
+    return {
+      name: baseName(path),
+      data: () => entry.load(),
+      save: async (bytes) => {
+        if (!state.entries) throw new Error(t('ar.discard'));
+        recordUndo();
+        let target = state.entries.find((e) => e.path === path && !e.dir);
+        if (!target) { target = { path, dir: false, mode: 0o644 }; state.entries.push(target); ensureFolders(path); }
+        Object.assign(target, { size: bytes.length, csize: null, mtime: new Date(), modified: true, encrypted: false, load: () => bytes });
+        setDirty();
+        Suite.shell.toast(t('ar.updated', baseName(path)));
+      },
+    };
   });
+  Suite.bridge.openWithMany(items, { exclude: APP, source: state.name });
 }
 
 function openNode(node) {
@@ -606,10 +611,11 @@ document.addEventListener('drop', async (e) => {
 
 // ---- UI -------------------------------------------------------------------------------------------
 
-function selectedFile() {
-  if (state.selected.size !== 1) return null;
-  const path = [...state.selected][0];
-  return state.entries.find((e) => e.path === path && !e.dir && !e.link) || null;
+/** The selected entries if all of them are files (not folders or links), else null. */
+function selectedFiles() {
+  if (!state.selected.size) return null;
+  const files = [...state.selected].map((path) => state.entries.find((e) => e.path === path && !e.dir && !e.link));
+  return files.every(Boolean) ? files : null;
 }
 
 function Toolbar() {
@@ -631,7 +637,7 @@ function Toolbar() {
       <button class="secondary outline" data-testid="extract" disabled=${!sel} onClick=${() => extract(false)}>${t('ar.extract')}</button>
       <button class="secondary outline" data-testid="extract-all" onClick=${() => extract(true)}>${t('ar.extractAll')}</button>
       <button class="secondary outline" data-testid="test" title=${t('ar.testTitle')} onClick=${testArchive}>✓ ${t('ar.test')}</button>
-      <button class="secondary outline" data-testid="open-with" disabled=${sel !== 1 || !selectedFile()} onClick=${() => openWith(selectedFile())}>${t('bridge.openWith')}</button>
+      <button class="secondary outline" data-testid="open-with" disabled=${!selectedFiles()} onClick=${() => openWith(selectedFiles())}>${t('bridge.openWith')}</button>
       <button class="secondary outline" data-testid="rename" disabled=${sel !== 1} onClick=${() => { state.renaming = [...state.selected][0]; render(); }}>${t('ar.rename')}</button>
       <button class="secondary outline" data-testid="delete" disabled=${!sel} onClick=${deleteSelected}>${t('ar.delete')}</button>` : null}
   </nav>`;
@@ -809,5 +815,5 @@ Suite.files.recent(APP).then((r) => { state.recent = r; render(); });
 Suite.bridge.receive((picked) => openPicked(picked), { app: 'archive' }); // files opened from other apps ("Open with…")
 
 // for tests
-window.AR = { app: { state, history, undo, redo, load: (name, bytes) => load(name, new Uint8Array(bytes)), save, addFiles, write, read, readMulti, write7z } };
+window.AR = { app: { state, history, undo, redo, load: (name, bytes) => load(name, new Uint8Array(bytes)), save, addFiles, write, read, readMulti, write7z, addPassword } };
 document.body.dataset.ready = 'true';

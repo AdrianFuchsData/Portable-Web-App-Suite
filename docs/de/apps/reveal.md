@@ -28,7 +28,10 @@ In der Mitte erscheint die Folie so, wie reveal.js sie zeigt. **Klicken** Sie ei
 kursiv, unterstrichen, durchgestrichen, Code, Link, Farbe und Formatierung entfernen. `Esc` oder **Fertig** beendet die Bearbeitung.
 
 **+ Element** fügt nach dem gewählten Element eine Überschrift, einen Text, eine Liste, ein Bild, Code, ein Zitat, eine Tabelle,
-ein Diagramm oder einen HTML-Block ein. Der Reiter **Element** rechts bearbeitet das gewählte Element:
+ein Diagramm oder einen HTML-Block ein. Der Reiter **Element** rechts bearbeitet das gewählte Element. (Der Block *Diagramm* zeichnet
+ein Mermaid-Flussdiagramm aus Text; **📐 Diagramm (draw.io)** fügt dagegen ein Bild ein, das Sie im Diagramm-Editor zeichnen: Jedes
+**Speichern** dort aktualisiert das Bild, **📐 Diagramm bearbeiten** im Bereich rechts öffnet es wieder, und **📐 Diagramm zeichnen** macht
+aus jedem Bildblock eines. Das Diagramm steckt im Bild – ein PNG mit der draw.io-Datei –, auch in gespeicherten Präsentationen.)
 
 - Überschriftenebene und „Text an die Folie anpassen“, nummerierte Listen, Bilder (Datei, Alternativtext, Breite, restliche Höhe
   füllen), Code (Sprache mit Syntaxhervorhebung, Zeilennummern und hervorgehobene Schritte wie `1|2-3|5`), Tabellenzeilen und
@@ -84,6 +87,23 @@ speichern“ wählen) – mit *Drucken / PDF mit Sprechernotizen* folgt auf jede
 Markdown-Dateien und Notebooks werden umgewandelt; Speichern erzeugt eine neue HTML-Präsentation. Im Python-Notebook zeigt
 **Folien** für jede Zelle einen Folientyp, und **🎞️ Folien** öffnet das Notebook hier. Rückgängig und Wiederholen (`Strg+Z`,
 `Strg+Y`) wirken auf alle Änderungen.
+
+### Skripte in Präsentationen
+
+Folien dürfen HTML enthalten, und HTML kann Skripte enthalten (`<script>`, Ereignis-Handler wie `onclick`, `javascript:`-Links).
+Zum Schutz Ihrer Daten sind **Skripte in Folien gesperrt**: Vorschau, Vorführen, Drucken und die gespeicherte Datei zeigen
+die Folien, ohne sie auszuführen (eine Content Security Policy lässt nur die eigenen Skripte des Editors – reveal.js, seine
+Plugins, Formeln – laufen). Öffnen Sie eine Präsentation mit solchen Inhalten, werden Sie gefragt, ob sie laufen dürfen:
+
+- **Gesperrt lassen** (empfohlen für Dateien von anderen): Die Folien werden angezeigt, die Skripte laufen nicht.
+- **Skripte erlauben (ungeschützt)**: nur für Dateien, denen Sie vertrauen. Die Skripte laufen dann mit den Rechten dieser
+  App und könnten Ihre Daten in der Suite (Einstellungen, gespeicherte Verbindungen, geöffnete Dateien) lesen, ändern oder
+  weitergeben.
+
+Die Schaltfläche **🛡 Skripte gesperrt** / **⚠ Skripte erlaubt** in der Werkzeugleiste zeigt den Zustand und schaltet ihn um
+(Erlauben fragt erneut). Die Entscheidung wird nicht in der Datei gespeichert: Eine wieder geöffnete Präsentation ist gesperrt,
+bis Sie sie erlauben. Eine bei gesperrten Skripten gespeicherte Präsentation behält sie, sie bleiben aber auch beim Öffnen der
+Datei im Browser gesperrt.
 
 ## Tastenkürzel
 

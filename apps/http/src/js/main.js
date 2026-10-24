@@ -12,6 +12,7 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { newRequest, newId, paramsOf, withParams, variableMap, build, fromCurl, toCurl, fromPostman, toPostman } from '@app/model.js';
 import { runScript } from '@app/scripts.js';
 import { fromOpenApi } from '@app/openapi.js';
+import 'app/cm-symbols'; // emoji and symbols insert through the editor (shared/js/cm-symbols.js)
 
 const { html } = Suite.shell;
 const t = Suite.t;

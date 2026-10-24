@@ -1,5 +1,6 @@
 """Presentation editor (apps/presentation). PPTX import/export fidelity is tested in tests/prototypes/test_s7_slides.py."""
 import io
+import re
 
 from playwright.sync_api import expect
 from pptx import Presentation
@@ -221,7 +222,7 @@ def test_notes_and_presenter_view(app_page, tmp_path):
     expect(page.locator("[data-testid=console-next]")).to_contain_text("End of the presentation")
     page.keyboard.press("ArrowRight")  # stays on the last slide
     expect(page.locator("[data-testid=console-count]")).to_have_text("Slide 3 of 3")
-    expect(page.locator("[data-testid=console-timer]")).to_have_text("00:00")
+    expect(page.locator("[data-testid=console-timer]")).to_have_text(re.compile(r"^00:[0-5]\d$"))  # (the time since the start)
     page.click("[data-testid=console-end]")
     expect(console).to_be_hidden()
     assert audience.is_closed()

@@ -495,7 +495,11 @@ async function readOra(bytes) {
   if (!files['stack.xml']) throw new Error('stack.xml missing');
   const xml = new DOMParser().parseFromString(strFromU8(files['stack.xml']), 'application/xml');
   const image = xml.documentElement;
-  const doc = new ImageDoc(parseInt(image.getAttribute('w'), 10), parseInt(image.getAttribute('h'), 10));
+  const w = parseInt(image.getAttribute('w'), 10);
+  const h = parseInt(image.getAttribute('h'), 10);
+  // (a damaged stack.xml: Firefox replaces the whole document by <parsererror>, Chromium keeps a part)
+  if (xml.getElementsByTagName('parsererror').length || image.localName !== 'image' || !(w > 0 && h > 0)) throw new Error('stack.xml is damaged');
+  const doc = new ImageDoc(w, h);
   const layers = [];
   // nested stacks are flattened; document order is top to bottom
   for (const el of [...xml.getElementsByTagName('layer')].reverse()) {

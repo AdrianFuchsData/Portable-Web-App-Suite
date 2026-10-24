@@ -69,7 +69,7 @@ the sizes by default. At most 5000 files per side are compared.
 
 **New folder**, **Rename** (one selected entry) and **Delete** (selected entries; folders are deleted with their content after a confirmation).
 
-**Open with…** opens the selected remote file in another application of the suite; saving there uploads it again (shown in the transfer queue).
+**Open with…** opens the selected remote file in another application of the suite; saving there uploads it again (shown in the transfer queue). With **several files** selected (`Ctrl+click`), the text editor or the hex editor opens all of them in one window, each in its own tab.
 
 ## Keyboard shortcuts
 

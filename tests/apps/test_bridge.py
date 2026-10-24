@@ -98,3 +98,77 @@ def test_mail_attachment_is_a_copy(app_page, tmp_path):
     with editor.expect_download() as d:  # no way back: saving downloads
         editor.keyboard.press("Control+s")
     assert d.value.suggested_filename == "data.csv"
+
+
+def check_rows(page, names):
+    """Select several rows of the archive manager with their checkboxes."""
+    for name in names:
+        page.locator("[data-testid=row]", has_text=name).locator("[data-testid=select]").check()
+
+
+def test_archive_entry_in_hex_editor_and_back(app_page, tmp_path):
+    page = app_page("archive", init_script=NO_PICKERS)
+    open_archive(page, make_zip(tmp_path / "demo.zip", {"data.bin": b"\x00\x01\x02", "notes.txt": "n"}))
+    pick_row(page, page, "data.bin")
+    hexed = open_with(page, "hexeditor", lambda: page.click("[data-testid=open-with]"))
+    expect(hexed.locator("[data-testid=file-name]")).to_have_text("data.bin")
+    expect(hexed.locator("[data-testid=size]")).to_have_text("3 bytes")  # not an empty file
+    hexed.focus("[data-testid=view]")
+    hexed.keyboard.type("ff")
+    hexed.keyboard.press("Control+s")
+    expect(page.locator("[data-testid=toast]").last).to_contain_text("“data.bin” was updated in the archive")
+    with page.expect_download() as d:
+        page.click("[data-testid=save]")
+    with zipfile.ZipFile(d.value.path()) as z:
+        assert z.read("data.bin") == b"\xff\x01\x02"
+    assert page.errors == [] and hexed.errors == []
+
+
+def test_several_archive_files_in_text_editor_tabs(app_page, tmp_path):
+    page = app_page("archive", init_script=NO_PICKERS)
+    open_archive(page, make_zip(tmp_path / "demo.zip", {"a.txt": "first", "b.md": "# second", "c.json": "{}", "d.bin": b"\x00"}))
+    check_rows(page, ["a.txt", "b.md", "c.json"])
+    page.click("[data-testid=open-with]")
+    dialog = page.locator("[data-testid=open-with-dialog]")
+    expect(dialog.locator("header")).to_have_text("Open 3 files with")
+    expect(dialog.locator(".suite-open-with-list").first.locator("button")).to_have_text(["📝 Text editor", "🔢 Hex editor"])  # apps with tabs
+    page.click("[data-testid=open-with-dialog] footer button")
+    editor = open_with(page, "texteditor", lambda: page.click("[data-testid=open-with]"))
+    expect(editor.locator("[data-testid=tab-name]")).to_have_text(["a.txt", "b.md", "c.json"])  # one window, in order
+    expect(editor.locator(".cm-content")).to_have_text("{}")
+    expect(editor.locator("[data-testid=toast]")).to_have_count(1)  # one message for all files
+    editor.locator("[data-testid=tab]", has_text="b.md").click()
+    expect(editor.locator(".cm-content")).to_have_text("# second")
+    edit_and_save_text(editor, "!")
+    expect(page.locator("[data-testid=toast]").last).to_contain_text("“b.md” was updated in the archive")
+    with page.expect_download() as d:
+        page.click("[data-testid=save]")
+    with zipfile.ZipFile(d.value.path()) as z:
+        assert z.read("b.md") == b"# second!" and z.read("a.txt") == b"first"
+    # a binary file among them: the hex editor is the preferred app (saving reloaded the archive: select again)
+    check_rows(page, ["a.txt", "b.md", "c.json", "d.bin"])
+    page.click("[data-testid=open-with]")
+    expect(dialog.locator("header")).to_have_text("Open 4 files with")
+    expect(dialog.locator(".suite-open-with-list").first.locator("button")).to_have_text(["🔢 Hex editor"])
+    expect(dialog.locator("details button")).to_have_text(["📝 Text editor"])
+    page.click("[data-testid=open-with-dialog] footer button")
+    assert page.errors == [] and editor.errors == []
+
+
+def test_several_archive_files_in_hex_editor_tabs(app_page, tmp_path):
+    page = app_page("archive", init_script=NO_PICKERS)
+    open_archive(page, make_zip(tmp_path / "demo.zip", {"one.bin": b"\x01", "two.bin": b"\x02\x02", "dir/x.txt": "x"}))
+    check_rows(page, ["one.bin", "two.bin"])
+    hexed = open_with(page, "hexeditor", lambda: page.click("[data-testid=open-with]"))
+    expect(hexed.locator("[data-testid=tab-name]")).to_have_text(["one.bin", "two.bin"])
+    expect(hexed.locator("[data-testid=size]")).to_have_text("2 bytes")
+    hexed.locator("[data-testid=tab]", has_text="one.bin").click()
+    expect(hexed.locator("[data-testid=size]")).to_have_text("1 bytes")
+    hexed.focus("[data-testid=view]")
+    hexed.keyboard.type("aa")
+    hexed.keyboard.press("Control+s")
+    expect(page.locator("[data-testid=toast]").last).to_contain_text("“one.bin” was updated in the archive")
+    # folders cannot be opened with an app
+    page.locator("[data-testid=row]", has_text="dir").locator("[data-testid=select]").check()
+    expect(page.locator("[data-testid=open-with]")).to_be_disabled()
+    assert page.errors == [] and hexed.errors == []

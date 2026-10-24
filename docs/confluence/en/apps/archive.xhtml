@@ -34,7 +34,7 @@ add files and folders, create folders, rename, delete and convert between format
 <tr>
 <td>7z</td>
 <td>yes</td>
-<td>yes (without encryption)</td>
+<td>yes (without encryption; file names of ASCII characters only)</td>
 </tr>
 <tr>
 <td>RAR (versions 4 and 5)</td>
@@ -112,7 +112,7 @@ password.</p>
 </table>
 <p>Existing files with the same name are replaced after a confirmation.</p>
 <p>Undo (↶, <code>Ctrl+Z</code>) and redo (↷, <code>Ctrl+Y</code>) work for adding, renaming, deleting and new folders.</p>
-<p><strong>Open with…</strong> (toolbar or preview) opens the selected file in another application of the suite; saving there replaces the file in the archive (undoable). Save the archive afterwards.</p>
+<p><strong>Open with…</strong> (toolbar or preview) opens the selected file in another application of the suite; saving there replaces the file in the archive (undoable). Save the archive afterwards. With <strong>several files</strong> selected, Open with… offers the applications with tabs – the text editor and the hex editor – which open all of them in one window, each in its own tab (folders cannot be opened this way).</p>
 <h2>Saving</h2>
 <ul>
 <li><strong>Save</strong> (<code>Ctrl+S</code>) writes the archive in its format: directly into the opened file in Chrome/Edge on the desktop, as a
@@ -134,6 +134,10 @@ software).</p>
   the Windows Explorer), with the password entered twice. All files that are not encrypted yet are then encrypted;
   files that already were keep their password. Choosing "none" saves new and changed files without encryption.</li>
 <li>File names and the list of files are not encrypted in ZIP archives, only the contents.</li>
+<li>AES-encrypted files saved with version 1.0.0 or earlier of the suite could only be read by the suite itself (other
+  programs such as 7-Zip reported a data error after the first few kilobytes). The suite still opens them; once you have
+  entered the password, saving the archive encrypts these files again correctly. Archives that other programs encrypted
+  were not affected.</li>
 </ul>
 <h2>Keyboard shortcuts</h2>
 <p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>

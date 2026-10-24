@@ -64,11 +64,18 @@ Bearbeitungskomponente ist Univer Docs.</p>
 Seitenumbrüche setzt der Browser, sie können also von den Seiten im Editor abweichen; eingefügte Seitenumbrüche bleiben erhalten. Links sind
 im PDF anklickbar, auch die Einträge eines Inhaltsverzeichnisses.</p>
 <p>Dokumente aus Word und LibreOffice werden beim Öffnen umgewandelt; sehr komplexe Layouts (Textfelder, Spalten, Änderungsverfolgung, Kommentare)
-können einfacher aussehen. Behalten Sie die ursprüngliche Datei, bis Sie das Ergebnis geprüft haben.</p>
+können einfacher aussehen. Behalten Sie die ursprüngliche Datei, bis Sie das Ergebnis geprüft haben.
+Ein „Wort“ mit mehr als 20.000 Zeichen ohne Leerzeichen (etwa eingefügte Base64-Daten) erhält alle 1.000 Zeichen eine unsichtbare
+Umbruchstelle (U+200B), damit es angezeigt werden kann; sie wird mit dem Dokument gespeichert.</p>
 <h2>Bearbeiten</h2>
 <p>Das Menüband hat die Reiter <strong>Start</strong> (Zwischenablage, fett/kursiv/unterstrichen/durchgestrichen, Hoch- und Tiefstellung, Absatzformat, Größe,
 Schrift, Farben, Ausrichtung, Listen, Checklisten) und <strong>Einfügen</strong> (Tabellen, Bilder, Seitenumbrüche, Kopf- und Fußzeilen). Die üblichen
 Tastenkombinationen funktionieren: <code>Strg+B/I/U</code>, <code>Strg+Z/Y</code>, <code>Strg+C/X/V</code>, <code>Strg+F</code> zum Suchen. Die Statusleiste zeigt die Wortanzahl und den Zoom.</p>
+<p><strong>📐 Diagramm</strong> in der Werkzeugleiste öffnet ein leeres Diagramm im Diagramm-Editor (ein neues Fenster oder ein neuer Tab); das erste
+<strong>Speichern</strong> dort fügt das Diagramm als Bild an der Schreibmarke ein, spätere Speichervorgänge aktualisieren es. Ist ein Diagrammbild
+ausgewählt (ein Klick darauf), öffnet <strong>📐 Diagramm bearbeiten</strong> es wieder im Diagramm-Editor. Ein aktualisiertes Bild behält Stelle und
+Maßstab (höchstens die Textbreite); <code>Strg+Z</code> macht es rückgängig. Das Diagramm steckt im Bild (ein PNG mit der draw.io-Datei) und bleibt
+daher in der <code>.docx</code>-Datei bearbeitbar; Word zeigt das Bild.</p>
 <p>Die Sprache der Bearbeitungskomponente folgt der Sprachumschaltung der Suite, ebenso das dunkle Design.</p>
 <p>Rückgängig und Wiederholen sind die ersten beiden Schaltflächen der Editor-Werkzeugleiste (auch <code>Strg+Z</code> und <code>Strg+Y</code>).</p>
 <h3>Inhaltsverzeichnis und Fußnoten</h3>

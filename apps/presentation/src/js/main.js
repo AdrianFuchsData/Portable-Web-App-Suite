@@ -32,13 +32,13 @@ Suite.i18n.register({
     'pr.audience': 'audience', 'pr.popupBlocked': 'The audience window was blocked: allow pop-ups for this page.', 'pr.slideOf': 'Slide {0} of {1}', 'pr.endShow': 'End', 'pr.pauseTimer': 'Pause / continue the timer',
     'pr.lastSlide': 'End of the presentation',
     'app.title': 'Presentation', 'pr.new': 'New', 'pr.open': 'Open', 'pr.save': 'Save', 'pr.saveAs': 'Save as', 'pr.print': 'Print / PDF', 'pr.present': '▶ Present',
-    'pr.undo': 'Undo', 'pr.redo': 'Redo', 'pr.text': 'Text box', 'pr.shape': 'Shape', 'pr.image': 'Image', 'pr.table': 'Table', 'pr.newSlide': 'New slide',
+    'pr.undo': 'Undo', 'pr.redo': 'Redo', 'pr.text': 'Text box', 'pr.shape': 'Shape', 'pr.image': 'Image', 'pr.diagram': 'Diagram', 'pr.table': 'Table', 'pr.newSlide': 'New slide',
     'pr.duplicateSlide': 'Duplicate slide', 'pr.deleteSlide': 'Delete slide', 'pr.slide': 'Slide', 'pr.background': 'Background', 'pr.size': 'Slide size',
     'pr.position': 'Position and size', 'pr.rotation': 'Rotation', 'pr.fill': 'Fill', 'pr.line': 'Line', 'pr.none': 'none', 'pr.width': 'Width',
     'pr.font': 'Font', 'pr.fontSize': 'Size', 'pr.color': 'Colour', 'pr.bold': 'Bold', 'pr.italic': 'Italic', 'pr.underline': 'Underline',
     'pr.align': 'Alignment', 'pr.anchor': 'Vertical', 'pr.arrange': 'Arrange', 'pr.toFront': 'To front', 'pr.toBack': 'To back', 'pr.duplicate': 'Duplicate',
     'pr.delete': 'Delete', 'pr.untitled': 'Presentation', 'pr.discard': 'Discard the unsaved changes?', 'pr.newText': 'New text', 'pr.title': 'Click to edit the title',
-    'pr.cannotOpen': '“{0}” cannot be opened: {1}', 'pr.slides': '{0} slides', 'pr.panels': 'Format', 'pr.editHint': 'Double-click a text to edit it.',
+    'pr.cannotOpen': '“{0}” cannot be opened: {1}', 'pr.noSlides': 'it contains no readable slide', 'pr.slides': '{0} slides', 'pr.panels': 'Format', 'pr.editHint': 'Double-click a text to edit it.',
     'pr.cancel': 'Cancel', 'pr.fileName': 'File name', 'pr.templateNote': 'Templates and slide shows are saved as a new .pptx file.',
   },
   de: {
@@ -52,13 +52,13 @@ Suite.i18n.register({
     'pr.audience': 'Publikum', 'pr.popupBlocked': 'Das Publikumsfenster wurde blockiert: Erlauben Sie Pop-ups für diese Seite.', 'pr.slideOf': 'Folie {0} von {1}', 'pr.endShow': 'Beenden', 'pr.pauseTimer': 'Zeit anhalten / fortsetzen',
     'pr.lastSlide': 'Ende der Präsentation',
     'app.title': 'Präsentation', 'pr.new': 'Neu', 'pr.open': 'Öffnen', 'pr.save': 'Speichern', 'pr.saveAs': 'Speichern unter', 'pr.print': 'Drucken / PDF', 'pr.present': '▶ Vorführen',
-    'pr.undo': 'Rückgängig', 'pr.redo': 'Wiederholen', 'pr.text': 'Textfeld', 'pr.shape': 'Form', 'pr.image': 'Bild', 'pr.table': 'Tabelle', 'pr.newSlide': 'Neue Folie',
+    'pr.undo': 'Rückgängig', 'pr.redo': 'Wiederholen', 'pr.text': 'Textfeld', 'pr.shape': 'Form', 'pr.image': 'Bild', 'pr.diagram': 'Diagramm', 'pr.table': 'Tabelle', 'pr.newSlide': 'Neue Folie',
     'pr.duplicateSlide': 'Folie duplizieren', 'pr.deleteSlide': 'Folie löschen', 'pr.slide': 'Folie', 'pr.background': 'Hintergrund', 'pr.size': 'Foliengröße',
     'pr.position': 'Position und Größe', 'pr.rotation': 'Drehung', 'pr.fill': 'Füllung', 'pr.line': 'Linie', 'pr.none': 'keine', 'pr.width': 'Breite',
     'pr.font': 'Schrift', 'pr.fontSize': 'Größe', 'pr.color': 'Farbe', 'pr.bold': 'Fett', 'pr.italic': 'Kursiv', 'pr.underline': 'Unterstrichen',
     'pr.align': 'Ausrichtung', 'pr.anchor': 'Vertikal', 'pr.arrange': 'Anordnen', 'pr.toFront': 'Nach vorne', 'pr.toBack': 'Nach hinten', 'pr.duplicate': 'Duplizieren',
     'pr.delete': 'Löschen', 'pr.untitled': 'Präsentation', 'pr.discard': 'Die ungespeicherten Änderungen verwerfen?', 'pr.newText': 'Neuer Text', 'pr.title': 'Titel durch Klicken bearbeiten',
-    'pr.cannotOpen': '„{0}“ kann nicht geöffnet werden: {1}', 'pr.slides': '{0} Folien', 'pr.panels': 'Format', 'pr.editHint': 'Doppelklick auf einen Text bearbeitet ihn.',
+    'pr.cannotOpen': '„{0}“ kann nicht geöffnet werden: {1}', 'pr.noSlides': 'sie enthält keine lesbare Folie', 'pr.slides': '{0} Folien', 'pr.panels': 'Format', 'pr.editHint': 'Doppelklick auf einen Text bearbeitet ihn.',
     'pr.cancel': 'Abbrechen', 'pr.fileName': 'Dateiname', 'pr.templateNote': 'Vorlagen und Bildschirmpräsentationen werden als neue .pptx-Datei gespeichert.',
   },
 });
@@ -178,6 +178,7 @@ stage.addEventListener('pointerdown', (e) => {
 });
 stage.addEventListener('dblclick', (e) => {
   const target = e.target.closest('.el:not(.locked)');
+  if (target && isDiagramImage(findElement(target.dataset.id))) { editDiagram(target.dataset.id); return; } // a diagram: in the diagram editor
   if (target) editText(target.dataset.id, e.target.closest('td'));
 });
 new ResizeObserver(() => { if (!editing) { renderStage(); renderThumbs(); } }).observe(stageWrap);
@@ -316,6 +317,44 @@ function pickImage() {
   input.click();
 }
 
+// ---- diagrams (shared/js/diagram-embed.js: a PNG with the draw.io diagram inside, edited in the diagram editor) ------
+
+const elementAnywhere = (id) => { for (const sl of state.deck.slides) { const el = sl.elements.find((e) => e.id === id); if (el) return el; } return null; };
+const isDiagramImage = (el) => !!(el && el.type === 'image' && el.image && Suite.diagrams && Suite.diagrams.isDiagram(el.image.src));
+
+/** A new image from the diagram editor: same position and scale (at most the slide's width; one undo step). */
+function updateDiagram(id, res) {
+  const el = elementAnywhere(id);
+  if (!el) return false;
+  record();
+  const size = Suite.diagrams.newSize(el.image.src, el.w, res, state.deck.width - el.x);
+  el.image = { src: res.src };
+  el.w = size.width;
+  el.h = size.height;
+  changed();
+  if (state.selected === id) select(id);
+  return true;
+}
+
+function insertDiagram() {
+  let id = null;
+  Suite.diagrams.insert({
+    onSave: (res) => {
+      if (id && updateDiagram(id, res)) return;
+      const k = Math.min(1, (state.deck.width * 0.8) / res.width, (state.deck.height * 0.8) / res.height);
+      const w = Math.round(res.width * k), h = Math.round(res.height * k);
+      id = newId('image');
+      addElement({ id, type: 'image', name: t('pr.diagram'), ...center(w, h), w, h, rot: 0, geometry: 'rect', fill: null, line: null, text: null, image: { src: res.src } });
+    },
+  });
+}
+
+function editDiagram(id) {
+  const el = elementAnywhere(id);
+  if (!isDiagramImage(el)) return;
+  Suite.diagrams.edit({ src: el.image.src, onSave: (res) => { updateDiagram(id, res); } });
+}
+
 function deleteSelection() {
   if (state.selected) {
     record();
@@ -407,6 +446,7 @@ Suite.autosave.register({
 });
 
 function load(deck, name, handle) {
+  if (!deck || !Array.isArray(deck.slides) || !deck.slides.length) throw new Error(t('pr.noSlides')); // (a damaged file)
   Object.assign(state, { deck, current: 0, name, handle, dirty: false, undo: [], redo: [] });
   select(null);
   Suite.shell.setDirty(false);
@@ -747,6 +787,7 @@ function Toolbar() {
     <details class="dropdown pr-shapes" data-testid="shape-menu"><summary>◼ ${t('pr.shape')}</summary>
       <ul>${SHAPES.map((g) => html`<li><a href="#" data-testid=${`add-${g}`} onClick=${(e) => { e.preventDefault(); e.target.closest('details').open = false; addShape(g); }}>${g}</a></li>`)}</ul></details>
     <button class="secondary outline" data-testid="add-image" onClick=${pickImage}>🖼 ${t('pr.image')}</button>
+    <button class="secondary outline" data-testid="add-diagram" title=${t('dia.insert')} onClick=${insertDiagram}>📐 ${t('pr.diagram')}</button>
     <button class="secondary outline" data-testid="add-table" onClick=${() => addTable()}>▦ ${t('pr.table')}</button>
     <span class="pr-sep"></span>
     <button class="secondary outline" data-testid="add-slide" onClick=${() => addSlide(false)}>+ ${t('pr.newSlide')}</button>
@@ -844,6 +885,7 @@ function Panel() {
   return html`<aside class=${`pr-panel pico suite-drawer ${state.panels ? 'open' : ''}`} data-testid="panel">
     <strong>${el.name || el.type}</strong>
     <div class="pr-grid">${num('x', 'X', 'el-x')}${num('y', 'Y', 'el-y')}${num('w', t('pr.width'), 'el-w')}${num('h', 'H', 'el-h')}${num('rot', t('pr.rotation'), 'el-rot')}</div>
+    ${isDiagramImage(el) ? html`<button class="secondary" data-testid="edit-diagram" onClick=${() => editDiagram(el.id)}>📐 ${t('dia.edit')}</button>` : null}
     ${el.type === 'shape' || el.type === 'text' ? html`
       <${ColorField} label="pr.fill" value=${el.fill} allowNone=${true} testid="el-fill" onChange=${(v) => setProp((x) => { x.fill = v; }, 'fill')} />
       <${ColorField} label="pr.line" value=${el.line && el.line.color} allowNone=${true} testid="el-line" onChange=${(v) => setProp((x) => { x.line = v ? { color: v, width: (x.line && x.line.width) || 1.33 } : null; }, 'line')} />` : null}
@@ -936,6 +978,6 @@ document.addEventListener('keydown', (e) => {
 Suite.bridge.receive((picked) => openPicked(picked), { app: 'presentation' }); // files opened from other apps ("Open with…")
 
 // for tests
-window.PR = { state, select, editText, render, async openBase64(b64, name) { load(importPptx(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer), name, null); } };
+window.PR = { state, select, editText, render, insertDiagram, editDiagram, async openBase64(b64, name) { load(importPptx(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer), name, null); } };
 render();
 document.body.dataset.ready = 'true';

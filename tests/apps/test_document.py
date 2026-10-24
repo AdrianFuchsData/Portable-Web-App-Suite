@@ -370,3 +370,16 @@ def test_spelling(app_page, tmp_path):
     page.click("[data-testid=spell-close]")
     expect(page.locator("[data-testid=spell-panel]")).to_have_count(0)
     assert page.errors == []
+
+
+def test_very_long_words(app_page, tmp_path):
+    """Univer's layout overflows the stack on a word of ~100 000 characters: such words get invisible break points."""
+    page = ready(app_page)
+    path = tmp_path / "base64.txt"
+    path.write_text("start " + "A" * 150000 + " end\nnext line\n")
+    page.evaluate("window.__toasts = []; const t = Suite.shell.toast; Suite.shell.toast = (m, k) => { __toasts.push(m); return t(m, k); }")
+    open_file(page, path)
+    page.wait_for_function("() => __toasts.some((m) => String(m).includes('invisible break points'))", timeout=30000)
+    text = page.evaluate("DOC.doc.save().body.dataStream")
+    assert text.replace("\u200b", "").startswith("start " + "A" * 150000 + " end\rnext line") and text.count("\u200b") == 149
+    assert page.errors == []

@@ -434,7 +434,7 @@
     const shown = state.reveal.has(field);
     const value = db().field(entry, field);
     return html`<div class="kp-secret">
-      <input type=${shown ? 'text' : 'password'} data-testid=${testid} value=${value} autocomplete="off" spellcheck="false"
+      <input type=${shown ? 'text' : 'password'} data-testid=${testid} value=${value} autocomplete="off" spellcheck="false" data-no-symbols
              onInput=${(e) => updateEntry(entry, { [field]: e.target.value }, { protect: field === 'Password' ? [] : [field] })} />
       <button type="button" class="secondary outline" title=${shown ? t('kp.hide') : t('kp.show')} data-testid=${`${testid}-reveal`}
               onClick=${() => { if (shown) state.reveal.delete(field); else state.reveal.add(field); render(); }}>${shown ? '🙈' : '👁'}</button>

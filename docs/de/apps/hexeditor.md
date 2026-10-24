@@ -1,13 +1,18 @@
 # Hex-Editor
 
 Der Hex-Editor (`hexeditor.html`) zeigt und bearbeitet die Bytes beliebiger Dateien: hexadezimale und Textansicht,
-Überschreib- und Einfügemodus, Suche nach Bytefolgen und Text, ein Dateninspektor sowie Rückgängig/Wiederholen. Er
-kommt mit Dateien von mehreren hundert Megabyte zurecht; gezeichnet werden nur die sichtbaren Zeilen.
+Überschreib- und Einfügemodus, Suche nach Bytefolgen und Text, ein Dateninspektor sowie Rückgängig/Wiederholen, mit
+mehreren Dateien in Tabs. Er kommt mit Dateien von mehreren hundert Megabyte zurecht; gezeichnet werden nur die sichtbaren
+Zeilen.
 
 ## Öffnen, anlegen und speichern
 
-- **Öffnen** (`Strg+O`) öffnet eine Datei; Sie können eine Datei auch in das Fenster ziehen. **Neu** beginnt eine leere
-  Datei.
+- **Öffnen** (`Strg+O`) öffnet eine oder mehrere Dateien; Sie können Dateien auch in das Fenster ziehen. **Neu** beginnt
+  eine leere Datei.
+- Jede Datei öffnet sich in einem eigenen **Tab**; ein Punkt (●) am Tab zeigt ungespeicherte Änderungen. Jeder Tab behält
+  seine Cursorposition, Auswahl, Rückgängig-Liste und seinen Vergleich. Schließen Sie einen Tab mit × oder `Alt+W`; bei
+  ungespeicherten Änderungen wird vorher nachgefragt. Auch Dateien aus anderen Anwendungen (*Öffnen mit…*, etwa mehrere
+  Dateien eines Archivs) öffnen sich in Tabs.
 - **Speichern** (`Strg+S`) schreibt die Datei: in Chrome/Edge am Desktop direkt in die geöffnete Datei, in Firefox und
   unter Android als Download (ersetzen Sie die ursprüngliche Datei damit). **Speichern unter** speichert unter einem
   neuen Namen.
@@ -72,6 +77,7 @@ Auf dem Mac verwenden Sie Cmd statt Strg. `F1` (oder `?`) zeigt diese Liste in d
 | `Strg+O` | Öffnen |
 | `Strg+S` | Speichern |
 | `Strg+Umschalt+S` | Speichern unter |
+| `Alt+W` | Datei (Tab) schließen |
 
 ### Bearbeiten
 

@@ -18,7 +18,7 @@ Univer Sheets.</p>
 <td>Excel (<code>.xlsx</code>)</td>
 <td>yes</td>
 <td>yes</td>
-<td>values, formulas, styles, number formats, merged cells, column widths, row heights, frozen panes, tab colours, hidden sheets, conditional formatting, data validation</td>
+<td>values, formulas, styles, number formats, merged cells, column widths, row heights, frozen panes, tab colours, hidden sheets, conditional formatting, data validation, pictures</td>
 </tr>
 <tr>
 <td>Excel with macros (<code>.xlsm</code>)</td>
@@ -75,6 +75,12 @@ it was imported with.</p>
 <strong>View</strong>. Type into a cell and confirm with <code>Enter</code>; formulas start with <code>=</code>, e.g. <code>=SUM(B2:B10)</code>. The formula bar shows and edits the content
 of the selected cell. The bar at the bottom adds (+) and switches sheets; right-click a sheet tab to rename, colour, hide or delete it. The zoom
 is at the bottom right. Right-clicking cells, rows and columns opens further commands (insert, delete, sort, …).</p>
+<p><strong>Pictures</strong> float above the cells: insert one from the ribbon (<strong>Insert</strong> → image), drag it to move it, drag its handles to resize it. In
+<code>.xlsx</code> files they keep their cell, offset and size (also pictures from other programs, including files written by Python's openpyxl).</p>
+<p><strong>📐 Diagram</strong> in the toolbar opens an empty diagram in the diagram editor (a new window or tab); its first <strong>Save</strong> puts the diagram as a
+picture at the selected cell, later saves update it. When a diagram picture is selected (a click on it), <strong>📐 Edit diagram</strong> opens it in
+the diagram editor again; an updated picture keeps its place and scale. The diagram travels inside the picture (a PNG with the draw.io
+file), so it stays editable in the <code>.xlsx</code> file; Excel shows the picture.</p>
 <p>The common keyboard shortcuts work: <code>Ctrl+C/X/V</code>, <code>Ctrl+Z/Y</code>, <code>Ctrl+B/I/U</code>, arrow keys, <code>Tab</code>, <code>F2</code> to edit a cell.</p>
 <p>The language of the editing component follows the suite's language switch, and it follows the dark theme too.</p>
 <p>Undo and redo are the first two buttons of the editor toolbar (also <code>Ctrl+Z</code> and <code>Ctrl+Y</code>).</p>

@@ -43,6 +43,7 @@ import { erlang } from "@codemirror/legacy-modes/mode/erlang";
 import { clojure } from "@codemirror/legacy-modes/mode/clojure";
 import { julia } from "@codemirror/legacy-modes/mode/julia";
 import { octave } from "@codemirror/legacy-modes/mode/octave";
+import { sas } from "app/sas";
 
 const legacy = (mode) => () => StreamLanguage.define(mode);
 
@@ -94,6 +95,7 @@ export const LANGUAGES = {
   clojure: { label: "Clojure", extensions: ["clj", "cljs", "cljc", "edn"], load: legacy(clojure) },
   julia: { label: "Julia", extensions: ["jl"], load: legacy(julia) },
   octave: { label: "MATLAB / Octave", extensions: ["m", "oct"], load: legacy(octave) },
+  sas: { label: "SAS", extensions: ["sas"], load: sas },
 };
 
 /** Language id for a file name. */

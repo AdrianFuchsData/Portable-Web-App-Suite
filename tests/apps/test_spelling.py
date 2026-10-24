@@ -98,6 +98,7 @@ def test_setting_shared_and_dictionary_from_header(app_page, tmp_path):
     page = app_page("calendar", init_script=NO_PICKERS)
     page.select_option("[data-testid=spell-select]", "de_DE")
     if page.context.browser.browser_type.name == "chromium":  # (Firefox keeps the storage of file:// pages per file)
+        page.wait_for_timeout(1000)  # (Chromium passes storage writes on to other renderer processes with a delay)
         page2 = page.context.new_page()
         page2.goto(dist_url("keepass"))
         expect(page2.locator("[data-testid=spell-select]")).to_have_value("de_DE")

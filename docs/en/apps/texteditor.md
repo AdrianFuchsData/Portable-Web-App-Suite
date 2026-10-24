@@ -1,7 +1,7 @@
 # Text editor
 
 The text editor (`texteditor.html`) edits text files and source code: several files in tabs, syntax highlighting
-for more than 40 languages, search and replace, multiple cursors, and control over encoding and line endings.
+for more than 40 languages (including SAS, with code completion), search and replace, multiple cursors, and control over encoding and line endings.
 
 ## Opening and creating files
 
@@ -29,7 +29,9 @@ unsaved changes, the editor asks first. With the keyboard, move to a tab with `T
 | Column of cursors (rectangular selection) | `Alt+drag` with the mouse |
 | Select the next occurrence of the word | `Ctrl+D` |
 | Undo / redo | `Ctrl+Z` / `Ctrl+Y` or `Ctrl+Shift+Z` |
-| Indent / unindent the selection | `Tab` / `Shift+Tab` |
+| Indent: the selected lines, or up to the next indentation stop at the cursor / unindent | `Tab` / `Shift+Tab` |
+| Insert a tab character (whatever the indentation setting) | `Ctrl+Alt+I` |
+| Leave the editor with the keyboard (Tab moves the focus on) | `Esc`, then `Tab`; or `Ctrl+M` switches this on and off |
 | Comment / uncomment | `Ctrl+/` |
 
 With several cursors, everything you type, delete or paste happens at every cursor. `Esc` returns to one cursor.
@@ -60,7 +62,8 @@ listed.
 
 **⇔** compares the current document with another open document or with a file. On wide screens the two texts are
 shown side by side – left the other text (read-only), right the current document – with changed lines and words
-highlighted and unchanged parts aligned; **→** between them copies a change of the left text into the document. On phones
+highlighted and unchanged parts aligned (the changed lines are found line by line, like `diff` or `git` do, and in them
+the changed words – also in long texts with many changes); **→** between them copies a change of the left text into the document. On phones
 one view shows the deleted lines inline with **Accept**/**Reject** for each change. **↑**/**↓** jump between the
 differences; **Done** (or ⇔ again) ends the comparison, and edits made meanwhile become one undo step.
 
@@ -74,10 +77,39 @@ be undone with `Ctrl+Z`.
 | Lines | sort A→Z or Z→A (numbers in natural order: 9 before 10; upper/lower case ignored), sort by length, reverse the order, remove duplicate lines, remove empty lines, trim whitespace at the end or at both ends, join lines |
 | Case | UPPER CASE, lower case, Title Case, iNVERT cASE |
 | Encode / decode | Base64 (UTF-8), URL encoding (percent encoding), HTML entities |
-| Format | format (indent) or minify JSON, format XML |
+| Format | format (indent) or minify JSON, format XML, format SQL, SQL on one line |
 
 Line tools always work on whole lines: those touched by the selection. Invalid input (for example broken JSON) shows
 a message and leaves the text unchanged.
+
+**Format SQL…** works like the PoorSQL formatter: every clause on its own line, lists and sub-queries indented,
+keywords, function names and data types in UPPER CASE. A dialog sets the options, with a preview of the result:
+dialect (standard SQL, T-SQL/SQL Server, PostgreSQL, MySQL, MariaDB, SQLite, Oracle PL/SQL, Db2, DuckDB, BigQuery,
+Snowflake, Redshift, Spark, Hive, Trino), case of the keywords (upper, lower, as written), indentation (2 or 4 spaces,
+tab), layout (standard, or keywords in a column of their own, left- or right-aligned), AND/OR at the start or end of
+the line, the width up to which parentheses stay on one line, and the blank lines between statements. The options are
+remembered. **SQL on one line** removes comments (optimizer hints `/*+ … */` stay) and line breaks; strings and quoted
+names stay unchanged.
+
+## Colours in the text
+
+A small square in the colour stands in front of every hexadecimal colour (`#6cf`, `#6cff`, `#66ccff`, `#66ccffff`; in plain
+text and Markdown not in front of all-digit forms such as issue numbers `#123`). A click on it opens the colour picker of the
+suite: the colour in the text changes while you pick, **OK** makes it one step that `Ctrl+Z` undoes, **Cancel** restores it.
+The colour keeps its form – short or long, upper or lower case –, and an opacity part is added or removed as needed.
+
+## SAS programs
+
+Files ending in `.sas` are highlighted as SAS: statements, procedure names, functions and CALL routines, macro
+statements (`%let`, `%macro` …), macro variables (`&name.`), formats (`date9.`), strings with their suffixes
+(`'01jan2024'd`), both kinds of comments (`/* … */` and `* … ;`) and the lines of DATALINES/CARDS blocks. Lines inside
+DATA and PROC steps, DO blocks and macros are indented automatically; `run;`, `quit;`, `end;` and `%mend;` move back.
+
+**Code completion** offers what fits where you type: procedure names after `PROC`, CALL routines after `CALL`, macro
+statements and functions after `%`, macro variables after `&` (those of `%let`, `%global`, `%local`, `call symputx` and
+macro parameters in the program, plus the automatic ones such as `&sysdate9`), and otherwise statements, functions and
+the names used in the program (data sets, variables). Suggestions follow the case you type (`PROC PR` → `PRINT`).
+`Ctrl+Space` opens the list at any time; `Enter` takes a suggestion, `Esc` closes the list.
 
 ## Status bar
 
@@ -89,6 +121,8 @@ cursors. It also lets you change:
   encoding is detected automatically. If a file was detected wrongly, **Reload with encoding** reads it again with
   another encoding (Chrome/Edge on the desktop).
 - **Line endings** used when saving: LF (Linux, macOS), CRLF (Windows) or CR.
+- **Indentation**: 2, 4 or 8 spaces, or tabs (shown 2, 4 or 8 characters wide). It is detected when a file is opened;
+  the last choice is used for new documents. `Tab` indents with it; `Ctrl+Alt+I` always inserts a tab character.
 
 > **Note:** Windows-1252 cannot store all characters. The editor warns before it replaces such characters with “?”.
 
@@ -120,6 +154,8 @@ On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the applicat
 | `Alt+Drag` | Column of cursors (rectangular selection) |
 | `Esc` | Back to one cursor |
 | `Tab` / `Shift+Tab` | Indent / unindent |
+| `Ctrl+Alt+I` | Insert a tab character |
+| `Esc`, `Tab` / `Ctrl+M` | Move the focus out of the editor / Tab moves the focus (on/off) |
 | `Ctrl+/` | Comment / uncomment |
 | `Ctrl+Shift+[` / `Ctrl+Shift+]` | Fold / unfold the block |
 

@@ -15,7 +15,9 @@ import { insertToc, tocRange } from 'app/doc-toc';
 import { toHtml } from 'app/doc-html';
 import { createSpelling } from 'app/spelling';
 import 'app/spell-dom'; // spelling selector in the header (shared with the other apps)
-import { DocSelectionManagerService } from '@univerjs/docs';
+import { DocSelectionManagerService, RichTextEditingMutation, DocHistoryAction } from '@univerjs/docs';
+import { JSONX } from '@univerjs/core';
+import { IDrawingManagerService } from '@univerjs/drawing';
 
 const { html } = Suite.shell;
 const t = Suite.t;
@@ -31,6 +33,8 @@ const FORMATS = {
 Suite.i18n.register({
   en: {
     'doc.print': 'Print / PDF (Ctrl+P)', 'doc.htmlNote': 'A web page keeps texts, formatting, lists, tables and images, not the page layout.',
+    'doc.diagram': 'Diagram', 'doc.diagramFailed': 'The diagram could not be inserted.', 'doc.diagramGone': 'The diagram is no longer in the document.',
+    'doc.longWords': 'Very long words were given invisible break points so that they can be shown.',
     'doc.toc': 'Contents', 'doc.tocHint': 'Insert a table of contents at the cursor, or update it (from the headings)', 'doc.tocTitle': 'Contents',
     'doc.tocInserted': 'Table of contents with {0} headings inserted.', 'doc.tocUpdated': 'Table of contents updated ({0} headings).', 'doc.tocEmpty': 'The document has no headings (use the paragraph styles Heading 1–5).',
     'app.title': 'Document', 'doc.new': 'New', 'doc.open': 'Open', 'doc.save': 'Save', 'doc.saveAs': 'Save as', 'doc.fileName': 'File name', 'doc.format': 'Format',
@@ -40,6 +44,8 @@ Suite.i18n.register({
   },
   de: {
     'doc.print': 'Drucken / PDF (Strg+P)', 'doc.htmlNote': 'Eine Webseite behält Texte, Formatierung, Listen, Tabellen und Bilder, nicht das Seitenlayout.',
+    'doc.diagram': 'Diagramm', 'doc.diagramFailed': 'Das Diagramm konnte nicht eingefügt werden.', 'doc.diagramGone': 'Das Diagramm ist nicht mehr im Dokument.',
+    'doc.longWords': 'Sehr lange Wörter haben unsichtbare Umbruchstellen erhalten, damit sie angezeigt werden können.',
     'doc.toc': 'Inhalt', 'doc.tocHint': 'Inhaltsverzeichnis an der Schreibmarke einfügen oder aktualisieren (aus den Überschriften)', 'doc.tocTitle': 'Inhalt',
     'doc.tocInserted': 'Inhaltsverzeichnis mit {0} Überschriften eingefügt.', 'doc.tocUpdated': 'Inhaltsverzeichnis aktualisiert ({0} Überschriften).', 'doc.tocEmpty': 'Das Dokument hat keine Überschriften (Absatzformate Überschrift 1–5 verwenden).',
     'app.title': 'Textverarbeitung', 'doc.new': 'Neu', 'doc.open': 'Öffnen', 'doc.save': 'Speichern', 'doc.saveAs': 'Speichern unter', 'doc.fileName': 'Dateiname', 'doc.format': 'Format',
@@ -94,8 +100,48 @@ new MutationObserver(() => univerAPI.toggleDarkMode(dark())).observe(document.do
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => univerAPI.toggleDarkMode(dark()));
 Suite.i18n.onChange(() => univerAPI.setLocale(locale()));
 
+const LONG_WORD = 20000; // longer words get a break opportunity every BREAK_EVERY characters
+const BREAK_EVERY = 1000;
+
+/**
+ * Univer's layout overflows the stack on a word of about 100 000 characters without a break opportunity (e.g. pasted
+ * base64 data), and Firefox hangs on long ones. Words of more than LONG_WORD characters get an invisible break opportunity
+ * (U+200B) every BREAK_EVERY characters; all positions of the
+ * body (paragraphs, runs, tables, ranges: startIndex/endIndex/st/ed) are moved accordingly. The number of inserted marks.
+ */
+export function breakLongWords(data) {
+  let added = 0;
+  const fix = (body) => {
+    if (!body || typeof body.dataStream !== 'string') return;
+    const at = [];
+    const re = new RegExp(`[^\\s\u200b\u0000-\u001f]{${LONG_WORD + 1},}`, 'g');
+    for (let m; (m = re.exec(body.dataStream));) for (let i = BREAK_EVERY; i < m[0].length; i += BREAK_EVERY) at.push(m.index + i);
+    if (!at.length) return;
+    let stream = '';
+    let from = 0;
+    for (const p of at) { stream += `${body.dataStream.slice(from, p)}\u200b`; from = p; }
+    body.dataStream = stream + body.dataStream.slice(from);
+    const shift = (i) => { let n = 0; while (n < at.length && at[n] < i) n += 1; return i + n; };
+    const walk = (v) => {
+      if (Array.isArray(v)) v.forEach(walk);
+      else if (v && typeof v === 'object') {
+        for (const [k, x] of Object.entries(v)) {
+          if ((k === 'startIndex' || k === 'endIndex' || k === 'st' || k === 'ed') && Number.isInteger(x)) v[k] = shift(x);
+          else if (k !== 'dataStream') walk(x);
+        }
+      }
+    };
+    for (const [k, x] of Object.entries(body)) if (k !== 'dataStream') walk(x);
+    added += at.length;
+  };
+  fix(data.body);
+  for (const part of [data.headers, data.footers]) for (const h of Object.values(part || {})) fix(h.body);
+  return added;
+}
+
 function load(data, name, handle = null, format = 'docx') {
   const previous = doc;
+  if (breakLongWords(data)) Suite.shell.toast(t('doc.longWords'), 'warning');
   doc = univerAPI.createDocument(data);
   if (previous) univerAPI.disposeUnit(previous.getId());
   Object.assign(state, { name, handle, format, dirty: false });
@@ -238,6 +284,69 @@ const spelling = createSpelling({
   render,
 });
 
+// ---- diagrams (shared/js/diagram-embed.js: a PNG with the draw.io diagram inside, edited in the diagram editor) ------
+
+const drawingManager = () => univerAPI._injector.get(IDrawingManagerService);
+drawingManager().focus$.subscribe(() => render()); // "Edit diagram" follows the selected image
+
+function markChanged() { state.dirty = true; Suite.shell.setDirty(true); render(); }
+
+/** The selected image if it carries a diagram: { id, src } or null. */
+function focusedDiagram() {
+  try {
+    const [f] = drawingManager().getFocusDrawings() || [];
+    const img = f && univerAPI.getActiveDocument().getImage(f.drawingId);
+    const src = img && img.getSource();
+    return src && Suite.diagrams.isDiagram(src) ? { id: f.drawingId, src } : null;
+  } catch (e) { return null; }
+}
+
+/** Width of the text area of a page (an inserted diagram is not wider). */
+function contentWidth() {
+  const st = (doc.save().documentStyle) || {};
+  const w = st.pageSize && st.pageSize.width ? st.pageSize.width - (st.marginLeft || 0) - (st.marginRight || 0) : 600;
+  return Math.max(100, w);
+}
+
+/** A new picture for an image: the source and the size (same scale as before, at most the text width) as one undo step. */
+function replaceImage(id, res) {
+  const d = univerAPI.getActiveDocument();
+  const drawing = (d.getDocumentDataModel().getSnapshot().drawings || {})[id];
+  if (!drawing) return false;
+  const path = ['drawings', id];
+  const old = drawing.docTransform.size;
+  const size = Suite.diagrams.newSize(drawing.source, old.width, res, contentWidth());
+  const json = JSONX.getInstance();
+  let actions = json.replaceOp([...path, 'source'], drawing.source, res.src);
+  actions = JSONX.compose(actions, json.replaceOp([...path, 'docTransform', 'size'], old, size));
+  if (drawing.transform) actions = JSONX.compose(actions, json.replaceOp([...path, 'transform'], drawing.transform, { ...drawing.transform, width: size.width, height: size.height }));
+  univerAPI.syncExecuteCommand(RichTextEditingMutation.id, { unitId: d.getId(), actions, textRanges: null, historyAction: DocHistoryAction.UpdateImage });
+  markChanged();
+  return true;
+}
+
+function insertDiagram() {
+  // where the cursor is now (the diagram editor takes the focus)
+  let range = null;
+  try { const r = univerAPI._injector.get(DocSelectionManagerService).getActiveTextRange(); if (r) range = { startOffset: r.startOffset, endOffset: r.startOffset, collapsed: true }; } catch (e) { /* no cursor */ }
+  let id = null;
+  Suite.diagrams.insert({
+    onSave: async (res) => {
+      if (id && replaceImage(id, res)) return;
+      const k = Math.min(1, contentWidth() / res.width);
+      const img = await univerAPI.getActiveDocument().insertImage({ source: res.src, imageSourceType: 'BASE64', width: Math.round(res.width * k), height: Math.round(res.height * k), ...(range ? { textRange: range } : {}) });
+      if (!img) throw new Error(t('doc.diagramFailed'));
+      id = img.getId();
+      markChanged();
+    },
+  });
+}
+
+function editDiagram() {
+  const f = focusedDiagram();
+  if (f) Suite.diagrams.edit({ src: f.src, onSave: (res) => { if (!replaceImage(f.id, res)) throw new Error(t('doc.diagramGone')); } });
+}
+
 // ---- UI --------------------------------------------------------------------------------------------------------
 
 const openSaveAs = () => { state.dialog = { stem: state.name.replace(/\.[^.]+$/, ''), format: state.format }; render(); };
@@ -266,6 +375,8 @@ function Toolbar() {
     <button class=${state.dirty ? '' : 'secondary outline'} data-testid="save" onClick=${() => save()}>${t('doc.save')}</button>
     <button class="secondary outline" data-testid="save-as" onClick=${openSaveAs}>${t('doc.saveAs')}</button>
     <button class="secondary outline" data-testid="toc" title=${t('doc.tocHint')} onClick=${tableOfContents}>📑 ${t('doc.toc')}</button>
+    <button class="secondary outline" data-testid="add-diagram" title=${t('dia.insert')} onClick=${insertDiagram}>📐 ${t('doc.diagram')}</button>
+    ${focusedDiagram() ? html`<button class="secondary" data-testid="edit-diagram" onClick=${editDiagram}>📐 ${t('dia.edit')}</button>` : null}
     <button class=${spelling.open ? 'secondary' : 'secondary outline'} data-testid="spell" title=${`${t('spell.button')} (F7)`} aria-pressed=${spelling.open ? 'true' : 'false'} onClick=${spelling.toggle}>ABC✓</button>
     <button class="secondary outline" data-testid="print" title=${t('doc.print')} aria-label=${t('doc.print')} onClick=${printDocument}>🖨</button>
     <span class="doc-name" data-testid="file-name">${state.name}${state.dirty ? ' •' : ''}</span>
@@ -288,5 +399,5 @@ document.addEventListener('keydown', (e) => {
 Suite.bridge.receive((picked) => openPicked(picked), { app: 'document' }); // files opened from other apps ("Open with…")
 
 // for tests
-window.DOC = { univerAPI, state, get doc() { return doc; }, fromText, toText, load, tableOfContents, spelling, selection: DocSelectionManagerService };
+window.DOC = { univerAPI, state, get doc() { return doc; }, insertDiagram, editDiagram, focusedDiagram, drawingManager, fromText, toText, load, tableOfContents, spelling, selection: DocSelectionManagerService };
 document.body.dataset.ready = 'true';

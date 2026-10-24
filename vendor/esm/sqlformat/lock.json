@@ -1,0 +1,10 @@
+{
+  "nearley": {
+    "version": "2.20.1",
+    "license": "MIT"
+  },
+  "sql-formatter": {
+    "version": "15.9.0",
+    "license": "MIT"
+  }
+}

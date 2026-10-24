@@ -8,7 +8,8 @@ Hintergrund vorbereitet. Der erste Start dauert einige Sekunden; der Status rech
 <h2>Notebooks</h2>
 <ul>
 <li><strong>Öffnen</strong> (<code>Strg+O</code>) öffnet ein Jupyter-Notebook (<code>.ipynb</code>) oder ein Python-Skript. In Skripten beginnt <code># %%</code> eine Codezelle und
-  <code># %% [markdown]</code> eine Textzelle (das Format von VS Code, Spyder und Jupytext); ein Skript ohne Markierungen wird eine Zelle.</li>
+  <code># %% [markdown]</code> eine Textzelle (das Format von VS Code, Spyder und Jupytext); ein Skript ohne Markierungen wird eine Zelle.
+  Rohzellen (für nbconvert) werden als einfacher Text mit der Markierung <em>Roh</em> angezeigt und unverändert gespeichert.</li>
 <li><strong>Speichern</strong> (<code>Strg+S</code>) speichert das Notebook als <code>.ipynb</code> (mit Ausgaben): in Chrome/Edge am Desktop direkt in die Datei, in Firefox und
   unter Android als Download. <strong>Speichern unter</strong> speichert unter neuem Namen. <strong>Exportieren…</strong> lädt das Notebook als Python-Skript (<code>.py</code>)
   herunter, als <strong>HTML-Seite</strong> mit Code, Markdown und Ausgaben (Tabellen, Diagramme), die sich in jedem Browser öffnen lässt, als <strong>HTML-Seite ohne
@@ -170,8 +171,8 @@ werden nicht unterstützt.</p>
 <td>Zelle darüber / darunter einfügen</td>
 </tr>
 <tr>
-<td><code>M</code> / <code>Y</code></td>
-<td>In Markdown / Code umwandeln</td>
+<td><code>M</code> / <code>Y</code> / <code>R</code></td>
+<td>In Markdown / Code / Roh (unverändert für nbconvert) umwandeln</td>
 </tr>
 <tr>
 <td><code>↑</code> / <code>↓</code></td>

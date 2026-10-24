@@ -73,6 +73,21 @@
     try { const hub = Suite.bridge && Suite.bridge.hub(); if (hub) hub.postMessage({ suite: 'suite-bridge', type: 'dirty', dirty: state.dirty }, '*'); } catch (e) { /* no overview */ }
   }
 
+  // Hardening: a link from an opened file (documents, spreadsheets, PDFs, mails, …) must not run code in the app. Clicks on
+  // javascript:/vbscript: links and such URLs passed to window.open are refused (the web inspector's bookmarklet is dragged
+  // to the bookmarks, not clicked).
+  const SCRIPT_URL = /^[\s\u0000-\u001f]*(javascript|vbscript|livescript)\s*:/i;
+  const refuseScriptUrl = (url) => SCRIPT_URL.test(String(url ?? '').replace(/[\t\n\r]/g, ''));
+  document.addEventListener('click', (e) => {
+    const a = e.target && e.target.closest ? e.target.closest('a[href], area[href]') : null;
+    if (a && refuseScriptUrl(a.getAttribute('href'))) e.preventDefault();
+  }, true);
+  const nativeOpen = window.open;
+  window.open = function open(url, ...rest) {
+    if (refuseScriptUrl(url)) { console.warn('Refused to open a script URL'); return null; }
+    return nativeOpen.call(window, url, ...rest);
+  };
+
   window.addEventListener('beforeunload', (e) => {
     if (!state.dirty) return undefined;
     e.preventDefault();
@@ -419,6 +434,18 @@
         <button class="secondary outline" data-testid="prefs-export" onClick=${() => exportFile().catch(fail)}>${Suite.t('prefs.export')}</button>
         <button class="secondary outline" data-testid="prefs-import" onClick=${() => importFile().catch(fail)}>${Suite.t('prefs.import')}</button>
       </div>
+      ${Suite.symbols && Suite.symbols.available() ? html`<fieldset class="suite-prefs-symbols" data-testid="prefs-symbols">
+        <legend>${Suite.t('sym.settings')}</legend>
+        <label><input type="checkbox" role="switch" data-testid="pref-symbols-button" checked=${Suite.symbols.settings.button}
+          onChange=${(e) => Suite.symbols.setSetting('button', e.target.checked)} /> ${Suite.t('sym.settingButton')}</label>
+        <label><input type="checkbox" role="switch" data-testid="pref-symbols-emoticons" checked=${Suite.symbols.settings.emoticons}
+          onChange=${(e) => Suite.symbols.setSetting('emoticons', e.target.checked)} /> ${Suite.t('sym.settingEmoticons')}</label>
+      </fieldset>` : null}
+      ${Suite.colors ? html`<label class="suite-prefs-colors">${Suite.t('col.setting')}
+        <select data-testid="pref-colors" onChange=${(e) => Suite.colors.setNative(e.target.value === 'browser')}>
+          <option value="own" selected=${!Suite.colors.settings.native}>${Suite.t('col.own')}</option>
+          <option value="browser" selected=${Suite.colors.settings.native}>${Suite.t('col.browser')}</option>
+        </select></label>` : null}
     </details>`;
   }
 

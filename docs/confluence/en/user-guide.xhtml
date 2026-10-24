@@ -184,6 +184,10 @@ later.</p>
 <td>?</td>
 <td>Information about the application and its keyboard shortcuts (also <code>F1</code>, or <code>?</code> outside of text fields)</td>
 </tr>
+<tr>
+<td>☺</td>
+<td>In a focused text field: emoji and symbols (also <code>Ctrl+.</code>, see Emoji and symbols)</td>
+</tr>
 </tbody>
 </table>
 <p>The applications remember the language and the design in your browser.</p>
@@ -251,6 +255,45 @@ off</strong> switches it off (the default). The choice applies to all these appl
 <li>While the suite checks a field, the browser's own spell checking is off there, so that words are not marked twice.</li>
 </ul>
 <p>Chrome and Edge share the setting among all applications opened from files; Firefox keeps it per application file.</p>
+<h3>Emoji and symbols</h3>
+<p>Every text field of the suite – one-line fields, text areas, formatted text and the code editors – can take emoji and
+other Unicode characters (arrows, currency signs, mathematical symbols, Greek letters, letters with accents, shapes …).</p>
+<ul>
+<li><strong><code>Ctrl+.</code></strong> (or the <strong>☺</strong> button at the right edge of the focused field) opens the picker next to the field (on phones
+  at the bottom of the screen). It shows the characters you used last (<strong>🕘</strong>, newest first; shared by the applications
+  like the spelling setting), the emoji groups and the symbol groups.</li>
+<li><strong>Search</strong> while the picker is open: by name or keyword in English or German (<code>happy</code>, <code>Pfeil rechts</code>, <code>euro</code>), by
+  code (<code>:wave:</code>), by emoticon (<code>:)</code>) or by code point (<code>U+1F60A</code>, <code>1F60A</code>). <code>Enter</code> inserts the first result; <code>↓</code> moves
+  into the characters, the arrow keys move between them, <code>Enter</code> or a click inserts and closes the picker,
+  <strong><code>Shift+Enter</code></strong> or <strong>Shift+click</strong> inserts and keeps it open. The selector at the bottom chooses the <strong>skin tone</strong> of
+  people and hands. <code>Esc</code> closes the picker.</li>
+<li><strong>Typing in the text</strong> (not in code editors): <strong><code>:name:</code></strong> becomes the emoji as soon as you type the closing colon
+  (<code>:smile:</code> → 😄, <code>:thumbsup:</code> → 👍; also German codes and keywords such as <code>:winkende_hand:</code>), and while you type
+  <code>:wav</code> a list of matches appears (<code>↑</code>/<code>↓</code>, <code>Enter</code> or <code>Tab</code> to take one, <code>Esc</code> to close it). A code point such as
+  <strong><code>U+1F60A</code></strong> or <strong><code>U1F60A</code></strong> followed by a space becomes the character (😊).</li>
+<li><strong><code>Alt+X</code></strong> turns the code point before the cursor (e.g. <code>2192</code>) into the character (→) and a character back into its
+  code point – as in Word; this also works in the code editors.</li>
+<li><strong>Emoticons</strong> such as <code>:)</code>, <code>;-)</code> or <code>&lt;3</code> become emoji when followed by a space – only if you switch this on (see below),
+  because in other contexts they are ordinary text.</li>
+</ul>
+<p><strong>Settings:</strong> in the about dialog (<code>F1</code> or <strong>?</strong>) under <strong>⚙ Settings → Emoji and symbols</strong>: <strong>Show the ☺ button in text
+fields</strong> (on by default) and <strong>Replace text emoticons such as :) with emoji</strong> (off by default). They are kept in the
+browser and apply to all applications (in Firefox per application file) and are part of the exported settings. Password
+fields and the terminal of the SSH client never get emoji. How emoji look depends on the fonts of the system; on a
+computer without an emoji font they appear as boxes.</p>
+<h3>Colours</h3>
+<p>Wherever an application asks for a colour (image editor, diagram editor, video editor, presentation and web slides,
+calendar colours, barcodes, notebook widgets …), the suite's <strong>colour picker</strong> opens: an area for saturation and
+brightness, a slider for the hue (and, where the colour may be transparent, one for the opacity), the hexadecimal value and
+the R, G, B (and opacity in %) values to type, the previous and the new colour side by side (a click on the previous one
+goes back to it), recently used colours and basic colours, and – in Chrome and Edge – <strong>💧</strong> to pick a colour from anywhere
+on the screen. The changes show at once; <strong>OK</strong> (or <code>Enter</code>) keeps the colour, <strong>Cancel</strong> (or <code>Esc</code>, or a click outside)
+restores the previous one. With the keyboard, the arrow keys move the point in the area and the sliders (<code>Shift</code>: in larger
+steps). On phones the picker appears at the bottom of the screen.</p>
+<p>The text editor shows a small square in front of every hexadecimal colour in the text (<code>#6cf</code>, <code>#6cff</code>, <code>#66ccff</code>,
+<code>#66ccffff</code>); a click on it opens the picker and changes the colour in the text (see the text editor).</p>
+<p>In the about dialog under <strong>⚙ Settings → Colour picker</strong>, choose <strong>The browser's own</strong> to use the browser's colour dialog
+instead (without opacity and recently used colours).</p>
 <h3>Undo and redo</h3>
 <p>All editors can undo and redo changes: with the buttons ↶ and ↷ in the toolbar (also on phones and tablets) or with
 <code>Ctrl+Z</code> (undo) and <code>Ctrl+Y</code> or <code>Ctrl+Shift+Z</code> (redo); on a Mac <code>Cmd</code> instead of <code>Ctrl</code>. While you type in a text
@@ -261,9 +304,18 @@ application; saving does not clear it.</p>
 attachment, a file of the Python notebook – can be opened in another application with <strong>Open with…</strong> (↗). Choose the
 application; it opens in a new tab (when started from the overview) or a new window. <strong>Save</strong> in that application
 writes the file back to where it came from (archive, server, database, …); save the archive or database afterwards to
-keep the change. E-mail attachments of received messages open as a copy.</p>
+keep the change. E-mail attachments of received messages open as a copy. Several files selected in the archive manager or the
+FTP/SFTP client open together in the text editor or the hex editor, each in its own tab of one window.</p>
 <p>For applications started as separate files, keep the HTML files <strong>in one folder with their original names</strong>
 (<code>texteditor.html</code>, <code>archive.html</code>, …), so that one application can find the other.</p>
+<h3>Diagrams in presentations, documents and spreadsheets</h3>
+<p>The presentation editor, the web slides, the document editor and the spreadsheet can contain diagrams of the diagram editor:
+<strong>📐 Diagram</strong> opens an empty diagram in the diagram editor, and every <strong>Save</strong> there puts it into the presentation, document or
+workbook as a picture (the first save inserts it, later saves update it). <strong>📐 Edit diagram</strong> (or a double-click in the
+presentation) opens a diagram picture in the diagram editor again. The diagram travels inside the picture – a PNG that also
+contains the draw.io file, like draw.io's "editable PNG" – so it stays editable in the saved <code>.pptx</code>, <code>.docx</code> and <code>.xlsx</code>
+files, while PowerPoint, Word and Excel simply show the picture. Diagram pictures made with draw.io can be edited the same way.
+As with <em>Open with…</em>, the diagram editor must be in the same folder, or the application must be started from the overview.</p>
 <h2>Opening and saving files</h2>
 <p>You can open files with the open button of an application or by dragging them onto the application window.</p>
 <p>How files are saved depends on the browser:</p>

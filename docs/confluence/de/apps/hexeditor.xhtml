@@ -1,12 +1,17 @@
 <!-- Generated from docs/de/apps/hexeditor.md by tools/build_docs.py - do not edit. Confluence page title: Hex-Editor -->
 <ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
 <p>Der Hex-Editor (<code>hexeditor.html</code>) zeigt und bearbeitet die Bytes beliebiger Dateien: hexadezimale und Textansicht,
-Überschreib- und Einfügemodus, Suche nach Bytefolgen und Text, ein Dateninspektor sowie Rückgängig/Wiederholen. Er
-kommt mit Dateien von mehreren hundert Megabyte zurecht; gezeichnet werden nur die sichtbaren Zeilen.</p>
+Überschreib- und Einfügemodus, Suche nach Bytefolgen und Text, ein Dateninspektor sowie Rückgängig/Wiederholen, mit
+mehreren Dateien in Tabs. Er kommt mit Dateien von mehreren hundert Megabyte zurecht; gezeichnet werden nur die sichtbaren
+Zeilen.</p>
 <h2>Öffnen, anlegen und speichern</h2>
 <ul>
-<li><strong>Öffnen</strong> (<code>Strg+O</code>) öffnet eine Datei; Sie können eine Datei auch in das Fenster ziehen. <strong>Neu</strong> beginnt eine leere
-  Datei.</li>
+<li><strong>Öffnen</strong> (<code>Strg+O</code>) öffnet eine oder mehrere Dateien; Sie können Dateien auch in das Fenster ziehen. <strong>Neu</strong> beginnt
+  eine leere Datei.</li>
+<li>Jede Datei öffnet sich in einem eigenen <strong>Tab</strong>; ein Punkt (●) am Tab zeigt ungespeicherte Änderungen. Jeder Tab behält
+  seine Cursorposition, Auswahl, Rückgängig-Liste und seinen Vergleich. Schließen Sie einen Tab mit × oder <code>Alt+W</code>; bei
+  ungespeicherten Änderungen wird vorher nachgefragt. Auch Dateien aus anderen Anwendungen (<em>Öffnen mit…</em>, etwa mehrere
+  Dateien eines Archivs) öffnen sich in Tabs.</li>
 <li><strong>Speichern</strong> (<code>Strg+S</code>) schreibt die Datei: in Chrome/Edge am Desktop direkt in die geöffnete Datei, in Firefox und
   unter Android als Download (ersetzen Sie die ursprüngliche Datei damit). <strong>Speichern unter</strong> speichert unter einem
   neuen Namen.</li>
@@ -101,6 +106,10 @@ den Vergleich; <strong>×</strong> (oder erneut ⇆) beendet ihn.</p>
 <tr>
 <td><code>Strg+Umschalt+S</code></td>
 <td>Speichern unter</td>
+</tr>
+<tr>
+<td><code>Alt+W</code></td>
+<td>Datei (Tab) schließen</td>
 </tr>
 </tbody>
 </table>

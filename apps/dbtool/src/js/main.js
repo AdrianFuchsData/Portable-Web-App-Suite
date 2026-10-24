@@ -9,6 +9,7 @@ import { sql, SQLite, PostgreSQL } from '@codemirror/lang-sql';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { openSqlite, openPostgres } from '@app/drivers.js';
 import { erDiagram } from '@app/er.js';
+import 'app/cm-symbols'; // emoji and symbols insert through the editor (shared/js/cm-symbols.js)
 
 const { html } = Suite.shell;
 const t = Suite.t;

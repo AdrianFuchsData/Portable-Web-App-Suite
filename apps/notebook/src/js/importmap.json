@@ -3,6 +3,7 @@
     "@app/widgets.js": "widgets.js",
     "app/spell": "../../../../shared/js/spell.js",
     "app/spell-dom": "../../../../shared/js/spell-dom.js",
-    "app/cm-spell": "../../../../shared/js/cm-spell.js"
+    "app/cm-spell": "../../../../shared/js/cm-spell.js",
+    "app/cm-symbols": "../../../../shared/js/cm-symbols.js"
   }
 }

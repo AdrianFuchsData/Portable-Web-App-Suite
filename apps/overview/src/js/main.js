@@ -140,6 +140,7 @@
   }
 
   /** Open an app in a new tab; file: { name, fileType, bytes, writable, source, port } is handed over when it is ready. */
+  /** A tab with an app; file: one file or a list of files to open in it once it is ready. */
   async function openTab(id, file = null) {
     const tab = { id: nextTab++, app: id, dirty: false, pending: file, frame: document.createElement('iframe') };
     tab.frame.name = Suite.bridge.HUB_NAME;
@@ -249,15 +250,17 @@
     const tab = state.tabs.find((x) => x.frame.contentWindow === e.source);
     if (!tab && !windows.has(e.source)) return; // only apps started here
     if (msg.type === 'ready' && tab && tab.pending) {
-      const f = tab.pending;
+      const files = [].concat(tab.pending);
       tab.pending = null;
-      e.source.postMessage({ suite: TAG, type: 'open', name: f.name, fileType: f.fileType, bytes: f.bytes, writable: f.writable, source: f.source }, '*', [f.bytes, ...(f.port ? [f.port] : [])]);
+      for (const f of files) e.source.postMessage({ suite: TAG, type: 'open', name: f.name, fileType: f.fileType, bytes: f.bytes, writable: f.writable, source: f.source }, '*', [f.bytes, ...(f.port ? [f.port] : [])]);
     } else if (msg.type === 'dirty' && tab) {
       tab.dirty = !!msg.dirty;
       updateDirty();
       render();
     } else if (msg.type === 'open-in' && available(msg.app)) {
-      openTab(msg.app, { name: msg.name, fileType: msg.fileType, bytes: msg.bytes, writable: msg.writable, source: msg.source, port: e.ports[0] || null });
+      // one tab for all files of an "Open with…" (ports by index)
+      const files = (msg.files || [{ ...msg, port: 0 }]).map((f) => ({ name: f.name, fileType: f.fileType, bytes: f.bytes, writable: f.writable, source: f.source, port: f.port >= 0 ? e.ports[f.port] || null : null }));
+      openTab(msg.app, files);
     }
   });
 

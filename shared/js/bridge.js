@@ -4,11 +4,14 @@
  * A source app (archive, SFTP, mail attachments, …) calls
  *   Suite.bridge.openWith(name, { data, type, save, source })   // asks for the app, then openIn()
  *   Suite.bridge.openIn(appId, { name, data, type, save, source })
+ *   Suite.bridge.openWithMany([{ name, data, save }, …], { source })   // several files in one window (apps with tabs)
  * data: Uint8Array | ArrayBuffer | Blob | a function returning a promise of one of them (the window opens first);
  * save: async (Uint8Array) => void, or null for a read-only copy. Call it from a click handler (popup blockers).
+ * openIn also takes an array of files: they are all opened in the same window, in order.
  *
- * A target app calls Suite.bridge.receive(({ file, handle }) => …) once at start. The handle is a stand-in for a
- * File System Access handle: Suite.files.save() writes through it, which sends the bytes back to the source.
+ * A target app calls Suite.bridge.receive(({ file, handle }) => …) once at start; it is called once per file, one file
+ * after the other. The handle is a stand-in for a File System Access handle: Suite.files.save() writes through it,
+ * which sends the bytes back to the source.
  *
  * Where the target runs:
  *  - started from the overview app (window name "suite-hub-app"): the overview opens the app in a new tab and passes
@@ -25,12 +28,15 @@
 
   const TEXT = ['txt', 'md', 'markdown', 'json', 'js', 'mjs', 'cjs', 'ts', 'css', 'scss', 'html', 'htm', 'xml', 'yml', 'yaml', 'ini', 'cfg', 'conf', 'log',
     'csv', 'tsv', 'py', 'sh', 'bash', 'bat', 'cmd', 'ps1', 'java', 'kt', 'c', 'h', 'cpp', 'hpp', 'cs', 'go', 'rs', 'php', 'rb', 'pl', 'lua', 'sql', 'toml',
-    'properties', 'env', 'svg', 'tex', 'rst', 'gitignore', 'dockerfile', 'makefile', 'vue', 'jsx', 'tsx', 'r', 'swift', 'dart', 'gradle'];
+    'properties', 'env', 'svg', 'tex', 'rst', 'sas', 'gitignore', 'dockerfile', 'makefile', 'vue', 'jsx', 'tsx', 'r', 'swift', 'dart', 'gradle'];
 
-  /** Apps of the suite: id (= file name without .html), names, file extensions they open (order = preference). */
+  /**
+   * Apps of the suite: id (= file name without .html), names, file extensions they open (order = preference); multi:
+   * opens several files at once (tabs).
+   */
   const APPS = [
-    { id: 'texteditor', icon: '📝', name: { en: 'Text editor', de: 'Texteditor' }, ext: TEXT },
-    { id: 'hexeditor', icon: '🔢', name: { en: 'Hex editor', de: 'Hex-Editor' }, ext: ['*'] },
+    { id: 'texteditor', icon: '📝', name: { en: 'Text editor', de: 'Texteditor' }, ext: TEXT, multi: true },
+    { id: 'hexeditor', icon: '🔢', name: { en: 'Hex editor', de: 'Hex-Editor' }, ext: ['*'], multi: true },
     { id: 'archive', icon: '📦', name: { en: 'Archive manager', de: 'Archivmanager' }, ext: ['zip', 'tar', 'tgz', 'gz', 'jar', 'war', 'apk', 'epub', 'docx', 'xlsx', 'pptx', 'odt', 'ods', 'odp', 'whl', 'nupkg', 'vsix', '7z', 'rar', 'xz', 'txz', 'bz2', 'tbz2', 'zst', 'iso', 'cab', 'deb', 'rpm', 'cpio'] },
     { id: 'mediaplayer', icon: '▶️', name: { en: 'Media player', de: 'Mediaplayer' }, ext: ['mp3', 'ogg', 'oga', 'opus', 'wav', 'flac', 'm4a', 'aac', 'mp4', 'm4v', 'webm', 'ogv', 'mkv', 'mov', 'm3u', 'm3u8', 'pls'] },
     { id: 'audioeditor', icon: '🎚️', name: { en: 'Audio editor', de: 'Audio-Editor' }, ext: ['wav', 'mp3', 'ogg', 'oga', 'opus', 'flac', 'm4a', 'aac', 'webm'] },
@@ -56,13 +62,13 @@
 
   Suite.i18n.register({
     en: {
-      'bridge.openWith': 'Open with…', 'bridge.choose': 'Open “{0}” with', 'bridge.other': 'Other apps', 'bridge.cancel': 'Cancel',
+      'bridge.openWith': 'Open with…', 'bridge.choose': 'Open “{0}” with', 'bridge.chooseMany': 'Open {0} files with', 'bridge.other': 'Other apps', 'bridge.cancel': 'Cancel',
       'bridge.opened': 'Opened from {0}. “Save” writes the file back to {0}.', 'bridge.copy': 'Opened from {0} as a copy.',
       'bridge.notFound': '{0} could not be started. Keep the apps of the suite in one folder with their original file names, or start them from the overview app.',
       'bridge.closed': '{0} is no longer open; the file cannot be saved back. Use “Save as”.', 'bridge.saving': 'Saving to {0}…',
     },
     de: {
-      'bridge.openWith': 'Öffnen mit…', 'bridge.choose': '„{0}“ öffnen mit', 'bridge.other': 'Andere Anwendungen', 'bridge.cancel': 'Abbrechen',
+      'bridge.openWith': 'Öffnen mit…', 'bridge.choose': '„{0}“ öffnen mit', 'bridge.chooseMany': '{0} Dateien öffnen mit', 'bridge.other': 'Andere Anwendungen', 'bridge.cancel': 'Abbrechen',
       'bridge.opened': 'Aus {0} geöffnet. „Speichern“ schreibt die Datei zurück nach {0}.', 'bridge.copy': 'Aus {0} als Kopie geöffnet.',
       'bridge.notFound': '{0} konnte nicht gestartet werden. Legen Sie die Anwendungen der Suite mit ihren ursprünglichen Dateinamen in einen Ordner oder starten Sie sie über die Übersicht.',
       'bridge.closed': '{0} ist nicht mehr geöffnet; die Datei kann nicht zurückgespeichert werden. Verwenden Sie „Speichern unter“.', 'bridge.saving': 'Speichere nach {0}…',
@@ -73,8 +79,16 @@
   const appName = (id) => { const a = app(id); return a ? a.name[Suite.i18n.language] || a.name.en : id; };
   const extOf = (name) => { const m = /\.([^./\\]+)$/.exec(String(name || '').toLowerCase()); return m ? m[1] : ''; };
 
-  /** Apps that open a file name, best first ({ preferred: [...], others: [...] }). The hex editor opens anything. */
+  /**
+   * Apps that open a file name, best first ({ preferred: [...], others: [...] }). The hex editor opens anything. For
+   * several names, only apps that open several files: preferred are those that open all of them.
+   */
   function appsFor(name, { exclude = null } = {}) {
+    if (Array.isArray(name)) {
+      const multi = APPS.filter((a) => a.multi && a.id !== exclude);
+      const preferred = multi.filter((a) => a.ext.includes('*') || name.every((n) => a.ext.includes(extOf(n))));
+      return { preferred, others: multi.filter((a) => !preferred.includes(a)) };
+    }
     const ext = extOf(name);
     const preferred = APPS.filter((a) => a.id !== exclude && ext && a.ext.includes(ext));
     if (!preferred.some((a) => a.id === 'hexeditor') && exclude !== 'hexeditor') preferred.push(app('hexeditor'));
@@ -127,21 +141,26 @@
    * Open a file in another app. Must be called synchronously from a user action (opens a window). Resolves when the
    * file was handed over; rejects if the app could not be started.
    */
-  function openIn(appId, { name, data, type = '', save = null, source = document.title } = {}) {
-    const channel = save ? new MessageChannel() : null;
-    if (channel) serve(channel.port1, save);
-    const message = async () => {
-      const bytes = await toBytes(data);
-      return { suite: TAG, name, type, bytes: transferable(bytes), writable: !!save, source };
-    };
+  function openIn(appId, files) {
+    const list = (Array.isArray(files) ? files : [files || {}]).map(({ name, data, type = '', save = null, source = document.title }) => {
+      const channel = save ? new MessageChannel() : null;
+      if (channel) serve(channel.port1, save);
+      return { name, data, type, source, channel };
+    });
+    // the file messages ({ name, fileType, bytes, writable, source } + port), prepared while the app starts
+    const prepared = Promise.all(list.map(async ({ name, data, type, source, channel }) => ({
+      name, fileType: type, bytes: transferable(await toBytes(data)), writable: !!channel, source, port: channel ? channel.port2 : null,
+    })));
     const host = hub();
     if (host) {
-      return message().then((msg) => {
-        host.postMessage({ ...msg, type: 'open-in', app: appId, fileType: type }, '*', [msg.bytes, ...(channel ? [channel.port2] : [])]);
+      // the overview opens one tab for all files; ports are passed by index (port: -1 for read-only copies)
+      return prepared.then((msgs) => {
+        const ports = msgs.filter((m) => m.port).map((m) => m.port);
+        const files = msgs.map(({ port, ...m }) => ({ ...m, port: port ? ports.indexOf(port) : -1 }));
+        host.postMessage({ suite: TAG, type: 'open-in', app: appId, files }, '*', [...msgs.map((m) => m.bytes), ...ports]);
       });
     }
     const win = window.open(new URL(`${appId}.html`, location.href).href, '_blank');
-    const prepared = message();
     return new Promise((resolve, reject) => {
       if (!win) { reject(new Suite.LocalizedError('bridge.notFound', appName(appId))); return; }
       const timer = setTimeout(() => { pending.delete(win); reject(new Suite.LocalizedError('bridge.notFound', appName(appId))); }, READY_TIMEOUT_MS);
@@ -149,8 +168,7 @@
         async send(target) {
           clearTimeout(timer);
           try {
-            const msg = await prepared;
-            target.postMessage({ ...msg, type: 'open', fileType: type }, '*', [msg.bytes, ...(channel ? [channel.port2] : [])]);
+            for (const { port, ...msg } of await prepared) target.postMessage({ suite: TAG, type: 'open', ...msg }, '*', [msg.bytes, ...(port ? [port] : [])]);
             resolve();
           } catch (err) { reject(err); }
         },
@@ -158,7 +176,7 @@
     });
   }
 
-  /** Show a small dialog with the apps for a file name. Resolves to an app id or null. */
+  /** Show a small dialog with the apps for a file name (or several names). Resolves to an app id or null. */
   function chooseApp(name, { exclude = null } = {}) {
     return new Promise((resolve) => {
       const { preferred, others } = appsFor(name, { exclude });
@@ -167,7 +185,7 @@
       dialog.className = 'suite-open-with';
       const article = document.createElement('article');
       const header = document.createElement('header');
-      header.textContent = Suite.t('bridge.choose', name);
+      header.textContent = Array.isArray(name) ? Suite.t('bridge.chooseMany', name.length) : Suite.t('bridge.choose', name);
       article.append(header);
       const done = (id) => { dialog.close(); dialog.remove(); resolve(id); };
       const list = (apps) => {
@@ -216,6 +234,22 @@
     if (!id) return null;
     try {
       await openIn(id, { name, ...options });
+    } catch (err) {
+      if (Suite.shell && Suite.shell.toast) Suite.shell.toast(Suite.i18n.describe(err), 'error'); else throw err;
+    }
+    return id;
+  }
+
+  /**
+   * "Open with…" for several files: the user chooses one of the apps that open several files (tabs), which gets all of
+   * them. items: [{ name, data, save, type }]; options: source, exclude.
+   */
+  async function openWithMany(items, { exclude = null, source = document.title } = {}) {
+    if (items.length === 1) return openWith(items[0].name, { exclude, source, ...items[0] });
+    const id = await chooseApp(items.map((i) => i.name), { exclude });
+    if (!id) return null;
+    try {
+      await openIn(id, items.map((i) => ({ source, ...i })));
     } catch (err) {
       if (Suite.shell && Suite.shell.toast) Suite.shell.toast(Suite.i18n.describe(err), 'error'); else throw err;
     }
@@ -282,15 +316,19 @@
     if (receiving) return;
     receiving = true;
     const host = hub() || (window.opener && !window.opener.closed ? window.opener : null);
+    // files are opened one after the other (several files of one "Open with…" arrive at once); one message at the end
+    let queue = Promise.resolve();
+    let waiting = 0;
     window.addEventListener('message', (e) => {
       const msg = e.data;
       if (!msg || msg.suite !== TAG || msg.type !== 'open' || (host && e.source !== host)) return;
       const file = new File([msg.bytes], msg.name, { type: msg.fileType || '' });
       const port = e.ports && e.ports[0];
       const handle = msg.writable && port ? bridgedHandle(file, port, msg.source) : null;
-      Promise.resolve(onOpen({ file, handle })).then(() => {
-        if (Suite.shell && Suite.shell.toast) Suite.shell.toast(Suite.t(handle ? 'bridge.opened' : 'bridge.copy', msg.source));
-      }, (err) => { if (Suite.shell && Suite.shell.toast) Suite.shell.toast(Suite.i18n.describe(err), 'error'); });
+      waiting++;
+      queue = queue.then(() => onOpen({ file, handle })).then(() => {
+        if (--waiting === 0 && Suite.shell && Suite.shell.toast) Suite.shell.toast(Suite.t(handle ? 'bridge.opened' : 'bridge.copy', msg.source));
+      }, (err) => { waiting--; if (Suite.shell && Suite.shell.toast) Suite.shell.toast(Suite.i18n.describe(err), 'error'); });
     });
     if (host) {
       try { host.postMessage({ suite: TAG, type: 'ready', app: appId }, '*'); } catch (err) { /* opener gone */ }
@@ -298,12 +336,13 @@
     // installed hosted variant (tools/build_pwa.py): files opened with the app from the operating system (file_handlers)
     if (window.launchQueue && typeof window.launchQueue.setConsumer === 'function') {
       window.launchQueue.setConsumer(async (params) => {
-        const [handle] = (params && params.files) || [];
-        if (!handle) return;
-        try { await onOpen({ file: await handle.getFile(), handle }); } catch (err) { if (Suite.shell && Suite.shell.toast) Suite.shell.toast(Suite.i18n.describe(err), 'error'); }
+        const handles = (params && params.files) || [];
+        for (const handle of app(appId) && app(appId).multi ? handles : handles.slice(0, 1)) { // (single-document apps: the first)
+          try { await onOpen({ file: await handle.getFile(), handle }); } catch (err) { if (Suite.shell && Suite.shell.toast) Suite.shell.toast(Suite.i18n.describe(err), 'error'); }
+        }
       });
     }
   }
 
-  Suite.bridge = { APPS, HUB_NAME, app, appName, appsFor, hub, openIn, openWith, chooseApp, receive, serve };
+  Suite.bridge = { APPS, HUB_NAME, app, appName, appsFor, hub, openIn, openWith, openWithMany, chooseApp, receive, serve };
 })(window.Suite = window.Suite || {});

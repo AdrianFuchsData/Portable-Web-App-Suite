@@ -1,6 +1,8 @@
 /*
  * Hex editor: virtualized hex/ASCII view, overwrite and insert mode, selection, search, go to offset,
- * data inspector, undo/redo. Runs in the shared app shell (Suite.shell, Preact + htm).
+ * data inspector, undo/redo, several files in tabs. Runs in the shared app shell (Suite.shell, Preact + htm).
+ *
+ * `state` holds the active document; the other tabs keep their fields (DOC_KEYS) in `docs` until they are activated.
  */
 (function () {
   'use strict';
@@ -20,11 +22,12 @@
       'he.findHex': 'Hex', 'he.findText': 'Text', 'he.next': 'Next', 'he.previous': 'Previous', 'he.notFound': 'Not found.',
       'he.badHex': 'Please enter hexadecimal bytes, e.g. "4A 6F".', 'he.gotoPlaceholder': 'Offset (e.g. 1024 or 0x400)', 'he.badOffset': 'Invalid offset.',
       'he.inspector': 'Data inspector', 'he.littleEndian': 'Little endian', 'he.value': 'Byte value (hex)', 'he.set': 'Set',
-      'he.copied': 'Copied {0} bytes as hex.', 'he.unsaved': 'The file has unsaved changes. Discard them?', 'he.discard': 'Discard',
+      'he.copied': 'Copied {0} bytes as hex.',
       'he.large': 'Large file ({0} MB): editing needs a lot of memory.', 'he.close': 'Close',
       'he.checksums': 'Checksums', 'he.ofSelection': 'of the selection ({0} bytes)', 'he.ofFile': 'of the file ({0} bytes)', 'he.copy': 'Copy', 'he.copiedValue': '{0} copied.',
       'he.compare': 'Compare with a file…', 'he.comparing': 'Compared with {0}', 'he.differences': '{0} differences', 'he.identical': 'The files are identical.',
       'he.nextDiff': 'Next difference', 'he.prevDiff': 'Previous difference', 'he.noMoreDiff': 'No further difference.', 'he.endCompare': 'End comparison',
+      'he.closeTab': 'Close', 'he.closeUnsaved': '“{0}” has unsaved changes. Close it anyway?', 'he.closeAnyway': 'Close anyway', 'he.tabs': 'Open files',
     },
     de: {
       'app.title': 'Hex-Editor',
@@ -34,11 +37,12 @@
       'he.findHex': 'Hex', 'he.findText': 'Text', 'he.next': 'Weiter', 'he.previous': 'Zurück', 'he.notFound': 'Nicht gefunden.',
       'he.badHex': 'Bitte geben Sie hexadezimale Bytes ein, z. B. „4A 6F“.', 'he.gotoPlaceholder': 'Offset (z. B. 1024 oder 0x400)', 'he.badOffset': 'Ungültiger Offset.',
       'he.inspector': 'Dateninspektor', 'he.littleEndian': 'Little Endian', 'he.value': 'Bytewert (hex)', 'he.set': 'Setzen',
-      'he.copied': '{0} Bytes als Hex kopiert.', 'he.unsaved': 'Die Datei hat ungespeicherte Änderungen. Verwerfen?', 'he.discard': 'Verwerfen',
+      'he.copied': '{0} Bytes als Hex kopiert.',
       'he.large': 'Große Datei ({0} MB): Bearbeiten braucht viel Arbeitsspeicher.', 'he.close': 'Schließen',
       'he.checksums': 'Prüfsummen', 'he.ofSelection': 'der Auswahl ({0} Bytes)', 'he.ofFile': 'der Datei ({0} Bytes)', 'he.copy': 'Kopieren', 'he.copiedValue': '{0} kopiert.',
       'he.compare': 'Mit einer Datei vergleichen…', 'he.comparing': 'Verglichen mit {0}', 'he.differences': '{0} Unterschiede', 'he.identical': 'Die Dateien sind identisch.',
       'he.nextDiff': 'Nächster Unterschied', 'he.prevDiff': 'Vorheriger Unterschied', 'he.noMoreDiff': 'Kein weiterer Unterschied.', 'he.endCompare': 'Vergleich beenden',
+      'he.closeTab': 'Schließen', 'he.closeUnsaved': '„{0}“ hat ungespeicherte Änderungen. Trotzdem schließen?', 'he.closeAnyway': 'Trotzdem schließen', 'he.tabs': 'Geöffnete Dateien',
     },
   });
 
@@ -56,6 +60,54 @@
     compare: null, // { name, bytes, count, version } – a second file shown next to the hex column
     sums: null, // { label, values } – the checksum dialog
   };
+
+  // ---- documents (tabs) ------------------------------------------------------------------------
+
+  const DOC_KEYS = ['buffer', 'name', 'handle', 'isNew', 'cursor', 'anchor', 'nibble', 'scrollTop', 'compare'];
+  const emptyDoc = () => ({ buffer: new HE.ByteBuffer(), name: t('he.untitled'), handle: null, isNew: true, cursor: 0, anchor: null, nibble: 0, scrollTop: 0, compare: null });
+  const docs = [emptyDoc()];
+  let active = 0;
+  const docAt = (i) => (i === active ? state : docs[i]);
+  const isDirty = (d) => d.buffer.dirty;
+
+  /** Keep the fields of the active document in its tab. */
+  function stash() {
+    if (!docs[active]) return;
+    for (const k of DOC_KEYS) docs[active][k] = state[k];
+  }
+
+  function activate(i) {
+    if (!docs[i]) return;
+    stash();
+    active = i;
+    for (const k of DOC_KEYS) state[k] = docs[i][k];
+    const el = scrollElement();
+    if (el) el.scrollTop = state.scrollTop;
+    changed();
+  }
+
+  /** A new tab (or the untouched empty one) for a file. */
+  function addDoc(name, bytes, handle = null) {
+    stash();
+    const untouched = state.isNew && !state.handle && state.buffer.length === 0 && !isDirty(state);
+    if (!untouched) {
+      docs.push(emptyDoc());
+      activate(docs.length - 1);
+    }
+    load(name, bytes, handle);
+  }
+
+  async function closeDoc(i) {
+    stash();
+    const d = docs[i];
+    if (!d) return;
+    if (isDirty(d) && !(await Suite.shell.confirm(t('he.closeUnsaved', d.name), { ok: t('he.closeAnyway') }))) return;
+    docs.splice(i, 1);
+    if (!docs.length) docs.push(emptyDoc());
+    const next = i === active ? Math.min(i, docs.length - 1) : i < active ? active - 1 : active;
+    active = -1; // the closed tab's fields must not be stashed
+    activate(next);
+  }
 
   const hex2 = (b) => b.toString(16).toUpperCase().padStart(2, '0');
   const offsetHex = (o) => o.toString(16).toUpperCase().padStart(8, '0');
@@ -79,7 +131,7 @@
   }
 
   function changed() {
-    Suite.shell.setDirty(state.buffer.dirty);
+    Suite.shell.setDirty(docs.some((d, i) => isDirty(docAt(i))));
     render();
   }
 
@@ -191,6 +243,7 @@
       if (commands[k]) { e.preventDefault(); commands[k](); return; }
       if (e.key !== 'Home' && e.key !== 'End') return; // Ctrl+Home/End: start/end of the file
     }
+    if (e.altKey && !ctrl && e.key.toLowerCase() === 'w') { e.preventDefault(); closeDoc(active); return; }
     if (keys[e.key]) { e.preventDefault(); keys[e.key](); return; }
     if (e.key.length === 1 && !e.altKey) {
       if (state.pane === 'hex' && /^[0-9a-f]$/i.test(e.key)) { e.preventDefault(); typeNibble(parseInt(e.key, 16)); } else if (state.pane === 'ascii') {
@@ -322,41 +375,59 @@
 
   // ---- files ---------------------------------------------------------------------------------------
 
-  async function confirmDiscard() {
-    return !state.buffer.dirty || Suite.shell.confirm(t('he.unsaved'), { ok: t('he.discard') });
-  }
-
+  /** Replace the content of the active tab. */
   function load(name, bytes, handle = null) {
     state.buffer = new HE.ByteBuffer(bytes);
     Object.assign(state, { name, handle, isNew: false, cursor: 0, anchor: null, nibble: 0, scrollTop: 0 });
     if (bytes.length > 256 * 1024 * 1024) Suite.shell.toast(t('he.large', Math.round(bytes.length / 1048576)), 'warning');
     const el = scrollElement();
     if (el) el.scrollTop = 0;
+    stash();
     changed();
   }
 
-  // recovery copies of unsaved work (shared/js/autosave.js)
+  // recovery copies of unsaved work (shared/js/autosave.js): every changed tab
   Suite.autosave.register({
     app: APP,
-    save: () => (state.buffer.dirty ? { name: state.name, handle: state.handle, bytes: state.buffer.bytes() } : null),
-    restore: (s) => { load(s.name, s.bytes, s.handle || null); state.buffer.savedVersion = -1; changed(); },
+    save: () => {
+      const list = docs.map((d, i) => docAt(i)).filter(isDirty).map((d) => ({ name: d.name, handle: d.handle, bytes: d.buffer.bytes() }));
+      return list.length ? { name: list.map((d) => d.name).join(', '), docs: list } : null;
+    },
+    restore: (s) => {
+      for (const d of s.docs || [s]) { addDoc(d.name, d.bytes, d.handle || null); state.buffer.savedVersion = -1; }
+      changed();
+    },
   });
 
+  /** Open files in tabs (a file that is open already is shown). */
   async function openPicked(picked) {
-    if (!picked || !picked.length || !(await confirmDiscard())) return;
-    const { file, handle } = picked[0];
-    load(file.name, new Uint8Array(await file.arrayBuffer()), handle);
-    if (handle) Suite.files.remember(APP, handle);
+    for (const { file, handle } of picked || []) {
+      let existing = -1;
+      for (let i = 0; i < docs.length; i++) {
+        const d = docAt(i);
+        if ((handle && d.handle && (await d.handle.isSameEntry(handle))) || (!handle && !d.handle && !d.isNew && d.name === file.name && !isDirty(d))) existing = i;
+      }
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      if (existing >= 0) {
+        activate(existing);
+        // the same name without a handle (dropped, or opened in Firefox): a newer version replaces the unchanged tab
+        const old = state.buffer.bytes();
+        if (!handle && (old.length !== bytes.length || old.some((b, k) => b !== bytes[k]))) load(file.name, bytes, null);
+        continue;
+      }
+      addDoc(file.name, bytes, handle);
+      if (handle) Suite.files.remember(APP, handle);
+    }
   }
 
   async function openFile() {
-    try { await openPicked(await Suite.files.open()); } catch (e) { Suite.shell.toast(Suite.i18n.describe(e), 'error'); }
+    try { await openPicked(await Suite.files.open({ multiple: true })); } catch (e) { Suite.shell.toast(Suite.i18n.describe(e), 'error'); }
   }
 
-  async function newFile() {
-    if (!(await confirmDiscard())) return;
-    load(t('he.untitled'), new Uint8Array(0));
+  function newFile() {
+    addDoc(t('he.untitled'), new Uint8Array(0));
     state.isNew = true;
+    stash();
   }
 
   function report(result) {
@@ -522,8 +593,20 @@
     </footer>`;
   }
 
+  function Tabs() {
+    return html`<div class="he-tabs" role="tablist" aria-label=${t('he.tabs')} data-testid="tabs">${docs.map((d, i) => {
+      const doc = docAt(i);
+      return html`<div role="tab" class=${`he-tab${i === active ? ' active' : ''}`} aria-selected=${i === active ? 'true' : 'false'} tabindex="0" data-testid="tab" title=${doc.name}
+           onClick=${() => activate(i)} onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(i); } else if (e.key === 'Delete') closeDoc(i); }}
+           onAuxClick=${(e) => { if (e.button === 1) closeDoc(i); }}>
+        <span class="he-tab-name" data-testid="tab-name">${doc.name}</span>${isDirty(doc) ? html`<span class="he-dirty" data-testid="dirty">●</span>` : null}
+        <span class="he-tab-close" data-testid="close-tab" aria-hidden="true" title="${t('he.closeTab')} (Alt+W, Delete)" onClick=${(e) => { e.stopPropagation(); closeDoc(i); }}>×</span>
+      </div>`;
+    })}</div>`;
+  }
+
   function Main() {
-    return html`<div class="he-layout"><${Bar} /><${CompareBar} /><${ChecksumDialog} /><div class="he-body"><${HexView} /><${Inspector} /></div><${StatusBar} /></div>`;
+    return html`<div class="he-layout"><${Tabs} /><${Bar} /><${CompareBar} /><${ChecksumDialog} /><div class="he-body"><${HexView} /><${Inspector} /></div><${StatusBar} /></div>`;
   }
 
   function measure() {
@@ -538,9 +621,9 @@
   window.addEventListener('resize', measure);
   requestAnimationFrame(measure);
 
-  Suite.bridge.receive((picked) => openPicked(picked), { app: 'hexeditor' }); // files opened from other apps ("Open with…")
+  Suite.bridge.receive((picked) => openPicked([picked]), { app: 'hexeditor' }); // files opened from other apps ("Open with…")
 
   // for tests
-  HE.app = { state, load, openPicked, save, saveAs, undo, redo, moveTo, find, gotoOffset, bytesPerRow, setByteValue, setCompare, nextDiff, showChecksums };
+  HE.app = { state, docs, get active() { return active; }, activate, closeDoc, newFile, load, openPicked, save, saveAs, undo, redo, moveTo, find, gotoOffset, bytesPerRow, setByteValue, setCompare, nextDiff, showChecksums };
   document.body.dataset.ready = 'true';
 })();

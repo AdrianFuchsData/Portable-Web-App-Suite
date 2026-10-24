@@ -1,0 +1,22 @@
+{
+  "out": "esm/symbols",
+  "packages": {},
+  "data_packages": {
+    "emojibase-data": "17.0.0",
+    "cldr-annotations-full": "48.2.0"
+  },
+  "assets": {
+    "emojibase-data": [
+      "en/compact.json",
+      "de/compact.json",
+      "en/messages.json",
+      "de/messages.json",
+      "en/shortcodes/github.json",
+      "de/shortcodes/cldr.json"
+    ],
+    "cldr-annotations-full": [
+      "annotations/en/annotations.json",
+      "annotations/de/annotations.json"
+    ]
+  }
+}

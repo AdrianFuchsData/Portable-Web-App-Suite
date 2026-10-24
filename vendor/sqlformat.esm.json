@@ -1,0 +1,6 @@
+{
+  "out": "esm/sqlformat",
+  "packages": {
+    "sql-formatter": "15.9.0"
+  }
+}

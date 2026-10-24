@@ -248,3 +248,70 @@ def test_compare(app_page, tmp_path):
     expect(bar).to_have_count(0)
     expect(page.locator(".he-ascii").first).to_be_visible()
     assert page.errors == []
+
+
+def test_tabs(app_page, tmp_path):
+    page = app_page("hexeditor", init_script=NO_PICKERS)
+    expect(page.locator("[data-testid=tab-name]")).to_have_text(["untitled.bin"])
+    (tmp_path / "a.bin").write_bytes(b"\x0a\x0a")
+    (tmp_path / "b.bin").write_bytes(b"\x0b\x0b\x0b")
+    with page.expect_file_chooser() as chooser:
+        page.click("[data-testid=open]")
+    assert chooser.value.is_multiple()
+    chooser.value.set_files([str(tmp_path / "a.bin"), str(tmp_path / "b.bin")])
+    # the untouched empty file is replaced; each file gets a tab, the last one is shown
+    expect(page.locator("[data-testid=tab-name]")).to_have_text(["a.bin", "b.bin"])
+    expect(page.locator("[data-testid=size]")).to_have_text("3 bytes")
+    page.focus("[data-testid=view]")
+    page.keyboard.press("ArrowRight")
+    page.keyboard.type("ff")
+    expect(page.locator("[data-testid=tab]", has_text="b.bin").locator("[data-testid=dirty]")).to_be_visible()
+    # each tab keeps its content, cursor and undo history
+    page.locator("[data-testid=tab]", has_text="a.bin").click()
+    assert content(page) == b"\x0a\x0a"
+    expect(page.locator("[data-testid=offset]")).to_contain_text("0 (0x0)")
+    page.locator("[data-testid=tab]", has_text="b.bin").click()
+    assert content(page) == b"\x0b\xff\x0b"
+    expect(page.locator("[data-testid=offset]")).to_contain_text("2 (0x2)")
+    page.keyboard.press("Control+z")
+    page.keyboard.press("Control+y")
+    assert content(page) == b"\x0b\xff\x0b"
+    # opening a file that is open already shows its tab
+    with page.expect_file_chooser() as chooser:
+        page.click("[data-testid=open]")
+    chooser.value.set_files(str(tmp_path / "a.bin"))
+    expect(page.locator("[data-testid=tab]")).to_have_count(2)
+    expect(page.locator("[data-testid=tab].active [data-testid=tab-name]")).to_have_text("a.bin")
+    # New adds a tab; Alt+W closes the active one, a changed one only after asking
+    page.click("[data-testid=new]")
+    expect(page.locator("[data-testid=tab-name]")).to_have_text(["a.bin", "b.bin", "untitled.bin"])
+    page.focus("[data-testid=view]")
+    page.keyboard.press("Alt+w")
+    expect(page.locator("[data-testid=tab-name]")).to_have_text(["a.bin", "b.bin"])
+    page.locator("[data-testid=tab]", has_text="b.bin").locator("[data-testid=close-tab]").click()
+    expect(page.locator("[data-testid=confirm]")).to_contain_text("“b.bin” has unsaved changes")
+    page.click("[data-testid=confirm-cancel]")
+    expect(page.locator("[data-testid=tab]")).to_have_count(2)
+    page.locator("[data-testid=tab]", has_text="b.bin").locator("[data-testid=close-tab]").click()
+    page.click("[data-testid=confirm-ok]")
+    expect(page.locator("[data-testid=tab-name]")).to_have_text(["a.bin"])
+    assert content(page) == b"\x0a\x0a"
+    # closing the last tab leaves an empty file
+    page.locator("[data-testid=close-tab]").click()
+    expect(page.locator("[data-testid=tab-name]")).to_have_text(["untitled.bin"])
+    expect(page.locator("[data-testid=size]")).to_have_text("0 bytes")
+    assert page.errors == []
+
+
+
+def test_newer_version_of_an_open_file(app_page):
+    """A dropped file with the name of an unchanged tab (no file handle): a newer version replaces the tab's bytes."""
+    from helpers.hostile import drop_file
+    page = app_page("hexeditor", init_script=NO_PICKERS)
+    drop_file(page, "a.bin", b"\x01\x02")
+    expect(page.locator("[data-testid=tab-name]")).to_have_text(["a.bin"])
+    drop_file(page, "a.bin", b"\x03\x04\x05")
+    page.wait_for_function("() => HE.app.state.buffer.length === 3")
+    expect(page.locator("[data-testid=tab-name]")).to_have_text(["a.bin"])
+    assert content(page) == b"\x03\x04\x05"
+    assert page.errors == []

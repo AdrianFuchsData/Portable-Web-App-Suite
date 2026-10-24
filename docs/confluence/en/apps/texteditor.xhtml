@@ -1,7 +1,7 @@
 <!-- Generated from docs/en/apps/texteditor.md by tools/build_docs.py - do not edit. Confluence page title: Text editor -->
 <ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
 <p>The text editor (<code>texteditor.html</code>) edits text files and source code: several files in tabs, syntax highlighting
-for more than 40 languages, search and replace, multiple cursors, and control over encoding and line endings.</p>
+for more than 40 languages (including SAS, with code completion), search and replace, multiple cursors, and control over encoding and line endings.</p>
 <h2>Opening and creating files</h2>
 <ul>
 <li><strong>Open</strong> (<code>Ctrl+O</code>) opens one or more files; you can also drag files onto the window.</li>
@@ -51,8 +51,16 @@ unsaved changes, the editor asks first. With the keyboard, move to a tab with <c
 <td><code>Ctrl+Z</code> / <code>Ctrl+Y</code> or <code>Ctrl+Shift+Z</code></td>
 </tr>
 <tr>
-<td>Indent / unindent the selection</td>
+<td>Indent: the selected lines, or up to the next indentation stop at the cursor / unindent</td>
 <td><code>Tab</code> / <code>Shift+Tab</code></td>
+</tr>
+<tr>
+<td>Insert a tab character (whatever the indentation setting)</td>
+<td><code>Ctrl+Alt+I</code></td>
+</tr>
+<tr>
+<td>Leave the editor with the keyboard (Tab moves the focus on)</td>
+<td><code>Esc</code>, then <code>Tab</code>; or <code>Ctrl+M</code> switches this on and off</td>
 </tr>
 <tr>
 <td>Comment / uncomment</td>
@@ -79,7 +87,8 @@ listed.</p>
 <h2>Comparing</h2>
 <p><strong>⇔</strong> compares the current document with another open document or with a file. On wide screens the two texts are
 shown side by side – left the other text (read-only), right the current document – with changed lines and words
-highlighted and unchanged parts aligned; <strong>→</strong> between them copies a change of the left text into the document. On phones
+highlighted and unchanged parts aligned (the changed lines are found line by line, like <code>diff</code> or <code>git</code> do, and in them
+the changed words – also in long texts with many changes); <strong>→</strong> between them copies a change of the left text into the document. On phones
 one view shows the deleted lines inline with <strong>Accept</strong>/<strong>Reject</strong> for each change. <strong>↑</strong>/<strong>↓</strong> jump between the
 differences; <strong>Done</strong> (or ⇔ again) ends the comparison, and edits made meanwhile become one undo step.</p>
 <h2>Tools</h2>
@@ -107,12 +116,35 @@ be undone with <code>Ctrl+Z</code>.</p>
 </tr>
 <tr>
 <td>Format</td>
-<td>format (indent) or minify JSON, format XML</td>
+<td>format (indent) or minify JSON, format XML, format SQL, SQL on one line</td>
 </tr>
 </tbody>
 </table>
 <p>Line tools always work on whole lines: those touched by the selection. Invalid input (for example broken JSON) shows
 a message and leaves the text unchanged.</p>
+<p><strong>Format SQL…</strong> works like the PoorSQL formatter: every clause on its own line, lists and sub-queries indented,
+keywords, function names and data types in UPPER CASE. A dialog sets the options, with a preview of the result:
+dialect (standard SQL, T-SQL/SQL Server, PostgreSQL, MySQL, MariaDB, SQLite, Oracle PL/SQL, Db2, DuckDB, BigQuery,
+Snowflake, Redshift, Spark, Hive, Trino), case of the keywords (upper, lower, as written), indentation (2 or 4 spaces,
+tab), layout (standard, or keywords in a column of their own, left- or right-aligned), AND/OR at the start or end of
+the line, the width up to which parentheses stay on one line, and the blank lines between statements. The options are
+remembered. <strong>SQL on one line</strong> removes comments (optimizer hints <code>/*+ … */</code> stay) and line breaks; strings and quoted
+names stay unchanged.</p>
+<h2>Colours in the text</h2>
+<p>A small square in the colour stands in front of every hexadecimal colour (<code>#6cf</code>, <code>#6cff</code>, <code>#66ccff</code>, <code>#66ccffff</code>; in plain
+text and Markdown not in front of all-digit forms such as issue numbers <code>#123</code>). A click on it opens the colour picker of the
+suite: the colour in the text changes while you pick, <strong>OK</strong> makes it one step that <code>Ctrl+Z</code> undoes, <strong>Cancel</strong> restores it.
+The colour keeps its form – short or long, upper or lower case –, and an opacity part is added or removed as needed.</p>
+<h2>SAS programs</h2>
+<p>Files ending in <code>.sas</code> are highlighted as SAS: statements, procedure names, functions and CALL routines, macro
+statements (<code>%let</code>, <code>%macro</code> …), macro variables (<code>&amp;name.</code>), formats (<code>date9.</code>), strings with their suffixes
+(<code>'01jan2024'd</code>), both kinds of comments (<code>/* … */</code> and <code>* … ;</code>) and the lines of DATALINES/CARDS blocks. Lines inside
+DATA and PROC steps, DO blocks and macros are indented automatically; <code>run;</code>, <code>quit;</code>, <code>end;</code> and <code>%mend;</code> move back.</p>
+<p><strong>Code completion</strong> offers what fits where you type: procedure names after <code>PROC</code>, CALL routines after <code>CALL</code>, macro
+statements and functions after <code>%</code>, macro variables after <code>&amp;</code> (those of <code>%let</code>, <code>%global</code>, <code>%local</code>, <code>call symputx</code> and
+macro parameters in the program, plus the automatic ones such as <code>&amp;sysdate9</code>), and otherwise statements, functions and
+the names used in the program (data sets, variables). Suggestions follow the case you type (<code>PROC PR</code> → <code>PRINT</code>).
+<code>Ctrl+Space</code> opens the list at any time; <code>Enter</code> takes a suggestion, <code>Esc</code> closes the list.</p>
 <h2>Status bar</h2>
 <p>The status bar shows the cursor position (line and column), the length of the selection and the number of
 cursors. It also lets you change:</p>
@@ -122,6 +154,8 @@ cursors. It also lets you change:</p>
   encoding is detected automatically. If a file was detected wrongly, <strong>Reload with encoding</strong> reads it again with
   another encoding (Chrome/Edge on the desktop).</li>
 <li><strong>Line endings</strong> used when saving: LF (Linux, macOS), CRLF (Windows) or CR.</li>
+<li><strong>Indentation</strong>: 2, 4 or 8 spaces, or tabs (shown 2, 4 or 8 characters wide). It is detected when a file is opened;
+  the last choice is used for new documents. <code>Tab</code> indents with it; <code>Ctrl+Alt+I</code> always inserts a tab character.</li>
 </ul>
 <ac:structured-macro ac:name="info"><ac:rich-text-body><p>Windows-1252 cannot store all characters. The editor warns before it replaces such characters with “?”.</p></ac:rich-text-body></ac:structured-macro>
 <h2>Keyboard shortcuts</h2>
@@ -205,6 +239,14 @@ cursors. It also lets you change:</p>
 <tr>
 <td><code>Tab</code> / <code>Shift+Tab</code></td>
 <td>Indent / unindent</td>
+</tr>
+<tr>
+<td><code>Ctrl+Alt+I</code></td>
+<td>Insert a tab character</td>
+</tr>
+<tr>
+<td><code>Esc</code>, <code>Tab</code> / <code>Ctrl+M</code></td>
+<td>Move the focus out of the editor / Tab moves the focus (on/off)</td>
 </tr>
 <tr>
 <td><code>Ctrl+/</code></td>

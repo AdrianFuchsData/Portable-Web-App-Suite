@@ -21,7 +21,7 @@ werden können, und er importiert <strong>Excalidraw</strong>-Zeichnungen.</p>
 <tr>
 <td>SVG und PNG mit eingebettetem Diagramm (<code>.drawio.svg</code>, <code>.drawio.png</code>)</td>
 <td>ja</td>
-<td>Export <strong>SVG</strong> / <strong>PNG</strong></td>
+<td><strong>Speichern</strong> schreibt wieder das Bild (erste Seite), Export <strong>SVG</strong> / <strong>PNG</strong></td>
 </tr>
 <tr>
 <td>Excalidraw (<code>.excalidraw</code>)</td>
@@ -36,7 +36,9 @@ werden können, und er importiert <strong>Excalidraw</strong>-Zeichnungen.</p>
 </tbody>
 </table>
 <p>Die SVG- und PNG-Exporte zeigen die aktuelle Seite als Bild und enthalten das ganze Diagramm, wie die „bearbeitbaren“ Exporte von
-draw.io: Öffnen Sie sie wieder in diesem Editor (oder in draw.io), um weiterzuarbeiten. Eine auf das Fenster gezogene Diagrammdatei wird
+draw.io: Öffnen Sie sie wieder in diesem Editor (oder in draw.io), um weiterzuarbeiten. Ein aus einem solchen Bild geöffnetes Diagramm
+wird wieder als solches Bild gespeichert (mit der ersten Seite als Bild) – so werden Diagramme in Präsentationen, Dokumenten und
+Tabellen bearbeitet (dort <em>Diagramm einfügen</em> und <em>Diagramm bearbeiten</em>). Eine auf das Fenster gezogene Diagrammdatei wird
 geöffnet; ein gezogenes Bild wird eingefügt.</p>
 <p><strong>🖨</strong> druckt das Diagramm: jede Seite auf einem eigenen Blatt mit ihrem Namen, auf die Blattbreite skaliert. Wählen Sie „Als PDF
 speichern“ als Drucker, um ein PDF zu erhalten.</p>
@@ -93,6 +95,10 @@ Alle werden als die entsprechenden draw.io-Formen und -Pfeile gespeichert.</p>
 <li>Klick wählt aus, <code>Umschalt</code>+Klick fügt hinzu oder entfernt, Ziehen auf einer leeren Stelle wählt alles im Rahmen, <code>Strg+A</code> wählt alles.</li>
 <li>Ziehen verschiebt (am Raster; <code>Alt</code> halten für freie Position), Ziehen an den Griffen ändert die Größe (<code>Umschalt</code> behält die Proportionen).
   Die Pfeiltasten verschieben um einen Punkt, mit <code>Umschalt</code> um einen Rasterschritt.</li>
+<li><strong>Drehen:</strong> den runden Griff über der Auswahl ziehen (<code>Umschalt</code>: in 15°-Schritten; nahe 0°, 90°, 180° und 270° rastet er ein),
+  den Winkel unter <strong>Drehung</strong> im Formatbereich eingeben oder dort mit ⟲ / ⟳ um 90° drehen. Eine Form dreht sich um ihre Mitte,
+  mehrere Formen (etwa eine Gruppe) drehen sich gemeinsam um die Mitte der Auswahl. Verbinder bleiben an den gedrehten Formen, und
+  die Griffe ändern die Größe einer gedrehten Form entlang ihrer eigenen Seiten.</li>
 <li><code>Entf</code> löscht die Auswahl (Verbinder gelöschter Formen werden mitgelöscht). <code>Strg+D</code> dupliziert, <code>Strg+C</code>, <code>Strg+X</code> und <code>Strg+V</code> kopieren,
   schneiden aus und fügen ein – auch zwischen diesem Editor und draw.io, weil die Zwischenablage draw.io-XML enthält. Eingefügter reiner
   Text wird ein Text.</li>
@@ -101,8 +107,17 @@ Alle werden als die entsprechenden draw.io-Formen und -Pfeile gespeichert.</p>
 <h3>Gruppen, Sperren und Ebenen</h3>
 <ul>
 <li><strong>Gruppieren</strong> (<code>Strg+G</code>, im Formatbereich) fasst die gewählten Formen und Verbinder zusammen: ein Klick auf eine davon wählt die
-  ganze Gruppe, die sich dann gemeinsam verschiebt; <code>Alt</code>+Klick wählt ein einzelnes Mitglied. <strong>Gruppierung aufheben</strong>
-  (<code>Strg+Umschalt+G</code>) trennt sie wieder.</li>
+  ganze Gruppe, die sich dann gemeinsam verschiebt; <code>Alt</code>+Klick wählt ein einzelnes Mitglied. Gruppen können Gruppen enthalten: Wer
+  eine Gruppe mit weiteren Formen (oder einer anderen Gruppe) gruppiert, erhält eine neue Gruppe darum, so entsteht eine Hierarchie.
+  <strong>Gruppierung aufheben</strong> (<code>Strg+Umschalt+G</code>) löst die äußerste gewählte Gruppe auf (ihre Mitglieder bleiben in der umgebenden
+  Gruppe); ein mit <code>Alt</code>+Klick gewähltes einzelnes Mitglied verlässt seine Gruppe.</li>
+<li><strong>Elemente</strong> (☰ über den Formen in der linken Seitenleiste) zeigt die Seite als Baum: die Ebenen (oberste zuerst), darin die Gruppen
+  mit ihren Mitgliedern und die einzelnen Formen und Verbinder, die oberste zuerst (▸ / ▾ klappt eine Ebene oder Gruppe zu und auf). Ein
+  Klick auf einen Eintrag wählt ihn im Diagramm aus – eine Gruppe oder Ebene steht für ihren ganzen Inhalt –, <code>Strg</code>+Klick fügt hinzu oder
+  nimmt weg, <code>Umschalt</code>+Klick fügt hinzu; Verschieben, Stile, Drehen und die anderen Funktionen gelten dann für alle. Ein Doppelklick
+  (oder <code>F2</code>) ändert die Beschriftung direkt im Baum: den Text einer Form oder eines Verbinders, den Namen einer Gruppe oder Ebene.
+  <code>Enter</code> übernimmt (bei mehrzeiligen Beschriftungen fügt <code>Umschalt+Enter</code> eine Zeile ein), <code>Esc</code> bricht ab; jede Änderung lässt sich
+  rückgängig machen. Mit der Tastatur: <code>↑</code> <code>↓</code> bewegen, <code>→</code> <code>←</code> öffnen und schließen eine Ebene oder Gruppe, <code>Enter</code> wählt aus.</li>
 <li><strong>Sperren</strong> (<code>Strg+L</code>) fixiert die Auswahl: gesperrte Objekte lassen sich nicht versehentlich auswählen, verschieben oder löschen
   (Klicks gehen durch sie hindurch). <strong>Alle entsperren</strong> im Bereich <em>Diagramm</em> (nichts ausgewählt) oder <code>Strg+Umschalt+L</code> gibt sie frei.</li>
 <li><strong>Ebenen</strong> (im Bereich <em>Diagramm</em>, oberste Ebene zuerst): ◉ wählt die Ebene für neue Formen, 👁 zeigt oder verbirgt eine Ebene
@@ -110,7 +125,8 @@ Alle werden als die entsprechenden draw.io-Formen und -Pfeile gespeichert.</p>
   um, × löscht sie (ihr Inhalt kommt auf die Ebene darunter), <strong>+ Ebene hinzufügen</strong> legt eine an. Bei mehreren Ebenen verschiebt
   <strong>Auf Ebene verschieben</strong> im Formatbereich die Auswahl.</li>
 </ul>
-<p>Gruppen, Sperren und Ebenen werden in der draw.io-Datei gespeichert und von draw.io verstanden.</p>
+<p>Gruppen (mit Namen und Verschachtelung), Drehung, Sperren und Ebenen werden in der draw.io-Datei gespeichert und von draw.io
+verstanden; Gruppen und Winkel aus Excalidraw-Dateien werden beim Öffnen übernommen.</p>
 <h3>Automatisch anordnen und Mermaid</h3>
 <p><strong>Automatisch anordnen</strong> (im Formatbereich, wenn nichts ausgewählt ist – oder bei mehreren ausgewählten Formen nur für diese)
 ordnet die Formen in Ebenen entlang ihrer Verbinder an: von oben nach unten, von links nach rechts, von unten nach oben oder von
@@ -152,7 +168,7 @@ Klassen, …) lassen sich nicht importieren.</p>
 </tr>
 <tr>
 <td>Position und Größe</td>
-<td>X, Y, Breite und Höhe einer einzelnen Form</td>
+<td>X, Y, Breite und Höhe einer einzelnen Form; Drehung in Grad (alle gewählten Formen), ⟲ / ⟳ um 90°</td>
 </tr>
 <tr>
 <td>Anordnen</td>
@@ -222,6 +238,10 @@ Klassen, …) lassen sich nicht importieren.</p>
 <tr>
 <td><code>Strg+G</code> / <code>Strg+Umschalt+G</code></td>
 <td>Gruppieren / Gruppierung aufheben</td>
+</tr>
+<tr>
+<td><code>Alt+Klick</code></td>
+<td>Ein Mitglied einer Gruppe auswählen</td>
 </tr>
 <tr>
 <td><code>Strg+L</code> / <code>Strg+Umschalt+L</code></td>

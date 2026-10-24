@@ -9,6 +9,34 @@
 .dg-tools, .dg-shapes { display: grid; grid-template-columns: repeat(2, 2.6rem); gap: .2rem; }
 .dg-tools button, .dg-shapes button { margin: 0; width: 2.6rem; height: 2.2rem; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
 .dg-shapes button { color: var(--pico-color); }
+.dg-palette { display: flex; flex-direction: column; gap: .5rem; }
+.dg-side-tabs { display: flex; gap: .2rem; }
+.dg-side-tabs button { margin: 0; flex: 1; min-width: 2.6rem; height: 1.9rem; padding: 0 .3rem; font-size: .85rem; white-space: nowrap; }
+.dg-library.elements { width: 16rem; }
+.dg-elements { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.dg-tree { list-style: none; margin: 0; padding: 0; font-size: .85rem; }
+.dg-tree li { list-style: none; margin: 0; }
+.dg-tree-row { display: flex; align-items: center; gap: .25rem; padding: .12rem .3rem; border-radius: .25rem; cursor: pointer; white-space: nowrap; }
+.dg-tree-row:hover { background: var(--pico-secondary-focus); }
+.dg-tree-row.selected { background: var(--suite-selected); }
+.dg-tree-row:focus-visible { outline: 2px solid var(--pico-primary); outline-offset: -2px; }
+.dg-tree-row.locked { opacity: .6; }
+.dg-tree-toggle { width: .9rem; flex: none; text-align: center; color: var(--pico-muted-color); }
+.dg-tree-icon { flex: none; color: var(--pico-muted-color); }
+.dg-tree-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.dg-tree-count { color: var(--pico-muted-color); }
+input.dg-tree-edit, textarea.dg-tree-edit { margin: 0; padding: 0 .3rem; height: 1.5rem; font-size: .85rem; flex: 1; min-width: 0; }
+textarea.dg-tree-edit { height: auto; padding: .1rem .3rem; resize: vertical; white-space: pre; }
+.dg-tree-row.dg-tree-layer { font-weight: 600; }
+.dg-tree-row.hidden .dg-tree-name { text-decoration: line-through; opacity: .7; }
+.dg-tree-layer { font-size: .75rem; font-weight: 600; color: var(--pico-muted-color); padding: .3rem .3rem .1rem; text-transform: uppercase; letter-spacing: .03em; }
+.dg-tree-layer.hidden { text-decoration: line-through; }
+.dg-tree-empty, .dg-tree-hint { color: var(--pico-muted-color); font-size: .8rem; margin: .4rem .3rem; }
+.dg-rotate-line { stroke: #1a73e8; pointer-events: none; }
+.dg-rotate { cursor: grab; }
+.dg-sel-group { stroke-dasharray: 2 3; }
+.dg-rotation { align-items: flex-end; }
+.dg-rotation button { margin: 0; width: auto; padding: .2rem .5rem; flex: none; }
 .dg-stage { position: relative; overflow: hidden; min-width: 0; min-height: 0; background: #fff; }
 .dg-canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; user-select: none; display: block; }
 .dg-grid-line { stroke: #e3e3e3; stroke-width: 1; }
@@ -53,6 +81,10 @@
   .dg-library { grid-row: 2; flex-direction: row; overflow-x: auto; border-right: 0; border-top: 1px solid var(--pico-muted-border-color); }
   .dg-tools, .dg-shapes { display: flex; }
   .dg-tools button, .dg-shapes button { flex: none; }
+  .dg-side-tabs { flex: none; }
+  .dg-palette { display: flex; gap: .5rem; }
+  .dg-library.elements { width: auto; flex-direction: column; max-height: 45vh; overflow-y: auto; }
+  .dg-library.elements .dg-tools { flex: none; }
   .dg-stage { grid-row: 1; grid-column: 1; }
   .dg-pages { grid-row: 3; grid-column: 1; }
   .dg-format { display: none; position: fixed; z-index: 15; right: 0; top: 6rem; bottom: 6rem; width: min(17rem, 85vw); background: var(--pico-background-color); box-shadow: 0 0 1rem rgba(0,0,0,.3); }

@@ -33,6 +33,12 @@ Folie** fügt nach der aktuellen Folie eine leere ein. Ohne gewähltes Element l
   **Tabelle** (3 × 3) fügen ein Element in der Mitte der Folie ein.
 - Ein Klick wählt ein Element; Ziehen verschiebt es, Ziehen an den Griffen ändert die Größe, Ziehen am runden Griff dreht es. Hilfslinien helfen
   beim Ausrichten an der Folie und an anderen Elementen. Pfeiltasten verschieben um einen Punkt (`Umschalt`: 10 Punkte).
+- **📐 Diagramm** öffnet ein leeres Diagramm im Diagramm-Editor (ein neues Fenster oder ein neuer Tab); jedes **Speichern** dort setzt das
+  Diagramm als Bild auf die Folie (das erste Speichern fügt es ein, spätere aktualisieren es). Ein Diagrammbild zeigt im Bereich rechts
+  **📐 Diagramm bearbeiten**, und ein Doppelklick darauf öffnet es wieder im Diagramm-Editor; das neue Bild behält Position und Breite. Das
+  Diagramm steckt im Bild (ein PNG mit der draw.io-Datei, wie das „bearbeitbare PNG“ von draw.io) und bleibt daher in der `.pptx`-Datei
+  bearbeitbar; PowerPoint zeigt das Bild. Der Diagramm-Editor (`diagram.html`) muss im selben Ordner liegen, oder Sie starten die
+  Präsentation aus der Übersicht.
 - Doppelklick auf einen Text (oder `Eingabe`) bearbeitet ihn; Doppelklick auf eine Tabellenzelle bearbeitet die Zelle. Ein Klick daneben beendet das
   Bearbeiten.
 - Der Bereich rechts zeigt Position, Größe und Drehung, Füll- und Linienfarbe, Schrift, Größe und Farbe des Texts, fett, kursiv, unterstrichen,

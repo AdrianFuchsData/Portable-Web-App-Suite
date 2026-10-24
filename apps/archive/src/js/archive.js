@@ -157,9 +157,11 @@ function readZip(bytes) {
     let mtime = dosDate(dosTime, view.getUint16(p + 14, true));
     let aes = null;
     let name = decodeName(rawName, flags & 0x800);
+    const extraIds = [];
     for (let e = p + 46 + nameLen; e + 4 <= p + 46 + nameLen + extraLen;) {
       const id = view.getUint16(e, true);
       const len = view.getUint16(e + 2, true);
+      extraIds.push(`${id}:${len}`);
       let q = e + 4;
       if (id === 0x0001) {
         if (size === 0xffffffff) { size = u64(view, q); q += 8; }
@@ -181,6 +183,9 @@ function readZip(bytes) {
     if (!path) continue;
     const entry = { path, dir, size: dir ? 0 : size, csize: dir ? 0 : csize, mtime, mode: unix & 0o7777 || (dir ? 0o755 : 0o644), encrypted: !!(flags & 1), method };
     if (aes && method === 99) entry.aes = aes;
+    // AES entries written by suite versions up to 1.0.0 (their key stream was faulty, see zipcrypto.js): made by
+    // 0x031e, AE-2, exactly the extra fields of that writer
+    if (entry.aes && aes.version === 2 && madeBy === LEGACY_MADE_BY && extraIds.join() === '21589:5,39169:7') entry.legacyAes = true;
     if ((unix & 0o170000) === 0o120000) entry.link = true;
     if (!dir) {
       const local = offset;
@@ -192,20 +197,34 @@ function readZip(bytes) {
       // ZipCrypto checks the last header byte against the CRC, or the time when sizes follow in a data descriptor
       entry.zip = { raw, method, crc, flags, csize, size, check: flags & 0x8 ? (dosTime >> 8) & 0xff : crc >>> 24 };
       entry.load = () => {
-        let { data } = raw();
-        let actual = method;
-        if (entry.encrypted) {
+        const { data } = raw();
+        const unpack = (bytes, actual) => {
+          if (actual === 0) return bytes;
+          if (actual === 8) return inflateSync(bytes, { out: new Uint8Array(size) });
+          throw new ArchiveError('ar.unsupportedMethod', path, actual);
+        };
+        let out;
+        if (!entry.encrypted) out = unpack(data, method);
+        else {
           if (!entry.aes && method === 99) throw new ArchiveError('ar.unsupportedMethod', path, method);
           const pw = passwordOf(entry);
           if (pw == null) throw new ArchiveError(passwords.length ? 'ar.wrongPassword' : 'ar.needPassword', path);
-          try {
-            if (entry.aes) { data = zc.aesDecrypt(data, entry.aes.strength, pw); actual = entry.aes.method; } else data = zc.zipCryptoDecrypt(data, pw, entry.zip.check);
-          } catch (e) { throw new ArchiveError(e instanceof zc.PasswordError ? 'ar.wrongPassword' : 'ar.corrupt', path); }
+          const decrypt = (legacy) => {
+            try {
+              return entry.aes ? zc.aesDecrypt(data, entry.aes.strength, pw, legacy) : zc.zipCryptoDecrypt(data, pw, entry.zip.check);
+            } catch (e) { throw new ArchiveError(e instanceof zc.PasswordError ? 'ar.wrongPassword' : 'ar.corrupt', path); }
+          };
+          const actual = entry.aes ? entry.aes.method : method;
+          if (!entry.aes) out = unpack(decrypt(false), actual);
+          else {
+            // both key streams agree on the first 4 KiB; compressed data tells which one is right
+            const order = entry.legacyAes ? [true, false] : [false, true];
+            try { out = unpack(decrypt(order[0]), actual); } catch (e) {
+              if (actual !== 8 || e instanceof ArchiveError) throw e;
+              try { out = unpack(decrypt(order[1]), actual); } catch (e2) { throw e; }
+            }
+          }
         }
-        let out;
-        if (actual === 0) out = data;
-        else if (actual === 8) out = inflateSync(data, { out: new Uint8Array(size) });
-        else throw new ArchiveError('ar.unsupportedMethod', path, actual);
         // AE-2 entries carry no CRC (the HMAC protects them)
         if (!(entry.aes && entry.aes.version === 2) && crc32(out) !== crc) throw new ArchiveError('ar.crc', path);
         return out;
@@ -217,6 +236,9 @@ function readZip(bytes) {
   return entries;
 }
 
+const MADE_BY = 0x033f; // Unix, ZIP specification 6.3
+const LEGACY_MADE_BY = 0x031e; // suite versions up to 1.0.0 (see legacyAes)
+
 function writeZip(entries, { level = 6, encryption = null } = {}) {
   const chunks = [];
   const central = [];
@@ -227,28 +249,32 @@ function writeZip(entries, { level = 6, encryption = null } = {}) {
     const name = enc.encode(entry.dir ? `${entry.path}/` : entry.path);
     const mtime = entry.mtime || new Date();
     const { time, date } = toDos(mtime);
-    let method, crc, csize, size, data, flags = 0x800, localExtra = null;
+    let method, crc, csize, size, data, flags = 0x800, localExtra = null, madeBy = MADE_BY;
+    // an AES entry of an older suite version is encrypted again (correctly) once its password is known
+    const legacyPassword = entry.legacyAes && entry.zip && !entry.modified ? passwordOf(entry) : null;
     if (entry.dir) {
       method = 0; crc = 0; size = 0; data = new Uint8Array(0);
-    } else if (entry.zip && !entry.modified && (!encryption || entry.encrypted || !encryption.all)) {
+    } else if (entry.zip && !entry.modified && legacyPassword == null && (!encryption || entry.encrypted || !encryption.all)) {
       // unchanged entry of the opened ZIP: copy the compressed data (also keeps encrypted entries and their password)
       const raw = entry.zip.raw();
       ({ method, crc, size } = entry.zip);
       data = raw.data;
       // encrypted entries keep their flags (with bit 3 the ZipCrypto check byte is derived from the time) and extra fields
       if (entry.encrypted) { flags = entry.zip.flags | 0x800; localExtra = raw.localExtra; }
+      if (entry.legacyAes) madeBy = LEGACY_MADE_BY; // still locked: keeps the mark of the old key stream
     } else {
       const plain = entry.load();
       size = plain.length;
       crc = crc32(plain);
       const packed = level > 0 && size > 0 ? deflateSync(plain, { level }) : null;
       if (packed && packed.length < size) { method = 8; data = packed; } else { method = 0; data = plain; }
-      if (encryption && encryption.method === 'aes') {
-        localExtra = zc.aesExtra(method);
-        data = zc.aesEncrypt(data, encryption.password);
+      const how = legacyPassword != null ? { method: 'aes', password: legacyPassword, strength: entry.aes.strength } : encryption;
+      if (how && how.method === 'aes') {
+        localExtra = zc.aesExtra(method, how.strength);
+        data = zc.aesEncrypt(data, how.password, how.strength);
         method = 99; flags |= 1; crc = 0; // AE-2: no CRC
-      } else if (encryption) {
-        data = zc.zipCryptoEncrypt(data, encryption.password, crc >>> 24);
+      } else if (how) {
+        data = zc.zipCryptoEncrypt(data, how.password, crc >>> 24);
         flags |= 1;
       }
     }
@@ -277,7 +303,7 @@ function writeZip(entries, { level = 6, encryption = null } = {}) {
     const mode = (entry.link ? 0o120000 : entry.dir ? 0o040000 : 0o100000) | (entry.mode || (entry.dir ? 0o755 : 0o644));
     const cd = new Uint8Array(46);
     const c = new DataView(cd.buffer);
-    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 0x031e, true); c.setUint16(6, 20, true); c.setUint16(8, flags, true); c.setUint16(10, method, true);
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, madeBy, true); c.setUint16(6, 20, true); c.setUint16(8, flags, true); c.setUint16(10, method, true);
     c.setUint16(12, time, true); c.setUint16(14, date, true); c.setUint32(16, crc, true); c.setUint32(20, csize, true); c.setUint32(24, size, true);
     c.setUint16(28, name.length, true); c.setUint16(30, extra.length, true);
     c.setUint32(38, ((mode << 16) | (entry.dir ? 0x10 : 0)) >>> 0, true); c.setUint32(42, localOffset, true);

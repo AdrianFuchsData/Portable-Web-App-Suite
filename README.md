@@ -4,7 +4,7 @@ Office, file, security, data science and network tools that run completely in th
 is a single HTML file that works offline from `file://`, without installation and without a server – also on
 thin clients with only a browser, and on Windows, Linux and Android.
 
-> Status: version 1.0.0 (see the file `VERSION`). All applications of the suite exist in a first version, each with tests and user and
+> Status: version 1.1.0 (see the file `VERSION` and the [release notes](docs/release-notes/)). All applications of the suite exist in a first version, each with tests and user and
 > technical documentation: text editor, hex editor, archive manager, media player, audio editor, video editor,
 > image editor, diagram editor, KeePass, spreadsheet, document and presentation editors, web slides (reveal.js), PDF viewer, calendar,
 > mail client, database tool, SSH and FTP/SFTP clients, HTTP analyzer, web inspector, barcode reader and generator and

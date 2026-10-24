@@ -7,7 +7,8 @@
     "@univerjs/preset-sheets-data-validation": "1.0.4",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "rxjs": "7.8.2"
+    "rxjs": "7.8.2",
+    "@univerjs/preset-sheets-drawing": "1.0.4"
   },
   "modules": [
     "@univerjs/preset-sheets-core/locales/en-US",
@@ -16,7 +17,9 @@
     "@univerjs/preset-sheets-conditional-formatting/locales/en-US",
     "@univerjs/preset-sheets-conditional-formatting/locales/de-DE",
     "@univerjs/preset-sheets-data-validation/locales/en-US",
-    "@univerjs/preset-sheets-data-validation/locales/de-DE"
+    "@univerjs/preset-sheets-data-validation/locales/de-DE",
+    "@univerjs/preset-sheets-drawing/locales/en-US",
+    "@univerjs/preset-sheets-drawing/locales/de-DE"
   ],
   "assets": {
     "@univerjs/preset-sheets-core": [
@@ -26,6 +29,9 @@
       "lib/index.css"
     ],
     "@univerjs/preset-sheets-data-validation": [
+      "lib/index.css"
+    ],
+    "@univerjs/preset-sheets-drawing": [
       "lib/index.css"
     ]
   },

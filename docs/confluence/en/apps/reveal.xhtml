@@ -44,7 +44,10 @@ sub-slides along.</p>
 <code>Enter</code>) to edit it right there; the bar above offers bold, italic, underline, strikethrough, code, link, colour and
 removing formatting. <code>Esc</code> or <strong>Done</strong> ends editing.</p>
 <p><strong>+ Element</strong> adds a heading, text, list, image, code, quote, table, diagram or HTML block after the selected element. The
-<strong>Element</strong> tab of the inspector on the right edits the selected element:</p>
+<strong>Element</strong> tab of the inspector on the right edits the selected element. (The <em>diagram</em> block draws a Mermaid flowchart from
+text; <strong>📐 Diagram (draw.io)</strong> instead adds an image that you draw in the diagram editor: every <strong>Save</strong> there updates the
+picture, <strong>📐 Edit diagram</strong> in the inspector opens it again, and <strong>📐 Draw a diagram</strong> turns any image block into one. The
+diagram travels inside the picture – a PNG with the draw.io file – also in saved presentations.)</p>
 <ul>
 <li>heading level and “fit text to the slide”, numbered lists, images (file, alternative text, width, fill the remaining height),
   code (language with syntax highlighting, line numbers and highlighted steps such as <code>1|2-3|5</code>), table rows and columns, HTML;</li>
@@ -115,6 +118,19 @@ each slide is followed by a page with its notes.</p>
 <p>Markdown files and notebooks are converted; saving creates a new HTML presentation. In the Python notebook, <strong>Slideshow</strong>
 shows a slide type for each cell and <strong>🎞️ Slides</strong> opens the notebook here. Undo and redo (<code>Ctrl+Z</code>, <code>Ctrl+Y</code>) cover all
 changes.</p>
+<h3>Scripts in presentations</h3>
+<p>Slides may contain HTML, and HTML can contain scripts (<code>&lt;script&gt;</code>, event handlers such as <code>onclick</code>, <code>javascript:</code> links).
+To protect your data, <strong>scripts in slides are blocked</strong>: the preview, presenting, printing and the saved file show the slides
+without running them (a Content Security Policy lets only the editor's own scripts – reveal.js, its plugins, formulas – run).
+When you open a presentation that contains such content, you are asked whether to allow it:</p>
+<ul>
+<li><strong>Keep blocked</strong> (recommended for files from others): the slides are shown, the scripts do not run.</li>
+<li><strong>Allow scripts (unprotected)</strong>: only for files you trust. The scripts then run with the rights of this app and could
+  read or change your data in the suite (settings, saved connections, opened files) or send it elsewhere.</li>
+</ul>
+<p>The button <strong>🛡 Scripts blocked</strong> / <strong>⚠ Scripts allowed</strong> in the toolbar shows the state and switches it (allowing asks
+again). The decision is not stored in the file: a presentation opened again is blocked until you allow it. A presentation
+saved while its scripts are blocked keeps them, but they stay blocked when the file is opened in a browser.</p>
 <h2>Keyboard shortcuts</h2>
 <p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
 <h3>Files</h3>

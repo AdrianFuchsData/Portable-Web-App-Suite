@@ -34,7 +34,7 @@ Dateien und Ordner hinzufügen, Ordner anlegen, umbenennen, löschen und zwische
 <tr>
 <td>7z</td>
 <td>ja</td>
-<td>ja (ohne Verschlüsselung)</td>
+<td>ja (ohne Verschlüsselung; Dateinamen nur aus ASCII-Zeichen)</td>
 </tr>
 <tr>
 <td>RAR (Version 4 und 5)</td>
@@ -114,7 +114,7 @@ Dateien brauchen das Passwort.</p>
 </table>
 <p>Vorhandene Dateien mit gleichem Namen werden nach einer Bestätigung ersetzt.</p>
 <p>Rückgängig (↶, <code>Strg+Z</code>) und Wiederholen (↷, <code>Strg+Y</code>) wirken auf Hinzufügen, Umbenennen, Löschen und neue Ordner.</p>
-<p><strong>Öffnen mit…</strong> (Werkzeugleiste oder Vorschau) öffnet die gewählte Datei in einer anderen Anwendung der Suite; Speichern dort ersetzt die Datei im Archiv (rückgängig machbar). Speichern Sie danach das Archiv.</p>
+<p><strong>Öffnen mit…</strong> (Werkzeugleiste oder Vorschau) öffnet die gewählte Datei in einer anderen Anwendung der Suite; Speichern dort ersetzt die Datei im Archiv (rückgängig machbar). Speichern Sie danach das Archiv. Sind <strong>mehrere Dateien</strong> gewählt, bietet Öffnen mit… die Anwendungen mit Tabs an – Texteditor und Hex-Editor –, die alle in einem Fenster öffnen, jede in einem eigenen Tab (Ordner lassen sich so nicht öffnen).</p>
 <h2>Speichern</h2>
 <ul>
 <li><strong>Speichern</strong> (<code>Strg+S</code>) schreibt das Archiv in seinem Format: in Chrome/Edge am Desktop direkt in die geöffnete Datei, in Firefox
@@ -136,6 +136,10 @@ das Windows ohne Zusatzprogramm öffnen kann).</p>
   den Windows-Explorer), mit zweimal eingegebenem Passwort. Alle noch nicht verschlüsselten Dateien werden dann verschlüsselt;
   bereits verschlüsselte behalten ihr Passwort. „keine“ speichert neue und geänderte Dateien unverschlüsselt.</li>
 <li>In ZIP-Archiven werden nur die Inhalte verschlüsselt, nicht die Dateinamen und die Dateiliste.</li>
+<li>Mit AES verschlüsselte Dateien, die mit Version 1.0.0 oder früher der Suite gespeichert wurden, konnte nur die Suite selbst
+  lesen (andere Programme wie 7-Zip meldeten nach den ersten Kilobytes einen Datenfehler). Die Suite öffnet sie weiterhin;
+  nach Eingabe des Passworts verschlüsselt das Speichern des Archivs diese Dateien wieder korrekt. Von anderen Programmen
+  verschlüsselte Archive waren nicht betroffen.</li>
 </ul>
 <h2>Tastenkürzel</h2>
 <p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>

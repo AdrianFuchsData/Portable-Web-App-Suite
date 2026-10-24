@@ -267,20 +267,28 @@ function transfer(job) {
   });
 }
 
-/** "Open with…": edit a remote file in another app; saving there uploads it again. */
-function openWith(entry) {
-  if (!entry || entry.isDir) return;
+/**
+ * "Open with…": edit remote files in another app; saving there uploads them again. Several files are offered to the
+ * apps with tabs (text and hex editor), which open all of them in one window.
+ */
+function openWith(entries) {
+  entries = [].concat(entries).filter((e) => e && !e.isDir);
+  if (!entries.length) return;
   const fs = state.fs;
-  const path = join(state.remotePath, entry.name);
-  Suite.bridge.openWith(entry.name, {
-    exclude: 'ftp',
-    source: `${state.site ? state.site.host || '' : ''}:${path}`,
-    data: () => transfer({ direction: 'down', name: entry.name, size: entry.size, run: (progress) => fs.read(path, progress) }),
-    save: async (bytes) => {
-      await transfer({ direction: 'up', name: entry.name, size: bytes.length, run: (progress) => fs.write(path, bytes, progress) });
-      Suite.shell.toast(t('ftp.savedBack', entry.name));
-    },
+  const host = state.site ? state.site.host || '' : '';
+  const items = entries.map((entry) => {
+    const path = join(state.remotePath, entry.name);
+    return {
+      name: entry.name,
+      source: `${host}:${path}`,
+      data: () => transfer({ direction: 'down', name: entry.name, size: entry.size, run: (progress) => fs.read(path, progress) }),
+      save: async (bytes) => {
+        await transfer({ direction: 'up', name: entry.name, size: bytes.length, run: (progress) => fs.write(path, bytes, progress) });
+        Suite.shell.toast(t('ftp.savedBack', entry.name));
+      },
+    };
   });
+  Suite.bridge.openWithMany(items, { exclude: 'ftp', source: `${host}:${state.remotePath}` });
 }
 
 /** Upload File objects or local entries (folders recursively) into the current remote folder. */
@@ -527,8 +535,8 @@ function RemotePane() {
       <div class="ftp-buttons">
         <button class="secondary outline" data-testid="remote-up" disabled=${state.remotePath === '/'} onClick=${() => listRemote(parent(state.remotePath))}>↑</button>
         <button class="secondary outline" data-testid="download-selected" disabled=${!state.remoteSel.size} onClick=${() => download(state.remote.filter((x) => state.remoteSel.has(x.name))).catch(fail)}>← ${t('ftp.download')}</button>
-        <button class="secondary outline" data-testid="remote-open-with" disabled=${state.remoteSel.size !== 1 || state.remote.some((x) => state.remoteSel.has(x.name) && x.isDir)}
-          onClick=${() => openWith(state.remote.find((x) => state.remoteSel.has(x.name)))}>${t('bridge.openWith')}</button>
+        <button class="secondary outline" data-testid="remote-open-with" disabled=${!state.remoteSel.size || state.remote.some((x) => state.remoteSel.has(x.name) && x.isDir)}
+          onClick=${() => openWith(state.remote.filter((x) => state.remoteSel.has(x.name)))}>${t('bridge.openWith')}</button>
         <button class="secondary outline" data-testid="remote-mkdir" onClick=${() => remoteAction('mkdir')}>${t('ftp.mkdir')}</button>
         <button class="secondary outline" data-testid="remote-rename" disabled=${state.remoteSel.size !== 1} onClick=${() => remoteAction('rename')}>${t('ftp.rename')}</button>
         <button class="secondary outline" data-testid="remote-delete" disabled=${!state.remoteSel.size} onClick=${() => remoteAction('delete')}>${t('ftp.delete')}</button>

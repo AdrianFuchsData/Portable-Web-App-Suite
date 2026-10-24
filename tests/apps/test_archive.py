@@ -377,6 +377,129 @@ def test_aes_zip_read_and_write(app_page, tmp_path):
     assert page.errors == []
 
 
+def legacy_aes_zip(path, files, password):
+    """An AES-256 ZIP as suite versions up to 1.0.0 wrote it: AE-2, made by 0x031e, extra fields 0x5455 + 0x9901 and the
+    faulty counter (only its first byte counted, so the key stream repeated after 256 blocks)."""
+    import hashlib
+    import hmac
+    from Cryptodome.Cipher import AES
+    out, central = io.BytesIO(), io.BytesIO()
+    for name, data, method in files:
+        body = zlib.compress(data, 6)[2:-4] if method == 8 else data
+        salt = os.urandom(16)
+        derived = hashlib.pbkdf2_hmac("sha1", password, salt, 1000, 66)
+        key, mac_key, verifier = derived[:32], derived[32:64], derived[64:]
+        ecb = AES.new(key, AES.MODE_ECB)
+        cipher = bytearray()
+        for block in range(0, len(body), 16):
+            stream = ecb.encrypt(bytes([((block // 16) + 1) & 0xFF]) + bytes(15))
+            cipher += bytes(a ^ b for a, b in zip(body[block:block + 16], stream))
+        cipher = bytes(cipher)
+        payload = salt + verifier + cipher + hmac.new(mac_key, cipher, hashlib.sha1).digest()[:10]
+        extra = struct.pack("<HHBI", 0x5455, 5, 1, 1700000000) + struct.pack("<HHH2sBH", 0x9901, 7, 2, b"AE", 3, method)
+        fname = name.encode()
+        offset = out.tell()
+        out.write(struct.pack("<IHHHHHIIIHH", 0x04034B50, 20, 0x801, 99, 0, 0x5821, 0, len(payload), len(data), len(fname), len(extra)) + fname + extra + payload)
+        central.write(struct.pack("<IHHHHHHIIIHHHHHII", 0x02014B50, 0x031E, 20, 0x801, 99, 0, 0x5821, 0, len(payload), len(data), len(fname),
+                                  len(extra), 0, 0, 0, 0o100644 << 16, offset) + fname + extra)
+    cd = central.getvalue()
+    start = out.tell()
+    out.write(cd + struct.pack("<IHHHHIIH", 0x06054B50, 0, 0, len(files), len(files), len(cd), start, 0))
+    path.write_bytes(out.getvalue())
+    return path
+
+
+B64 = "(s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0))"
+TO_B64 = "(u) => { let b = ''; for (let i = 0; i < u.length; i += 0x8000) b += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(b); }"
+
+
+def app_read(page, data, password):
+    """{path: bytes} of a ZIP read by the app (archive.js) with a password."""
+    import base64
+    got = page.evaluate(f"""([s, pw]) => {{ const b64 = {B64}, toB64 = {TO_B64}; AR.app.addPassword(pw);
+      return Object.fromEntries(AR.app.read(b64(s), 'x.zip').entries.filter((e) => !e.dir).map((e) => [e.path, toB64(e.load())])); }}""",
+                        [base64.b64encode(data).decode(), password])
+    return {k: base64.b64decode(v) for k, v in got.items()}
+
+
+def large_files():
+    import random
+    rng = random.Random(7)
+    words = ["".join(rng.choice("abcdefghijklmnop") for _ in range(rng.randint(2, 9))) for _ in range(2000)]
+    return {"text.txt": " ".join(rng.choice(words) for _ in range(40000)).encode(), "random.bin": os.urandom(30000)}
+
+
+def test_aes_zip_with_large_entries_works_with_other_tools(app_page, tmp_path):
+    """Entries larger than 4 KiB (256 AES blocks), stored and deflated, written and read by other ZIP tools."""
+    import base64
+    import shutil
+    import subprocess
+    import pyzipper
+    files = large_files()
+    page = app_page("archive", init_script=NO_PICKERS)
+    # written by pyzipper (and 7-Zip, if installed), read by the app
+    source = tmp_path / "other.zip"
+    with pyzipper.AESZipFile(source, "w", encryption=pyzipper.WZ_AES) as z:
+        z.setpassword(b"geheim")
+        z.writestr("text.txt", files["text.txt"], compress_type=pyzipper.ZIP_DEFLATED)
+        z.writestr("random.bin", files["random.bin"], compress_type=pyzipper.ZIP_STORED)
+    assert app_read(page, source.read_bytes(), "geheim") == files
+    seven = shutil.which("7z") or shutil.which("7za")
+    if seven:
+        (tmp_path / "src").mkdir()
+        for name, data in files.items():
+            (tmp_path / "src" / name).write_bytes(data)
+        subprocess.run([seven, "a", "-tzip", "-pgeheim", "-mem=AES256", str(tmp_path / "7z.zip"), "text.txt", "random.bin"],
+                       cwd=tmp_path / "src", check=True, capture_output=True)
+        assert app_read(page, (tmp_path / "7z.zip").read_bytes(), "geheim") == files
+    # written by the app (AES and ZipCrypto), read by pyzipper / zipfile (and tested by 7-Zip)
+    for method in ("aes", "zipcrypto"):
+        out = tmp_path / f"app-{method}.zip"
+        out.write_bytes(base64.b64decode(page.evaluate(f"""([files, method]) => {{ const b64 = {B64}, toB64 = {TO_B64};
+          const entries = Object.entries(files).map(([path, s]) => {{ const d = b64(s); return {{ path, size: d.length, mtime: new Date(), load: () => d }}; }});
+          return toB64(AR.app.write(entries, 'zip', {{ level: 6, encryption: {{ password: 'geheim', method, all: true }} }})); }}""",
+                                                       [{k: base64.b64encode(v).decode() for k, v in files.items()}, method])))
+        with pyzipper.AESZipFile(out) as z:
+            z.setpassword(b"geheim")
+            assert {n: z.read(n) for n in z.namelist()} == files
+        if seven:
+            result = subprocess.run([seven, "t", "-pgeheim", str(out)], capture_output=True, text=True)
+            assert "Everything is Ok" in result.stdout, result.stdout
+    assert page.errors == []
+
+
+def test_aes_zip_of_older_versions_is_read_and_repaired(app_page, tmp_path):
+    """Suite versions up to 1.0.0 wrote AES entries with a faulty key stream: still readable, encrypted correctly on saving."""
+    import pyzipper
+    files = large_files()
+    source = legacy_aes_zip(tmp_path / "old.zip", [("text.txt", files["text.txt"], 8), ("random.bin", files["random.bin"], 0)], b"alt")
+    with pyzipper.AESZipFile(source) as z:  # other tools cannot read it (the HMAC is right, the content is not)
+        z.setpassword(b"alt")
+        with pytest.raises(Exception):
+            assert z.read("text.txt") == files["text.txt"]
+    page = app_page("archive", init_script=NO_PICKERS)
+    assert app_read(page, source.read_bytes(), "alt") == files
+    # saved without the password: the entries stay as they are (and readable by the app)
+    page.evaluate("b => AR.app.load('old.zip', b)", list(source.read_bytes()))
+    expect(page.locator("[data-testid=list]")).to_be_visible()
+    page.evaluate("AR.app.addFiles([{ file: new File(['new'], 'new.txt'), path: 'new.txt' }])")
+    kept = save_download(page, tmp_path)
+    with zipfile.ZipFile(kept) as z:
+        assert {i.filename: i.create_version | (i.create_system << 8) for i in z.infolist()}["text.txt"] == 0x031E
+    # with the password (unlocked by opening the file), saving encrypts them correctly
+    open_row(page, "text.txt")
+    page.fill("[data-testid=password]", "alt")
+    page.click("[data-testid=password-ok]")
+    expect(page.locator("[data-testid=preview]")).to_be_visible()
+    page.keyboard.press("Escape")
+    repaired = save_download(page, tmp_path)
+    with pyzipper.AESZipFile(repaired) as z:
+        z.setpassword(b"alt")
+        assert z.read("text.txt") == files["text.txt"] and z.read("random.bin") == files["random.bin"]
+        assert z.read("new.txt") == b"new"
+    assert page.errors == []
+
+
 def test_extract(app_page, tmp_path):
     page = app_page("archive", init_script=NO_PICKERS)
     open_archive(page, make_zip(tmp_path / "demo.zip"))

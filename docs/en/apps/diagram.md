@@ -9,12 +9,14 @@ imports **Excalidraw** drawings.
 | Format | Open | Save |
 |---|---|---|
 | draw.io (`.drawio`, `.xml`), also compressed | yes, all pages | yes (**Save**, `Ctrl+S`) |
-| SVG and PNG with an embedded diagram (`.drawio.svg`, `.drawio.png`) | yes | **SVG** / **PNG** export |
+| SVG and PNG with an embedded diagram (`.drawio.svg`, `.drawio.png`) | yes | **Save** writes the image again (first page), **SVG** / **PNG** export |
 | Excalidraw (`.excalidraw`) | yes (rectangles, ellipses, diamonds, text, arrows, lines, images) | – |
 | Mermaid flowchart (`.mmd`, `.mermaid`) | yes, laid out automatically | – |
 
 The SVG and PNG exports show the current page as a picture and contain the whole diagram, like draw.io's "editable" exports:
-open them again in this editor (or in draw.io) to continue editing. Dropping a diagram file onto the window opens it; dropping
+open them again in this editor (or in draw.io) to continue editing. A diagram opened from such a picture is saved as that kind
+of picture again (with the first page as the picture) – this is how diagrams in presentations, documents and spreadsheets
+are edited (*Insert diagram* and *Edit diagram* there). Dropping a diagram file onto the window opens it; dropping
 an image inserts it.
 
 **🖨** prints the diagram: every page on its own sheet with its name, scaled to the width of the sheet. Choose "Save as PDF" as
@@ -22,7 +24,8 @@ the printer to get a PDF.
 
 > **Note:** draw.io has many more shapes and options. Shapes this editor does not know are shown as rectangles, and labels are plain
 > text (bold or coloured parts of a label are not kept). Style settings that the editor does not use are kept when you save, so
-> a round trip through this editor does not remove them.
+> a round trip through this editor does not remove them. Routing points of draw.io connectors are kept and the connector is
+> drawn through them; they move with the connector, not with the shapes.
 
 ## Drawing
 
@@ -58,6 +61,10 @@ All of them are saved as the corresponding draw.io shapes and arrows.
 - Click selects, `Shift`+click adds or removes, dragging on an empty place selects everything inside the frame, `Ctrl+A` selects all.
 - Drag to move (on the grid; hold `Alt` for free positioning), drag the handles to resize (`Shift` keeps the proportions). The arrow keys
   move by one point, with `Shift` by one grid step.
+- **Rotate:** drag the round handle above the selection (`Shift`: in steps of 15°; near 0°, 90°, 180° and 270° it snaps), or
+  enter the angle under **Rotation** in the format panel, or use ⟲ / ⟳ there to turn by 90°. One shape turns around its centre,
+  several shapes (for example a group) turn together around the centre of the selection. Connectors stay attached to the
+  rotated shapes, and the handles resize a rotated shape along its own sides.
 - `Delete` removes the selection (connectors of removed shapes are removed too). `Ctrl+D` duplicates, `Ctrl+C`, `Ctrl+X` and `Ctrl+V`
   copy, cut and paste — also between this editor and draw.io, because the clipboard holds draw.io XML. Pasted plain text becomes a text.
 - Undo `Ctrl+Z`, redo `Ctrl+Y` (or `Ctrl+Shift+Z`).
@@ -65,7 +72,17 @@ All of them are saved as the corresponding draw.io shapes and arrows.
 ### Groups, locking and layers
 
 - **Group** (`Ctrl+G`, in the format panel) joins the selected shapes and connectors: a click on one of them selects the whole
-  group, which then moves together; `Alt`+click selects a single member. **Ungroup** (`Ctrl+Shift+G`) separates them again.
+  group, which then moves together; `Alt`+click selects a single member. Groups can contain groups: grouping a group together
+  with further shapes (or with another group) makes a new group around them, so a hierarchy arises. **Ungroup**
+  (`Ctrl+Shift+G`) dissolves the outermost selected group (its members stay in the enclosing group); a single member selected
+  with `Alt`+click leaves its group.
+- **Elements** (☰ above the shapes in the left sidebar) shows the page as a tree: the layers (top layer first), in them the
+  groups with their members and the single shapes and connectors, the top-most first (▸ / ▾ folds a layer or group). A click
+  on an entry selects it in the diagram – a group or layer stands for all its content –, `Ctrl`+click adds or removes,
+  `Shift`+click adds; moving, styles, rotating and the other functions then apply to all of them. A double-click (or `F2`)
+  edits the label in place: the text of a shape or connector, the name of a group or layer. `Enter` keeps it (for labels with
+  several lines `Shift+Enter` adds a line), `Esc` cancels; each change can be undone. With the keyboard: `↑` `↓` move, `→` `←`
+  open and close a layer or group, `Enter` selects.
 - **Lock** (`Ctrl+L`) fixes the selection: locked objects cannot be selected, moved or deleted by accident (clicks go through
   them). **Unlock all** in the *Diagram* panel (nothing selected) or `Ctrl+Shift+L` releases them.
 - **Layers** (in the *Diagram* panel, top layer first): ◉ chooses the layer new shapes go to, 👁 shows or hides a layer (hidden
@@ -73,7 +90,8 @@ All of them are saved as the corresponding draw.io shapes and arrows.
   content moves to the layer below), **+ Add layer** adds one. With several layers, **Move to layer** in the format panel moves
   the selection.
 
-Groups, locks and layers are saved in the draw.io file and are understood by draw.io.
+Groups (with their names and nesting), rotation, locks and layers are saved in the draw.io file and are understood by
+draw.io; groups and angles of Excalidraw files are taken over when they are opened.
 
 ### Automatic layout and Mermaid
 
@@ -106,7 +124,7 @@ The panel on the right shows the settings of the selection:
 | Style | shape type, fill (or none), line colour (or none), line width, dashed, opacity |
 | Connector | routing (straight, elbow, curved), arrow at the start and at the end (none, classic, open, diamond, oval) |
 | Text | font size and colour, bold, italic, horizontal and vertical alignment |
-| Position and size | X, Y, width and height of a single shape |
+| Position and size | X, Y, width and height of a single shape; rotation in degrees (all selected shapes), ⟲ / ⟳ by 90° |
 | Arrange | to front, to back, duplicate, delete; with several shapes: align left/centre/right/top/middle/bottom, distribute |
 
 Without a selection, the panel switches the grid and snapping on or off.
@@ -139,6 +157,7 @@ On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the applicat
 | `Ctrl+A` | Select all |
 | `Ctrl+D` | Duplicate |
 | `Ctrl+G` / `Ctrl+Shift+G` | Group / ungroup |
+| `Alt+Click` | Select one member of a group |
 | `Ctrl+L` / `Ctrl+Shift+L` | Lock the selection / unlock all |
 | `Delete` / `Backspace` | Delete |
 | `F2` / `Enter` | Edit the text |

@@ -7,7 +7,7 @@
  */
 import {
   THEMES, TRANSITIONS, SPEEDS, FRAGMENTS, BLOCK_TYPES, CODE_LANGUAGES, newDeck, newSlide, newBlock, normalizeDeck, flatten, slideAt,
-  slideTitle, renderPage, renderBlock, fromHtml, fromMarkdown, fromNotebook, toMarkdown, newId,
+  slideTitle, renderPage, renderBlock, hasActiveContent, fromHtml, fromMarkdown, fromNotebook, toMarkdown, newId,
 } from '@app/deck.js';
 import { mermaidSvg } from '@app/mermaid-svg.js';
 import { importPptx } from 'app/pptx-import';
@@ -30,7 +30,7 @@ Suite.i18n.register({
     'rv.slides': 'Slides', 'rv.element': 'Element', 'rv.slide': 'Slide', 'rv.deck': 'Presentation', 'rv.panels': 'Panels',
     'rv.tpl.title': 'Title', 'rv.tpl.content': 'Title and list', 'rv.tpl.section': 'Section', 'rv.tpl.image': 'Image', 'rv.tpl.code': 'Code',
     'rv.tpl.quote': 'Quote', 'rv.tpl.blank': 'Blank', 'rv.tpl.markdown': 'Markdown', 'rv.tpl.html': 'HTML',
-    'rv.type.heading': 'Heading', 'rv.type.text': 'Text', 'rv.type.list': 'List', 'rv.type.image': 'Image', 'rv.type.code': 'Code',
+    'rv.type.drawio': 'Diagram (draw.io)', 'rv.drawDiagram': 'Draw a diagram', 'rv.drawnDiagram': 'Diagram', 'rv.type.heading': 'Heading', 'rv.type.text': 'Text', 'rv.type.list': 'List', 'rv.type.image': 'Image', 'rv.type.code': 'Code',
     'rv.type.quote': 'Quote', 'rv.type.table': 'Table', 'rv.type.html': 'HTML', 'rv.type.diagram': 'Diagram (Mermaid)',
     'rv.mermaid': 'Mermaid flowchart', 'rv.mermaidHint': 'flowchart TD / LR with nodes A[box], B(rounded), C{decision}, D([terminal]) and links A --> B, A -->|label| C; laid out automatically.',
     'rv.printNotes': 'Print / PDF with speaker notes', 'rv.dropHint': 'Drag slides to reorder them; drop on the right half of a slide to make it a sub-slide.',
@@ -55,6 +55,11 @@ Suite.i18n.register({
     'rv.fileName': 'File name', 'rv.saveFormat': 'Format', 'rv.fmtHtml': 'reveal.js presentation (HTML)', 'rv.fmtMd': 'Markdown (text only)', 'rv.fmtPptx': 'PowerPoint (.pptx)',
     'rv.pptxLossy': 'The blocks are laid out from top to bottom on PowerPoint slides; texts, lists, images, tables, notes, transitions and fragments are taken over, themes and custom HTML only roughly.',
     'rv.convertedPptx': 'The PowerPoint file was converted into web slides; saving creates an HTML presentation.',
+    'rv.trustAsk': 'This presentation contains scripts or other active content (such as <script> elements, event handlers or javascript: links). They are blocked: the slides are shown without running them. Allow them only if you trust the file and where it comes from – the scripts then run unprotected with the rights of this app and could read or change your data in the suite (settings, saved connections, opened files) or send it elsewhere.',
+    'rv.trustAllow': 'Allow scripts (unprotected)', 'rv.trustKeep': 'Keep blocked',
+    'rv.scriptsOff': 'Scripts blocked', 'rv.scriptsOn': 'Scripts allowed',
+    'rv.scriptsOffTitle': 'Scripts in this presentation are blocked. Click to decide whether to allow them.', 'rv.scriptsOnTitle': 'Scripts in this presentation run unprotected. Click to block them again.',
+    'rv.savedBlocked': 'The scripts in this presentation stay blocked in the saved file. Allow scripts if the presentation needs them.',
     'rv.cancel': 'Cancel', 'rv.ok': 'OK', 'rv.discard': 'Discard the unsaved changes?', 'rv.untitled': 'presentation', 'rv.cannotOpen': '“{0}” cannot be opened: {1}',
     'rv.blocked': 'The browser blocked the new window. Allow pop-ups for this page.', 'rv.exitPresent': 'End presentation', 'rv.linkUrl': 'Link address',
     'rv.bold': 'Bold', 'rv.italic': 'Italic', 'rv.underline': 'Underline', 'rv.strike': 'Strikethrough', 'rv.inlineCode': 'Code', 'rv.link': 'Link',
@@ -68,7 +73,7 @@ Suite.i18n.register({
     'rv.slides': 'Folien', 'rv.element': 'Element', 'rv.slide': 'Folie', 'rv.deck': 'Präsentation', 'rv.panels': 'Bereiche',
     'rv.tpl.title': 'Titel', 'rv.tpl.content': 'Titel und Liste', 'rv.tpl.section': 'Abschnitt', 'rv.tpl.image': 'Bild', 'rv.tpl.code': 'Code',
     'rv.tpl.quote': 'Zitat', 'rv.tpl.blank': 'Leer', 'rv.tpl.markdown': 'Markdown', 'rv.tpl.html': 'HTML',
-    'rv.type.heading': 'Überschrift', 'rv.type.text': 'Text', 'rv.type.list': 'Liste', 'rv.type.image': 'Bild', 'rv.type.code': 'Code',
+    'rv.type.drawio': 'Diagramm (draw.io)', 'rv.drawDiagram': 'Diagramm zeichnen', 'rv.drawnDiagram': 'Diagramm', 'rv.type.heading': 'Überschrift', 'rv.type.text': 'Text', 'rv.type.list': 'Liste', 'rv.type.image': 'Bild', 'rv.type.code': 'Code',
     'rv.type.quote': 'Zitat', 'rv.type.table': 'Tabelle', 'rv.type.html': 'HTML', 'rv.type.diagram': 'Diagramm (Mermaid)',
     'rv.mermaid': 'Mermaid-Flussdiagramm', 'rv.mermaidHint': 'flowchart TD / LR mit Knoten A[Kasten], B(abgerundet), C{Entscheidung}, D([Start/Ende]) und Verbindungen A --> B, A -->|Text| C; wird automatisch angeordnet.',
     'rv.printNotes': 'Drucken / PDF mit Sprechernotizen', 'rv.dropHint': 'Folien zum Umordnen ziehen; auf die rechte Hälfte einer Folie ablegen, um sie zur Unterfolie zu machen.',
@@ -93,6 +98,11 @@ Suite.i18n.register({
     'rv.fileName': 'Dateiname', 'rv.saveFormat': 'Format', 'rv.fmtHtml': 'reveal.js-Präsentation (HTML)', 'rv.fmtMd': 'Markdown (nur Text)', 'rv.fmtPptx': 'PowerPoint (.pptx)',
     'rv.pptxLossy': 'Die Blöcke werden von oben nach unten auf PowerPoint-Folien angeordnet; Texte, Listen, Bilder, Tabellen, Notizen, Übergänge und Fragmente werden übernommen, Designs und eigenes HTML nur ungefähr.',
     'rv.convertedPptx': 'Die PowerPoint-Datei wurde in Web-Folien umgewandelt; Speichern erzeugt eine HTML-Präsentation.',
+    'rv.trustAsk': 'Diese Präsentation enthält Skripte oder andere aktive Inhalte (etwa <script>-Elemente, Ereignis-Handler oder javascript:-Links). Sie sind gesperrt: Die Folien werden angezeigt, ohne sie auszuführen. Erlauben Sie sie nur, wenn Sie der Datei und ihrer Herkunft vertrauen – die Skripte laufen dann ungeschützt mit den Rechten dieser App und könnten Ihre Daten in der Suite (Einstellungen, gespeicherte Verbindungen, geöffnete Dateien) lesen, ändern oder weitergeben.',
+    'rv.trustAllow': 'Skripte erlauben (ungeschützt)', 'rv.trustKeep': 'Gesperrt lassen',
+    'rv.scriptsOff': 'Skripte gesperrt', 'rv.scriptsOn': 'Skripte erlaubt',
+    'rv.scriptsOffTitle': 'Die Skripte dieser Präsentation sind gesperrt. Klicken, um zu entscheiden, ob sie laufen dürfen.', 'rv.scriptsOnTitle': 'Die Skripte dieser Präsentation laufen ungeschützt. Klicken, um sie wieder zu sperren.',
+    'rv.savedBlocked': 'Die Skripte dieser Präsentation bleiben in der gespeicherten Datei gesperrt. Erlauben Sie Skripte, wenn die Präsentation sie braucht.',
     'rv.cancel': 'Abbrechen', 'rv.ok': 'OK', 'rv.discard': 'Die ungespeicherten Änderungen verwerfen?', 'rv.untitled': 'praesentation', 'rv.cannotOpen': '„{0}“ kann nicht geöffnet werden: {1}',
     'rv.blocked': 'Der Browser hat das neue Fenster blockiert. Erlauben Sie Pop-ups für diese Seite.', 'rv.exitPresent': 'Präsentation beenden', 'rv.linkUrl': 'Linkadresse',
     'rv.bold': 'Fett', 'rv.italic': 'Kursiv', 'rv.underline': 'Unterstrichen', 'rv.strike': 'Durchgestrichen', 'rv.inlineCode': 'Code', 'rv.link': 'Link',
@@ -121,7 +131,7 @@ function assets(deck) {
 // ---- state ----------------------------------------------------------------------------------------------------------
 
 const state = {
-  deck: newDeck(), name: '', handle: null, dirty: false,
+  deck: newDeck(), name: '', handle: null, dirty: false, trusted: false,
   h: 0, v: 0, block: null, editing: null, tab: 'slide', panels: null, dialog: null, presenting: false,
 };
 const history = new Suite.UndoHistory({ onChange: () => render() });
@@ -199,7 +209,7 @@ function updatePreview() {
   clearTimeout(previewTimer);
   const version = ++previewVersion;
   const page = renderPage(deck(), assets(deck()), {
-    editable: true,
+    editable: true, trusted: state.trusted,
     config: { hash: false, history: false, transition: 'none', backgroundTransition: 'none', fragments: false, autoSlide: 0, loop: false,
       keyboardCondition: 'focused', view: null, autoAnimate: false, scrollActivationWidth: null }, // no automatic scroll view in a narrow preview
     extraHead: EDITOR_CSS,
@@ -500,6 +510,38 @@ function blockOp(op) {
   });
 }
 
+// ---- draw.io diagrams in image blocks (shared/js/diagram-embed.js) --------------------------------------------------
+
+const isDiagramBlock = (b) => !!(b && b.type === 'image' && b.src && Suite.diagrams && Suite.diagrams.isDiagram(b.src));
+
+/** Set the picture of an image block (wherever it is now; one undo step). */
+function setBlockImage(id, src) {
+  edit(() => { for (const { slide } of flatten(state.deck)) { const b = (slide.blocks || []).find((x) => x.id === id); if (b) b.src = src; } });
+}
+
+/** Draw a new diagram into the selected image block, or into a new one (blockId: null). */
+function drawDiagram(blockId = state.block) {
+  let id = blockId;
+  if (!id) {
+    const block = newBlock('image', { alt: t('rv.drawnDiagram') });
+    edit(() => {
+      const s = current();
+      if (s.kind !== 'blocks') return;
+      const i = state.block ? s.blocks.findIndex((b) => b.id === state.block) : s.blocks.length - 1;
+      s.blocks.splice(i + 1, 0, block);
+    });
+    id = block.id;
+    state.block = id;
+    state.tab = 'element';
+  }
+  Suite.diagrams.insert({ onSave: (res) => setBlockImage(id, res.src) });
+}
+
+function editDiagramBlock(id = state.block) {
+  const b = flatten(state.deck).flatMap(({ slide }) => slide.blocks || []).find((x) => x.id === id);
+  if (isDiagramBlock(b)) Suite.diagrams.edit({ src: b.src, onSave: (res) => setBlockImage(id, res.src) });
+}
+
 function chooseImage(onDone) {
   Suite.files.open({ types: [{ description: 'Images', accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.avif'] } }] }).then(async (picked) => {
     if (!picked) return;
@@ -538,7 +580,7 @@ Suite.autosave.register({
 
 function setDeck(d, name, handle = null) {
   stopEditing(false);
-  Object.assign(state, { deck: d, name, handle, dirty: false, h: 0, v: 0, block: null });
+  Object.assign(state, { deck: d, name, handle, dirty: false, trusted: false, h: 0, v: 0, block: null });
   history.clear();
   Suite.shell.setDirty(false);
   updatePreview();
@@ -562,9 +604,28 @@ async function openPicked({ file, handle }) {
     // Markdown and notebooks are converted; saving creates a presentation next to them
     setDeck(d, keepHandle ? file.name : `${stem}.html`, keepHandle);
     if (handle && keepHandle) Suite.files.remember(APP, handle);
+    if (hasActiveContent(d)) await askTrust();
   } catch (e) {
     Suite.shell.toast(t('rv.cannotOpen', file.name, e.message), 'error');
   }
+}
+
+/**
+ * Scripts in slides are blocked (renderPage's Content Security Policy). A presentation that brings its own scripts can be
+ * trusted – then they run unprotected, with the rights of this app – after the user was told what that means.
+ */
+async function askTrust() {
+  const ok = await Suite.shell.confirm(t('rv.trustAsk'), { ok: t('rv.trustAllow'), cancel: t('rv.trustKeep') });
+  if (!ok || state.trusted) return;
+  state.trusted = true;
+  updatePreview();
+  render();
+}
+
+function untrust() {
+  state.trusted = false;
+  updatePreview();
+  render();
 }
 
 async function openFile() {
@@ -577,7 +638,7 @@ async function openFile() {
 
 function report(result) { if (result.mode === 'downloaded') Suite.shell.banner(result.message); else Suite.shell.toast(result.message); }
 
-const presentationHtml = (d = deck(), config = {}) => renderPage(d, assets(d), { config });
+const presentationHtml = (d = deck(), config = {}) => renderPage(d, assets(d), { config, trusted: state.trusted });
 
 async function save({ as = false, format = 'html', name = state.name || `${t('rv.untitled')}.html` } = {}) {
   stopEditing(false);
@@ -594,6 +655,7 @@ async function save({ as = false, format = 'html', name = state.name || `${t('rv
       return;
     }
     const bytes = new TextEncoder().encode(presentationHtml());
+    if (!state.trusted && hasActiveContent(deck())) Suite.shell.toast(t('rv.savedBlocked'), 'warning');
     const types = [{ description: 'HTML', accept: { 'text/html': ['.html'] } }];
     const result = as || !state.handle ? await Suite.files.saveAs(bytes, { suggestedName: name, types, type: 'text/html' })
       : await Suite.files.save({ name, handle: state.handle }, bytes, { type: 'text/html' });
@@ -631,7 +693,7 @@ function present() {
   presenterClose.title = t('rv.exitPresent');
   presenter.hidden = false;
   state.presenting = true;
-  presenterFrame.srcdoc = renderPage(deck(), assets(deck()), { config: { hash: false, history: false }, extraBody: startAt(state.h, state.v) });
+  presenterFrame.srcdoc = renderPage(deck(), assets(deck()), { config: { hash: false, history: false }, extraBody: startAt(state.h, state.v), trusted: state.trusted });
   presenterFrame.onload = () => presenterFrame.focus();
   if (presenter.requestFullscreen) presenter.requestFullscreen().catch(() => {});
   Suite.shell.toast(t('rv.presentHint'));
@@ -653,7 +715,7 @@ function presentWindow({ print = false, notes = false } = {}) {
   if (!win) { Suite.shell.toast(t('rv.blocked'), 'error'); return; }
   const extra = print ? `<script>Reveal.on('ready', function () { setTimeout(function () { window.print(); }, 800); });</script>` : startAt(state.h, state.v);
   win.document.open();
-  win.document.write(renderPage(deck(), assets(deck()), { config: print ? { view: 'print', hash: false, ...(notes ? { showNotes: 'separate-page' } : {}) } : { hash: false }, extraBody: extra }));
+  win.document.write(renderPage(deck(), assets(deck()), { config: print ? { view: 'print', hash: false, ...(notes ? { showNotes: 'separate-page' } : {}) } : { hash: false }, extraBody: extra, trusted: state.trusted }));
   win.document.close();
 }
 
@@ -681,11 +743,14 @@ function Toolbar() {
     <span class="rv-sep"></span>
     <${Dropdown} label=${`+ ${t('rv.addSlide')}`} testid="add-slide" items=${TEMPLATES.map((k) => [k, t(`rv.tpl.${k}`), () => addSlide(k)])} />
     <${Dropdown} label=${`+ ${t('rv.addSub')}`} testid="add-sub" items=${TEMPLATES.map((k) => [k, t(`rv.tpl.${k}`), () => addSlide(k, true)])} />
-    ${current().kind === 'blocks' ? html`<${Dropdown} label=${`+ ${t('rv.addBlock')}`} testid="add-block" items=${BLOCK_TYPES.map((k) => [k, t(`rv.type.${k}`), () => addBlock(k)])} />` : null}
+    ${current().kind === 'blocks' ? html`<${Dropdown} label=${`+ ${t('rv.addBlock')}`} testid="add-block" items=${[...BLOCK_TYPES.map((k) => [k, t(`rv.type.${k}`), () => addBlock(k)]), ['drawio', `📐 ${t('rv.type.drawio')}`, () => drawDiagram(null)]]} />` : null}
     <span class="rv-sep"></span>
     <button data-testid="present" title="F5" onClick=${present}>▶ ${t('rv.present')}</button>
     <button class="secondary outline" title=${t('rv.presentWindow')} aria-label=${t('rv.presentWindow')} data-testid="present-window" onClick=${() => presentWindow()}>↗</button>
     <${Dropdown} label="🖨" testid="print" items=${[['slides', t('rv.print'), () => presentWindow({ print: true })], ['notes', t('rv.printNotes'), () => presentWindow({ print: true, notes: true })]]} />
+    ${state.trusted || hasActiveContent(deck()) ? html`<span class="rv-sep"></span>
+      <button class=${state.trusted ? 'rv-trusted' : 'secondary outline'} data-testid="scripts" title=${t(state.trusted ? 'rv.scriptsOnTitle' : 'rv.scriptsOffTitle')}
+        onClick=${() => (state.trusted ? untrust() : askTrust())}>${state.trusted ? `⚠ ${t('rv.scriptsOn')}` : `🛡 ${t('rv.scriptsOff')}`}</button>` : null}
     <button class="secondary outline rv-only-phone" data-testid="toggle-panels" onClick=${() => { state.panels = state.panels ? null : 'inspector'; render(); }}>☰ ${t('rv.panels')}</button>
   </nav>`;
 }
@@ -764,7 +829,9 @@ function ElementInspector() {
     specific = html`<${Check} label=${t('rv.ordered')} testid="el-ordered" checked=${b.ordered} onChange=${(v) => updateBlock({ ordered: v })} />
       <${Select} label=${t('rv.itemFragment')} testid="el-item-fragment" value=${b.itemFragment} options=${fragmentOptions()} onChange=${(v) => updateBlock({ itemFragment: v })} />`;
   } else if (b.type === 'image') {
-    specific = html`<button type="button" class="secondary outline" data-testid="el-choose-image" onClick=${() => chooseImage((src) => updateBlock({ src }))}>${t('rv.chooseImage')}</button>
+    specific = html`<div class="rv-buttons"><button type="button" class="secondary outline" data-testid="el-choose-image" onClick=${() => chooseImage((src) => updateBlock({ src }))}>${t('rv.chooseImage')}</button>
+      ${isDiagramBlock(b) ? html`<button type="button" class="secondary" data-testid="edit-diagram" onClick=${() => editDiagramBlock(b.id)}>📐 ${t('dia.edit')}</button>`
+        : html`<button type="button" class="secondary outline" data-testid="draw-diagram" onClick=${() => drawDiagram(b.id)}>📐 ${t('rv.drawDiagram')}</button>`}</div>
       <${Field} label=${t('rv.alt')} testid="el-alt" keyed=${k('alt')} value=${b.alt} onInput=${up('alt')} />
       <${Field} label=${t('rv.width')} testid="el-width" type="number" min="0" max="100" keyed=${k('width')} value=${b.width || ''} onInput=${(v) => updateBlock({ width: +v || 0 }, k('width'))} />
       <${Check} label=${t('rv.stretch')} testid="el-stretch" checked=${b.stretch} onChange=${(v) => updateBlock({ stretch: v })} />`;
@@ -971,5 +1038,5 @@ Suite.files.dropZone(document.body, async (picked) => { if (picked.length && awa
 Suite.bridge.receive((picked) => openPicked(picked), { app: 'reveal' }); // files opened from other apps ("Open with…")
 
 // for tests
-window.RV = { state, history, presentationHtml, setDeck, normalizeDeck, fromHtml, fromMarkdown, fromNotebook, toMarkdown, previewWindow, updatePreview };
+window.RV = { state, history, drawDiagram, editDiagramBlock, presentationHtml, setDeck, normalizeDeck, fromHtml, fromMarkdown, fromNotebook, toMarkdown, previewWindow, updatePreview };
 document.body.dataset.ready = 'true';

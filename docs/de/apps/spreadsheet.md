@@ -8,7 +8,7 @@ Bearbeitungskomponente ist Univer Sheets.
 
 | Format | Öffnen | Speichern | Hinweise |
 |---|---|---|---|
-| Excel (`.xlsx`) | ja | ja | Werte, Formeln, Formate, Zahlenformate, verbundene Zellen, Spaltenbreiten, Zeilenhöhen, fixierte Bereiche, Registerfarben, ausgeblendete Blätter, bedingte Formatierung, Datenüberprüfung |
+| Excel (`.xlsx`) | ja | ja | Werte, Formeln, Formate, Zahlenformate, verbundene Zellen, Spaltenbreiten, Zeilenhöhen, fixierte Bereiche, Registerfarben, ausgeblendete Blätter, bedingte Formatierung, Datenüberprüfung, Bilder |
 | Excel mit Makros (`.xlsm`) | ja | als `.xlsx` | Makros können nicht erhalten werden |
 | OpenDocument (`.ods`) | ja | ja | Werte, Formeln, verbundene Zellen (ohne Formatierung) |
 | Excel 97–2003 (`.xls`) | ja | ja | Werte und Formeln (ohne Formatierung) |
@@ -41,6 +41,14 @@ Das Menüband über der Tabelle hat die Reiter **Start** (Zwischenablage, Schrif
 Bearbeitungsleiste zeigt und bearbeitet den Inhalt der gewählten Zelle. Die Leiste unten fügt Blätter hinzu (+) und wechselt zwischen ihnen; ein
 Rechtsklick auf ein Blattregister benennt es um, färbt, blendet aus oder löscht es. Der Zoom steht rechts unten. Ein Rechtsklick auf Zellen,
 Zeilen und Spalten öffnet weitere Befehle (Einfügen, Löschen, Sortieren, …).
+
+**Bilder** schweben über den Zellen: Einfügen über das Menüband (**Einfügen** → Bild), Ziehen verschiebt sie, Ziehen an den Griffen ändert die
+Größe. In `.xlsx`-Dateien behalten sie Zelle, Versatz und Größe (auch Bilder aus anderen Programmen, darunter Dateien von Pythons openpyxl).
+
+**📐 Diagramm** in der Werkzeugleiste öffnet ein leeres Diagramm im Diagramm-Editor (ein neues Fenster oder ein neuer Tab); das erste
+**Speichern** dort setzt das Diagramm als Bild an die gewählte Zelle, spätere Speichervorgänge aktualisieren es. Ist ein Diagrammbild
+ausgewählt (ein Klick darauf), öffnet **📐 Diagramm bearbeiten** es wieder im Diagramm-Editor; ein aktualisiertes Bild behält Stelle und
+Maßstab. Das Diagramm steckt im Bild (ein PNG mit der draw.io-Datei) und bleibt daher in der `.xlsx`-Datei bearbeitbar; Excel zeigt das Bild.
 
 Die üblichen Tastenkombinationen funktionieren: `Strg+C/X/V`, `Strg+Z/Y`, `Strg+B/I/U`, Pfeiltasten, `Tab`, `F2` zum Bearbeiten einer Zelle.
 

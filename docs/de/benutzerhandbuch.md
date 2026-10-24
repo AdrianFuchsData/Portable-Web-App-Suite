@@ -72,6 +72,7 @@ Jede Anwendung hat dieselbe Kopfzeile:
 | ◐ / ☀ / ☾ | Design: automatisch (wie das System), hell oder dunkel |
 | DE / EN | Wechselt die Sprache zwischen Deutsch und Englisch |
 | ? | Informationen über die Anwendung und ihre Tastenkürzel (auch `F1`, oder `?` außerhalb von Textfeldern) |
+| ☺ | In einem Textfeld mit Fokus: Emoji und Symbole (auch `Strg+.`, siehe [Emoji und Symbole](#emoji-und-symbole)) |
 
 Die Anwendungen merken sich Sprache und Design in Ihrem Browser.
 
@@ -153,6 +154,53 @@ alle diese Anwendungen.
 Chrome und Edge teilen die Einstellung zwischen allen aus Dateien geöffneten Anwendungen; Firefox hält sie je
 Anwendungsdatei getrennt.
 
+### Emoji und Symbole
+
+Jedes Textfeld der Suite – einzeilige Felder, Textbereiche, formatierter Text und die Code-Editoren – nimmt Emoji und
+andere Unicode-Zeichen auf (Pfeile, Währungszeichen, mathematische Symbole, griechische Buchstaben, Buchstaben mit
+Akzenten, Formen …).
+
+- **`Strg+.`** (oder die Schaltfläche **☺** am rechten Rand des Feldes mit dem Fokus) öffnet die Auswahl neben dem Feld (am
+  Smartphone unten am Bildschirm). Sie zeigt die zuletzt verwendeten Zeichen (**🕘**, neueste zuerst; wie die
+  Rechtschreib-Einstellung für alle Anwendungen), die Emoji-Gruppen und die Symbolgruppen.
+- **Suchen** bei offener Auswahl: nach Name oder Stichwort auf Deutsch oder Englisch (`glücklich`, `Pfeil rechts`,
+  `Euro`), nach Code (`:wave:`), nach Emoticon (`:)`) oder nach Codepunkt (`U+1F60A`, `1F60A`). `Enter` fügt das erste
+  Ergebnis ein; `↓` wechselt zu den Zeichen, die Pfeiltasten bewegen sich darin, `Enter` oder ein Klick fügt ein und
+  schließt die Auswahl, **`Umschalt+Enter`** oder **Umschalt+Klick** fügt ein und lässt sie offen. Die Auswahl unten legt
+  die **Hautfarbe** von Personen und Händen fest. `Esc` schließt die Auswahl.
+- **Im Text tippen** (nicht in Code-Editoren): **`:name:`** wird zum Emoji, sobald Sie den schließenden Doppelpunkt
+  tippen (`:smile:` → 😄, `:thumbsup:` → 👍; auch deutsche Codes und Stichwörter wie `:winkende_hand:`), und während Sie
+  `:wav` tippen, erscheint eine Liste passender Emoji (`↑`/`↓`, `Enter` oder `Tab` übernimmt, `Esc` schließt). Ein
+  Codepunkt wie **`U+1F60A`** oder **`U1F60A`** gefolgt von einem Leerzeichen wird zum Zeichen (😊).
+- **`Alt+X`** wandelt den Codepunkt vor dem Cursor (z. B. `2192`) in das Zeichen (→) und ein Zeichen zurück in seinen
+  Codepunkt – wie in Word; das geht auch in den Code-Editoren.
+- **Emoticons** wie `:)`, `;-)` oder `<3` werden zu Emoji, wenn ein Leerzeichen folgt – nur wenn Sie das einschalten
+  (siehe unten), weil sie anderswo gewöhnlicher Text sind.
+
+**Einstellungen:** im Info-Dialog (`F1` oder **?**) unter **⚙ Einstellungen → Emoji und Symbole**: **Die Schaltfläche ☺ in
+Textfeldern zeigen** (standardmäßig an) und **Text-Emoticons wie :) beim Tippen durch Emoji ersetzen** (standardmäßig aus).
+Sie bleiben im Browser gespeichert, gelten für alle Anwendungen (in Firefox je Anwendungsdatei) und sind Teil der
+exportierten Einstellungen. Passwortfelder und das Terminal des SSH-Clients erhalten nie Emoji. Wie Emoji aussehen, hängt
+von den Schriften des Systems ab; auf einem Rechner ohne Emoji-Schrift erscheinen sie als Kästchen.
+
+### Farben
+
+Wo eine Anwendung nach einer Farbe fragt (Bildbearbeitung, Diagramm-Editor, Video-Editor, Präsentation und Web-Folien,
+Kalenderfarben, Barcodes, Notebook-Widgets …), öffnet sich die **Farbauswahl** der Suite: eine Fläche für Sättigung und
+Helligkeit, ein Regler für den Farbton (und, wo die Farbe durchscheinend sein darf, einer für die Deckkraft), der
+hexadezimale Wert und die Werte R, G, B (und Deckkraft in %) zum Eintippen, die bisherige und die neue Farbe nebeneinander
+(ein Klick auf die bisherige kehrt zu ihr zurück), zuletzt verwendete Farben und Grundfarben sowie – in Chrome und Edge –
+**💧**, um eine Farbe irgendwo vom Bildschirm aufzunehmen. Änderungen sind sofort zu sehen; **OK** (oder `Enter`) behält die
+Farbe, **Abbrechen** (oder `Esc` oder ein Klick daneben) stellt die bisherige wieder her. Mit der Tastatur bewegen die
+Pfeiltasten den Punkt in der Fläche und die Regler (`Umschalt`: in größeren Schritten). Am Smartphone erscheint die Auswahl
+unten am Bildschirm.
+
+Der Texteditor zeigt vor jeder hexadezimalen Farbe im Text (`#6cf`, `#6cff`, `#66ccff`, `#66ccffff`) ein kleines Quadrat; ein
+Klick darauf öffnet die Farbauswahl und ändert die Farbe im Text (siehe Texteditor).
+
+Im Info-Dialog unter **⚙ Einstellungen → Farbauswahl** wählt **Die des Browsers** stattdessen den Farbdialog des Browsers (ohne
+Deckkraft und zuletzt verwendete Farben).
+
 ### Rückgängig und Wiederholen
 
 Alle Editoren können Änderungen rückgängig machen und wiederholen: mit den Schaltflächen ↶ und ↷ in der Werkzeugleiste
@@ -167,10 +215,21 @@ KeePass- oder E-Mail-Anhang, eine Datei des Python-Notebooks – lassen sich mit
 Anwendung öffnen. Wählen Sie die Anwendung; sie öffnet sich in einem neuen Tab (wenn aus der Übersicht gestartet) oder
 einem neuen Fenster. **Speichern** in dieser Anwendung schreibt die Datei dorthin zurück, woher sie kam (Archiv, Server,
 Datenbank, …); speichern Sie danach das Archiv bzw. die Datenbank, um die Änderung zu behalten. Anhänge empfangener
-E-Mails öffnen sich als Kopie.
+E-Mails öffnen sich als Kopie. Mehrere im Archivmanager oder FTP/SFTP-Client gewählte Dateien öffnen sich gemeinsam im Texteditor oder Hex-Editor,
+jede in einem eigenen Tab eines Fensters.
 
 Bei Anwendungen, die als einzelne Dateien gestartet werden, legen Sie die HTML-Dateien **mit ihren ursprünglichen Namen
 in einen Ordner** (`texteditor.html`, `archive.html`, …), damit eine Anwendung die andere findet.
+
+### Diagramme in Präsentationen, Dokumenten und Tabellen
+
+Präsentations-Editor, Web-Folien, Dokument-Editor und Tabellenkalkulation können Diagramme des Diagramm-Editors enthalten: **📐 Diagramm**
+öffnet ein leeres Diagramm im Diagramm-Editor, und jedes **Speichern** dort setzt es als Bild in die Präsentation, das Dokument oder die
+Arbeitsmappe (das erste Speichern fügt es ein, spätere aktualisieren es). **📐 Diagramm bearbeiten** (oder ein Doppelklick in der Präsentation)
+öffnet ein Diagrammbild wieder im Diagramm-Editor. Das Diagramm steckt im Bild – ein PNG, das auch die draw.io-Datei enthält, wie das
+„bearbeitbare PNG“ von draw.io – und bleibt daher in den gespeicherten `.pptx`-, `.docx`- und `.xlsx`-Dateien bearbeitbar, während
+PowerPoint, Word und Excel einfach das Bild zeigen. Mit draw.io erstellte Diagrammbilder lassen sich ebenso bearbeiten. Wie bei *Öffnen mit…*
+muss der Diagramm-Editor im selben Ordner liegen, oder die Anwendung wird aus der Übersicht gestartet.
 
 ## Dateien öffnen und speichern
 

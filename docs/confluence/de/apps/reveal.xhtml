@@ -44,7 +44,10 @@ mit.</p>
 <strong>doppelklicken</strong> Sie einen Text (oder drücken Sie <code>Eingabe</code>), um ihn direkt dort zu bearbeiten; die Leiste darüber bietet fett,
 kursiv, unterstrichen, durchgestrichen, Code, Link, Farbe und Formatierung entfernen. <code>Esc</code> oder <strong>Fertig</strong> beendet die Bearbeitung.</p>
 <p><strong>+ Element</strong> fügt nach dem gewählten Element eine Überschrift, einen Text, eine Liste, ein Bild, Code, ein Zitat, eine Tabelle,
-ein Diagramm oder einen HTML-Block ein. Der Reiter <strong>Element</strong> rechts bearbeitet das gewählte Element:</p>
+ein Diagramm oder einen HTML-Block ein. Der Reiter <strong>Element</strong> rechts bearbeitet das gewählte Element. (Der Block <em>Diagramm</em> zeichnet
+ein Mermaid-Flussdiagramm aus Text; <strong>📐 Diagramm (draw.io)</strong> fügt dagegen ein Bild ein, das Sie im Diagramm-Editor zeichnen: Jedes
+<strong>Speichern</strong> dort aktualisiert das Bild, <strong>📐 Diagramm bearbeiten</strong> im Bereich rechts öffnet es wieder, und <strong>📐 Diagramm zeichnen</strong> macht
+aus jedem Bildblock eines. Das Diagramm steckt im Bild – ein PNG mit der draw.io-Datei –, auch in gespeicherten Präsentationen.)</p>
 <ul>
 <li>Überschriftenebene und „Text an die Folie anpassen“, nummerierte Listen, Bilder (Datei, Alternativtext, Breite, restliche Höhe
   füllen), Code (Sprache mit Syntaxhervorhebung, Zeilennummern und hervorgehobene Schritte wie <code>1|2-3|5</code>), Tabellenzeilen und
@@ -116,6 +119,21 @@ speichern“ wählen) – mit <em>Drucken / PDF mit Sprechernotizen</em> folgt a
 <p>Markdown-Dateien und Notebooks werden umgewandelt; Speichern erzeugt eine neue HTML-Präsentation. Im Python-Notebook zeigt
 <strong>Folien</strong> für jede Zelle einen Folientyp, und <strong>🎞️ Folien</strong> öffnet das Notebook hier. Rückgängig und Wiederholen (<code>Strg+Z</code>,
 <code>Strg+Y</code>) wirken auf alle Änderungen.</p>
+<h3>Skripte in Präsentationen</h3>
+<p>Folien dürfen HTML enthalten, und HTML kann Skripte enthalten (<code>&lt;script&gt;</code>, Ereignis-Handler wie <code>onclick</code>, <code>javascript:</code>-Links).
+Zum Schutz Ihrer Daten sind <strong>Skripte in Folien gesperrt</strong>: Vorschau, Vorführen, Drucken und die gespeicherte Datei zeigen
+die Folien, ohne sie auszuführen (eine Content Security Policy lässt nur die eigenen Skripte des Editors – reveal.js, seine
+Plugins, Formeln – laufen). Öffnen Sie eine Präsentation mit solchen Inhalten, werden Sie gefragt, ob sie laufen dürfen:</p>
+<ul>
+<li><strong>Gesperrt lassen</strong> (empfohlen für Dateien von anderen): Die Folien werden angezeigt, die Skripte laufen nicht.</li>
+<li><strong>Skripte erlauben (ungeschützt)</strong>: nur für Dateien, denen Sie vertrauen. Die Skripte laufen dann mit den Rechten dieser
+  App und könnten Ihre Daten in der Suite (Einstellungen, gespeicherte Verbindungen, geöffnete Dateien) lesen, ändern oder
+  weitergeben.</li>
+</ul>
+<p>Die Schaltfläche <strong>🛡 Skripte gesperrt</strong> / <strong>⚠ Skripte erlaubt</strong> in der Werkzeugleiste zeigt den Zustand und schaltet ihn um
+(Erlauben fragt erneut). Die Entscheidung wird nicht in der Datei gespeichert: Eine wieder geöffnete Präsentation ist gesperrt,
+bis Sie sie erlauben. Eine bei gesperrten Skripten gespeicherte Präsentation behält sie, sie bleiben aber auch beim Öffnen der
+Datei im Browser gesperrt.</p>
 <h2>Tastenkürzel</h2>
 <p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
 <h3>Dateien</h3>

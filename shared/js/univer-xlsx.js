@@ -3,7 +3,8 @@
  *
  * XLSX/XLSM are read and written with ExcelJS (values, formulas incl. shared formulas, styles, merged
  * cells, column widths, row heights, frozen panes, tab colors, hidden sheets/rows/columns, conditional formatting and data
- * validation, which Univer keeps in the workbook resources of its plugins). Other formats
+ * validation, which Univer keeps in the workbook resources of its plugins), pictures (imported as data.images – a hidden property
+ * the app inserts after loading – and exported from the drawing resource with their bytes unchanged). Other formats
  * (ODS, XLS, CSV, ...) are converted with SheetJS Community Edition, which keeps values, formulas and
  * merged cells but no styles.
  *
@@ -38,6 +39,9 @@
     + '333399 333333 000000 FFFFFF').split(' ');
 
   const CF_RESOURCE = 'SHEET_CONDITIONAL_FORMATTING_PLUGIN';
+  const DRAWING_RESOURCE = 'SHEET_DRAWING_PLUGIN';
+  const EMU_PER_PX = 9525;
+  const MIME = { png: 'image/png', jpeg: 'image/jpeg', jpg: 'image/jpeg', gif: 'image/gif', bmp: 'image/bmp', svg: 'image/svg+xml', webp: 'image/webp' };
   const DV_RESOURCE = 'SHEET_DATA_VALIDATION_PLUGIN';
   const DV_ERROR_STYLE = { information: 0, stop: 1, warning: 2 }; // Univer DataValidationErrorStyle
   const DV_ERROR_NAMES = { 0: 'information', 1: 'stop', 2: 'warning' };
@@ -342,10 +346,14 @@
       };
       sheetOrder.push(id);
     });
+    const images = importImages(workbook, sheets, sheetOrder);
     const resources = [];
     if (Object.values(cfRules).some((x) => x.length)) resources.push({ name: CF_RESOURCE, data: JSON.stringify(cfRules) });
     if (Object.values(dvRules).some((x) => x.length)) resources.push({ name: DV_RESOURCE, data: JSON.stringify(dvRules) });
-    return { id: 'workbook-' + Math.random().toString(36).slice(2), name, appVersion: '1.0.0', locale: 'enUS', styles, sheetOrder, sheets, resources };
+    const data = { id: 'workbook-' + Math.random().toString(36).slice(2), name, appVersion: '1.0.0', locale: 'enUS', styles, sheetOrder, sheets, resources };
+    // pictures are inserted by the app after loading (Univer places them): { sheetId: [{ source, column, columnOffset, row, rowOffset, width, height }] }
+    if (Object.keys(images).length) Object.defineProperty(data, 'images', { value: images, enumerable: false });
+    return data;
   }
 
   // ---- conditional formatting and data validation ---------------------------------------------------
@@ -566,9 +574,152 @@
     try { return JSON.parse(r.data) || {}; } catch (e) { return {}; }
   }
 
+  // ---- pictures ------------------------------------------------------------------------------------------------
+
+  const columnWidthPx = (sheet, c) => ((sheet.columnData || {})[c] && sheet.columnData[c].w) || sheet.defaultColumnWidth || DEFAULT_COLUMN_WIDTH;
+  const rowHeightPx = (sheet, r) => ((sheet.rowData || {})[r] && sheet.rowData[r].h) || sheet.defaultRowHeight || DEFAULT_ROW_HEIGHT;
+
+  function bytesToBase64(bytes) {
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+
+  /** Pictures of the worksheets (ExcelJS) with their anchor cell, offset and size in pixels; the bytes stay unchanged. */
+  function importImages(workbook, sheets, sheetOrder) {
+    const out = {};
+    workbook.worksheets.forEach((ws, index) => {
+      const id = sheetOrder[index];
+      const sheet = sheets[id];
+      for (const img of (ws.getImages ? ws.getImages() : [])) {
+        const media = workbook.getImage(Number(img.imageId));
+        if (!media) continue;
+        const raw = media.buffer ? new Uint8Array(media.buffer.buffer || media.buffer, media.buffer.byteOffset || 0, media.buffer.byteLength ?? media.buffer.length) : null;
+        const source = media.base64 ? (media.base64.startsWith('data:') ? media.base64 : `data:${MIME[media.extension] || 'image/png'};base64,${media.base64}`)
+          : raw ? `data:${MIME[media.extension] || 'image/png'};base64,${bytesToBase64(raw)}` : null;
+        if (!source) continue;
+        const tl = img.range && img.range.tl;
+        if (!tl) continue;
+        const from = { column: tl.nativeCol || 0, columnOffset: (tl.nativeColOff || 0) / EMU_PER_PX, row: tl.nativeRow || 0, rowOffset: (tl.nativeRowOff || 0) / EMU_PER_PX };
+        let width, height;
+        if (img.range.ext && img.range.ext.width) ({ width, height } = img.range.ext);
+        else if (img.range.br) {
+          const br = img.range.br;
+          width = -from.columnOffset + (br.nativeColOff || 0) / EMU_PER_PX;
+          for (let c = from.column; c < (br.nativeCol || 0); c++) width += columnWidthPx(sheet, c);
+          height = -from.rowOffset + (br.nativeRowOff || 0) / EMU_PER_PX;
+          for (let r = from.row; r < (br.nativeRow || 0); r++) height += rowHeightPx(sheet, r);
+        }
+        if (!(width > 0 && height > 0)) continue;
+        (out[id] = out[id] || []).push({ source, ...from, width: Math.round(width), height: Math.round(height) });
+      }
+    });
+    return out;
+  }
+
+  /** Pictures of a sheet (Univer drawing resource) into an ExcelJS worksheet: anchored at the cell, with the offset and size. */
+  function exportImages(workbook, ws, sheet, drawings) {
+    for (const id of drawings.order || Object.keys(drawings.data || {})) {
+      const d = (drawings.data || {})[id];
+      if (!d || d.drawingType !== 0 || !d.source || !/^data:image\/(png|jpe?g|gif)/.test(d.source)) continue;
+      const from = (d.sheetTransform && d.sheetTransform.from) || { column: d.column || 0, columnOffset: d.columnOffset || 0, row: d.row || 0, rowOffset: d.rowOffset || 0 };
+      const width = d.width || (d.transform && d.transform.width) || 100, height = d.height || (d.transform && d.transform.height) || 100;
+      const extension = d.source.slice(11, d.source.indexOf(';')).replace('jpg', 'jpeg');
+      const imageId = workbook.addImage({ base64: d.source, extension });
+      ws.addImage(imageId, {
+        tl: { col: from.column + (from.columnOffset || 0) / columnWidthPx(sheet, from.column), row: from.row + (from.rowOffset || 0) / rowHeightPx(sheet, from.row) },
+        ext: { width, height },
+        editAs: 'oneCell',
+      });
+    }
+  }
+
+  // ---- parts ExcelJS cannot read ----------------------------------------------------------------------------------
+  // Some writers (e.g. Python's openpyxl) use absolute targets ("/xl/drawings/drawing1.xml") in the .rels parts and drawings in
+  // the default namespace (<wsDr xmlns="…spreadsheetDrawing">); ExcelJS only resolves relative targets and parses prefixed
+  // drawing elements (<xdr:wsDr>), and fails on such files. Both are rewritten before loading: a small ZIP rewrite (changed
+  // parts stored uncompressed, the others copied as they are).
+
+  const CRC_TABLE = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  const crc32 = (b) => { let c = 0xffffffff; for (let i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+
+  async function inflateRaw(bytes) {
+    return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+  }
+
+  /** "/xl/drawings/d.xml" relative to the folder of the part that the .rels file belongs to. */
+  function relativeTarget(relsPath, target) {
+    const from = relsPath.replace(/_rels\/[^/]+\.rels$/, '').replace(/^\/|\/$/g, '').split('/').filter(Boolean);
+    const to = target.replace(/^\//, '').split('/');
+    let i = 0;
+    while (i < from.length && i < to.length - 1 && from[i] === to[i]) i++;
+    return [...from.slice(i).map(() => '..'), ...to.slice(i)].join('/') || target;
+  }
+
+  async function normalizeRelationships(buffer) {
+    const b = new Uint8Array(buffer);
+    const v = new DataView(b.buffer, b.byteOffset, b.byteLength);
+    let eocd = -1;
+    for (let i = b.length - 22; i >= Math.max(0, b.length - 65557); i--) if (v.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+    if (eocd < 0) return buffer;
+    const count = v.getUint16(eocd + 10, true);
+    const entries = [];
+    for (let i = 0, p = v.getUint32(eocd + 16, true); i < count; i++) {
+      if (v.getUint32(p, true) !== 0x02014b50) return buffer;
+      const nameLen = v.getUint16(p + 28, true), extraLen = v.getUint16(p + 30, true), commentLen = v.getUint16(p + 32, true);
+      const name = new TextDecoder().decode(b.subarray(p + 46, p + 46 + nameLen));
+      entries.push({ name, method: v.getUint16(p + 10, true), crc: v.getUint32(p + 16, true), csize: v.getUint32(p + 20, true), size: v.getUint32(p + 24, true), local: v.getUint32(p + 42, true) });
+      p += 46 + nameLen + extraLen + commentLen;
+    }
+    const dataOf = (e) => { const s = e.local + 30 + v.getUint16(e.local + 26, true) + v.getUint16(e.local + 28, true); return b.subarray(s, s + e.csize); };
+    let changed = false;
+    const DRAWING_NS = 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing';
+    for (const e of entries) {
+      const rels = /\.rels$/.test(e.name), drawing = /^xl\/drawings\/[^/]+\.xml$/.test(e.name);
+      if (!rels && !drawing) continue;
+      const raw = e.method === 8 ? await inflateRaw(dataOf(e)) : e.method === 0 ? dataOf(e) : null;
+      if (!raw) continue;
+      const xml = new TextDecoder().decode(raw);
+      let fixed = xml;
+      if (rels && /Target="\//.test(xml)) {
+        fixed = xml.replace(/(<Relationship\b[^>]*?\bTarget=")(\/[^"]+)"/g, (m, pre, target) => (/TargetMode="External"/.test(m) ? m : `${pre}${relativeTarget(e.name, target)}"`));
+      } else if (drawing && xml.includes(`xmlns="${DRAWING_NS}"`)) {
+        // the elements without a prefix are in the drawing namespace: give them the prefix xdr
+        fixed = xml.replace(`xmlns="${DRAWING_NS}"`, `xmlns:xdr="${DRAWING_NS}"`).replace(/<(\/?)([A-Za-z][\w.-]*)(?=[\s/>])/g, (m, slash, tag) => `<${slash}xdr:${tag}`);
+      }
+      if (fixed === xml) continue;
+      e.replacement = new TextEncoder().encode(fixed);
+      changed = true;
+    }
+    if (!changed) return buffer;
+    const parts = [], central = [];
+    let offset = 0;
+    for (const e of entries) {
+      const name = new TextEncoder().encode(e.name);
+      const data = e.replacement || dataOf(e);
+      const method = e.replacement ? 0 : e.method, crc = e.replacement ? crc32(data) : e.crc, size = e.replacement ? data.length : e.size;
+      const local = new Uint8Array(30 + name.length);
+      const lv = new DataView(local.buffer);
+      lv.setUint32(0, 0x04034b50, true); lv.setUint16(4, 20, true); lv.setUint16(8, method, true); lv.setUint32(14, crc, true);
+      lv.setUint32(18, data.length, true); lv.setUint32(22, size, true); lv.setUint16(26, name.length, true); local.set(name, 30);
+      const cd = new Uint8Array(46 + name.length);
+      const cv = new DataView(cd.buffer);
+      cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint16(10, method, true); cv.setUint32(16, crc, true);
+      cv.setUint32(20, data.length, true); cv.setUint32(24, size, true); cv.setUint16(28, name.length, true); cv.setUint32(42, offset, true); cd.set(name, 46);
+      parts.push(local, data);
+      central.push(cd);
+      offset += local.length + data.length;
+    }
+    const cdSize = central.reduce((n, c) => n + c.length, 0);
+    const end = new Uint8Array(22);
+    const ev = new DataView(end.buffer);
+    ev.setUint32(0, 0x06054b50, true); ev.setUint16(8, entries.length, true); ev.setUint16(10, entries.length, true); ev.setUint32(12, cdSize, true); ev.setUint32(16, offset, true);
+    return new Blob([...parts, ...central, end]).arrayBuffer();
+  }
+
   async function importXlsx(buffer, name) {
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buffer);
+    await workbook.xlsx.load(await normalizeRelationships(buffer));
     return fromExcelJS(workbook, name);
   }
 
@@ -617,6 +768,7 @@
     const styles = data.styles || {};
     const cfRules = resource(data, CF_RESOURCE);
     const dvRules = resource(data, DV_RESOURCE);
+    const drawings = resource(data, DRAWING_RESOURCE);
     for (const id of data.sheetOrder) {
       const sheet = data.sheets[id];
       const freeze = sheet.freeze && (sheet.freeze.xSplit > 0 || sheet.freeze.ySplit > 0) ? sheet.freeze : null;
@@ -668,6 +820,7 @@
       for (const m of sheet.mergeData || []) ws.mergeCells(m.startRow + 1, m.startColumn + 1, m.endRow + 1, m.endColumn + 1);
       exportConditionalFormats(ws, cfRules[id]);
       exportValidations(ws, dvRules[id]);
+      if (drawings[id]) exportImages(workbook, ws, sheet, drawings[id]);
     }
     return workbook;
   }

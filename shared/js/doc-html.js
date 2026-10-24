@@ -78,7 +78,8 @@ function bodyHtml(body, data, anchors = false) {
       let text = esc(stream.slice(i, j).replace(SKIP, "")).replace(/\t/g, "&emsp;").replace(/ {2}/g, " &nbsp;");
       const css = runCss(ts);
       if (css && text) text = `<span style="${css}">${text}</span>`;
-      if (link && text) text = `<a href="${esc(link.properties.url)}">${text}</a>`;
+      // (only harmless link targets: a javascript: link from an opened file must not run in the printed or exported page)
+      if (link && text) text = /^\s*(?![a-z][\w+.-]*:)|^\s*(https?|mailto|tel|ftp|sftp|file):/i.test(String(link.properties.url || "")) ? `<a href="${esc(link.properties.url)}">${text}</a>` : text;
       out += text;
       i = j;
     }

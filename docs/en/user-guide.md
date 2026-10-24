@@ -71,6 +71,7 @@ Every application has the same header:
 | ◐ / ☀ / ☾ | Design: automatic (follows the system), light or dark |
 | DE / EN | Switches the language between German and English |
 | ? | Information about the application and its keyboard shortcuts (also `F1`, or `?` outside of text fields) |
+| ☺ | In a focused text field: emoji and symbols (also `Ctrl+.`, see [Emoji and symbols](#emoji-and-symbols)) |
 
 The applications remember the language and the design in your browser.
 
@@ -148,6 +149,51 @@ off** switches it off (the default). The choice applies to all these application
 
 Chrome and Edge share the setting among all applications opened from files; Firefox keeps it per application file.
 
+### Emoji and symbols
+
+Every text field of the suite – one-line fields, text areas, formatted text and the code editors – can take emoji and
+other Unicode characters (arrows, currency signs, mathematical symbols, Greek letters, letters with accents, shapes …).
+
+- **`Ctrl+.`** (or the **☺** button at the right edge of the focused field) opens the picker next to the field (on phones
+  at the bottom of the screen). It shows the characters you used last (**🕘**, newest first; shared by the applications
+  like the spelling setting), the emoji groups and the symbol groups.
+- **Search** while the picker is open: by name or keyword in English or German (`happy`, `Pfeil rechts`, `euro`), by
+  code (`:wave:`), by emoticon (`:)`) or by code point (`U+1F60A`, `1F60A`). `Enter` inserts the first result; `↓` moves
+  into the characters, the arrow keys move between them, `Enter` or a click inserts and closes the picker,
+  **`Shift+Enter`** or **Shift+click** inserts and keeps it open. The selector at the bottom chooses the **skin tone** of
+  people and hands. `Esc` closes the picker.
+- **Typing in the text** (not in code editors): **`:name:`** becomes the emoji as soon as you type the closing colon
+  (`:smile:` → 😄, `:thumbsup:` → 👍; also German codes and keywords such as `:winkende_hand:`), and while you type
+  `:wav` a list of matches appears (`↑`/`↓`, `Enter` or `Tab` to take one, `Esc` to close it). A code point such as
+  **`U+1F60A`** or **`U1F60A`** followed by a space becomes the character (😊).
+- **`Alt+X`** turns the code point before the cursor (e.g. `2192`) into the character (→) and a character back into its
+  code point – as in Word; this also works in the code editors.
+- **Emoticons** such as `:)`, `;-)` or `<3` become emoji when followed by a space – only if you switch this on (see below),
+  because in other contexts they are ordinary text.
+
+**Settings:** in the about dialog (`F1` or **?**) under **⚙ Settings → Emoji and symbols**: **Show the ☺ button in text
+fields** (on by default) and **Replace text emoticons such as :) with emoji** (off by default). They are kept in the
+browser and apply to all applications (in Firefox per application file) and are part of the exported settings. Password
+fields and the terminal of the SSH client never get emoji. How emoji look depends on the fonts of the system; on a
+computer without an emoji font they appear as boxes.
+
+### Colours
+
+Wherever an application asks for a colour (image editor, diagram editor, video editor, presentation and web slides,
+calendar colours, barcodes, notebook widgets …), the suite's **colour picker** opens: an area for saturation and
+brightness, a slider for the hue (and, where the colour may be transparent, one for the opacity), the hexadecimal value and
+the R, G, B (and opacity in %) values to type, the previous and the new colour side by side (a click on the previous one
+goes back to it), recently used colours and basic colours, and – in Chrome and Edge – **💧** to pick a colour from anywhere
+on the screen. The changes show at once; **OK** (or `Enter`) keeps the colour, **Cancel** (or `Esc`, or a click outside)
+restores the previous one. With the keyboard, the arrow keys move the point in the area and the sliders (`Shift`: in larger
+steps). On phones the picker appears at the bottom of the screen.
+
+The text editor shows a small square in front of every hexadecimal colour in the text (`#6cf`, `#6cff`, `#66ccff`,
+`#66ccffff`); a click on it opens the picker and changes the colour in the text (see the text editor).
+
+In the about dialog under **⚙ Settings → Colour picker**, choose **The browser's own** to use the browser's colour dialog
+instead (without opacity and recently used colours).
+
 ### Undo and redo
 
 All editors can undo and redo changes: with the buttons ↶ and ↷ in the toolbar (also on phones and tablets) or with
@@ -161,10 +207,21 @@ Files inside an application – a file in an archive, on an FTP/SFTP server or i
 attachment, a file of the Python notebook – can be opened in another application with **Open with…** (↗). Choose the
 application; it opens in a new tab (when started from the overview) or a new window. **Save** in that application
 writes the file back to where it came from (archive, server, database, …); save the archive or database afterwards to
-keep the change. E-mail attachments of received messages open as a copy.
+keep the change. E-mail attachments of received messages open as a copy. Several files selected in the archive manager or the
+FTP/SFTP client open together in the text editor or the hex editor, each in its own tab of one window.
 
 For applications started as separate files, keep the HTML files **in one folder with their original names**
 (`texteditor.html`, `archive.html`, …), so that one application can find the other.
+
+### Diagrams in presentations, documents and spreadsheets
+
+The presentation editor, the web slides, the document editor and the spreadsheet can contain diagrams of the diagram editor:
+**📐 Diagram** opens an empty diagram in the diagram editor, and every **Save** there puts it into the presentation, document or
+workbook as a picture (the first save inserts it, later saves update it). **📐 Edit diagram** (or a double-click in the
+presentation) opens a diagram picture in the diagram editor again. The diagram travels inside the picture – a PNG that also
+contains the draw.io file, like draw.io's "editable PNG" – so it stays editable in the saved `.pptx`, `.docx` and `.xlsx`
+files, while PowerPoint, Word and Excel simply show the picture. Diagram pictures made with draw.io can be edited the same way.
+As with *Open with…*, the diagram editor must be in the same folder, or the application must be started from the overview.
 
 ## Opening and saving files
 

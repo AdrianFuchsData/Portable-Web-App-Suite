@@ -288,6 +288,27 @@ def test_text_tools(app_page):
     assert page.errors == []
 
 
+def test_compare_long_texts_with_many_changes(app_page):
+    """Many changes spread over a long text are found one by one (the character diff of @codemirror/merge alone gave up
+    and reported one change from the first difference to the end)."""
+    import random
+    rng = random.Random(3)
+    words = "the quick brown fox jumps over lazy dog and runs into forest while birds sing songs about summer".split()
+    lines = [" ".join(rng.choice(words) for _ in range(rng.randint(6, 12))) for _ in range(1000)]
+    edited = [line + " edited" if i % 20 == 0 else line for i, line in enumerate(lines)]
+    edited.insert(510, "a new line")  # (not next to an edited line)
+    page = app_page("texteditor", init_script="window.showOpenFilePicker = undefined;")
+    open_bytes(page, "old.txt", ("\n".join(lines) + "\n").encode())
+    open_bytes(page, "new.txt", ("\n".join(edited) + "\n").encode())
+    page.click("[data-testid=compare-start]")
+    page.locator("[data-testid=compare-doc]", has_text="old.txt").click()
+    expect(page.locator("[data-testid=diff-count]")).to_have_text("51 difference(s)")
+    if page.viewport_size["width"] >= 760:
+        # only the changed words are marked, not the whole line
+        expect(page.locator(".cm-merge-b .cm-changedText").first).to_have_text(" edited")
+    assert page.errors == []
+
+
 def test_compare(app_page, tmp_path):
     page = app_page("texteditor", init_script="window.showOpenFilePicker = undefined;")
     open_bytes(page, "old.txt", b"one\ntwo\nthree\nfour\n")
@@ -406,4 +427,195 @@ def test_split_view(app_page):
     expect(page.locator("[data-testid=split] .cm-content")).to_contain_text("other file")
     page.click("[data-testid=split-view]")
     expect(page.locator("[data-testid=split]")).to_have_count(0)
+    assert page.errors == []
+
+
+SQL = ("select a.id, b.name, count(*) as n from orders a inner join customers b on a.cust_id = b.id "
+       "where a.total > 100 and b.country = 'AT' group by a.id, b.name order by n desc")
+
+
+def test_sql_format_and_minify(app_page):
+    page = app_page("texteditor")
+    text = lambda: page.evaluate("TE.app.view.state.doc.toString()")
+    assert open_bytes(page, "query.sql", SQL.encode())["language"] == "sql"
+    page.select_option("[data-testid=tools]", "sqlFormat")
+    dialog = page.locator("[data-testid=sql-dialog]")
+    expect(dialog).to_contain_text("Formats the whole document.")
+    preview = page.locator("[data-testid=sql-preview]")
+    expect(preview).to_contain_text("SELECT\n  a.id,\n  b.name,\n  COUNT(*) AS n\nFROM")
+    # the options change the preview
+    page.select_option("[data-testid=sql-keyword-case]", "lower")
+    expect(preview).to_contain_text("select\n  a.id,")
+    page.select_option("[data-testid=sql-keyword-case]", "upper")
+    page.select_option("[data-testid=sql-indent]", "4")
+    page.select_option("[data-testid=sql-dialect]", "transactsql")
+    page.select_option("[data-testid=sql-indent-style]", "tabularLeft")
+    expect(preview).to_contain_text("SELECT    a.id,")
+    page.select_option("[data-testid=sql-indent-style]", "standard")
+    page.click("[data-testid=sql-format]")
+    expect(dialog).to_have_count(0)
+    assert text() == ("SELECT\n    a.id,\n    b.name,\n    COUNT(*) AS n\nFROM\n    orders a\n    INNER JOIN customers b ON a.cust_id = b.id\n"
+                      "WHERE\n    a.total > 100\n    AND b.country = 'AT'\nGROUP BY\n    a.id,\n    b.name\nORDER BY\n    n DESC")
+    # the options are remembered
+    page.select_option("[data-testid=tools]", "sqlFormat")
+    expect(page.locator("[data-testid=sql-indent]")).to_have_value("4")
+    expect(page.locator("[data-testid=sql-dialect]")).to_have_value("transactsql")
+    page.keyboard.press("Escape")
+    expect(dialog).to_have_count(0)
+    # on one line: comments and whitespace go, strings and optimizer hints stay
+    page.evaluate("(s) => TE.app.view.dispatch({ changes: { from: 0, to: TE.app.view.state.doc.length, insert: s } })",
+                  "select  a, -- first\n  'x  y' /* note */ ,\"Col  1\"\nfrom t;\n\nselect /*+ index(t) */ ( 1 )")
+    page.select_option("[data-testid=tools]", "sqlMinify")
+    assert text() == "select a, 'x  y',\"Col  1\" from t; select /*+ index(t) */ (1)"  # (no space added where there was none)
+    # only the selection, and invalid SQL: a message, the text stays
+    page.evaluate("TE.app.view.dispatch({ selection: { anchor: 0, head: 9 } })")
+    page.select_option("[data-testid=tools]", "sqlFormat")
+    expect(dialog).to_contain_text("Formats the selection.")
+    page.click("[data-testid=sql-format]")
+    assert text().startswith("SELECT\n    a, 'x  y'")
+    page.evaluate("TE.app.view.dispatch({ changes: { from: 0, to: TE.app.view.state.doc.length, insert: \"select 'open\" } })")
+    page.select_option("[data-testid=tools]", "sqlFormat")
+    expect(preview).to_contain_text("could not be formatted")
+    page.click("[data-testid=sql-format]")
+    expect(page.locator(".suite-toast")).to_contain_text("The SQL could not be formatted")
+    assert text() == "select 'open"
+    assert page.errors == []
+
+
+SAS = """/* demo */
+%let lib = work;
+data &lib..out;
+  set sashelp.class end=last;
+  * a statement comment;
+  if age > 12 then do;
+    bmi = weight / height**2;
+    dt = '01jan2024'd;
+  end;
+  format dt date9.;
+run;
+data x;
+  input a b;
+  datalines;
+1 2
+;
+run;
+"""
+
+
+def test_sas_language(app_page):
+    page = app_page("texteditor")
+    assert open_bytes(page, "demo.sas", SAS.encode())["language"] == "sas"
+    expect(page.locator("[data-testid=lang-select]")).to_have_value("sas")
+    style = lambda text: page.evaluate("""(t) => { const s = Array.from(document.querySelectorAll('.cm-content .cm-line span')).find((e) => e.textContent === t);
+      return s ? getComputedStyle(s).color : null; }""", text)
+    # statements, comments, strings, macro variables, formats; words used as names are not keywords
+    assert style("data") and style("data") == style("run") == style("set") == style("then")
+    assert style("/* demo */") == style("* a statement comment;")
+    assert style("'01jan2024'd") and style("'01jan2024'd") == style("1 2")  # data lines
+    assert style("&lib.") and style("date9.") and style("%let")
+    assert style("weight") is None and style("x") is None  # a variable, a data set name
+    assert style("end") is not None and page.locator(".cm-content span", has_text="last").count() == 0  # end= is an option
+    assert page.errors == []
+
+
+def test_sas_completion_and_indentation(app_page):
+    page = app_page("texteditor")
+    open_bytes(page, "new.sas", b"%let cutoff = 10;\n")
+    page.click(".cm-content")
+    page.keyboard.press("Control+End")
+    options = page.locator(".cm-tooltip-autocomplete li")
+    # procedures after PROC (case as typed)
+    page.keyboard.type("proc so")
+    expect(options.first).to_contain_text("sort")
+    page.wait_for_timeout(150)  # (a completion is accepted only a moment after the list opened)
+    page.keyboard.press("Enter")
+    page.keyboard.type(" data=a;")
+    page.keyboard.press("Enter")
+    page.keyboard.type("by")
+    page.keyboard.press("Escape")
+    assert page.evaluate("TE.app.view.state.doc.toString()").endswith("proc sort data=a;\n    by")  # indented in the step (4 spaces)
+    page.keyboard.type(" x;")
+    page.keyboard.press("Enter")
+    page.keyboard.type("run;")  # back to the left margin
+    page.keyboard.press("Enter")
+    page.keyboard.type("PROC PRI")
+    expect(options.filter(has_text=re.compile(r"^PRINTprocedure$"))).to_have_count(1)  # upper case like the typed word
+    page.keyboard.press("Escape")
+    page.keyboard.press("Enter")
+    # macro statements after %, macro variables after & (the program's own and automatic ones), functions
+    page.keyboard.type("%sysf")
+    expect(options.first).to_contain_text("sysfunc")
+    page.keyboard.press("Escape")
+    page.keyboard.type("(today()) &cu")
+    expect(options.first).to_contain_text("cutoff")
+    page.keyboard.press("Escape")
+    page.keyboard.type(" &sysd")
+    expect(options.filter(has_text="sysdate9")).to_have_count(1)
+    page.keyboard.press("Escape")
+    page.keyboard.type(" catx")
+    expect(options.first).to_contain_text("catx")
+    page.keyboard.press("Escape")
+    text = page.evaluate("TE.app.view.state.doc.toString()")
+    assert "proc sort data=a;\n    by x;\nrun;\n" in text, text
+    assert page.errors == []
+
+
+def test_indentation_and_tab_key(app_page):
+    page = app_page("texteditor")
+    text = lambda: page.evaluate("TE.app.view.state.doc.toString()")
+    indent = page.locator("[data-testid=indent]")
+    expect(indent).to_have_value("s4")
+    page.click(".cm-content")
+    # Tab inserts spaces up to the next stop and keeps the focus in the editor
+    page.keyboard.type("a")
+    page.keyboard.press("Tab")
+    page.keyboard.type("b")
+    assert text() == "a   b"
+    assert page.evaluate("document.activeElement.classList.contains('cm-content')")
+    # Ctrl+Alt+I: a tab character in any case
+    page.keyboard.press("Control+Alt+i")
+    assert text() == "a   b\t"
+    # selected lines are indented, Shift+Tab outdents
+    page.keyboard.press("Enter")
+    page.keyboard.type("c")
+    page.keyboard.press("Control+a")
+    page.keyboard.press("Tab")
+    assert text() == "    a   b\t\n    c"
+    page.keyboard.press("Shift+Tab")
+    assert text() == "a   b\t\nc"
+    # tabs: Tab inserts a tab character; the choice is the default for new documents
+    indent.select_option("t4")
+    page.click(".cm-content")
+    page.keyboard.press("Control+End")
+    page.keyboard.press("Tab")
+    assert text() == "a   b\t\nc\t"
+    assert page.evaluate("TE.app.prefs.indent") == "t4"
+    page.click("[data-testid=new]")
+    expect(indent).to_have_value("t4")
+    # Esc, then Tab moves the focus on (keyboard users are not trapped)
+    page.click(".cm-content")
+    page.keyboard.press("Escape")
+    page.keyboard.press("Tab")
+    assert not page.evaluate("document.activeElement.classList.contains('cm-content')")
+    # the indentation of opened files is detected
+    open_bytes(page, "two.py", b"def f():\n  if x:\n    return 1\n")
+    expect(indent).to_have_value("s2")
+    open_bytes(page, "tabs.c", b"int main() {\n\treturn 0;\n}\n")
+    expect(indent).to_have_value("t4")
+    assert page.errors == []
+
+
+def test_newer_version_of_an_open_file(app_page):
+    """A dropped file with the name of an unchanged tab (no file handle): the same text switches to the tab, a newer version
+    replaces it."""
+    from helpers.hostile import drop_file
+    page = app_page("texteditor", init_script=NO_PICKERS)
+    drop_file(page, "notes.txt", b"one")
+    page.wait_for_function("() => TE.app.docs.some((d) => d.name === 'notes.txt')")
+    drop_file(page, "other.txt", b"x")
+    drop_file(page, "notes.txt", b"one")
+    page.wait_for_function("() => TE.app.docs[TE.app.active].name === 'notes.txt'")
+    drop_file(page, "notes.txt", b"two")
+    page.wait_for_function("() => TE.app.view.state.doc.toString() === 'two'")
+    assert page.evaluate("TE.app.docs.filter((d) => d.name === 'notes.txt').length") == 1
     assert page.errors == []

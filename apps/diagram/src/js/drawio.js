@@ -5,7 +5,7 @@
  *   - Excalidraw (.excalidraw JSON) import
  */
 import { inflateSync, deflateSync, strToU8, strFromU8 } from 'fflate';
-import { makeShape, makeEdge, newPage, newId, layersOf, DEFAULT_STYLE, DEFAULT_EDGE_STYLE } from '@app/model.js';
+import { makeShape, makeEdge, newPage, newId, layersOf, DEFAULT_STYLE, DEFAULT_EDGE_STYLE, shapeBounds, normalizeAngle } from '@app/model.js';
 
 // ---- style strings ---------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ const serializeStyle = (map) => [...map].map(([k, v]) => (v == null ? k : `${k}=
 const SHAPE_KEYS = ['shape', 'rounded', 'arcSize', 'ellipse', 'rhombus', 'triangle', 'text', 'perimeter', 'image', 'fillColor', 'strokeColor', 'strokeWidth',
   'dashed', 'opacity', 'fontSize', 'fontColor', 'fontStyle', 'align', 'verticalAlign', 'whiteSpace', 'html', 'fixedSize', 'size', 'boundedLbl', 'backgroundOutline',
   'verticalLabelPosition', 'outlineConnect', 'imageAspect', 'aspect', 'resizable', 'autosize', 'points', 'group', 'locked', 'dgType', 'tabWidth', 'tabHeight',
-  'tabPosition', 'spacingLeft', 'horizontal', 'startSize', 'overflow', 'swimlane', 'doubleEllipse'];
+  'tabPosition', 'spacingLeft', 'horizontal', 'startSize', 'overflow', 'swimlane', 'doubleEllipse', 'rotation'];
 const EDGE_KEYS = ['edgeStyle', 'curved', 'rounded', 'orthogonalLoop', 'jettySize', 'html', 'strokeColor', 'strokeWidth', 'dashed', 'opacity', 'startArrow', 'endArrow',
   'startFill', 'endFill', 'fontSize', 'fontColor', 'exitX', 'exitY', 'exitDx', 'exitDy', 'entryX', 'entryY', 'entryDx', 'entryDy', 'locked'];
 
@@ -175,23 +175,33 @@ export function readModel(model, page, { offset = { x: 0, y: 0 }, withLayers = t
     absCache.set(id, r);
     return r;
   };
-  // layers (children of the root cell) become page layers; groups: the outermost "group" cell below the layer
+  // layers (children of the root cell) become page layers; "group" cells become groups (nested ones keep their parent group)
   const layerList = [...byId.entries()].filter(([id]) => layerIds.has(id) && byId.get(id).cell.getAttribute('parent') === '0');
   if (layerList.length && !page.shapes.length && !page.edges.length && withLayers) {
     page.layers = layerList.map(([id, { cell, label }]) => ({ id, name: htmlToText(label) || 'Background', visible: cell.getAttribute('visible') !== '0', locked: parseStyle(cell.getAttribute('style')).get('locked') === '1' }));
   }
   const known = new Set(layersOf(page).map((l) => l.id));
+  const isGroupCell = (id) => byId.has(id) && !layerIds.has(id) && parseStyle(byId.get(id).cell.getAttribute('style')).has('group');
   const placement = (id) => {
     let layer = null, group = null;
     for (let cur = byId.get(id) && byId.get(id).cell.getAttribute('parent'), n = 0; cur && n < 100; n++) {
       if (layerIds.has(cur)) { layer = cur; break; }
       const c = byId.get(cur);
       if (!c) break;
-      if (parseStyle(c.cell.getAttribute('style')).has('group')) group = cur;
+      if (!group && isGroupCell(cur)) group = cur; // the innermost group
       cur = c.cell.getAttribute('parent');
     }
     return { layer: layer && known.has(layer) ? layer : undefined, group: group || undefined };
   };
+  // the groups with their names and enclosing groups
+  if (!page.groups) page.groups = [];
+  for (const [id, { cell, label }] of byId) {
+    if (!isGroupCell(id) || page.groups.some((g) => g.id === id)) continue;
+    const g = { id, name: htmlToText(label) || '' };
+    const { group: parent } = placement(id);
+    if (parent) g.parent = parent;
+    page.groups.push(g);
+  }
   const place = (obj, id, style) => {
     const { layer, group } = placement(id);
     if (layer) obj.layer = layer;
@@ -236,6 +246,8 @@ export function readModel(model, page, { offset = { x: 0, y: 0 }, withLayers = t
     st.italic = !!(fontStyle & 2);
     st.align = style.get('align') || 'center';
     st.valign = style.get('verticalAlign') || 'middle';
+    const rotation = normalizeAngle(parseFloat(style.get('rotation') || '0') || 0);
+    if (rotation) shape.rotation = rotation;
     if (type === 'image') {
       let src = style.get('image') || '';
       // draw.io writes "data:image/png,BASE64" (";base64" would clash with the style separator)
@@ -283,6 +295,13 @@ export function readModel(model, page, { offset = { x: 0, y: 0 }, withLayers = t
       },
     });
     edge.text = [text, labels.get(id)].filter(Boolean).join('\n');
+    // manual routing points of draw.io (<Array as="points">): kept and drawn through
+    const way = g && [...g.getElementsByTagName('Array')].find((x) => x.getAttribute('as') === 'points');
+    if (way) {
+      const abs = absOf(cell.getAttribute('parent'));
+      const pts = [...way.getElementsByTagName('mxPoint')].map((p) => ({ x: offset.x + abs.x + parseFloat(p.getAttribute('x') || 0), y: offset.y + abs.y + parseFloat(p.getAttribute('y') || 0) }));
+      if (pts.length && pts.every((p) => Number.isFinite(p.x) && Number.isFinite(p.y))) edge.waypoints = pts;
+    }
     edge.extra = Object.fromEntries([...style].filter(([k]) => !EDGE_KEYS.includes(k)));
     place(edge, id, style);
     page.edges.push(edge);
@@ -308,6 +327,7 @@ function shapeStyle(s) {
   if (st.valign !== 'middle' && s.type !== 'actor' && s.type !== 'image') map.set('verticalAlign', st.valign);
   if (s.type === 'image' && st.image) map.set('image', st.image.replace(/;base64,/, ','));
   if (s.locked) map.set('locked', '1');
+  if (s.rotation) map.set('rotation', round(s.rotation));
   return serializeStyle(map);
 }
 
@@ -351,10 +371,10 @@ function compartmentLabel(text) {
 
 /**
  * mxGraphModel XML of shapes and edges (cells reference each other by our ids). With `layers`, every layer becomes a layer cell
- * (visible="0" when hidden, locked=1 in its style); groups become "group" cells around their members, whose geometry is then
- * relative to the group.
+ * (visible="0" when hidden, locked=1 in its style); groups become "group" cells (named, nested as in `groups`, the page's group
+ * list) around their members, whose geometry is then relative to the group.
  */
-export function writeModel(shapes, edges, { layers = null } = {}) {
+export function writeModel(shapes, edges, { layers = null, groups: groupList = [] } = {}) {
   const ids = new Set(shapes.map((s) => s.id));
   const cells = ['<mxCell id="0" />'];
   const layerIds = new Set();
@@ -365,18 +385,33 @@ export function writeModel(shapes, edges, { layers = null } = {}) {
     }
   } else cells.push('<mxCell id="1" parent="0" />');
   const layerOfObj = (o) => (o.layer && layerIds.has(o.layer) ? o.layer : layers && layers.length ? layers[0].id : '1');
-  // group cells: bounding box of the member shapes
+  // group cells: the groups of the objects and their enclosing groups, bounding box of the member shapes
+  const info = new Map(groupList.map((g) => [g.id, g]));
   const groups = new Map();
-  for (const o of [...shapes, ...edges]) if (o.group && !ids.has(o.group) && !groups.has(o.group)) groups.set(o.group, { layer: layerOfObj(o), shapes: [] });
-  for (const s of shapes) if (groups.has(s.group)) groups.get(s.group).shapes.push(s);
-  for (const [gid, g] of groups) {
-    const xs = g.shapes.flatMap((s) => [s.x, s.x + s.w]), ys = g.shapes.flatMap((s) => [s.y, s.y + s.h]);
-    g.x = xs.length ? Math.min(...xs) : 0; g.y = ys.length ? Math.min(...ys) : 0;
-    const w = xs.length ? Math.max(...xs) - g.x : 0, h = ys.length ? Math.max(...ys) - g.y : 0;
-    cells.push(`<mxCell id="${xmlAttr(gid)}" value="" style="group" vertex="1" connectable="0" parent="${xmlAttr(g.layer)}">` +
-      `<mxGeometry x="${round(g.x)}" y="${round(g.y)}" width="${round(w)}" height="${round(h)}" as="geometry" /></mxCell>`);
+  const addGroup = (gid, o, depth = 0) => {
+    if (!gid || ids.has(gid) || depth > 100) return;
+    if (!groups.has(gid)) groups.set(gid, { layer: layerOfObj(o), shapes: [], parent: (info.get(gid) || {}).parent, name: (info.get(gid) || {}).name || '' });
+    addGroup(groups.get(gid).parent, o, depth + 1);
+  };
+  for (const o of [...shapes, ...edges]) addGroup(o.group, o);
+  for (const s of shapes) for (let gid = s.group, n = 0; gid && groups.has(gid) && n < 100; gid = groups.get(gid).parent, n++) groups.get(gid).shapes.push(s);
+  for (const g of groups.values()) {
+    const boxes = g.shapes.map(shapeBounds);
+    g.x = boxes.length ? Math.min(...boxes.map((b) => b.x)) : 0; g.y = boxes.length ? Math.min(...boxes.map((b) => b.y)) : 0;
+    g.w = boxes.length ? Math.max(...boxes.map((b) => b.x + b.w)) - g.x : 0; g.h = boxes.length ? Math.max(...boxes.map((b) => b.y + b.h)) - g.y : 0;
   }
   const parentOf = (o) => (groups.has(o.group) ? { id: o.group, x: groups.get(o.group).x, y: groups.get(o.group).y } : { id: layerOfObj(o), x: 0, y: 0 });
+  // enclosing groups first (a cell's parent must come before it)
+  const written = new Set();
+  const writeGroup = (gid) => {
+    if (written.has(gid)) return;
+    written.add(gid);
+    const g = groups.get(gid);
+    const par = g.parent && groups.has(g.parent) ? (writeGroup(g.parent), { id: g.parent, x: groups.get(g.parent).x, y: groups.get(g.parent).y }) : { id: g.layer, x: 0, y: 0 };
+    cells.push(`<mxCell id="${xmlAttr(gid)}" value="${xmlAttr(escapeHtml(g.name))}" style="group" vertex="1" connectable="0" parent="${xmlAttr(par.id)}">` +
+      `<mxGeometry x="${round(g.x - par.x)}" y="${round(g.y - par.y)}" width="${round(g.w)}" height="${round(g.h)}" as="geometry" /></mxCell>`);
+  };
+  for (const gid of groups.keys()) writeGroup(gid);
   for (const s of shapes) {
     const par = parentOf(s);
     cells.push(`<mxCell id="${xmlAttr(s.id)}" value="${COMPARTMENT_TYPES.has(s.type) ? compartmentLabel(s.text) : labelValue(s.text)}" style="${xmlAttr(shapeStyle(s))}" vertex="1" parent="${xmlAttr(par.id)}">` +
@@ -386,7 +421,8 @@ export function writeModel(shapes, edges, { layers = null } = {}) {
     const par = parentOf(e);
     const src = e.from.id && ids.has(e.from.id) ? ` source="${xmlAttr(e.from.id)}"` : '';
     const tgt = e.to.id && ids.has(e.to.id) ? ` target="${xmlAttr(e.to.id)}"` : '';
-    const pts = [!src && e.from.x != null ? `<mxPoint x="${round(e.from.x - par.x)}" y="${round(e.from.y - par.y)}" as="sourcePoint" />` : '', !tgt && e.to.x != null ? `<mxPoint x="${round(e.to.x - par.x)}" y="${round(e.to.y - par.y)}" as="targetPoint" />` : ''].join('');
+    const pts = [!src && e.from.x != null ? `<mxPoint x="${round(e.from.x - par.x)}" y="${round(e.from.y - par.y)}" as="sourcePoint" />` : '', !tgt && e.to.x != null ? `<mxPoint x="${round(e.to.x - par.x)}" y="${round(e.to.y - par.y)}" as="targetPoint" />` : '',
+      e.waypoints && e.waypoints.length ? `<Array as="points">${e.waypoints.map((p) => `<mxPoint x="${round(p.x - par.x)}" y="${round(p.y - par.y)}" />`).join('')}</Array>` : ''].join('');
     cells.push(`<mxCell id="${xmlAttr(e.id)}" value="${labelValue(e.text)}" style="${xmlAttr(edgeStyleString(e))}" edge="1" parent="${xmlAttr(par.id)}"${src}${tgt}>` +
       `<mxGeometry relative="1" as="geometry">${pts}</mxGeometry></mxCell>`);
   }
@@ -396,7 +432,7 @@ export function writeModel(shapes, edges, { layers = null } = {}) {
 const round = (v) => Math.round(v * 100) / 100;
 
 export function writeDrawio(doc, { version = '' } = {}) {
-  const diagrams = doc.pages.map((p) => `  <diagram id="${xmlAttr(p.id)}" name="${xmlAttr(p.name)}">\n    ${writeModel(p.shapes, p.edges, { layers: layersOf(p) })}\n  </diagram>`);
+  const diagrams = doc.pages.map((p) => `  <diagram id="${xmlAttr(p.id)}" name="${xmlAttr(p.name)}">\n    ${writeModel(p.shapes, p.edges, { layers: layersOf(p), groups: p.groups || [] })}\n  </diagram>`);
   return `<mxfile host="Portable Web App Suite" version="${xmlAttr(version)}">\n${diagrams.join('\n')}\n</mxfile>\n`;
 }
 
@@ -450,6 +486,18 @@ export function drawioFromPng(png) {
 
 // ---- Excalidraw --------------------------------------------------------------------------------------------
 
+/** Excalidraw's groupIds (innermost first) as nested groups of the page. */
+function excalidrawGroups(page, obj, groupIds) {
+  if (!Array.isArray(groupIds) || !groupIds.length) return;
+  if (!page.groups) page.groups = [];
+  groupIds.forEach((id, i) => {
+    let g = page.groups.find((x) => x.id === id);
+    if (!g) { g = { id, name: '' }; page.groups.push(g); }
+    if (groupIds[i + 1]) g.parent = groupIds[i + 1];
+  });
+  obj.group = groupIds[0];
+}
+
 export function readExcalidraw(json) {
   const data = typeof json === 'string' ? JSON.parse(json) : json;
   if (!data || !Array.isArray(data.elements)) throw new Error('not an Excalidraw file');
@@ -469,6 +517,9 @@ export function readExcalidraw(json) {
     });
     if (type === 'text') Object.assign(shape.style, { fontSize: el.fontSize || 20, fontColor: colorOf(el.strokeColor, '#000000'), align: el.textAlign || 'left', valign: 'top' }), shape.text = el.text || '';
     if (type === 'image' && data.files && data.files[el.fileId]) shape.style.image = data.files[el.fileId].dataURL;
+    const rotation = normalizeAngle(((el.angle || 0) * 180) / Math.PI);
+    if (rotation) shape.rotation = rotation;
+    excalidrawGroups(page, shape, el.groupIds);
     page.shapes.push(shape);
     idMap.set(el.id, shape);
   }
@@ -494,6 +545,7 @@ export function readExcalidraw(json) {
     });
     const label = elements.find((t) => t.type === 'text' && t.containerId === el.id);
     if (label) edge.text = label.text || '';
+    excalidrawGroups(page, edge, el.groupIds);
     page.edges.push(edge);
   }
   return { pages: [page], page: 0 };

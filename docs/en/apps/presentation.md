@@ -33,6 +33,12 @@ after the current one. Without a selected element, the panel on the right sets t
   **Table** (3 × 3) add an element in the middle of the slide.
 - Click an element to select it; drag it to move it, drag the handles to resize, drag the round handle to rotate. Guides help to align it with
   the slide and other elements. Arrow keys move it by one point (`Shift`: 10 points).
+- **📐 Diagram** opens an empty diagram in the diagram editor (a new window or tab); every **Save** there puts the diagram on the
+  slide as a picture (the first save inserts it, later saves update it). A diagram picture shows **📐 Edit diagram** in the panel,
+  and a double-click on it opens it in the diagram editor again; the new picture keeps position and width. The diagram travels
+  inside the picture (a PNG with the draw.io file, like draw.io's "editable PNG"), so it stays editable in the `.pptx` file;
+  PowerPoint shows the picture. The diagram editor (`diagram.html`) must be in the same folder, or start the presentation from
+  the overview.
 - Double-click a text (or press `Enter`) to edit it; double-click a table cell to edit the cell. A click outside ends the editing.
 - The panel on the right shows position, size and rotation, fill and line colours, the font, size and colour of the text, bold, italic,
   underline, horizontal and vertical alignment, and **To front**, **To back**, **Duplicate** and **Delete**. While a text is being edited, bold,

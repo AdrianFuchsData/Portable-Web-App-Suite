@@ -4,10 +4,12 @@
  *
  * shape: { id, type, x, y, w, h, text, style: { fill, stroke, strokeWidth, dash, opacity, fontSize, fontColor, bold, italic,
  *          align, valign, rounded, image }, extra: unknown draw.io style keys (kept for round trips) }
- * edge:  { id, from: { id?, x?, y?, ax?, ay? }, to: {...}, text, route: 'straight'|'orthogonal'|'curved',
+ * edge:  { id, from: { id?, x?, y?, ax?, ay? }, to: {...}, waypoints?: [{ x, y }] (draw.io routing points), text, route: 'straight'|'orthogonal'|'curved',
  *          style: { stroke, strokeWidth, dash, startArrow, endArrow, fontSize, fontColor, opacity }, extra }
- * Shapes and edges may also have layer (id of a page layer; missing = the first one), group (objects with the same group id
- * are selected and moved together) and locked (not selectable). page.layers: [{ id, name, visible, locked }], bottom first.
+ * Shapes and edges may also have layer (id of a page layer; missing = the first one), group (the id of the group they belong to
+ * directly) and locked (not selectable); shapes may have rotation (degrees, clockwise around the centre).
+ * page.layers: [{ id, name, visible, locked }], bottom first. page.groups: [{ id, name, parent }] – groups can contain groups
+ * (parent: the enclosing group); a group id without an entry is an unnamed top-level group (older documents).
  */
 
 export const SHAPES = ['rect', 'rounded', 'ellipse', 'diamond', 'terminator', 'parallelogram', 'hexagon', 'triangle', 'cylinder', 'document', 'note', 'cloud', 'actor', 'text', 'image'];
@@ -58,6 +60,61 @@ export function inLayerOrder(page, list) {
   return list.filter((o) => isShown(page, o)).map((o, i) => [o, i, index.get(layerOf(page, o).id)]).sort((a, b) => a[2] - b[2] || a[1] - b[1]).map(([o]) => o);
 }
 export function newDoc() { return { pages: [newPage()], page: 0 }; }
+
+// ---- groups ------------------------------------------------------------------------------------------------
+
+/** The groups of a page: an entry for every group that has members (entries of empty groups are removed). */
+export function groupsOf(page) {
+  if (!page.groups) page.groups = [];
+  const byId = new Map(page.groups.map((g) => [g.id, g]));
+  for (const o of [...page.shapes, ...page.edges]) if (o.group && !byId.has(o.group)) { const g = { id: o.group, name: '' }; page.groups.push(g); byId.set(g.id, g); }
+  for (const g of page.groups) if (g.parent && (!byId.has(g.parent) || g.parent === g.id)) delete g.parent;
+  // a group is used if an object or a used group is in it
+  const used = new Set();
+  const mark = (id) => { for (let cur = id, n = 0; cur && !used.has(cur) && n < 1000; n++) { used.add(cur); cur = byId.get(cur) && byId.get(cur).parent; } };
+  for (const o of [...page.shapes, ...page.edges]) if (o.group) mark(o.group);
+  if (used.size !== page.groups.length) page.groups = page.groups.filter((g) => used.has(g.id));
+  return page.groups;
+}
+export const groupById = (page, id) => groupsOf(page).find((g) => g.id === id) || null;
+
+/** The groups an object (or a group, by id) is in, innermost first. */
+export function ancestors(page, o) {
+  const byId = new Map(groupsOf(page).map((g) => [g.id, g]));
+  const out = [];
+  for (let cur = typeof o === 'string' ? (byId.get(o) || {}).parent : o.group, n = 0; cur && byId.has(cur) && n < 1000; n++) { out.push(cur); cur = byId.get(cur).parent; }
+  return out;
+}
+
+/** All objects (shapes and edges) in a group, also in its sub-groups. */
+export function groupMembers(page, id) {
+  return [...page.shapes, ...page.edges].filter((o) => o.group && (o.group === id || ancestors(page, o).includes(id)));
+}
+
+// ---- rotation ------------------------------------------------------------------------------------------------
+
+/** Rotate p around c by deg (clockwise in screen coordinates). */
+export function rotatePoint(p, c, deg) {
+  if (!deg) return { x: p.x, y: p.y };
+  const r = (deg * Math.PI) / 180, cos = Math.cos(r), sin = Math.sin(r);
+  const dx = p.x - c.x, dy = p.y - c.y;
+  return { x: c.x + dx * cos - dy * sin, y: c.y + dx * sin + dy * cos };
+}
+export const normalizeAngle = (deg) => { const a = ((Math.round(deg * 100) / 100) % 360 + 360) % 360; return a > 180 ? a - 360 : a; };
+/** A point of the shape given relative to its box (0..1), with the rotation applied. */
+export const shapePoint = (s, ax, ay) => rotatePoint({ x: s.x + ax * s.w, y: s.y + ay * s.h }, { x: s.x + s.w / 2, y: s.y + s.h / 2 }, s.rotation);
+/** Is p inside the (rotated) box of s? */
+export function containsPoint(s, p) {
+  const q = rotatePoint(p, { x: s.x + s.w / 2, y: s.y + s.h / 2 }, -(s.rotation || 0));
+  return q.x >= s.x && q.x <= s.x + s.w && q.y >= s.y && q.y <= s.y + s.h;
+}
+/** Axis-aligned bounding box of a (rotated) shape. */
+export function shapeBounds(s) {
+  if (!s.rotation) return { x: s.x, y: s.y, w: s.w, h: s.h };
+  const pts = [[0, 0], [1, 0], [1, 1], [0, 1]].map(([ax, ay]) => shapePoint(s, ax, ay));
+  const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
+  return { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
+}
 
 export function makeShape(type, x, y, w = 120, h = 60, props = {}) {
   const style = { ...DEFAULT_STYLE, ...((PRESETS[type] && PRESETS[type].style) || {}) };
@@ -123,6 +180,11 @@ export function shapePath(s) {
 
 /** Outline polygon (absolute coordinates) used to find where edges meet the shape. */
 function outline(s) {
+  const pts = outlineUnrotated(s);
+  return s.rotation ? pts.map((p) => rotatePoint(p, center(s), s.rotation)) : pts;
+}
+
+function outlineUnrotated(s) {
   const { x, y, w, h } = s;
   const poly = (pts) => pts.map(([px, py]) => ({ x: x + px * w, y: y + py * h }));
   if (s.type === 'ellipse' || s.type === 'cloud' || s.type.startsWith('event-')) return Array.from({ length: 48 }, (_, i) => ({ x: x + w / 2 + (w / 2) * Math.cos((i / 48) * Math.PI * 2), y: y + h / 2 + (h / 2) * Math.sin((i / 48) * Math.PI * 2) }));
@@ -164,21 +226,24 @@ export const PORTS = [{ ax: 0.5, ay: 0 }, { ax: 1, ay: 0.5 }, { ax: 0.5, ay: 1 }
 
 // ---- edges ---------------------------------------------------------------------------------------------
 
-/** Direction leaving a shape at a fixed anchor (unit vector), or null for floating ends. */
-function anchorDir(end) {
+/** Direction leaving a shape at a fixed anchor (unit vector; rotated shapes: the nearest axis), or null for floating ends. */
+function anchorDir(end, s) {
   if (end.ax == null) return null;
-  if (end.ax <= 0) return { x: -1, y: 0 };
-  if (end.ax >= 1) return { x: 1, y: 0 };
-  if (end.ay <= 0) return { x: 0, y: -1 };
-  if (end.ay >= 1) return { x: 0, y: 1 };
-  return null;
+  let d = null;
+  if (end.ax <= 0) d = { x: -1, y: 0 };
+  else if (end.ax >= 1) d = { x: 1, y: 0 };
+  else if (end.ay <= 0) d = { x: 0, y: -1 };
+  else if (end.ay >= 1) d = { x: 0, y: 1 };
+  if (!d || !s || !s.rotation) return d;
+  const r = rotatePoint(d, { x: 0, y: 0 }, s.rotation);
+  return Math.abs(r.x) >= Math.abs(r.y) ? { x: Math.sign(r.x), y: 0 } : { x: 0, y: Math.sign(r.y) };
 }
 
 /** Resolve both ends of an edge to points (and exit directions). */
 export function edgeEnds(edge, shapeById) {
   const fromShape = edge.from.id ? shapeById.get(edge.from.id) : null;
   const toShape = edge.to.id ? shapeById.get(edge.to.id) : null;
-  const fixed = (end, s) => (s && end.ax != null ? { x: s.x + end.ax * s.w, y: s.y + end.ay * s.h } : null);
+  const fixed = (end, s) => (s && end.ax != null ? shapePoint(s, end.ax, end.ay) : null);
   const fromFixed = fixed(edge.from, fromShape);
   const toFixed = fixed(edge.to, toShape);
   const aim = (s, end) => (s ? fixed(end, s) || center(s) : { x: end.x, y: end.y });
@@ -186,7 +251,7 @@ export function edgeEnds(edge, shapeById) {
   const toTarget = aim(fromShape, edge.from);
   let a = fromFixed || (fromShape ? boundaryPoint(fromShape, edge.route === 'orthogonal' ? orthoAim(fromShape, fromTarget) : fromTarget) : { x: edge.from.x, y: edge.from.y });
   let b = toFixed || (toShape ? boundaryPoint(toShape, edge.route === 'orthogonal' ? orthoAim(toShape, toTarget) : toTarget) : { x: edge.to.x, y: edge.to.y });
-  return { a, b, da: fromShape ? anchorDir(edge.from) : null, db: toShape ? anchorDir(edge.to) : null, fromShape, toShape };
+  return { a, b, da: fromShape ? anchorDir(edge.from, fromShape) : null, db: toShape ? anchorDir(edge.to, toShape) : null, fromShape, toShape };
 }
 
 /** For orthogonal edges, floating ends leave the shape at the side facing the other end. */
@@ -205,6 +270,18 @@ export function edgeGeometry(edge, shapeById) {
     const dirA = da || unit(b.x - a.x, b.y - a.y);
     const dirB = db || unit(a.x - b.x, a.y - b.y);
     return { points: [a, { x: a.x + dirA.x * dist, y: a.y + dirA.y * dist }, { x: b.x + dirB.x * dist, y: b.y + dirB.y * dist }, b], curve: true };
+  }
+  if (edge.waypoints && edge.waypoints.length) {
+    // through the routing points (orthogonal: with an elbow between points that are not in line)
+    const via = [a, ...edge.waypoints, b];
+    if (edge.route !== 'orthogonal') return { points: via, curve: false };
+    const pts = [a];
+    for (let i = 1; i < via.length; i++) {
+      const p = pts[pts.length - 1], q = via[i];
+      if (Math.abs(p.x - q.x) >= 0.5 && Math.abs(p.y - q.y) >= 0.5) pts.push(i === 1 && da && da.x === 0 ? { x: p.x, y: q.y } : { x: q.x, y: p.y });
+      pts.push(q);
+    }
+    return { points: pts, curve: false };
   }
   if (edge.route !== 'orthogonal') return { points: [a, b], curve: false };
   const horizontalA = da ? da.x !== 0 : Math.abs(b.x - a.x) >= Math.abs(b.y - a.y);
@@ -311,7 +388,7 @@ export function pageBounds(page) {
   const map = new Map(page.shapes.map((s) => [s.id, s]));
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   const add = (x, y) => { minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x); maxY = Math.max(maxY, y); };
-  for (const s of page.shapes) { add(s.x, s.y); add(s.x + s.w, s.y + s.h); }
+  for (const s of page.shapes) { const b = shapeBounds(s); add(b.x, b.y); add(b.x + b.w, b.y + b.h); }
   for (const e of page.edges) for (const p of edgeGeometry(e, map).points) add(p.x, p.y);
   if (minX === Infinity) return { x: 0, y: 0, w: 0, h: 0 };
   return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };

@@ -28,7 +28,10 @@ The middle shows the slide as reveal.js displays it. **Click** an element to sel
 removing formatting. `Esc` or **Done** ends editing.
 
 **+ Element** adds a heading, text, list, image, code, quote, table, diagram or HTML block after the selected element. The
-**Element** tab of the inspector on the right edits the selected element:
+**Element** tab of the inspector on the right edits the selected element. (The *diagram* block draws a Mermaid flowchart from
+text; **📐 Diagram (draw.io)** instead adds an image that you draw in the diagram editor: every **Save** there updates the
+picture, **📐 Edit diagram** in the inspector opens it again, and **📐 Draw a diagram** turns any image block into one. The
+diagram travels inside the picture – a PNG with the draw.io file – also in saved presentations.)
 
 - heading level and “fit text to the slide”, numbered lists, images (file, alternative text, width, fill the remaining height),
   code (language with syntax highlighting, line numbers and highlighted steps such as `1|2-3|5`), table rows and columns, HTML;
@@ -83,6 +86,21 @@ each slide is followed by a page with its notes.
 Markdown files and notebooks are converted; saving creates a new HTML presentation. In the Python notebook, **Slideshow**
 shows a slide type for each cell and **🎞️ Slides** opens the notebook here. Undo and redo (`Ctrl+Z`, `Ctrl+Y`) cover all
 changes.
+
+### Scripts in presentations
+
+Slides may contain HTML, and HTML can contain scripts (`<script>`, event handlers such as `onclick`, `javascript:` links).
+To protect your data, **scripts in slides are blocked**: the preview, presenting, printing and the saved file show the slides
+without running them (a Content Security Policy lets only the editor's own scripts – reveal.js, its plugins, formulas – run).
+When you open a presentation that contains such content, you are asked whether to allow it:
+
+- **Keep blocked** (recommended for files from others): the slides are shown, the scripts do not run.
+- **Allow scripts (unprotected)**: only for files you trust. The scripts then run with the rights of this app and could
+  read or change your data in the suite (settings, saved connections, opened files) or send it elsewhere.
+
+The button **🛡 Scripts blocked** / **⚠ Scripts allowed** in the toolbar shows the state and switches it (allowing asks
+again). The decision is not stored in the file: a presentation opened again is blocked until you allow it. A presentation
+saved while its scripts are blocked keeps them, but they stay blocked when the file is opened in a browser.
 
 ## Keyboard shortcuts
 

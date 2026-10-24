@@ -1,11 +1,14 @@
 <!-- Generated from docs/en/apps/hexeditor.md by tools/build_docs.py - do not edit. Confluence page title: Hex editor -->
 <ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
 <p>The hex editor (<code>hexeditor.html</code>) shows and edits the bytes of any file: hexadecimal and text view, overwrite and
-insert mode, search for byte patterns and text, a data inspector, and undo/redo. It handles files of several hundred
-megabytes; only the visible rows are drawn.</p>
+insert mode, search for byte patterns and text, a data inspector, and undo/redo, with several files in tabs. It handles
+files of several hundred megabytes; only the visible rows are drawn.</p>
 <h2>Opening, creating and saving</h2>
 <ul>
-<li><strong>Open</strong> (<code>Ctrl+O</code>) opens a file; you can also drag a file onto the window. <strong>New</strong> starts an empty file.</li>
+<li><strong>Open</strong> (<code>Ctrl+O</code>) opens one or more files; you can also drag files onto the window. <strong>New</strong> starts an empty file.</li>
+<li>Every file opens in its own <strong>tab</strong>; a dot (●) on a tab shows unsaved changes. Each tab keeps its own cursor,
+  selection, undo history and comparison. Close a tab with × or <code>Alt+W</code>; if it has unsaved changes, you are asked first.
+  Files opened from other applications (<em>Open with…</em>, for example several files of an archive) also open in tabs.</li>
 <li><strong>Save</strong> (<code>Ctrl+S</code>) writes the file: directly into the opened file in Chrome/Edge on the desktop, as a download in
   Firefox and on Android (replace the original file with it). <strong>Save as</strong> saves under a new name.</li>
 </ul>
@@ -99,6 +102,10 @@ comparison; <strong>×</strong> (or ⇆ again) ends it.</p>
 <tr>
 <td><code>Ctrl+Shift+S</code></td>
 <td>Save as</td>
+</tr>
+<tr>
+<td><code>Alt+W</code></td>
+<td>Close the file (tab)</td>
 </tr>
 </tbody>
 </table>

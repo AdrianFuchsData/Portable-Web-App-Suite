@@ -11,6 +11,7 @@ Hintergrund vorbereitet. Der erste Start dauert einige Sekunden; der Status rech
 
 - **Öffnen** (`Strg+O`) öffnet ein Jupyter-Notebook (`.ipynb`) oder ein Python-Skript. In Skripten beginnt `# %%` eine Codezelle und
   `# %% [markdown]` eine Textzelle (das Format von VS Code, Spyder und Jupytext); ein Skript ohne Markierungen wird eine Zelle.
+  Rohzellen (für nbconvert) werden als einfacher Text mit der Markierung *Roh* angezeigt und unverändert gespeichert.
 - **Speichern** (`Strg+S`) speichert das Notebook als `.ipynb` (mit Ausgaben): in Chrome/Edge am Desktop direkt in die Datei, in Firefox und
   unter Android als Download. **Speichern unter** speichert unter neuem Namen. **Exportieren…** lädt das Notebook als Python-Skript (`.py`)
   herunter, als **HTML-Seite** mit Code, Markdown und Ausgaben (Tabellen, Diagramme), die sich in jedem Browser öffnen lässt, als **HTML-Seite ohne
@@ -131,7 +132,7 @@ Auf dem Mac verwenden Sie Cmd statt Strg. `F1` (oder `?`) zeigt diese Liste in d
 |---|---|
 | `Eingabe` | Zelle bearbeiten |
 | `A` / `B` | Zelle darüber / darunter einfügen |
-| `M` / `Y` | In Markdown / Code umwandeln |
+| `M` / `Y` / `R` | In Markdown / Code / Roh (unverändert für nbconvert) umwandeln |
 | `↑` / `↓` | Vorherige / nächste Zelle |
 | `Entf` | Zelle löschen |
 | `Z` / `Umschalt+Z` | Zellenoperationen rückgängig / wiederholen |
