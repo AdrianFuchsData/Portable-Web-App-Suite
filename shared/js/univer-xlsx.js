@@ -3,7 +3,8 @@
  *
  * XLSX/XLSM are read and written with ExcelJS (values, formulas incl. shared formulas, styles, merged
  * cells, column widths, row heights, frozen panes, tab colors, hidden sheets/rows/columns, conditional formatting and data
- * validation, which Univer keeps in the workbook resources of its plugins), pictures (imported as data.images – a hidden property
+ * validation, which Univer keeps in the workbook resources of its plugins, and the auto filter with its value and custom criteria,
+ * read from and written into the sheet XML because ExcelJS only keeps the filter range), pictures (imported as data.images – a hidden property
  * the app inserts after loading – and exported from the drawing resource with their bytes unchanged). Other formats
  * (ODS, XLS, CSV, ...) are converted with SheetJS Community Edition, which keeps values, formulas and
  * merged cells but no styles.
@@ -43,6 +44,7 @@
   const EMU_PER_PX = 9525;
   const MIME = { png: 'image/png', jpeg: 'image/jpeg', jpg: 'image/jpeg', gif: 'image/gif', bmp: 'image/bmp', svg: 'image/svg+xml', webp: 'image/webp' };
   const DV_RESOURCE = 'SHEET_DATA_VALIDATION_PLUGIN';
+  const FILTER_RESOURCE = 'SHEET_FILTER_PLUGIN';
   const DV_ERROR_STYLE = { information: 0, stop: 1, warning: 2 }; // Univer DataValidationErrorStyle
   const DV_ERROR_NAMES = { 0: 'information', 1: 'stop', 2: 'warning' };
   const CF_VALUE_TYPES = { min: 'min', max: 'max', num: 'num', percent: 'percent', percentile: 'percentile', formula: 'formula' };
@@ -240,7 +242,7 @@
   // ---- import ----------------------------------------------------------------------------------
 
   /** Convert a loaded ExcelJS workbook to Univer workbook data (IWorkbookData). */
-  function fromExcelJS(workbook, name = 'Workbook') {
+  function fromExcelJS(workbook, name = 'Workbook', { filters = {} } = {}) {
     const theme = themeColors(workbook);
     const styles = {};
     const styleIds = new Map();
@@ -259,6 +261,7 @@
     const sheetOrder = [];
     const cfRules = {};
     const dvRules = {};
+    const filterModels = {};
     workbook.worksheets.forEach((ws, index) => {
       const id = 'sheet' + (index + 1);
       const cellData = {};
@@ -328,6 +331,7 @@
       const tab = ws.properties && ws.properties.tabColor && toUniverColor(ws.properties.tabColor, theme);
       cfRules[id] = importConditionalFormats(ws, id, theme);
       dvRules[id] = importValidations(ws, id);
+      if (filters[ws.name]) filterModels[id] = importFilter(filters[ws.name], rowData);
       sheets[id] = {
         id,
         name: ws.name,
@@ -350,6 +354,7 @@
     const resources = [];
     if (Object.values(cfRules).some((x) => x.length)) resources.push({ name: CF_RESOURCE, data: JSON.stringify(cfRules) });
     if (Object.values(dvRules).some((x) => x.length)) resources.push({ name: DV_RESOURCE, data: JSON.stringify(dvRules) });
+    if (Object.keys(filterModels).length) resources.push({ name: FILTER_RESOURCE, data: JSON.stringify(filterModels) });
     const data = { id: 'workbook-' + Math.random().toString(36).slice(2), name, appVersion: '1.0.0', locale: 'enUS', styles, sheetOrder, sheets, resources };
     // pictures are inserted by the app after loading (Univer places them): { sheetId: [{ source, column, columnOffset, row, rowOffset, width, height }] }
     if (Object.keys(images).length) Object.defineProperty(data, 'images', { value: images, enumerable: false });
@@ -574,6 +579,126 @@
     try { return JSON.parse(r.data) || {}; } catch (e) { return {}; }
   }
 
+  // ---- auto filter -----------------------------------------------------------------------------------------------
+  // Univer's filter model ({ ref, filterColumns: [{ colId, filters: { filters, blank }, customFilters: { and, customFilters:
+  // [{ operator, val }] } }], cachedFilteredOut: [rows] }) follows <autoFilter> of SpreadsheetML; colour, dynamic and top-10
+  // filters are not kept.
+
+  const xmlEscape = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  /** <autoFilter> of a sheet part -> { ref, filterColumns } or null. */
+  function parseAutoFilter(xml) {
+    if (!/<autoFilter\b/.test(xml)) return null;
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    const el = [...doc.getElementsByTagName('autoFilter')].find((e) => e.parentNode === doc.documentElement);
+    if (!el || !el.getAttribute('ref')) return null;
+    const ref = parseRange(el.getAttribute('ref').replace(/\$/g, ''));
+    if (!Number.isFinite(ref.startRow) || !Number.isFinite(ref.endColumn)) return null;
+    const children = (node, tag) => [...node.children].filter((c) => c.localName === tag);
+    const filterColumns = [];
+    for (const fc of children(el, 'filterColumn')) {
+      const colId = Number(fc.getAttribute('colId'));
+      if (!Number.isInteger(colId) || colId < 0) continue;
+      const [values] = children(fc, 'filters');
+      const [custom] = children(fc, 'customFilters');
+      if (values) {
+        const filters = children(values, 'filter').map((f) => f.getAttribute('val') ?? '');
+        filterColumns.push({ colId, filters: { filters, ...(values.getAttribute('blank') === '1' || values.getAttribute('blank') === 'true' ? { blank: true } : {}) } });
+      } else if (custom) {
+        const list = children(custom, 'customFilter').slice(0, 2).map((f) => ({ ...(f.getAttribute('operator') ? { operator: f.getAttribute('operator') } : {}), val: f.getAttribute('val') ?? '' }));
+        if (list.length) filterColumns.push({ colId, customFilters: { ...(custom.getAttribute('and') === '1' || custom.getAttribute('and') === 'true' ? { and: 1 } : {}), customFilters: list } });
+      }
+    }
+    return { ref, filterColumns };
+  }
+
+  /** The filter of a sheet in Univer's model; rows that Excel hid in the filtered range are the filter's, not hidden by hand. */
+  function importFilter(filter, rowData) {
+    const out = [];
+    for (let r = filter.ref.startRow + 1; r <= filter.ref.endRow; r++) {
+      if (!rowData[r] || !rowData[r].hd) continue;
+      if (filter.filterColumns.length) { out.push(r); delete rowData[r].hd; if (!Object.keys(rowData[r]).length) delete rowData[r]; }
+    }
+    return { ref: { ...filter.ref, rangeType: 0 }, filterColumns: filter.filterColumns, cachedFilteredOut: out };
+  }
+
+  /** <autoFilter> element of a Univer filter model. */
+  function autoFilterXml(model) {
+    const columns = (model.filterColumns || []).map((c) => {
+      if (c.filters) {
+        return `<filterColumn colId="${c.colId}"><filters${c.filters.blank ? ' blank="1"' : ''}>${(c.filters.filters || []).map((v) => `<filter val="${xmlEscape(v)}"/>`).join('')}</filters></filterColumn>`;
+      }
+      if (c.customFilters && (c.customFilters.customFilters || []).length) {
+        const list = c.customFilters.customFilters.map((f) => `<customFilter${f.operator ? ` operator="${xmlEscape(f.operator)}"` : ''} val="${xmlEscape(f.val ?? '')}"/>`).join('');
+        return `<filterColumn colId="${c.colId}"><customFilters${c.customFilters.and ? ' and="1"' : ''}>${list}</customFilters></filterColumn>`;
+      }
+      return '';
+    }).join('');
+    const ref = excelRef([model.ref]);
+    return columns ? `<autoFilter ref="${ref}">${columns}</autoFilter>` : `<autoFilter ref="${ref}"/>`;
+  }
+
+  /** Sheet names and their parts (xl/worksheets/…) from workbook.xml and its relationships. */
+  async function sheetParts(zip) {
+    const text = async (name) => { const e = zip.entries.find((x) => x.name === name); return e ? new TextDecoder().decode(await zipPart(zip, e)) : ''; };
+    const rels = {};
+    for (const m of (await text('xl/_rels/workbook.xml.rels')).matchAll(/<Relationship\b[^>]*>/g)) {
+      const id = /\bId="([^"]+)"/.exec(m[0]), target = /\bTarget="([^"]+)"/.exec(m[0]);
+      if (id && target) rels[id[1]] = target[1].startsWith('/') ? target[1].slice(1) : 'xl/' + target[1].replace(/^\.\//, '');
+    }
+    const decode = (v) => v.replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    return [...(await text('xl/workbook.xml')).matchAll(/<sheet\b[^>]*>/g)].map((m) => {
+      const name = /\bname="([^"]*)"/.exec(m[0]), id = /\br:id="([^"]+)"/.exec(m[0]);
+      return name && id && rels[id[1]] ? { name: decode(name[1]), path: rels[id[1]] } : null;
+    }).filter(Boolean);
+  }
+
+  /** { sheet name: { ref, filterColumns } } of an XLSX file. */
+  async function readAutoFilters(buffer) {
+    const zip = readZip(buffer);
+    const filters = {};
+    if (!zip) return filters;
+    for (const { name, path } of await sheetParts(zip)) {
+      const e = zip.entries.find((x) => x.name === path);
+      const part = e && await zipPart(zip, e);
+      const filter = part && parseAutoFilter(new TextDecoder().decode(part));
+      if (filter) filters[name] = filter;
+    }
+    return filters;
+  }
+
+  /**
+   * Write the criteria of the filters into the sheet parts that ExcelJS wrote (it writes only <autoFilter ref="…"/>), and the
+   * hidden name _xlnm._FilterDatabase of each filtered sheet into workbook.xml, as Excel does (LibreOffice ignores the
+   * filter without it).
+   */
+  async function writeAutoFilters(buffer, bySheetName) {
+    const zip = readZip(buffer);
+    if (!zip) return buffer;
+    const names = [];
+    const parts = await sheetParts(zip);
+    for (const [index, { name, path }] of parts.entries()) {
+      const model = bySheetName[name];
+      const e = model && zip.entries.find((x) => x.name === path);
+      if (!e) continue;
+      const xml = new TextDecoder().decode(await zipPart(zip, e));
+      const fixed = xml.replace(/<autoFilter\b[^>]*\/>/, autoFilterXml(model));
+      if (fixed === xml) continue;
+      e.replacement = new TextEncoder().encode(fixed);
+      const r = model.ref, abs = (row, column) => `$${columnName(column)}$${row + 1}`;
+      names.push(`<definedName name="_xlnm._FilterDatabase" localSheetId="${index}" hidden="1">${xmlEscape(`'${name.replace(/'/g, "''")}'!${abs(r.startRow, r.startColumn)}:${abs(r.endRow, r.endColumn)}`)}</definedName>`);
+    }
+    if (!names.length) return buffer;
+    const book = zip.entries.find((x) => x.name === 'xl/workbook.xml');
+    const xml = book && new TextDecoder().decode(await zipPart(zip, book));
+    if (xml && !xml.includes('_xlnm._FilterDatabase')) {
+      book.replacement = new TextEncoder().encode(/<definedNames\s*\/>/.test(xml) ? xml.replace(/<definedNames\s*\/>/, `<definedNames>${names.join('')}</definedNames>`)
+        : xml.includes('<definedNames>') ? xml.replace('<definedNames>', `<definedNames>${names.join('')}`)
+          : xml.replace('</sheets>', `</sheets><definedNames>${names.join('')}</definedNames>`));
+    }
+    return writeZip(zip);
+  }
+
   // ---- pictures ------------------------------------------------------------------------------------------------
 
   const columnWidthPx = (sheet, c) => ((sheet.columnData || {})[c] && sheet.columnData[c].w) || sheet.defaultColumnWidth || DEFAULT_COLUMN_WIDTH;
@@ -656,47 +781,38 @@
     return [...from.slice(i).map(() => '..'), ...to.slice(i)].join('/') || target;
   }
 
-  async function normalizeRelationships(buffer) {
+  /** The entries of a ZIP file (central directory), or null if it is none. */
+  function readZip(buffer) {
     const b = new Uint8Array(buffer);
     const v = new DataView(b.buffer, b.byteOffset, b.byteLength);
     let eocd = -1;
     for (let i = b.length - 22; i >= Math.max(0, b.length - 65557); i--) if (v.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
-    if (eocd < 0) return buffer;
+    if (eocd < 0) return null;
     const count = v.getUint16(eocd + 10, true);
     const entries = [];
     for (let i = 0, p = v.getUint32(eocd + 16, true); i < count; i++) {
-      if (v.getUint32(p, true) !== 0x02014b50) return buffer;
+      if (p + 46 > b.length || v.getUint32(p, true) !== 0x02014b50) return null;
       const nameLen = v.getUint16(p + 28, true), extraLen = v.getUint16(p + 30, true), commentLen = v.getUint16(p + 32, true);
       const name = new TextDecoder().decode(b.subarray(p + 46, p + 46 + nameLen));
       entries.push({ name, method: v.getUint16(p + 10, true), crc: v.getUint32(p + 16, true), csize: v.getUint32(p + 20, true), size: v.getUint32(p + 24, true), local: v.getUint32(p + 42, true) });
       p += 46 + nameLen + extraLen + commentLen;
     }
     const dataOf = (e) => { const s = e.local + 30 + v.getUint16(e.local + 26, true) + v.getUint16(e.local + 28, true); return b.subarray(s, s + e.csize); };
-    let changed = false;
-    const DRAWING_NS = 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing';
-    for (const e of entries) {
-      const rels = /\.rels$/.test(e.name), drawing = /^xl\/drawings\/[^/]+\.xml$/.test(e.name);
-      if (!rels && !drawing) continue;
-      const raw = e.method === 8 ? await inflateRaw(dataOf(e)) : e.method === 0 ? dataOf(e) : null;
-      if (!raw) continue;
-      const xml = new TextDecoder().decode(raw);
-      let fixed = xml;
-      if (rels && /Target="\//.test(xml)) {
-        fixed = xml.replace(/(<Relationship\b[^>]*?\bTarget=")(\/[^"]+)"/g, (m, pre, target) => (/TargetMode="External"/.test(m) ? m : `${pre}${relativeTarget(e.name, target)}"`));
-      } else if (drawing && xml.includes(`xmlns="${DRAWING_NS}"`)) {
-        // the elements without a prefix are in the drawing namespace: give them the prefix xdr
-        fixed = xml.replace(`xmlns="${DRAWING_NS}"`, `xmlns:xdr="${DRAWING_NS}"`).replace(/<(\/?)([A-Za-z][\w.-]*)(?=[\s/>])/g, (m, slash, tag) => `<${slash}xdr:${tag}`);
-      }
-      if (fixed === xml) continue;
-      e.replacement = new TextEncoder().encode(fixed);
-      changed = true;
-    }
-    if (!changed) return buffer;
+    return { entries, dataOf };
+  }
+
+  /** The uncompressed bytes of an entry (stored or deflated), or null. */
+  async function zipPart(zip, e) {
+    try { return e.method === 8 ? await inflateRaw(zip.dataOf(e)) : e.method === 0 ? zip.dataOf(e) : null; } catch (err) { return null; }
+  }
+
+  /** The ZIP again, with the entries that have a replacement stored uncompressed and the others copied as they are. */
+  function writeZip(zip) {
     const parts = [], central = [];
     let offset = 0;
-    for (const e of entries) {
+    for (const e of zip.entries) {
       const name = new TextEncoder().encode(e.name);
-      const data = e.replacement || dataOf(e);
+      const data = e.replacement || zip.dataOf(e);
       const method = e.replacement ? 0 : e.method, crc = e.replacement ? crc32(data) : e.crc, size = e.replacement ? data.length : e.size;
       const local = new Uint8Array(30 + name.length);
       const lv = new DataView(local.buffer);
@@ -713,14 +829,40 @@
     const cdSize = central.reduce((n, c) => n + c.length, 0);
     const end = new Uint8Array(22);
     const ev = new DataView(end.buffer);
-    ev.setUint32(0, 0x06054b50, true); ev.setUint16(8, entries.length, true); ev.setUint16(10, entries.length, true); ev.setUint32(12, cdSize, true); ev.setUint32(16, offset, true);
+    ev.setUint32(0, 0x06054b50, true); ev.setUint16(8, zip.entries.length, true); ev.setUint16(10, zip.entries.length, true); ev.setUint32(12, cdSize, true); ev.setUint32(16, offset, true);
     return new Blob([...parts, ...central, end]).arrayBuffer();
+  }
+
+  async function normalizeRelationships(buffer) {
+    const zip = readZip(buffer);
+    if (!zip) return buffer;
+    let changed = false;
+    const DRAWING_NS = 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing';
+    for (const e of zip.entries) {
+      const rels = /\.rels$/.test(e.name), drawing = /^xl\/drawings\/[^/]+\.xml$/.test(e.name);
+      if (!rels && !drawing) continue;
+      const raw = await zipPart(zip, e);
+      if (!raw) continue;
+      const xml = new TextDecoder().decode(raw);
+      let fixed = xml;
+      if (rels && /Target="\//.test(xml)) {
+        fixed = xml.replace(/(<Relationship\b[^>]*?\bTarget=")(\/[^"]+)"/g, (m, pre, target) => (/TargetMode="External"/.test(m) ? m : `${pre}${relativeTarget(e.name, target)}"`));
+      } else if (drawing && xml.includes(`xmlns="${DRAWING_NS}"`)) {
+        // the elements without a prefix are in the drawing namespace: give them the prefix xdr
+        fixed = xml.replace(`xmlns="${DRAWING_NS}"`, `xmlns:xdr="${DRAWING_NS}"`).replace(/<(\/?)([A-Za-z][\w.-]*)(?=[\s/>])/g, (m, slash, tag) => `<${slash}xdr:${tag}`);
+      }
+      if (fixed === xml) continue;
+      e.replacement = new TextEncoder().encode(fixed);
+      changed = true;
+    }
+    return changed ? writeZip(zip) : buffer;
   }
 
   async function importXlsx(buffer, name) {
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(await normalizeRelationships(buffer));
-    return fromExcelJS(workbook, name);
+    const normalized = await normalizeRelationships(buffer);
+    await workbook.xlsx.load(normalized);
+    return fromExcelJS(workbook, name, { filters: await readAutoFilters(normalized).catch(() => ({})) });
   }
 
   /** Convert any format SheetJS can read to XLSX (values, formulas, merges, column widths). */
@@ -769,6 +911,7 @@
     const cfRules = resource(data, CF_RESOURCE);
     const dvRules = resource(data, DV_RESOURCE);
     const drawings = resource(data, DRAWING_RESOURCE);
+    const filters = resource(data, FILTER_RESOURCE);
     for (const id of data.sheetOrder) {
       const sheet = data.sheets[id];
       const freeze = sheet.freeze && (sheet.freeze.xSplit > 0 || sheet.freeze.ySplit > 0) ? sheet.freeze : null;
@@ -820,13 +963,22 @@
       for (const m of sheet.mergeData || []) ws.mergeCells(m.startRow + 1, m.startColumn + 1, m.endRow + 1, m.endColumn + 1);
       exportConditionalFormats(ws, cfRules[id]);
       exportValidations(ws, dvRules[id]);
+      const filter = filters[id];
+      if (filter && filter.ref) { // (the criteria are added to the written XML, exportXlsx)
+        ws.autoFilter = excelRef([filter.ref]);
+        for (const r of filter.cachedFilteredOut || []) ws.getRow(r + 1).hidden = true;
+      }
       if (drawings[id]) exportImages(workbook, ws, sheet, drawings[id]);
     }
     return workbook;
   }
 
   async function exportXlsx(data) {
-    return new Uint8Array(await toExcelJS(data).xlsx.writeBuffer());
+    const buffer = await toExcelJS(data).xlsx.writeBuffer();
+    const filters = resource(data, FILTER_RESOURCE);
+    const bySheetName = {};
+    for (const [id, model] of Object.entries(filters)) if (data.sheets[id] && model && model.ref) bySheetName[data.sheets[id].name] = model;
+    return new Uint8Array(Object.keys(bySheetName).length ? await writeAutoFilters(buffer, bySheetName) : buffer);
   }
 
   /** Export to 'xlsx', 'ods' or 'csv' (CSV: first sheet). Resolves to a Uint8Array. */

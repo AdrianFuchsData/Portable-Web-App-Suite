@@ -154,11 +154,13 @@ dependencies. The tool checks every file against the SHA-256 in Pyodide's lock f
 converts Pyodide's ES modules to classic scripts for the worker, and writes `bundle.json` (embedded by
 `build.py`) and `licenses.json`.
 
-Bundled: numpy, pandas, matplotlib, seaborn, sympy, networkx, lxml, beautifulsoup4, pyyaml, xlrd, openpyxl,
+Bundled: numpy, pandas, matplotlib, seaborn, scipy, scikit-learn, sympy, networkx, lxml, beautifulsoup4, pyyaml, xlrd, openpyxl,
 regex, requests, sqlite3 (standard library), SQLAlchemy, pykeepass (with pycryptodome, argon2-cffi, construct,
-pyotp), nzpy, micropip and their dependencies.
-Licenses: Pyodide MPL-2.0, CPython PSF-2.0, numpy/pandas/seaborn BSD-3-Clause, matplotlib (PSF-based),
-Pillow (MIT-CMU), openpyxl MIT, SQLAlchemy MIT, pykeepass GPL-3.0, nzpy Apache-2.0, others see `licenses.json`.
+pyotp), nzpy, micropip, python-docx, python-pptx, XlsxWriter, pypdf, icalendar, pg8000 (1.31.5: the newest that accepts the
+scramp 1.4.12 pinned by nzpy), PyMySQL, Jinja2 (with MarkupSafe), Markdown, tabulate, tqdm and their dependencies.
+Licenses: Pyodide MPL-2.0, CPython PSF-2.0, numpy/pandas/seaborn/scipy/scikit-learn BSD-3-Clause, matplotlib (PSF-based),
+Pillow (MIT-CMU), openpyxl MIT, SQLAlchemy MIT, pykeepass GPL-3.0, nzpy Apache-2.0, python-docx/python-pptx/PyMySQL/tabulate MIT,
+XlsxWriter/icalendar BSD-2-Clause, pypdf/pg8000/Jinja2/MarkupSafe/Markdown BSD-3-Clause, tqdm MPL-2.0 and MIT, others see `licenses.json`.
 
 `hash-wasm-argon2.umd.min.js` ([hash-wasm](https://github.com/Daninet/hash-wasm) 4.12.0, MIT) is concatenated
 into the notebook's worker: argon2-cffi cannot use threads in WebAssembly, so the kernel computes Argon2 (for

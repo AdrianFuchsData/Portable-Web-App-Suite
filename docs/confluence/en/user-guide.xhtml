@@ -154,6 +154,18 @@ later.</p>
 </tr>
 </tbody>
 </table>
+<h2>Limits: small and medium files</h2>
+<p>The suite works in the browser and keeps the data it works on <strong>in memory</strong> – the open document, spreadsheet, image or archive,
+the audio and video being edited, the KeePass database, the database tool's SQLite file, the notebook's data, its file system and
+mounted archives. How much it can handle therefore depends on the memory that the browser gives one tab (often a few GB on a
+desktop, much less on phones and tablets), not on the size of your disk.</p>
+<p>The suite is made for <strong>small to medium files</strong> – documents, spreadsheets and presentations of everyday size, archives and media
+files of up to a few hundred megabytes, data sets that fit into memory several times. It is <strong>by design not a tool for big data</strong>:
+there is no streaming of very large files, no processing in parts and no use of the disk as working memory. With files that are too
+large, an application becomes slow, shows an error, or the browser ends the tab (unsaved work can then be lost). For such data,
+use tools that run on a server or a workstation.</p>
+<p>Some applications state their own limits (for example the waveform of the video editor above 400 MB, recovery copies above 64 MB,
+mounting archives in the notebook above 512 MiB, ZIP archives without ZIP64 above 4 GiB).</p>
 <h2>Common functions</h2>
 <p>Every application has the same header:</p>
 <table>
@@ -211,6 +223,11 @@ well.</p>
   larger than 48 MB in total are not copied (they are opened again with "relink" like a saved project).</li>
 <li>The archive manager never stores passwords; encrypted entries stay encrypted in the copy.</li>
 </ul>
+<h3>Examples</h3>
+<p>Every application comes with example files that show what it can do: press <code>F1</code> and open one under <strong>📂 Examples</strong> (in the
+language of the interface). It opens as a copy – save it with <em>Save as</em> to keep your changes. All examples, also larger ones and
+those for the network applications, are in <code>examples.zip</code> of every release and in the <code>examples</code> folder of the project, each in
+a folder named after its application. The password of the example KeePass database and the encrypted archive is <strong>example</strong>.</p>
 <h3>Recently used files</h3>
 <p>In Chrome and Edge on a computer, the editors list the files you opened or saved under <strong>🕘 Recent</strong> next to
 <strong>Open</strong> (up to ten per application). Choosing one opens it again; the browser may ask once for permission. <strong>Clear
@@ -236,6 +253,10 @@ as the tooltip), and the editing areas of the code editors are labelled. Selecte
 with a light tint, so that links and coloured text on them stay readable. In the text editor, the file tabs can be
 focused: <code>Enter</code> shows the file, <code>Delete</code> closes it. The editing surfaces of the document editor and the spreadsheet
 come from a third-party component (Univer) and are less accessible than the rest of the suite.</p>
+<p><strong>Tab characters:</strong> in the code editors (text editor, notebook cells, database tool, HTTP tool) <code>Tab</code> indents and <code>Shift+Tab</code>
+unindents; <code>Esc</code>, then <code>Tab</code> (or <code>Ctrl+M</code> once) moves the focus on instead. In other text fields <code>Tab</code> moves the focus. A tab
+character can always be typed with <strong><code>Ctrl+Alt+I</code></strong> in the code editors and in multi-line text fields, and on phones (which
+have no Tab key) with the group <strong>⇥ Spaces and tab</strong> of the emoji and symbols picker.</p>
 <h3>Spelling</h3>
 <p>The applications in which you write text – text editor, Python notebook, mail, document, presentation, web slides,
 calendar, KeePass (notes), diagram, image editor (text) and video editor (titles) – can check the spelling. Choose the
@@ -261,7 +282,9 @@ other Unicode characters (arrows, currency signs, mathematical symbols, Greek le
 <ul>
 <li><strong><code>Ctrl+.</code></strong> (or the <strong>☺</strong> button at the right edge of the focused field) opens the picker next to the field (on phones
   at the bottom of the screen). It shows the characters you used last (<strong>🕘</strong>, newest first; shared by the applications
-  like the spelling setting), the emoji groups and the symbol groups.</li>
+  like the spelling setting), the emoji groups and the symbol groups. The group <strong>⇥ Spaces and tab</strong> holds characters you
+  cannot see or type otherwise: the tab character, no-break spaces, thin, en and em spaces, the zero-width space and the soft
+  hyphen (shown with labels such as <code>NBSP</code>).</li>
 <li><strong>Search</strong> while the picker is open: by name or keyword in English or German (<code>happy</code>, <code>Pfeil rechts</code>, <code>euro</code>), by
   code (<code>:wave:</code>), by emoticon (<code>:)</code>) or by code point (<code>U+1F60A</code>, <code>1F60A</code>). <code>Enter</code> inserts the first result; <code>↓</code> moves
   into the characters, the arrow keys move between them, <code>Enter</code> or a click inserts and closes the picker,
@@ -327,6 +350,28 @@ As with <em>Open with…</em>, the diagram editor must be in the same folder, or
   reminds you of this after every download.</li>
 </ul>
 <p>When you close an application with unsaved changes, the browser asks whether you really want to leave.</p>
+<h3>Files in archives</h3>
+<p><strong>Open</strong> and <strong>Save as</strong> in every application first ask where: <strong>💾 File system</strong> (the default, <code>Enter</code>) or an <strong>archive</strong>.</p>
+<ul>
+<li>The archives that are open in the <ac:link><ri:page ri:content-title="Archive manager" /><ac:plain-text-link-body><![CDATA[archive manager]]></ac:plain-text-link-body></ac:link> are listed – in the overview its tabs, otherwise the
+  archive manager windows started from this application (or the one that started it). <strong>📦 Another archive…</strong> starts the
+  archive manager, where you open an archive from the file system or create a new one.</li>
+<li>The archive manager then asks for the details: which file(s) to open, or the folder and the name for saving (and whether
+  the archive itself is saved after every change – useful in Chrome/Edge, where the archive is written directly into its
+  file; elsewhere every save of the archive is a download).</li>
+<li>A file opened from or saved into an archive stays connected to it: <strong>Save</strong> writes it into the archive again. The
+  archive manager marks the archive as changed; save the archive there to keep the changes.</li>
+<li>When the archive is closed or replaced in the archive manager, its files can no longer be loaded or saved there: <strong>Save</strong>
+  says so – use <strong>Save as</strong>. The archive manager asks before it closes an archive whose files are open in other applications
+  and lists them.</li>
+<li><strong>Python notebooks</strong> are offered as well (section <em>Python notebooks (in memory)</em>): their file system – the one Python
+  works in – can be used like an archive, so a notebook can process a file that you then open in another application, and
+  the other way round. <strong>It lives only in memory:</strong> files saved there are gone when the notebook page is closed or Python
+  restarts (the dialogs say so). The notebook asks before a restart while files of it are open elsewhere; afterwards <strong>Save</strong>
+  says that the file is gone.</li>
+<li>The choice can be switched off in the settings (<code>F1</code>, <strong>⚙ Settings</strong>): Open and Save as then go straight to the file
+  system.</li>
+</ul>
 <h2>Application data: settings, connections and passwords</h2>
 <p>Some applications store settings, connections or passwords, for example server connections of the SSH client.
 This data is kept in a file that <strong>you</strong> choose, never in the browser. One file can hold the data of several
@@ -386,10 +431,22 @@ your relay account (the administrator creates it). If the server checks a client
 itself, choose <strong>Reverse proxy / client certificate</strong>. <strong>Test</strong> checks the address and the sign-in. Addresses of
 other computers must use <code>https</code>; an unencrypted <code>http</code> address only works if you allow it explicitly (trusted
 networks only).</p>
+<p><strong>The apps through the relay.</strong> Started with <code>--serve</code> and the folder of the apps, the relay also serves the applications:</p>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">bash</ac:parameter><ac:plain-text-body><![CDATA[python3 relay.py --serve C:\Users\anna\suite]]></ac:plain-text-body></ac:structured-macro>
+<p>Open the address it prints (e.g. <code>http://127.0.0.1:8765/</code>, the overview). Pages from there are <em>cross-origin isolated</em>: the
+<ac:link><ri:page ri:content-title="Python notebook" /><ac:plain-text-link-body><![CDATA[Python notebook]]></ac:plain-text-link-body></ac:link> can then interrupt running cells and open network connections from Python (mail, FTP, SSH …);
+its header shows <strong>🔓 Network and interrupt</strong>. The apps use that relay by default; enter its token once. Settings and recently
+used files are kept separately for the files opened directly and for those served by the relay (export and import them with
+<strong>⚙ Settings</strong>). The port is set with <code>--port</code> (default 8765).</p>
+<p><strong>A company proxy.</strong> If the relay may only reach the internet through a proxy, start it with
+<code>--upstream-proxy http://proxy.example.org:3128</code> (with <code>user:password@</code> before the host if needed; <code>--upstream-proxy env</code> takes
+the proxy from the environment variables). <code>--no-proxy</code> lists servers reached directly.</p>
 <p>Details are in <a href="../../relay/README.md"><code>relay/README.md</code></a> and the <ac:link><ri:page ri:content-title="Portable Web App Suite – Technical Documentation" /><ac:plain-text-link-body><![CDATA[technical documentation]]></ac:plain-text-link-body></ac:link>.</p>
 <h2>Python notebook</h2>
-<p>The Python notebook (<code>notebook.html</code>) runs Python with pandas, numpy, matplotlib and other libraries completely in the
-browser, with Jupyter notebooks (<code>.ipynb</code>) and a console. See <ac:link><ri:page ri:content-title="Python notebook" /><ac:plain-text-link-body><![CDATA[Python notebook]]></ac:plain-text-link-body></ac:link>.</p>
+<p>The Python notebook (<code>notebook.html</code>) runs Python with pandas, numpy, matplotlib, SciPy, scikit-learn and other libraries
+completely in the browser, with Jupyter notebooks (<code>.ipynb</code>), a console and a terminal with a bash-like shell. It can mount archives,
+reach the network through the relay (requests; sockets and SSH when served by the relay) and share its file system with the other
+applications. See <ac:link><ri:page ri:content-title="Python notebook" /><ac:plain-text-link-body><![CDATA[Python notebook]]></ac:plain-text-link-body></ac:link>.</p>
 <h2>Licence</h2>
 <p>Copyright © 2026 Adrian Fuchs. The suite is licensed under the <strong>EUPL-1.2</strong> (European Union Public Licence): you may use,
 copy, change and pass it on – also commercially –, under the conditions of the licence. It comes <strong>without warranty</strong>:

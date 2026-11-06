@@ -2,9 +2,10 @@
 
 Office, file, security, data science and network tools that run completely in the browser: every application
 is a single HTML file that works offline from `file://`, without installation and without a server – also on
-thin clients with only a browser, and on Windows, Linux and Android.
+thin clients with only a browser, and on Windows, Linux and Android. The data is held in the browser's memory, so the suite is
+made for small to medium files, not for big data.
 
-> Status: version 1.1.0 (see the file `VERSION` and the [release notes](docs/release-notes/)). All applications of the suite exist in a first version, each with tests and user and
+> Status: version 1.2.0 (see the file `VERSION` and the [release notes](docs/release-notes/)). All applications of the suite exist in a first version, each with tests and user and
 > technical documentation: text editor, hex editor, archive manager, media player, audio editor, video editor,
 > image editor, diagram editor, KeePass, spreadsheet, document and presentation editors, web slides (reveal.js), PDF viewer, calendar,
 > mail client, database tool, SSH and FTP/SFTP clients, HTTP analyzer, web inspector, barcode reader and generator and
@@ -23,6 +24,9 @@ thin clients with only a browser, and on Windows, Linux and Android.
 The same documents in Confluence storage format are in [`docs/confluence/`](docs/confluence/)
 (generated with `tools/build_docs.py`).
 
+**Examples** for every application, in English and German, are in [`examples/`](examples/) (and in `examples.zip` of every
+release); the small ones are also built into the applications (`F1`, **Examples**).
+
 ## Development
 
 No node/npm is needed. The sources are bundled into single HTML files by a Python script:
@@ -35,6 +39,7 @@ python3 -m venv .venv                 # test environment
 .venv/bin/playwright install chromium firefox
 .venv/bin/pytest                      # tests in Chromium and Firefox
 .venv/bin/python tools/build_docs.py  # regenerate the Confluence documentation
+.venv/bin/python tools/make_examples.py [--zip]   # regenerate the example files (and dist/examples.zip)
 ```
 
 Repository layout, build details, shared modules and the relay are described in the technical documentation.

@@ -7,6 +7,7 @@
  *   detectMulti(bytes, name) -> { kind, label } | null
  *   await readMulti(bytes, name, askPassword) -> { format: 'multi', label, entries, password }
  *   await write7z(entries) -> Uint8Array
+ *   await compress(bytes, 'bzip2' | 'xz') -> Uint8Array   // e.g. a TAR archive as .tar.bz2 / .tar.xz
  */
 import { Archive } from 'libarchive.js';
 import { ArchiveError, cleanPath } from '@app/archive.js';
@@ -50,7 +51,8 @@ function start() {
         .replace('new URL("libarchive.wasm",import.meta.url).href', JSON.stringify(wasm))
         .replace(/import\.meta\.url/g, 'self.location.href')
         // the output buffer is sized as the files + 128 bytes each, too small for tar/7z headers of small files
-        .replace('e.reduce(((e,{file:r})=>e+r.size+128),0)+128', 'e.reduce(((e,{file:r})=>e+r.size+1536),0)+65536')
+        // (and incompressible data grows a little when compressed: bzip2 by up to about 1 %)
+        .replace('e.reduce(((e,{file:r})=>e+r.size+128),0)+128', 'e.reduce(((e,{file:r})=>e+Math.ceil(r.size*1.02)+1536),0)+65536')
         // libarchive's messages for damaged input are reported to the user as errors already
         .replace('printErr(...e){console.error(e)}', 'printErr(...e){console.warn(e)}');
       const url = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
@@ -126,4 +128,13 @@ export async function write7z(entries) {
   const out = await Archive.write({ files, outputFileName: 'archive.7z.gz', compression: 'gzip', format: '7zip', passphrase: null });
   if (!out.size) throw new ArchiveError('ar.libarchive', '7z');
   return new Uint8Array(await new Response(out.stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+}
+
+/** Bytes compressed with bzip2 or xz (libarchive's "raw" format: the stream without archive headers). */
+export async function compress(bytes, filter) {
+  await start();
+  const files = [{ file: new File([bytes], 'data'), pathname: 'data' }];
+  const out = await Archive.write({ files, outputFileName: filter === 'xz' ? 'data.xz' : 'data.bz2', compression: filter, format: 'raw', passphrase: null });
+  if (!out.size) throw new ArchiveError('ar.libarchive', filter);
+  return new Uint8Array(await out.arrayBuffer());
 }

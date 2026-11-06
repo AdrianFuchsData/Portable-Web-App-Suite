@@ -8,7 +8,7 @@ Bearbeitungskomponente ist Univer Sheets.
 
 | Format | Öffnen | Speichern | Hinweise |
 |---|---|---|---|
-| Excel (`.xlsx`) | ja | ja | Werte, Formeln, Formate, Zahlenformate, verbundene Zellen, Spaltenbreiten, Zeilenhöhen, fixierte Bereiche, Registerfarben, ausgeblendete Blätter, bedingte Formatierung, Datenüberprüfung, Bilder |
+| Excel (`.xlsx`) | ja | ja | Werte, Formeln, Formate, Zahlenformate, verbundene Zellen, Spaltenbreiten, Zeilenhöhen, fixierte Bereiche, Registerfarben, ausgeblendete Blätter, bedingte Formatierung, Datenüberprüfung, Filter, Bilder |
 | Excel mit Makros (`.xlsm`) | ja | als `.xlsx` | Makros können nicht erhalten werden |
 | OpenDocument (`.ods`) | ja | ja | Werte, Formeln, verbundene Zellen (ohne Formatierung) |
 | Excel 97–2003 (`.xls`) | ja | ja | Werte und Formeln (ohne Formatierung) |
@@ -65,6 +65,21 @@ ganze oder Dezimalzahlen, Datumsangaben, Textlänge oder eine eigene Formel, mit
 
 Beides wird aus Excel-Dateien gelesen und in sie geschrieben. Symbolsätze werden aus Excel-Dateien nicht übernommen; „Duplikate“ und
 „eindeutige Werte“ werden als Formelregeln gespeichert, und Listen, die auf Bereiche der Mappe verweisen, bleiben Verweise.
+
+### Sortieren und Filtern
+
+Im Reiter *Daten* schaltet die Schaltfläche **Filter** einen Autofilter für den markierten Bereich (oder die Tabelle um die markierte
+Zelle) ein und wieder aus. Die erste Zeile bekommt Filterschaltflächen: Eine Spalte wird **nach Werten** gefiltert (eine Liste mit
+Kontrollkästchen und Suchfeld) oder **nach Bedingung** (gleich, ungleich, größer/kleiner als, enthält, beginnt/endet mit, …). Zeilen, die
+nicht passen, bleiben ausgeblendet, bis der Filter geändert oder ausgeschaltet wird.
+
+Das Menü **Sortieren** daneben sortiert den markierten Bereich nach seiner ersten Spalte (**Aufsteigend**, **Absteigend**);
+**Erweitert aufsteigend** und **Erweitert absteigend** sortieren die ganze Tabelle um die Markierung, sodass Zeilen zusammenbleiben. Die
+**benutzerdefinierte Sortierung** sortiert nach mehreren Spalten nacheinander, jede auf- oder absteigend, mit oder ohne Kopfzeile. Das
+Kontextmenü einer Zelle hat dieselben Einträge unter *Sortieren*.
+
+Filter werden mit ihren Kriterien aus Excel-Dateien gelesen und in sie geschrieben (Filter nach Werten und nach Bedingungen; Farb-, Top-10-
+und Datumsfilter von Excel werden nicht übernommen), und LibreOffice und Excel zeigen sie als Filter. ODS und CSV behalten nur die Werte.
 
 ## Tastenkürzel
 

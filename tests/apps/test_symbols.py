@@ -210,3 +210,29 @@ def test_phone_sheet(app_page):
     page.locator("[data-testid=symbol]").first.click()
     expect(page.locator("[data-testid=compose-text]")).to_have_value("😀")
     assert page.errors == []
+
+
+def test_tab_character(app_page):
+    """Tab moves the focus in text fields: Ctrl+Alt+I and the group "Spaces and tab" of the picker insert a tab character
+    (phones have no Tab key), with visible labels for the invisible characters."""
+    page = app_page("mail", init_script=NO_PICKERS)
+    text = compose(page)
+    page.keyboard.type("a")
+    page.keyboard.press("Control+Alt+i")
+    page.keyboard.type("b")
+    expect(text).to_have_value("a\tb")
+    text.fill("a")
+    open_picker(page)
+    page.locator("[data-testid=symbols-tab][data-group=spaces]").click()
+    symbols = page.locator("[data-testid=symbol]")
+    expect(symbols.first).to_have_text("⇥")
+    expect(symbols.nth(1)).to_have_text("NBSP")
+    symbols.first.hover()
+    expect(page.locator("[data-testid=symbols-info]")).to_contain_text("tab")
+    symbols.first.click()
+    expect(text).to_have_value("a\t")
+    open_picker(page)
+    page.fill("[data-testid=symbols-search]", "no-break space")
+    page.locator("[data-testid=symbols-search]").press("Enter")
+    expect(text).to_have_value("a\t ")
+    assert page.errors == []

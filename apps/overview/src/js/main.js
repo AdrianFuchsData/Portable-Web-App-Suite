@@ -12,6 +12,7 @@
   const { html } = Suite.shell;
   const t = Suite.t;
   const APP = 'overview';
+  if (Suite.archiveLink) Suite.archiveLink.disabled = true; // (the overview opens files with an app, not from archives)
   const TAG = 'suite-bridge';
 
   Suite.i18n.register({
@@ -24,14 +25,14 @@
       'cat.files': 'Files and media', 'cat.security': 'Security', 'cat.office': 'Office', 'cat.web': 'Network and web', 'cat.data': 'Data science',
       'desc.texteditor': 'Text and source code with syntax highlighting, several documents, search and replace.',
       'desc.hexeditor': 'View and edit any file byte by byte.',
-      'desc.archive': 'Browse, extract, create and edit ZIP, TAR and GZ archives.',
+      'desc.archive': 'Browse, extract, create and edit ZIP, 7z, TAR, TAR.GZ/BZ2/XZ archives; read RAR, ISO and more.',
       'desc.mediaplayer': 'Play audio and video files with playlists and subtitles.',
       'desc.audioeditor': 'Cut, mix and record audio, effects, WAV export.',
       'desc.videoeditor': 'Edit videos on a timeline with titles and transitions; export as WebM/MP4.',
       'desc.imageeditor': 'Paint and edit images with layers, selections and filters.',
       'desc.diagram': 'Flowcharts and diagrams; draw.io and Excalidraw files.',
       'desc.keepass': 'Open and edit KeePass password databases (KDBX).',
-      'desc.spreadsheet': 'Spreadsheets with formulas: XLSX, ODS, CSV.',
+      'desc.spreadsheet': 'Spreadsheets with formulas, sorting and filters: XLSX, ODS, CSV.',
       'desc.document': 'Text documents: DOCX, ODT, PDF export.',
       'desc.presentation': 'Slides with text, shapes and images; PPTX.',
       'desc.reveal': 'reveal.js presentations: visual editor, transitions, fragments, speaker notes; Markdown and Jupyter notebooks.',
@@ -44,7 +45,7 @@
       'desc.ssh': 'Terminal sessions over SSH, file transfer (needs the relay).',
       'desc.http': 'Send HTTP requests, inspect responses, collections.',
       'desc.webinspector': 'Inspect web pages, headers and HAR files; developer tools bookmarklet.',
-      'desc.notebook': 'Python notebook and console with pandas, numpy, matplotlib (large: ≈ 50 MB).',
+      'desc.notebook': 'Python notebook, console and terminal with pandas, numpy, matplotlib, SciPy, scikit-learn (large: ≈ 80 MB).',
     },
     de: {
       'app.title': 'Portable Web App Suite',
@@ -55,14 +56,14 @@
       'cat.files': 'Dateien und Medien', 'cat.security': 'Sicherheit', 'cat.office': 'Büro', 'cat.web': 'Netzwerk und Web', 'cat.data': 'Datenanalyse',
       'desc.texteditor': 'Text und Quellcode mit Syntaxhervorhebung, mehreren Dokumenten, Suchen und Ersetzen.',
       'desc.hexeditor': 'Beliebige Dateien Byte für Byte ansehen und bearbeiten.',
-      'desc.archive': 'ZIP-, TAR- und GZ-Archive ansehen, entpacken, anlegen und bearbeiten.',
+      'desc.archive': 'ZIP-, 7z-, TAR-, TAR.GZ/BZ2/XZ-Archive ansehen, entpacken, anlegen und bearbeiten; RAR, ISO und mehr lesen.',
       'desc.mediaplayer': 'Audio- und Videodateien abspielen, mit Wiedergabelisten und Untertiteln.',
       'desc.audioeditor': 'Audio schneiden, mischen und aufnehmen, Effekte, WAV-Export.',
       'desc.videoeditor': 'Videos auf einer Zeitleiste mit Titeln und Übergängen bearbeiten; Export als WebM/MP4.',
       'desc.imageeditor': 'Bilder malen und bearbeiten, mit Ebenen, Auswahlen und Filtern.',
       'desc.diagram': 'Flussdiagramme und Diagramme; draw.io- und Excalidraw-Dateien.',
       'desc.keepass': 'KeePass-Passwortdatenbanken (KDBX) öffnen und bearbeiten.',
-      'desc.spreadsheet': 'Tabellen mit Formeln: XLSX, ODS, CSV.',
+      'desc.spreadsheet': 'Tabellen mit Formeln, Sortieren und Filtern: XLSX, ODS, CSV.',
       'desc.document': 'Textdokumente: DOCX, ODT, PDF-Export.',
       'desc.presentation': 'Folien mit Text, Formen und Bildern; PPTX.',
       'desc.reveal': 'reveal.js-Präsentationen: visueller Editor, Übergänge, Fragmente, Sprechernotizen; Markdown und Jupyter-Notebooks.',
@@ -75,7 +76,7 @@
       'desc.ssh': 'Terminalsitzungen über SSH, Dateiübertragung (braucht das Relay).',
       'desc.http': 'HTTP-Anfragen senden, Antworten untersuchen, Sammlungen.',
       'desc.webinspector': 'Webseiten, Header und HAR-Dateien untersuchen; Entwicklerwerkzeuge als Lesezeichen.',
-      'desc.notebook': 'Python-Notebook und Konsole mit pandas, numpy, matplotlib (groß: ≈ 50 MB).',
+      'desc.notebook': 'Python-Notebook, Konsole und Terminal mit pandas, numpy, matplotlib, SciPy, scikit-learn (groß: ≈ 80 MB).',
     },
   });
 
@@ -140,9 +141,9 @@
   }
 
   /** Open an app in a new tab; file: { name, fileType, bytes, writable, source, port } is handed over when it is ready. */
-  /** A tab with an app; file: one file or a list of files to open in it once it is ready. */
-  async function openTab(id, file = null) {
-    const tab = { id: nextTab++, app: id, dirty: false, pending: file, frame: document.createElement('iframe') };
+  /** A tab with an app; file: one file or a list of files to open in it once it is ready; onReady(tab) when it is. */
+  async function openTab(id, file = null, onReady = null) {
+    const tab = { id: nextTab++, app: id, dirty: false, pending: file, onReady, frame: document.createElement('iframe') };
     tab.frame.name = Suite.bridge.HUB_NAME;
     tab.frame.title = name(id);
     tab.frame.dataset.app = id;
@@ -244,15 +245,44 @@
 
   // ---- messages from the apps --------------------------------------------------------------------------------------
 
+  /** Ask an app frame on a new port; the answer or null after the timeout. */
+  function ask(win, msg, timeout = 600) {
+    return new Promise((resolve) => {
+      const channel = new MessageChannel();
+      const timer = setTimeout(() => { channel.port1.close(); resolve(null); }, timeout);
+      channel.port1.onmessage = (ev) => { clearTimeout(timer); channel.port1.close(); resolve(ev.data); };
+      win.postMessage({ suite: TAG, ...msg }, '*', [channel.port2]);
+    });
+  }
+
   window.addEventListener('message', (e) => {
     const msg = e.data;
     if (!msg || msg.suite !== TAG) return;
     const tab = state.tabs.find((x) => x.frame.contentWindow === e.source);
     if (!tab && !windows.has(e.source)) return; // only apps started here
-    if (msg.type === 'ready' && tab && tab.pending) {
-      const files = [].concat(tab.pending);
-      tab.pending = null;
-      for (const f of files) e.source.postMessage({ suite: TAG, type: 'open', name: f.name, fileType: f.fileType, bytes: f.bytes, writable: f.writable, source: f.source }, '*', [f.bytes, ...(f.port ? [f.port] : [])]);
+    if (msg.type === 'ready' && tab) {
+      if (tab.pending) {
+        const files = [].concat(tab.pending);
+        tab.pending = null;
+        for (const f of files) e.source.postMessage({ suite: TAG, type: 'open', name: f.name, fileType: f.fileType, bytes: f.bytes, writable: f.writable, source: f.source }, '*', [f.bytes, ...(f.port ? [f.port] : [])]);
+      }
+      if (tab.onReady) { const fn = tab.onReady; tab.onReady = null; fn(tab); }
+    } else if (msg.type === 'archive-list' && e.ports[0]) {
+      // files in archives (shared/js/archive-link.js): the archives open in the archive manager tabs, and the Python file
+      // systems of the notebook tabs
+      const port = e.ports[0];
+      const archives = state.tabs.filter((x) => (x.app === 'archive' || x.app === 'notebook') && x !== tab);
+      Promise.all(archives.map((x) => ask(x.frame.contentWindow, { type: 'archive-info' }).then((info) => (info && info.name ? { tab: x.id, name: info.name, format: info.format, kind: info.kind || 'archive' } : null))))
+        .then((list) => port.postMessage(list.filter(Boolean)));
+    } else if (msg.type === 'archive-connect' && e.ports[0]) {
+      // to an archive manager tab (a new one if none was chosen), which is shown for its dialog
+      const port = e.ports[0];
+      const deliver = (x) => { activate(x.id); render(); x.frame.contentWindow.postMessage({ suite: TAG, type: 'archive-connect', request: msg.request }, '*', [port]); };
+      const target = msg.tab != null ? state.tabs.find((x) => x.id === msg.tab && (x.app === 'archive' || x.app === 'notebook')) : null;
+      if (target) deliver(target); else openTab('archive', null, deliver);
+    } else if (msg.type === 'activate' && tab) {
+      activate(tab.id);
+      render();
     } else if (msg.type === 'dirty' && tab) {
       tab.dirty = !!msg.dirty;
       updateDirty();

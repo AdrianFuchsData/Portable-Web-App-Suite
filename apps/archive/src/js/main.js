@@ -1,16 +1,16 @@
 /*
  * Archive manager: open, browse, extract, create and edit ZIP, TAR, TAR.GZ and GZ archives (formats in archive.js), read 7z,
- * RAR, XZ, BZip2 and further formats and write 7z through libarchive (multi.js).
+ * RAR, XZ, BZip2 and further formats and write 7z, TAR.BZ2 and TAR.XZ through libarchive (multi.js).
  */
 import { read, write, detect, formatOfName, cleanPath, ArchiveError, addPassword, clearPasswords, locked, encryptionOf } from '@app/archive.js';
-import { detectMulti, readMulti, write7z } from '@app/multi.js';
+import { detectMulti, readMulti, write7z, compress } from '@app/multi.js';
 
 const { html } = Suite.shell;
 const t = Suite.t;
 const APP = 'archive';
 const EXTENSIONS = ['.zip', '.tar', '.tgz', '.gz', '.jar', '.war', '.apk', '.epub', '.docx', '.xlsx', '.pptx', '.odt', '.ods', '.odp', '.whl', '.nupkg', '.vsix',
   '.7z', '.rar', '.xz', '.txz', '.bz2', '.tbz', '.tbz2', '.zst', '.tzst', '.lzma', '.tlz', '.iso', '.cab', '.deb', '.rpm', '.cpio', '.ar', '.xar'];
-const FORMATS = { zip: { label: 'ZIP', ext: '.zip' }, '7z': { label: '7Z', ext: '.7z' }, tar: { label: 'TAR', ext: '.tar' }, tgz: { label: 'TAR.GZ', ext: '.tar.gz' }, gz: { label: 'GZ', ext: '.gz' } };
+const FORMATS = { zip: { label: 'ZIP', ext: '.zip' }, '7z': { label: '7Z', ext: '.7z' }, tar: { label: 'TAR', ext: '.tar' }, tgz: { label: 'TAR.GZ', ext: '.tar.gz' }, tbz2: { label: 'TAR.BZ2', ext: '.tar.bz2' }, txz: { label: 'TAR.XZ', ext: '.tar.xz' }, gz: { label: 'GZ', ext: '.gz' } };
 const formatLabel = () => (FORMATS[state.format] ? FORMATS[state.format].label : state.formatLabel || state.format);
 const IMAGE = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', svg: 'image/svg+xml', bmp: 'image/bmp', ico: 'image/x-icon', avif: 'image/avif' };
 const MEDIA = { mp3: 'audio/mpeg', ogg: 'audio/ogg', oga: 'audio/ogg', wav: 'audio/wav', flac: 'audio/flac', m4a: 'audio/mp4', opus: 'audio/ogg', mp4: 'video/mp4', webm: 'video/webm', ogv: 'video/ogg' };
@@ -45,6 +45,14 @@ Suite.i18n.register({
     'ar.tooLarge': 'The archive is too large for the ZIP format without ZIP64 (4 GiB, 65,535 entries).',
     'ar.gzSingle': 'A GZ file contains exactly one file. Choose TAR.GZ or ZIP for several files.', 'ar.link': 'Link → {0}', 'ar.lock': 'encrypted',
     'ar.root': 'Archive root', 'ar.undo': 'Undo', 'ar.redo': 'Redo', 'ar.updated': '“{0}” was updated in the archive. Save the archive to keep the change.',
+    'ar.closeArchive': '✕ Close', 'ar.notFound': '“{0}” is not in the archive.', 'ar.closeTitle': 'Close the archive',
+    'ar.linksOpen': 'Files of this archive are open in other applications: {0}. After closing, they can neither be loaded from nor saved into this archive. Close it anyway?',
+    'ar.linkSaveTitle': 'Save “{0}” in the archive', 'ar.linkOpenTitle': 'Open from the archive', 'ar.linkMountTitle': 'Mount the archive',
+    'ar.linkFrom': 'Requested by {0}.', 'ar.linkNoArchive': 'Open an archive or create a new one first.', 'ar.folder': 'Folder',
+    'ar.linkSaveNow': 'Save the archive after every change', 'ar.linkSave': 'Save here', 'ar.linkOpen': 'Open', 'ar.linkAllow': 'Allow',
+    'ar.linkAll': 'Show all files', 'ar.linkNone': 'No matching files in this archive.', 'ar.mounted': 'mounted',
+    'ar.mountConfirm': '{0} wants to mount “{1}”: it can read, change and delete all files of the archive. Allow?',
+    'ar.badName': 'Enter a file name without “/”.', 'ar.linkDone': 'Done – you can go back to {0}.', 'ar.linkBusy': 'Another application is already waiting for an answer here.',
   },
   de: {
     'app.title': 'Archivmanager',
@@ -74,6 +82,14 @@ Suite.i18n.register({
     'ar.tooLarge': 'Das Archiv ist für das ZIP-Format ohne ZIP64 zu groß (4 GiB, 65.535 Einträge).',
     'ar.gzSingle': 'Eine GZ-Datei enthält genau eine Datei. Wählen Sie TAR.GZ oder ZIP für mehrere Dateien.', 'ar.link': 'Verknüpfung → {0}', 'ar.lock': 'verschlüsselt',
     'ar.root': 'Archivwurzel', 'ar.undo': 'Rückgängig', 'ar.redo': 'Wiederholen', 'ar.updated': '„{0}“ wurde im Archiv aktualisiert. Speichern Sie das Archiv, um die Änderung zu behalten.',
+    'ar.closeArchive': '✕ Schließen', 'ar.notFound': '„{0}“ ist nicht im Archiv.', 'ar.closeTitle': 'Das Archiv schließen',
+    'ar.linksOpen': 'Dateien dieses Archivs sind in anderen Anwendungen geöffnet: {0}. Nach dem Schließen lassen sie sich weder aus diesem Archiv laden noch in es speichern. Trotzdem schließen?',
+    'ar.linkSaveTitle': '„{0}“ im Archiv speichern', 'ar.linkOpenTitle': 'Aus dem Archiv öffnen', 'ar.linkMountTitle': 'Das Archiv einbinden',
+    'ar.linkFrom': 'Angefordert von {0}.', 'ar.linkNoArchive': 'Öffnen Sie zuerst ein Archiv oder legen Sie ein neues an.', 'ar.folder': 'Ordner',
+    'ar.linkSaveNow': 'Das Archiv nach jeder Änderung speichern', 'ar.linkSave': 'Hier speichern', 'ar.linkOpen': 'Öffnen', 'ar.linkAllow': 'Erlauben',
+    'ar.linkAll': 'Alle Dateien zeigen', 'ar.linkNone': 'Keine passenden Dateien in diesem Archiv.', 'ar.mounted': 'eingebunden',
+    'ar.mountConfirm': '{0} möchte „{1}“ einbinden: Es kann alle Dateien des Archivs lesen, ändern und löschen. Erlauben?',
+    'ar.badName': 'Geben Sie einen Dateinamen ohne „/“ ein.', 'ar.linkDone': 'Fertig – Sie können zu {0} zurückkehren.', 'ar.linkBusy': 'Eine andere Anwendung wartet hier bereits auf eine Antwort.',
   },
 });
 
@@ -82,7 +98,9 @@ const state = {
   cwd: '', selected: new Set(), anchor: null, sort: { key: 'name', asc: true },
   renaming: null, preview: null, saveAs: null, recent: [], busy: false, test: null, // test: { total, errors: [{ path, message }] }
   encryption: null, passwordPrompt: null, // encryption: { password, method: 'aes' | 'zipcrypto' } of new and changed files
+  session: 1, link: null, // session: number of the open archive (links to an earlier one fail); link: a connection request shown in its dialog
 };
+if (Suite.archiveLink) Suite.archiveLink.disabled = true; // (Open and Save as here are about archives themselves)
 
 // entries are copied shallowly: their load() closures keep the (immutable) data
 const history = new Suite.UndoHistory({ clone: (s) => ({ entries: s.entries.map((e) => ({ ...e })), cwd: s.cwd }), onChange: () => render() });
@@ -142,23 +160,37 @@ async function busy(fn) {
   try { return await fn(); } finally { state.busy = false; render(); }
 }
 
+/** Before the archive is closed or replaced: other apps with files of it open, and unsaved changes. */
 async function confirmDiscard() {
+  const live = liveLinks();
+  if (live.length && !(await Suite.shell.confirm(t('ar.linksOpen', live.map((l) => l.label).join(', '))))) return false;
   return !state.dirty || Suite.shell.confirm(t('ar.discard'));
+}
+
+async function closeArchive() {
+  if (!(await confirmDiscard())) return;
+  closeLinks();
+  Object.assign(state, { entries: null, name: '', handle: null, fileSize: 0, cwd: '', selected: new Set(), anchor: null, renaming: null, preview: null, encryption: null });
+  history.clear();
+  clearPasswords();
+  setDirty(false);
 }
 
 async function load(name, bytes, handle = null, keepHistory = false) {
   // 7z, RAR, XZ, … go through libarchive (extracted completely, a password is asked for encrypted archives)
   const multi = detectMulti(bytes, name);
   const archive = multi ? await readMulti(bytes, name, (wrong) => askPassword(name, wrong)) : read(bytes, name);
-  if (!keepHistory) history.clear();
+  if (!keepHistory) { history.clear(); closeLinks(); }
   if (!keepHistory) { clearPasswords(); state.encryption = null; }
-  const format = multi ? (archive.kind === '7z' ? '7z' : 'multi') : archive.format;
+  // (an XZ or BZip2 file with entries holds an archive, as good as always a TAR: saved as TAR.XZ / TAR.BZ2 again)
+  const format = multi ? ({ '7z': '7z', bz2: 'tbz2', xz: 'txz' }[archive.kind] || 'multi') : archive.format;
   Object.assign(state, { entries: archive.entries, format, formatLabel: archive.label || null, name, handle, fileSize: bytes.length, cwd: '', selected: new Set(), anchor: null, renaming: null, preview: null });
   setDirty(false);
 }
 
-/** Bytes of the archive in a format (7z through libarchive, the others in archive.js). */
+/** Bytes of the archive in a format (7z and the bzip2/xz compression through libarchive, the others in archive.js). */
 async function encodeArchive(entries, format, options) {
+  if (format === 'tbz2' || format === 'txz') return compress(write(entries, 'tar'), format === 'txz' ? 'xz' : 'bzip2');
   return format === '7z' ? write7z(entries) : write(entries, format, options);
 }
 
@@ -220,6 +252,7 @@ async function openArchive() {
 
 async function newArchive() {
   if (!(await confirmDiscard())) return;
+  closeLinks();
   Object.assign(state, { entries: [], format: 'zip', name: `${t('ar.untitled')}.zip`, handle: null, fileSize: 0, cwd: '', selected: new Set(), anchor: null, renaming: null });
   history.clear();
   setDirty(false);
@@ -513,23 +546,194 @@ async function preview(node) {
 async function openWith(entries) {
   entries = [].concat(entries).filter((e) => e && !e.dir && !e.link);
   if (!entries.length || !(await unlock(entries))) return;
+  const created = [];
   const items = entries.map((entry) => {
     const path = entry.path;
+    const link = addLink({ label: path, port: null });
+    created.push(link);
     return {
       name: baseName(path),
       data: () => entry.load(),
       save: async (bytes) => {
-        if (!state.entries) throw new Error(t('ar.discard'));
-        recordUndo();
-        let target = state.entries.find((e) => e.path === path && !e.dir);
-        if (!target) { target = { path, dir: false, mode: 0o644 }; state.entries.push(target); ensureFolders(path); }
-        Object.assign(target, { size: bytes.length, csize: null, mtime: new Date(), modified: true, encrypted: false, load: () => bytes });
-        setDirty();
-        Suite.shell.toast(t('ar.updated', baseName(path)));
+        if (link.session !== state.session || !state.entries) throw new Error(t('alink.closed', state.name || '', path));
+        writeEntry(path, bytes);
       },
     };
   });
-  Suite.bridge.openWithMany(items, { exclude: APP, source: state.name });
+  Suite.bridge.openWithMany(items, { exclude: APP, source: state.name }).then((id) => { if (!id) for (const l of created) links.delete(l.id); });
+}
+
+// ---- links: files of this archive opened, saved or mounted in other apps (shared/js/archive-link.js) -------------------
+
+const links = new Map(); // id -> { id, label, session, port, autoSave }
+let nextLink = 1;
+const liveLinks = () => [...links.values()].filter((l) => l.session === state.session);
+
+function addLink(props) {
+  const link = { id: nextLink++, session: state.session, autoSave: false, ...props };
+  links.set(link.id, link);
+  return link;
+}
+
+/** The archive is closed or replaced: the links to it fail from now on. */
+function closeLinks() {
+  for (const l of liveLinks()) {
+    try { if (l.port) l.port.postMessage({ type: 'closed' }); } catch (e) { /* gone */ }
+    links.delete(l.id);
+  }
+  state.session++;
+}
+window.addEventListener('pagehide', () => closeLinks());
+
+/** Write a file into the archive (from another app). */
+function writeEntry(path, bytes) {
+  recordUndo();
+  let target = state.entries.find((e) => e.path === path && !e.dir);
+  if (!target) { target = { path, dir: false, mode: 0o644 }; state.entries.push(target); ensureFolders(path); }
+  Object.assign(target, { size: bytes.length, csize: null, mtime: new Date(), modified: true, encrypted: false, load: () => bytes });
+  setDirty();
+  Suite.shell.toast(t('ar.updated', baseName(path)));
+}
+
+async function linkOp(link, msg) {
+  const path = cleanPath(String(msg.path || ''));
+  const file = () => {
+    const entry = state.entries.find((e) => e.path === path && !e.dir && !e.link);
+    if (!entry) throw new Error(t('ar.notFound', path));
+    return entry;
+  };
+  switch (msg.op) {
+    case 'info': return { name: state.name, format: formatLabel() };
+    case 'list': return state.entries.map((e) => ({ path: e.path, dir: !!e.dir, size: e.size || 0, mtime: e.mtime && !isNaN(e.mtime) ? +e.mtime : null }));
+    case 'read': {
+      const entry = file();
+      if (!(await unlock([entry]))) throw new Error(t('ar.cancelled'));
+      return new Uint8Array(await entry.load()).slice();
+    }
+    case 'write': {
+      if (!path) throw new Error(t('ar.badName'));
+      if (state.entries.some((e) => e.path === path && e.dir)) throw new Error(t('ar.exists', path));
+      writeEntry(path, new Uint8Array(msg.bytes));
+      if (link.autoSave) await save();
+      return true;
+    }
+    case 'delete': {
+      recordUndo();
+      const before = state.entries.length;
+      state.entries = state.entries.filter((e) => !isUnder(e.path, path));
+      if (state.entries.length === before) { history.drop(); return false; }
+      setDirty();
+      if (link.autoSave) await save();
+      return true;
+    }
+    case 'mkdir': {
+      if (!path || state.entries.some((e) => e.path === path)) return false;
+      recordUndo();
+      state.entries.push({ path, dir: true, size: 0, csize: 0, mtime: new Date(), mode: 0o755, modified: true });
+      ensureFolders(path);
+      setDirty();
+      return true;
+    }
+    default: throw new Error(`unknown request ${msg.op}`);
+  }
+}
+
+function serveLink(link) {
+  link.port.onmessage = async (e) => {
+    const msg = e.data || {};
+    if (msg.op === 'release') { links.delete(link.id); return; }
+    if (link.session !== state.session || !state.entries) { link.port.postMessage({ id: msg.id, ok: false, error: 'closed' }); return; }
+    try {
+      link.port.postMessage({ id: msg.id, ok: true, result: await linkOp(link, msg) });
+    } catch (err) { link.port.postMessage({ id: msg.id, ok: false, error: describe(err) }); }
+  };
+}
+
+/** A connection request of another app ({ mode: 'open' | 'save' | 'mount', name, multiple, exts, label }): shown in LinkDialog. */
+function requestLink(request, port) {
+  if (state.link) { port.postMessage({ type: 'cancelled' }); port.close(); Suite.shell.toast(t('ar.linkBusy'), 'warning'); return; }
+  state.link = {
+    request, port, folder: state.cwd, name: request.name || '', all: false, chosen: new Set(), error: '',
+    autoSave: !!state.handle && typeof window.showSaveFilePicker === 'function', // (written directly into the file; otherwise a download each time)
+  };
+  render();
+}
+
+function finishLink(paths, autoSave = false) {
+  const { request, port } = state.link;
+  state.link = null;
+  const label = `${request.label || '?'}: ${request.mode === 'mount' ? t('ar.mounted') : paths.join(', ')}`;
+  const link = addLink({ label, port, autoSave });
+  serveLink(link);
+  port.postMessage({ type: 'connected', paths, info: { name: state.name, format: formatLabel() } });
+  Suite.shell.toast(t('ar.linkDone', request.label || '?'));
+  render();
+}
+
+function cancelLink() {
+  if (!state.link) return;
+  const { port } = state.link;
+  state.link = null;
+  port.postMessage({ type: 'cancelled' });
+  port.close();
+  render();
+}
+
+// requests of other apps: is an archive open here (archive-info), connect to it (archive-connect)
+window.addEventListener('message', (e) => {
+  const msg = e.data;
+  const port = e.ports && e.ports[0];
+  if (!msg || msg.suite !== 'suite-bridge' || !port) return;
+  if (msg.type === 'archive-info') port.postMessage(state.entries ? { name: state.name, format: formatLabel() } : {});
+  else if (msg.type === 'archive-connect') requestLink(msg.request || {}, port);
+});
+
+function LinkDialog() {
+  const l = state.link;
+  if (!l) return null;
+  const r = l.request;
+  const title = r.mode === 'save' ? t('ar.linkSaveTitle', r.name || '') : r.mode === 'mount' ? t('ar.linkMountTitle') : t('ar.linkOpenTitle');
+  let body;
+  let ok = null;
+  if (!state.entries) {
+    body = html`<p>${t('ar.linkNoArchive')}</p><div class="ar-buttons">
+      <button data-testid="link-open-archive" onClick=${openArchive}>${t('ar.openArchive')}</button>
+      <button class="secondary" data-testid="link-new-archive" onClick=${newArchive}>${t('ar.newArchive')}</button></div>`;
+  } else if (r.mode === 'save') {
+    const folders = ['', ...state.entries.filter((e) => e.dir).map((e) => e.path).sort()];
+    body = html`<label>${t('ar.folder')}<select data-testid="link-folder" onChange=${(e) => { l.folder = e.target.value; }}>
+        ${folders.map((f) => html`<option value=${f} selected=${l.folder === f}>/${f}</option>`)}</select></label>
+      <label>${t('ar.fileName')}<input data-testid="link-name" value=${l.name} onInput=${(e) => { l.name = e.target.value; l.error = ''; }} /></label>
+      <label><input type="checkbox" role="switch" data-testid="link-autosave" checked=${l.autoSave} onChange=${(e) => { l.autoSave = e.target.checked; }} /> ${t('ar.linkSaveNow')}</label>`;
+    ok = html`<button data-testid="link-ok" onClick=${async () => {
+      const name = l.name.trim();
+      if (!name || name.includes('/')) { l.error = t('ar.badName'); render(); return; }
+      const path = join(l.folder, name);
+      if (state.entries.some((e) => e.path === path && e.dir)) { l.error = t('ar.exists', path); render(); return; }
+      if (state.entries.some((e) => e.path === path) && !(await Suite.shell.confirm(t('ar.replaceConfirm', path)))) return;
+      finishLink([path], l.autoSave);
+    }}>${t('ar.linkSave')}</button>`;
+  } else if (r.mode === 'open') {
+    const exts = r.exts || [];
+    const files = state.entries.filter((e) => !e.dir && !e.link).map((e) => e.path).sort();
+    const shown = l.all || !exts.length ? files : files.filter((path) => exts.some((x) => x === '*' || path.toLowerCase().endsWith(`.${x}`)));
+    body = html`${shown.length ? html`<ul class="ar-link-files" data-testid="link-files">${shown.map((path) => html`<li><label>
+        <input type=${r.multiple ? 'checkbox' : 'radio'} name="link-file" data-testid="link-file" value=${path} checked=${l.chosen.has(path)}
+          onChange=${(e) => { if (!r.multiple) l.chosen = new Set(); if (e.target.checked) l.chosen.add(path); else l.chosen.delete(path); render(); }} /> ${path}</label></li>`)}</ul>`
+        : html`<p>${t('ar.linkNone')}</p>`}
+      ${exts.length ? html`<label><input type="checkbox" data-testid="link-all" checked=${l.all} onChange=${(e) => { l.all = e.target.checked; render(); }} /> ${t('ar.linkAll')}</label>` : null}`;
+    ok = html`<button data-testid="link-ok" disabled=${!l.chosen.size} onClick=${() => finishLink(files.filter((path) => l.chosen.has(path)))}>${t('ar.linkOpen')}</button>`;
+  } else {
+    body = html`<p>${t('ar.mountConfirm', r.label || '?', state.name)}</p>`;
+    ok = html`<button data-testid="link-ok" onClick=${() => finishLink([])}>${t('ar.linkAllow')}</button>`;
+  }
+  return html`<dialog open data-testid="link-dialog"><article>
+    <header><strong>${title}</strong></header>
+    <p><small>${t('ar.linkFrom', r.label || '?')}</small></p>
+    ${body}
+    ${l.error ? html`<p class="ar-error" data-testid="link-error">${l.error}</p>` : null}
+    <footer><button type="button" class="secondary" data-testid="link-cancel" onClick=${cancelLink}>${t('ar.close')}</button>${ok}</footer>
+  </article></dialog>`;
 }
 
 function openNode(node) {
@@ -625,6 +829,7 @@ function Toolbar() {
     <button class="secondary" data-testid="new" onClick=${newArchive}>${t('ar.new')}</button>
     <button class="secondary" data-testid="open" onClick=${openArchive}>${t('ar.open')}</button>
     ${open ? html`
+      <button class="secondary outline" data-testid="close-archive" title=${t('ar.closeTitle')} onClick=${closeArchive}>${t('ar.closeArchive')}</button>
       <button class=${state.dirty ? '' : 'secondary'} data-testid="save" onClick=${() => save()}>${t('ar.save')}</button>
       <button class="secondary outline" data-testid="save-as" onClick=${openSaveAs}>${t('ar.saveAs')}</button>
       <button class="secondary outline" title="${t('ar.undo')} (Ctrl+Z)" data-testid="undo" disabled=${!history.canUndo} onClick=${undo}>↶</button>
@@ -783,7 +988,7 @@ function Welcome() {
 function Main() {
   return html`<div class="ar-main" aria-busy=${state.busy}>
     ${state.entries ? html`<${Breadcrumbs} /><${Listing} /><${StatusBar} />` : html`<${Welcome} />`}
-    <${PreviewDialog} /><${SaveAsDialog} /><${PasswordDialog} /><${TestDialog} />
+    <${PreviewDialog} /><${SaveAsDialog} /><${PasswordDialog} /><${TestDialog} /><${LinkDialog} />
   </div>`;
 }
 
@@ -797,7 +1002,7 @@ document.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if (mod && k === 's') { e.preventDefault(); if (e.shiftKey) openSaveAs(); else save(); return; }
   if (mod && k === 'o') { e.preventDefault(); openArchive(); return; }
-  if (inField || !state.entries || state.preview || state.saveAs || state.passwordPrompt) { if (e.key === 'Escape' && state.preview) closePreview(); return; }
+  if (inField || !state.entries || state.preview || state.saveAs || state.passwordPrompt || state.link) { if (e.key === 'Escape' && state.preview) closePreview(); return; }
   const step = Suite.UndoHistory.key(e);
   if (step) { e.preventDefault(); if (step === 'undo') undo(); else redo(); return; }
   if (mod && k === 'a') { e.preventDefault(); state.selected = new Set(children(state.cwd).map((n) => n.path)); render(); }

@@ -42,7 +42,12 @@ add files and folders, create folders, rename, delete and convert between format
 <td>– (save as 7z or ZIP)</td>
 </tr>
 <tr>
-<td>TAR.XZ, TAR.BZ2, TAR.ZST, TAR.LZMA</td>
+<td>TAR.BZ2 / TBZ2, TAR.XZ / TXZ</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>TAR.ZST, TAR.LZMA</td>
 <td>yes</td>
 <td>–</td>
 </tr>
@@ -62,7 +67,21 @@ below), and a single compressed file without an archive inside (e.g. <code>notes
 <li><strong>Open</strong> (<code>Ctrl+O</code>) opens an archive. You can also drop an archive onto the window while no archive is open.</li>
 <li><strong>New</strong> starts an empty ZIP archive. Dropping files onto the window while nothing is open also starts a new archive.</li>
 <li>In Chrome/Edge on the desktop the start page lists recently used archives.</li>
+<li><strong>✕ Close</strong> closes the archive (after asking about unsaved changes).</li>
 </ul>
+<h3>Files for other applications</h3>
+<p>Other applications open files from archives and save files into them through the archive manager (see
+<ac:link><ri:page ri:content-title="Portable Web App Suite – User Guide" /><ac:plain-text-link-body><![CDATA[Files in archives]]></ac:plain-text-link-body></ac:link>). When an application asks, a dialog shows what it wants:</p>
+<ul>
+<li><strong>Open from the archive:</strong> choose the file(s) – files of the requested types are listed, <strong>Show all files</strong> lists all.</li>
+<li><strong>Save in the archive:</strong> choose the folder and the file name (an existing file is replaced after a question) and whether the
+  archive is saved after every change.</li>
+<li><strong>Mount the archive</strong> (Python notebook): allow it to read, change and delete all files of the archive.</li>
+<li>Without an open archive, the dialog first offers <strong>Open archive…</strong> and <strong>New archive</strong>.</li>
+</ul>
+<p>Changes from other applications mark the archive as changed (and can be undone with <code>Ctrl+Z</code>). Closing or replacing the
+archive (Close, Open, New) while files of it are open in other applications asks first and lists them; afterwards those files
+can neither be loaded from nor saved into it. <em>Open with…</em> works the same way.</p>
 <h2>Browsing</h2>
 <ul>
 <li>The list shows the content of the current folder: name, size (for folders the number of items), packed size (ZIP) and
@@ -117,8 +136,9 @@ password.</p>
 <ul>
 <li><strong>Save</strong> (<code>Ctrl+S</code>) writes the archive in its format: directly into the opened file in Chrome/Edge on the desktop, as a
   download in Firefox and on Android (replace the original file with it).</li>
-<li><strong>Save as</strong> (<code>Ctrl+Shift+S</code>) asks for the file name and the <strong>format</strong> (ZIP, TAR, TAR.GZ, GZ). This converts an archive, for
-  example a <code>.tar.gz</code> into a <code>.zip</code>. A GZ file holds exactly one file.</li>
+<li><strong>Save as</strong> (<code>Ctrl+Shift+S</code>) asks for the file name and the <strong>format</strong> (ZIP, 7Z, TAR, TAR.GZ, TAR.BZ2, TAR.XZ, GZ). This converts an archive, for
+  example a <code>.tar.gz</code> into a <code>.zip</code>. A GZ file holds exactly one file. An opened TAR.BZ2 or TAR.XZ archive is saved in its format
+  again. Single <code>.bz2</code> and <code>.xz</code> files without an archive inside can neither be opened nor written.</li>
 <li><strong>Compression</strong> in the status bar sets the compression of new and changed files: Store, Fastest, Normal, Maximum. Unchanged
   files of an opened ZIP archive are copied as they are, so saving is fast.</li>
 </ul>

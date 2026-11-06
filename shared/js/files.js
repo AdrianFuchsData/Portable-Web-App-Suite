@@ -11,6 +11,8 @@
  *   const doc = { name: picked[0].file.name, handle: picked[0].handle };
  *   const result = await Suite.files.save(doc, data);        // -> { mode: 'written' | 'downloaded', name }
  *   const copy = await Suite.files.saveAs(data, { suggestedName: 'x.txt', types });   // -> { mode, name, handle } or null
+ *   // open() and saveAs() first ask "File system" or "Archive…" (shared/js/archive-link.js, setting suite.files.archives);
+ *   // files from archives get handle stand-ins that read and write through the archive manager (handle.bridged)
  *   Suite.files.dropZone(element, (picked) => ...);           // drag & drop with handles where possible
  *   await Suite.files.remember('texteditor', handle); await Suite.files.recent('texteditor');  // recent files
  *   await Suite.files.forget('texteditor');                                                   // clear the list
@@ -59,8 +61,13 @@
     });
   }
 
-  /** Let the user pick files. Resolves to [{ file, handle }] or null if cancelled. */
+  /** Let the user pick files (from the file system or an archive). Resolves to [{ file, handle }] or null if cancelled. */
   async function open({ types = [], multiple = false } = {}) {
+    if (Suite.archiveLink && Suite.archiveLink.offered) {
+      const choice = await Suite.archiveLink.choose('open');
+      if (!choice) return null;
+      if (choice.kind === 'archive') return Suite.archiveLink.openFrom(choice.target, { types, multiple });
+    }
     if (canWriteBack) {
       try {
         const handles = await window.showOpenFilePicker({ types, multiple, excludeAcceptAllOption: false });
@@ -158,8 +165,16 @@
     return { mode: 'downloaded', name: doc.name, message: Suite.t('files.downloaded', doc.name) };
   }
 
-  /** Save under a new name: save dialog where available, otherwise a download. Resolves to null if cancelled. */
+  /**
+   * Save under a new name: into an archive (if chosen), a save dialog where available, otherwise a download. Resolves to
+   * { mode: 'written' | 'downloaded' | 'archive', name, handle, message } or null if cancelled.
+   */
   async function saveAs(data, { suggestedName, types = [], type } = {}) {
+    if (Suite.archiveLink && Suite.archiveLink.offered) {
+      const choice = await Suite.archiveLink.choose('save', suggestedName);
+      if (!choice) return null;
+      if (choice.kind === 'archive') return Suite.archiveLink.saveInto(choice.target, data, { suggestedName });
+    }
     if (typeof window.showSaveFilePicker === 'function' && window.isSecureContext) {
       let handle;
       try {
@@ -216,6 +231,7 @@
   }
 
   async function rememberNow(app, handle) {
+    if (handle.bridged) return; // (files of other apps and archives cannot be stored)
     const list = await recent(app);
     const kept = [];
     for (const item of list) if (!(await item.handle.isSameEntry(handle))) kept.push(item);

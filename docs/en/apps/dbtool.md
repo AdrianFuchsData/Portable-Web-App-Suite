@@ -81,6 +81,8 @@ On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the applicat
 |---|---|
 | `Ctrl+Enter` | Run the statement at the cursor (or the selection) |
 | `Ctrl+Shift+Enter` | Run all statements |
+| `Tab` / `Shift+Tab` | Indent / unindent |
+| `Ctrl+Alt+I` | Insert a tab character |
 
 ### Table
 

@@ -340,7 +340,8 @@ func newClient(client *ssh.Client) js.Value {
 		})
 	})
 	o.method("close", func(args []js.Value) any {
-		client.Close()
+		// (in a goroutine: closing may wait for the transport, and blocking in a JavaScript callback stops the program)
+		go client.Close()
 		o.release()
 		return nil
 	})
@@ -551,7 +552,7 @@ func newSFTP(s *sftp.Client) js.Value {
 		return s.Chtimes(path(args, 0), t, t)
 	})
 	o.method("close", func(args []js.Value) any {
-		s.Close()
+		go s.Close() // (see client.close)
 		o.release()
 		return nil
 	})

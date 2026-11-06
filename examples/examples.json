@@ -1,0 +1,680 @@
+{
+ "apps": {
+  "texteditor": [
+   {
+    "file": "en/texteditor/program.py",
+    "lang": "en",
+    "title": "Python program",
+    "embed": true,
+    "size": 630
+   },
+   {
+    "file": "en/texteditor/query.sql",
+    "lang": "en",
+    "title": "SQL to format",
+    "embed": true,
+    "size": 269
+   },
+   {
+    "file": "en/texteditor/notes.md",
+    "lang": "en",
+    "title": "Markdown with a table",
+    "embed": true,
+    "size": 249
+   },
+   {
+    "file": "en/texteditor/data.json",
+    "lang": "en",
+    "title": "JSON on one line (Tools → Format JSON)",
+    "embed": true,
+    "size": 119
+   },
+   {
+    "file": "de/texteditor/programm.py",
+    "lang": "de",
+    "title": "Python-Programm",
+    "embed": true,
+    "size": 667
+   },
+   {
+    "file": "de/texteditor/abfrage.sql",
+    "lang": "de",
+    "title": "SQL zum Formatieren",
+    "embed": true,
+    "size": 277
+   },
+   {
+    "file": "de/texteditor/notizen.md",
+    "lang": "de",
+    "title": "Markdown mit Tabelle",
+    "embed": true,
+    "size": 279
+   },
+   {
+    "file": "de/texteditor/daten.json",
+    "lang": "de",
+    "title": "JSON in einer Zeile (Werkzeuge → JSON formatieren)",
+    "embed": true,
+    "size": 125
+   }
+  ],
+  "hexeditor": [
+   {
+    "file": "en/hexeditor/image.png",
+    "lang": "en",
+    "title": "A small PNG image (signature, chunks)",
+    "embed": true,
+    "size": 295
+   },
+   {
+    "file": "de/hexeditor/bild.png",
+    "lang": "de",
+    "title": "Ein kleines PNG-Bild (Signatur, Chunks)",
+    "embed": true,
+    "size": 295
+   }
+  ],
+  "archive": [
+   {
+    "file": "en/archive/folders.zip",
+    "lang": "en",
+    "title": "ZIP archive with folders",
+    "embed": true,
+    "size": 720
+   },
+   {
+    "file": "en/archive/packed.tar.xz",
+    "lang": "en",
+    "title": "TAR.XZ",
+    "embed": true,
+    "size": 252
+   },
+   {
+    "file": "en/archive/encrypted.zip",
+    "lang": "en",
+    "title": "AES-encrypted ZIP (password: example)",
+    "embed": true,
+    "size": 210
+   },
+   {
+    "file": "de/archive/ordner.zip",
+    "lang": "de",
+    "title": "ZIP-Archiv mit Ordnern",
+    "embed": true,
+    "size": 769
+   },
+   {
+    "file": "de/archive/gepackt.tar.xz",
+    "lang": "de",
+    "title": "TAR.XZ",
+    "embed": true,
+    "size": 248
+   },
+   {
+    "file": "de/archive/verschluesselt.zip",
+    "lang": "de",
+    "title": "AES-verschlüsseltes ZIP (Passwort: example)",
+    "embed": true,
+    "size": 212
+   }
+  ],
+  "mediaplayer": [
+   {
+    "file": "en/mediaplayer/chord.wav",
+    "lang": "en",
+    "title": "Sound: a chord in three steps",
+    "embed": true,
+    "size": 64044
+   },
+   {
+    "file": "en/mediaplayer/scale.wav",
+    "lang": "en",
+    "title": "Sound: a scale",
+    "embed": true,
+    "size": 96044
+   },
+   {
+    "file": "en/mediaplayer/playlist.m3u8",
+    "lang": "en",
+    "title": "Playlist (open the sounds together with it)",
+    "embed": false,
+    "size": 60
+   },
+   {
+    "file": "de/mediaplayer/akkord.wav",
+    "lang": "de",
+    "title": "Klang: ein Akkord in drei Schritten",
+    "embed": true,
+    "size": 64044
+   },
+   {
+    "file": "de/mediaplayer/tonleiter.wav",
+    "lang": "de",
+    "title": "Klang: eine Tonleiter",
+    "embed": true,
+    "size": 96044
+   },
+   {
+    "file": "de/mediaplayer/wiedergabeliste.m3u8",
+    "lang": "de",
+    "title": "Wiedergabeliste (die Klänge mit öffnen)",
+    "embed": false,
+    "size": 70
+   }
+  ],
+  "audioeditor": [
+   {
+    "file": "en/audioeditor/scale.wav",
+    "lang": "en",
+    "title": "A scale to cut and add effects to",
+    "embed": true,
+    "size": 96044
+   },
+   {
+    "file": "de/audioeditor/tonleiter.wav",
+    "lang": "de",
+    "title": "Eine Tonleiter zum Schneiden und für Effekte",
+    "embed": true,
+    "size": 96044
+   }
+  ],
+  "videoeditor": [
+   {
+    "file": "en/videoeditor/test-pattern.webm",
+    "lang": "en",
+    "title": "A 4-second clip with sound",
+    "embed": true,
+    "size": 81283
+   },
+   {
+    "file": "de/videoeditor/testbild.webm",
+    "lang": "de",
+    "title": "Ein Clip von 4 Sekunden mit Ton",
+    "embed": true,
+    "size": 81283
+   }
+  ],
+  "imageeditor": [
+   {
+    "file": "en/imageeditor/picture.png",
+    "lang": "en",
+    "title": "PNG with transparency",
+    "embed": true,
+    "size": 2719
+   },
+   {
+    "file": "en/imageeditor/layers.ora",
+    "lang": "en",
+    "title": "Image with two layers (OpenRaster)",
+    "embed": true,
+    "size": 3073
+   },
+   {
+    "file": "de/imageeditor/bild.png",
+    "lang": "de",
+    "title": "PNG mit Transparenz",
+    "embed": true,
+    "size": 2636
+   },
+   {
+    "file": "de/imageeditor/ebenen.ora",
+    "lang": "de",
+    "title": "Bild mit zwei Ebenen (OpenRaster)",
+    "embed": true,
+    "size": 3011
+   }
+  ],
+  "diagram": [
+   {
+    "file": "en/diagram/process.drawio",
+    "lang": "en",
+    "title": "Process with groups, layers and connectors (draw.io)",
+    "embed": true,
+    "size": 1991
+   },
+   {
+    "file": "en/diagram/sketch.excalidraw",
+    "lang": "en",
+    "title": "Hand-drawn sketch (Excalidraw)",
+    "embed": true,
+    "size": 1054
+   },
+   {
+    "file": "de/diagram/ablauf.drawio",
+    "lang": "de",
+    "title": "Ablauf mit Gruppen, Ebenen und Verbindern (draw.io)",
+    "embed": true,
+    "size": 2002
+   },
+   {
+    "file": "de/diagram/skizze.excalidraw",
+    "lang": "de",
+    "title": "Handskizze (Excalidraw)",
+    "embed": true,
+    "size": 1054
+   }
+  ],
+  "keepass": [
+   {
+    "file": "en/keepass/passwords.kdbx",
+    "lang": "en",
+    "title": "KeePass database (password: example; with a TOTP code)",
+    "embed": true,
+    "size": 1749
+   },
+   {
+    "file": "de/keepass/passwoerter.kdbx",
+    "lang": "de",
+    "title": "KeePass-Datenbank (Passwort: example; mit TOTP-Code)",
+    "embed": true,
+    "size": 1765
+   }
+  ],
+  "spreadsheet": [
+   {
+    "file": "en/spreadsheet/sales.xlsx",
+    "lang": "en",
+    "title": "Formulas, filter, conditional formatting, validation",
+    "embed": true,
+    "size": 7283
+   },
+   {
+    "file": "en/spreadsheet/expenses.csv",
+    "lang": "en",
+    "title": "CSV (the import dialog detects the format)",
+    "embed": true,
+    "size": 63
+   },
+   {
+    "file": "de/spreadsheet/umsatz.xlsx",
+    "lang": "de",
+    "title": "Formeln, Filter, bedingte Formatierung, Überprüfung",
+    "embed": true,
+    "size": 7301
+   },
+   {
+    "file": "de/spreadsheet/ausgaben.csv",
+    "lang": "de",
+    "title": "CSV (der Importdialog erkennt das Format)",
+    "embed": true,
+    "size": 71
+   }
+  ],
+  "document": [
+   {
+    "file": "en/document/report.docx",
+    "lang": "en",
+    "title": "Headings, table, picture, lists (Word)",
+    "embed": true,
+    "size": 39779
+   },
+   {
+    "file": "de/document/bericht.docx",
+    "lang": "de",
+    "title": "Überschriften, Tabelle, Bild, Listen (Word)",
+    "embed": true,
+    "size": 39748
+   }
+  ],
+  "presentation": [
+   {
+    "file": "en/presentation/slides.pptx",
+    "lang": "en",
+    "title": "Three slides with notes and a picture (PowerPoint)",
+    "embed": true,
+    "size": 37286
+   },
+   {
+    "file": "de/presentation/folien.pptx",
+    "lang": "de",
+    "title": "Drei Folien mit Notizen und Bild (PowerPoint)",
+    "embed": true,
+    "size": 37238
+   }
+  ],
+  "reveal": [
+   {
+    "file": "en/reveal/slides.md",
+    "lang": "en",
+    "title": "Markdown slides with fragments, code and maths",
+    "embed": true,
+    "size": 306
+   },
+   {
+    "file": "de/reveal/folien.md",
+    "lang": "de",
+    "title": "Markdown-Folien mit Fragmenten, Code und Mathematik",
+    "embed": true,
+    "size": 345
+   }
+  ],
+  "pdfviewer": [
+   {
+    "file": "en/pdfviewer/report.pdf",
+    "lang": "en",
+    "title": "The example report as PDF (search, outline, print)",
+    "embed": true,
+    "size": 49666
+   },
+   {
+    "file": "de/pdfviewer/bericht.pdf",
+    "lang": "de",
+    "title": "Der Beispielbericht als PDF (Suche, Gliederung, Drucken)",
+    "embed": true,
+    "size": 50455
+   }
+  ],
+  "calendar": [
+   {
+    "file": "en/calendar/events.ics",
+    "lang": "en",
+    "title": "Events: weekly series, all-day event",
+    "embed": true,
+    "size": 607
+   },
+   {
+    "file": "de/calendar/termine.ics",
+    "lang": "de",
+    "title": "Termine: wöchentliche Serie, ganztägiger Termin",
+    "embed": true,
+    "size": 618
+   }
+  ],
+  "mail": [
+   {
+    "file": "en/mail/message.eml",
+    "lang": "en",
+    "title": "E-mail with HTML and an attachment",
+    "embed": true,
+    "size": 1572
+   },
+   {
+    "file": "en/mail/contact.vcf",
+    "lang": "en",
+    "title": "Contact (vCard)",
+    "embed": true,
+    "size": 161
+   },
+   {
+    "file": "de/mail/nachricht.eml",
+    "lang": "de",
+    "title": "E-Mail mit HTML und Anhang",
+    "embed": true,
+    "size": 1559
+   },
+   {
+    "file": "de/mail/kontakt.vcf",
+    "lang": "de",
+    "title": "Kontakt (vCard)",
+    "embed": true,
+    "size": 161
+   }
+  ],
+  "dbtool": [
+   {
+    "file": "en/dbtool/shop.sqlite",
+    "lang": "en",
+    "title": "SQLite database with a foreign key and a view (ER diagram)",
+    "embed": true,
+    "size": 12288
+   },
+   {
+    "file": "de/dbtool/laden.sqlite",
+    "lang": "de",
+    "title": "SQLite-Datenbank mit Fremdschlüssel und Sicht (ER-Diagramm)",
+    "embed": true,
+    "size": 12288
+   }
+  ],
+  "ftp": [
+   {
+    "file": "en/ftp/ftp-connections.json",
+    "lang": "en",
+    "title": "Connections file (Connections: Open…)",
+    "embed": false,
+    "size": 645
+   },
+   {
+    "file": "de/ftp/ftp-verbindungen.json",
+    "lang": "de",
+    "title": "Verbindungsdatei (Verbindungen: Öffnen…)",
+    "embed": false,
+    "size": 661
+   }
+  ],
+  "ssh": [
+   {
+    "file": "en/ssh/ssh-connections.json",
+    "lang": "en",
+    "title": "Connections file (Connections: Open…)",
+    "embed": false,
+    "size": 317
+   },
+   {
+    "file": "de/ssh/ssh-verbindungen.json",
+    "lang": "de",
+    "title": "Verbindungsdatei (Verbindungen: Öffnen…)",
+    "embed": false,
+    "size": 325
+   }
+  ],
+  "http": [
+   {
+    "file": "en/http/requests.postman_collection.json",
+    "lang": "en",
+    "title": "Postman collection against httpbin.org (needs the relay)",
+    "embed": true,
+    "size": 1503
+   },
+   {
+    "file": "de/http/anfragen.postman_collection.json",
+    "lang": "de",
+    "title": "Postman-Sammlung für httpbin.org (braucht das Relay)",
+    "embed": true,
+    "size": 1500
+   }
+  ],
+  "webinspector": [
+   {
+    "file": "en/webinspector/recording.har",
+    "lang": "en",
+    "title": "Network recording (HAR) with an error",
+    "embed": true,
+    "size": 1720
+   },
+   {
+    "file": "de/webinspector/aufzeichnung.har",
+    "lang": "de",
+    "title": "Netzwerkaufzeichnung (HAR) mit einem Fehler",
+    "embed": true,
+    "size": 1720
+   }
+  ],
+  "barcode": [
+   {
+    "file": "en/barcode/ean13.png",
+    "lang": "en",
+    "title": "EAN-13 barcode (4006381333931) to read",
+    "embed": true,
+    "size": 336
+   },
+   {
+    "file": "de/barcode/ean13.png",
+    "lang": "de",
+    "title": "EAN-13-Strichcode (4006381333931) zum Lesen",
+    "embed": true,
+    "size": 336
+   }
+  ],
+  "notebook": [
+   {
+    "file": "en/notebook/01-data-analysis.ipynb",
+    "lang": "en",
+    "title": "Data analysis: pandas, seaborn, SciPy, scikit-learn (offline)",
+    "embed": true,
+    "size": 2303
+   },
+   {
+    "file": "en/notebook/02-widgets.ipynb",
+    "lang": "en",
+    "title": "Interactive widgets (offline)",
+    "embed": true,
+    "size": 774
+   },
+   {
+    "file": "en/notebook/03-archive.ipynb",
+    "lang": "en",
+    "title": "Files in a mounted archive",
+    "embed": true,
+    "size": 1561
+   },
+   {
+    "file": "en/notebook/04-web-requests.ipynb",
+    "lang": "en",
+    "title": "requests through the relay",
+    "embed": true,
+    "size": 1208
+   },
+   {
+    "file": "en/notebook/05-mail-and-ftp.ipynb",
+    "lang": "en",
+    "title": "smtplib and ftplib (served by the relay)",
+    "embed": true,
+    "size": 1582
+   },
+   {
+    "file": "en/notebook/06-ssh.ipynb",
+    "lang": "en",
+    "title": "SSH and SFTP, Fabric-compatible (served by the relay)",
+    "embed": true,
+    "size": 1557
+   },
+   {
+    "file": "en/notebook/07-interrupt.ipynb",
+    "lang": "en",
+    "title": "Stopping a running cell",
+    "embed": true,
+    "size": 838
+   },
+   {
+    "file": "en/notebook/08-reports.ipynb",
+    "lang": "en",
+    "title": "Reports: Word, Excel and PDF files (offline)",
+    "embed": true,
+    "size": 2587
+   },
+   {
+    "file": "en/notebook/09-shell.ipynb",
+    "lang": "en",
+    "title": "The shell in cells and the Terminal (offline)",
+    "embed": true,
+    "size": 1740
+   },
+   {
+    "file": "en/notebook/report.sh",
+    "lang": "en",
+    "title": "Shell script: a report from CSV data (Terminal: sh report.sh)",
+    "embed": true,
+    "size": 586
+   },
+   {
+    "file": "en/notebook/backup.sh",
+    "lang": "en",
+    "title": "Shell script: back up a folder (sh backup.sh FOLDER)",
+    "embed": true,
+    "size": 210
+   },
+   {
+    "file": "en/notebook/example-data.zip",
+    "lang": "en",
+    "title": "Data for the archive notebook (open it in the archive manager)",
+    "embed": false,
+    "size": 1158
+   },
+   {
+    "file": "de/notebook/01-datenanalyse.ipynb",
+    "lang": "de",
+    "title": "Datenanalyse: pandas, seaborn, SciPy, scikit-learn (offline)",
+    "embed": true,
+    "size": 2312
+   },
+   {
+    "file": "de/notebook/02-widgets.ipynb",
+    "lang": "de",
+    "title": "Interaktive Widgets (offline)",
+    "embed": true,
+    "size": 789
+   },
+   {
+    "file": "de/notebook/03-archiv.ipynb",
+    "lang": "de",
+    "title": "Dateien in einem eingebundenen Archiv",
+    "embed": true,
+    "size": 1592
+   },
+   {
+    "file": "de/notebook/04-webanfragen.ipynb",
+    "lang": "de",
+    "title": "requests über das Relay",
+    "embed": true,
+    "size": 1228
+   },
+   {
+    "file": "de/notebook/05-mail-und-ftp.ipynb",
+    "lang": "de",
+    "title": "smtplib und ftplib (vom Relay bereitgestellt)",
+    "embed": true,
+    "size": 1667
+   },
+   {
+    "file": "de/notebook/06-ssh.ipynb",
+    "lang": "de",
+    "title": "SSH und SFTP, Fabric-kompatibel (vom Relay bereitgestellt)",
+    "embed": true,
+    "size": 1610
+   },
+   {
+    "file": "de/notebook/07-unterbrechen.ipynb",
+    "lang": "de",
+    "title": "Eine laufende Zelle anhalten",
+    "embed": true,
+    "size": 897
+   },
+   {
+    "file": "de/notebook/08-berichte.ipynb",
+    "lang": "de",
+    "title": "Berichte: Word-, Excel- und PDF-Dateien (offline)",
+    "embed": true,
+    "size": 2644
+   },
+   {
+    "file": "de/notebook/09-shell.ipynb",
+    "lang": "de",
+    "title": "Die Shell in Zellen und im Terminal (offline)",
+    "embed": true,
+    "size": 1793
+   },
+   {
+    "file": "de/notebook/bericht.sh",
+    "lang": "de",
+    "title": "Shell-Skript: ein Bericht aus CSV-Daten (Terminal: sh bericht.sh)",
+    "embed": true,
+    "size": 623
+   },
+   {
+    "file": "de/notebook/sicherung.sh",
+    "lang": "de",
+    "title": "Shell-Skript: einen Ordner sichern (sh sicherung.sh ORDNER)",
+    "embed": true,
+    "size": 224
+   },
+   {
+    "file": "de/notebook/example-data.zip",
+    "lang": "de",
+    "title": "Daten für das Archiv-Notebook (im Archivmanager öffnen)",
+    "embed": false,
+    "size": 1162
+   }
+  ]
+ }
+}

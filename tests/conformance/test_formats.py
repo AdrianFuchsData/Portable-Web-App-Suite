@@ -188,6 +188,28 @@ def test_spreadsheet_round_trip(app_page, tmp_path):
     assert page.errors == []
 
 
+def test_spreadsheet_filter_in_libreoffice(app_page, tmp_path):
+    """An auto filter saved by the app is a filter in LibreOffice too (database range with filter buttons and the criteria)."""
+    page = app_page("spreadsheet", init_script=NO_PICKERS)
+    open_dialog(page, seed(tmp_path, corpus.xlsx(), "seed.xlsx"))
+    expect(page.locator("[data-testid=file-name]")).to_contain_text("seed.xlsx", timeout=30000)
+    page.wait_for_timeout(1000)
+    page.evaluate("""() => { const f = SS.workbook.getSheetByName('Data').getRange('A1:C6').createFilter();
+      f.setColumnFilterCriteria(0, { colId: 0, filters: { filters: ['row 2', 'row 4'] } });
+      f.setColumnFilterCriteria(1, { colId: 1, customFilters: { customFilters: [{ operator: 'greaterThan', val: '1' }] } }); }""")
+    page.wait_for_timeout(300)
+    saved = save_as(page, "xlsx", tmp_path)
+    well_formed_xml_parts(saved)
+    ods = soffice_convert(saved, "ods", tmp_path)
+    with zipfile.ZipFile(ods) as z:
+        content = z.read("content.xml").decode()
+    assert 'table:display-filter-buttons="true"' in content, "LibreOffice shows no filter buttons"
+    conditions = re.findall(r"<table:filter-condition\b[^>]*>", content)
+    assert any('table:value="row 2"' in c or 'table:value="row 4"' in c for c in conditions) or "row 2" in content, conditions
+    assert any('table:value="1"' in c and 'table:operator="&gt;"' in c for c in conditions), conditions
+    assert page.errors == []
+
+
 def test_presentation_round_trip(app_page, tmp_path):
     from pptx import Presentation
     page = app_page("presentation", init_script=NO_PICKERS)
@@ -238,7 +260,7 @@ def test_archive_formats(app_page, tmp_path):
     files = {"readme.txt": b"hello\n", "dir/data.bin": bytes(range(256)) * 4, "unicode-äöü.txt": "ü".encode()}
     drop_file(page, "seed.zip", corpus.zip_of(files))
     expect(page.locator("[data-testid=row]").first).to_be_visible()
-    for fmt in ("zip", "7z", "tar", "tgz"):
+    for fmt in ("zip", "7z", "tar", "tgz", "tbz2", "txz"):
         if fmt == "7z":  # libarchive (WebAssembly, "C" locale) cannot write other names than ASCII: refused with a message
             page.click("[data-testid=save-as]")
             page.select_option("[data-testid=save-as-format]", "7z")
@@ -248,8 +270,8 @@ def test_archive_formats(app_page, tmp_path):
             continue
         saved = save_as(page, fmt, tmp_path)
         assert run(tool("7z"), "t", saved).returncode == 0, f"7-Zip: {saved.name} is broken"
-        if fmt == "tgz":  # (7-Zip shows the gzip layer): gzip and Python's tarfile check it
-            assert run(tool("gzip"), "-t", saved).returncode == 0
+        if fmt in ("tgz", "tbz2", "txz"):  # (7-Zip shows the compression layer): gzip/bzip2/xz and Python's tarfile check it
+            assert run(tool({"tgz": "gzip", "tbz2": "bzip2", "txz": "xz"}[fmt]), "-t", saved).returncode == 0
             with tarfile.open(saved) as t:
                 assert {m.name: t.extractfile(m).read() for m in t.getmembers() if m.isfile()} == files
             continue

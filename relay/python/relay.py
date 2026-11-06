@@ -21,6 +21,15 @@ Protocol (version 2; version 1 clients keep working), see relay/README.md:
   "insecure", "followRedirects", "timeout"}; answer {"status", "reason", "headers", "body", "url", "httpVersion",
   "timeMs"} or {"error"} with status 502.
 
+Serving the apps (--serve DIR): other GET requests are answered with the files of DIR (the built apps) with the headers that
+make the pages cross-origin isolated (Cross-Origin-Opener-Policy: same-origin, Cross-Origin-Embedder-Policy: require-corp), so the
+notebook can interrupt Python and open network connections from Python; the relay's own origin is then allowed besides
+--origin. The files need no token; the relay functions still do.
+
+Upstream proxy (--upstream-proxy http://[user:password@]host:port, or "env" for HTTPS_PROXY/HTTP_PROXY/NO_PROXY): TCP tunnels are
+opened through the proxy with CONNECT (TLS to the target on top), /http requests go through it as well; --no-proxy lists hosts
+reached directly. Without the option, /http follows the proxy environment variables (Python's default) and tunnels go direct.
+
 Security: credentials are only accepted over TLS (own certificate, or a trusted reverse proxy that reports
 https) or from the local machine, unless --insecure-transport is given. The Origin must be allowed (default "null",
 i.e. file:// pages), the Host header must be a loopback name or one given with --host (DNS rebinding), and
@@ -30,7 +39,8 @@ Usage:
     python3 relay.py [--port 8765] [--bind 127.0.0.1] [--token TOKEN] [--users users.json] [--origin ORIGIN ...]
                      [--allow PATTERN ...] [--cafile FILE] [--tls-cert cert.pem --tls-key key.pem] [--host NAME ...]
                      [--base-path /relay] [--trusted-proxy ADDR/CIDR ...] [--proxy-user-header X-Remote-User]
-                     [--session-hours 12] [--insecure-transport]
+                     [--session-hours 12] [--insecure-transport] [--serve DIR]
+                     [--upstream-proxy http://host:port | env] [--no-proxy HOST ...]
     python3 relay.py --users users.json --add-user anna [--allow-user PATTERN ...]    # create/change an account
 """
 import argparse
@@ -43,6 +53,7 @@ import hmac
 import ipaddress
 import json
 import os
+import pathlib
 import secrets
 import ssl
 import struct
@@ -103,9 +114,51 @@ def is_loopback(address):
         return False
 
 
+STATIC_TYPES = {".html": "text/html; charset=utf-8", ".htm": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
+                ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json",
+                ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon",
+                ".wasm": "application/wasm", ".txt": "text/plain; charset=utf-8", ".md": "text/plain; charset=utf-8"}
+# headers of served files: cross-origin isolated pages (SharedArrayBuffer for the notebook's interrupt and network functions)
+ISOLATION = {"Cross-Origin-Opener-Policy": "same-origin", "Cross-Origin-Embedder-Policy": "require-corp",
+             "Cross-Origin-Resource-Policy": "same-origin", "X-Content-Type-Options": "nosniff", "Cache-Control": "no-cache"}
+
+
+def parse_proxy(spec, no_proxy=()):
+    """--upstream-proxy: None, or {"host", "port", "auth" (Proxy-Authorization value or None), "url"}; "env" reads the
+    environment. Returns (proxy, no_proxy list)."""
+    if not spec:
+        return None, list(no_proxy)
+    if spec == "env":
+        spec = next((os.environ.get(k) for k in ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy") if os.environ.get(k)), "")
+        no_proxy = list(no_proxy) + [h for h in (os.environ.get("NO_PROXY") or os.environ.get("no_proxy") or "").split(",") if h.strip()]
+        if not spec:
+            return None, no_proxy
+    parts = urllib.parse.urlsplit(spec if "://" in spec else "http://" + spec)
+    if parts.scheme != "http" or not parts.hostname:
+        raise ValueError(f"unsupported upstream proxy (only http://host:port): {spec}")
+    auth = None
+    if parts.username:
+        creds = f"{urllib.parse.unquote(parts.username)}:{urllib.parse.unquote(parts.password or '')}"
+        auth = "Basic " + base64.b64encode(creds.encode()).decode()
+    return {"host": parts.hostname, "port": parts.port or 8080, "auth": auth, "url": urllib.parse.urlunsplit(parts._replace(path="", query="", fragment=""))}, \
+        [h.strip() for h in no_proxy if h.strip()]
+
+
+async def upgrade_tls(writer, ctx, host):
+    """TLS on an open asyncio stream (STARTTLS, or a tunnel through a proxy)."""
+    if hasattr(writer, "start_tls"):  # Python 3.11+
+        await writer.start_tls(ctx, server_hostname=host)
+    else:
+        loop = asyncio.get_running_loop()
+        transport = writer.transport
+        new_transport = await loop.start_tls(transport, transport.get_protocol(), ctx, server_hostname=host)
+        writer._transport = new_transport  # no public API before Python 3.11
+
+
 class Relay:
     def __init__(self, token, origins, allow, cafile, port, users=None, users_file=None, hosts=(), base_path="",
-                 trusted_proxies=(), proxy_user_header=None, session_hours=12, tls=False, insecure_transport=False):
+                 trusted_proxies=(), proxy_user_header=None, session_hours=12, tls=False, insecure_transport=False,
+                 serve=None, upstream_proxy=None, no_proxy=()):
         self.token = token
         self.origins = set(origins)
         self.allow = allow
@@ -120,6 +173,9 @@ class Relay:
         self.session_seconds = session_hours * 3600
         self.tls = tls
         self.insecure_transport = insecure_transport
+        self.serve = pathlib.Path(serve).resolve() if serve else None
+        self.proxy = upstream_proxy
+        self.no_proxy = list(no_proxy)
         self.sessions = {}   # session token -> {"user", "expires"}
         self.failures = {}   # key ("user:x" / "addr:y") -> [timestamps]
 
@@ -221,6 +277,62 @@ class Relay:
         account_allow = self.users.get(user, {}).get("allow") if user else None
         return not account_allow or any(fnmatch.fnmatch(target, p) for p in account_allow)
 
+    def proxy_for(self, host):
+        """The upstream proxy for a target host, or None (no proxy, or the host is in --no-proxy)."""
+        if not self.proxy:
+            return None
+        name = host.lower().strip("[]")
+        for pattern in self.no_proxy:
+            p = pattern.lower().strip()
+            if p == "*" or fnmatch.fnmatch(name, p) or name == p.lstrip(".") or name.endswith("." + p.lstrip(".")):
+                return None
+        return self.proxy
+
+    async def open_target(self, host, port, ssl_ctx):
+        """A TCP connection to a target: direct, or through the upstream proxy (CONNECT); TLS on top if ssl_ctx."""
+        proxy = self.proxy_for(host)
+        if not proxy:
+            return await asyncio.wait_for(asyncio.open_connection(host, port, ssl=ssl_ctx, server_hostname=host if ssl_ctx else None), 20)
+        reader, writer = await asyncio.wait_for(asyncio.open_connection(proxy["host"], proxy["port"]), 20)
+        try:
+            target = f"[{host}]:{port}" if ":" in host else f"{host}:{port}"
+            request = f"CONNECT {target} HTTP/1.1\r\nHost: {target}\r\n"
+            if proxy["auth"]:
+                request += f"Proxy-Authorization: {proxy['auth']}\r\n"
+            writer.write((request + "\r\n").encode("latin-1"))
+            await writer.drain()
+            head = await asyncio.wait_for(reader.readuntil(b"\r\n\r\n"), 20)
+            status_line = head.split(b"\r\n", 1)[0].decode("latin-1")
+            if len(status_line.split(" ")) < 2 or status_line.split(" ")[1] != "200":
+                raise ConnectionError(f"upstream proxy: {status_line}")
+            if ssl_ctx:
+                await upgrade_tls(writer, ssl_ctx, host)
+        except BaseException:
+            writer.close()
+            raise
+        return reader, writer
+
+    async def static(self, writer, path, head_only):
+        """A file of --serve (no token needed: the built apps are public)."""
+        rel = urllib.parse.unquote(path).lstrip("/")
+        if not rel:
+            start = next((n for n in ("overview.html", "index.html") if (self.serve / n).is_file()), None)
+            if not start:
+                raise HttpError(404, "not found")
+            await self.write_response(writer, 302, "Found", {"Location": f"{self.base_path}/{start}"})
+            return
+        file = (self.serve / rel).resolve()
+        if self.serve not in file.parents or not file.is_file() or any(part.startswith(".") for part in file.relative_to(self.serve).parts):
+            raise HttpError(404, "not found")
+        body = await asyncio.get_running_loop().run_in_executor(None, file.read_bytes)
+        headers = {"Content-Type": STATIC_TYPES.get(file.suffix.lower(), "application/octet-stream"), **ISOLATION}
+        if head_only:
+            lines = [f"HTTP/1.1 200 OK"] + [f"{k}: {v}" for k, v in headers.items()] + [f"Content-Length: {len(body)}", "Connection: close", "", ""]
+            writer.write("\r\n".join(lines).encode("latin-1"))
+            await writer.drain()
+        else:
+            await self.write_response(writer, 200, "OK", headers, body)
+
     def cors_headers(self, origin):
         if origin and origin in self.origins:
             return {"Access-Control-Allow-Origin": origin, "Vary": "Origin"}
@@ -288,6 +400,8 @@ class Relay:
             elif method == "POST" and path == "/auth/logout":
                 self.sessions.pop(headers.get("x-relay-token", ""), None)
                 await self.write_response(writer, 204, "No Content", self.cors_headers(origin))
+            elif method in ("GET", "HEAD") and self.serve:
+                await self.static(writer, path, method == "HEAD")
             else:
                 raise HttpError(404, "not found")
         except HttpError as e:
@@ -335,6 +449,11 @@ class Relay:
         for name, value in spec.get("headers", []):
             request.add_header(name, value)
         handlers = [urllib.request.HTTPSHandler(context=self.tls_context(spec.get("insecure", False)))]
+        if self.proxy:  # (without --upstream-proxy, urllib follows the proxy environment variables)
+            proxy = self.proxy_for(urllib.parse.urlsplit(spec["url"]).hostname or "")
+            handlers.append(urllib.request.ProxyHandler({"http": proxy["url"], "https": proxy["url"]} if proxy else {}))
+            if proxy and proxy["auth"]:  # (urllib sends the credentials of the proxy URL only with CONNECT)
+                request.add_header("Proxy-Authorization", proxy["auth"])
         if not spec.get("followRedirects", False):
             class NoRedirect(urllib.request.HTTPRedirectHandler):
                 def redirect_request(self, *args, **kwargs):
@@ -384,8 +503,7 @@ class Relay:
             if not self.target_allowed(host, port, user):
                 raise ValueError(f"target not allowed: {host}:{port}")
             ssl_ctx = self.tls_context(spec.get("insecure", False)) if spec.get("tls") else None
-            tcp_reader, tcp_writer = await asyncio.wait_for(
-                asyncio.open_connection(host, port, ssl=ssl_ctx, server_hostname=host if ssl_ctx else None), 20)
+            tcp_reader, tcp_writer = await self.open_target(host, port, ssl_ctx)
         except Exception as e:
             await ws.send_text(json.dumps({"ok": False, "error": f"{type(e).__name__}: {e}" if not isinstance(e, ValueError) else str(e)}))
             await ws.close()
@@ -426,13 +544,7 @@ class Tunnel:
         """Upgrade the TCP connection to TLS. The client sends nothing until it receives the answer."""
         ctx = self.relay.tls_context(insecure)
         try:
-            if hasattr(self.tcp_writer, "start_tls"):  # Python 3.11+
-                await self.tcp_writer.start_tls(ctx, server_hostname=self.host)
-            else:
-                loop = asyncio.get_running_loop()
-                transport = self.tcp_writer.transport
-                new_transport = await loop.start_tls(transport, transport.get_protocol(), ctx, server_hostname=self.host)
-                self.tcp_writer._transport = new_transport  # no public API before Python 3.11
+            await upgrade_tls(self.tcp_writer, ctx, self.host)
             await self.ws.send_text(json.dumps({"ok": True, "op": "starttls"}))
         except Exception as e:
             await self.ws.send_text(json.dumps({"ok": False, "op": "starttls", "error": f"{type(e).__name__}: {e}"}))
@@ -575,6 +687,9 @@ def main():
     parser.add_argument("--proxy-user-header", help="header with the user name authenticated by a trusted reverse proxy, e.g. X-Remote-User")
     parser.add_argument("--session-hours", type=float, default=12, help="idle time after which a login expires (default 12)")
     parser.add_argument("--insecure-transport", action="store_true", help="accept credentials without TLS from other machines (trusted networks only)")
+    parser.add_argument("--serve", metavar="DIR", help="also serve the apps in DIR (cross-origin isolated: interrupt and network functions of the notebook)")
+    parser.add_argument("--upstream-proxy", metavar="URL", help='route outgoing connections through an HTTP proxy (http://[user:password@]host:port), or "env"')
+    parser.add_argument("--no-proxy", action="append", default=[], help="host (or *.domain) reached without the upstream proxy; repeatable, comma-separated")
     args = parser.parse_args()
 
     if args.add_user:
@@ -588,6 +703,12 @@ def main():
     if not local and not args.tls_cert and not args.trusted_proxy and not args.insecure_transport:
         parser.error("listening on other addresses than loopback needs --tls-cert/--tls-key, a --trusted-proxy that "
                      "terminates TLS, or --insecure-transport (trusted networks only)")
+    if args.serve and not pathlib.Path(args.serve).is_dir():
+        parser.error(f"--serve: no such folder: {args.serve}")
+    try:
+        upstream, no_proxy = parse_proxy(args.upstream_proxy, [h for v in args.no_proxy for h in v.split(",")])
+    except ValueError as e:
+        parser.error(str(e))
     users = load_users(args.users)
     token = args.token or (None if users or args.proxy_user_header else secrets.token_urlsafe(24))
     ssl_ctx = None
@@ -598,7 +719,7 @@ def main():
     relay = Relay(token, args.origin or ["null"], args.allow, args.cafile, args.port, users=users, users_file=args.users,
                   hosts=args.host, base_path=args.base_path, trusted_proxies=args.trusted_proxy,
                   proxy_user_header=args.proxy_user_header, session_hours=args.session_hours, tls=bool(ssl_ctx),
-                  insecure_transport=args.insecure_transport)
+                  insecure_transport=args.insecure_transport, serve=args.serve, upstream_proxy=upstream, no_proxy=no_proxy)
 
     async def serve():
         server = await asyncio.start_server(relay.handle, args.bind, args.port, limit=MAX_HEADER, ssl=ssl_ctx)
@@ -607,6 +728,18 @@ def main():
         print(f"Relay listening on {shown}:{address[1]}{' (TLS)' if ssl_ctx else ''}", flush=True)
         if token:
             print(f"Token: {token}", flush=True)
+        if args.serve:
+            # the pages are served from the relay's own origin: allowed besides --origin
+            scheme = "https" if ssl_ctx else "http"
+            names = ["127.0.0.1", "localhost", "[::1]"] + [h for h in args.host if h != "*"]
+            relay.origins |= {f"{scheme}://{n}:{address[1]}" for n in names}
+            if address[1] in (80, 443):
+                relay.origins |= {f"{scheme}://{n}" for n in names}
+            local = "127.0.0.1" if is_loopback(address[0]) or address[0] in ("0.0.0.0", "::") else shown
+            print(f"Serving the apps of {relay.serve}: {scheme}://{local}:{address[1]}{relay.base_path}/", flush=True)
+        if upstream:
+            print(f"Upstream proxy: {upstream['host']}:{upstream['port']}{' (with credentials)' if upstream['auth'] else ''}"
+                  f"{'; direct: ' + ', '.join(no_proxy) if no_proxy else ''}", flush=True)
         if users:
             print(f"User accounts: {len(users)} ({args.users})", flush=True)
         if args.proxy_user_header:

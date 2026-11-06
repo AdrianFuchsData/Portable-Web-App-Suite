@@ -27,10 +27,12 @@ RELAYS = {
 RELAYS_V2 = {
     "python": (RELAYS["python"][0], {"port": "--port", "token": "--token", "users": "--users", "bind": "--bind", "hosts": "--host",
                                      "base_path": "--base-path", "trusted_proxy": "--trusted-proxy", "proxy_user_header": "--proxy-user-header",
-                                     "session_hours": "--session-hours", "tls": ("--tls-cert", "--tls-key"), "cafile": "--cafile"}),
+                                     "session_hours": "--session-hours", "tls": ("--tls-cert", "--tls-key"), "cafile": "--cafile",
+                                     "serve": "--serve", "upstream_proxy": "--upstream-proxy", "no_proxy": "--no-proxy", "origins": "--origin"}),
     "powershell": (RELAYS["powershell"][0], {"port": "-Port", "token": "-Token", "users": "-Users", "bind": "-Bind", "hosts": "-HostName",
                                              "base_path": "-BasePath", "trusted_proxy": "-TrustedProxy", "proxy_user_header": "-ProxyUserHeader",
-                                             "session_hours": "-SessionHours", "tls": ("-TlsCert", "-TlsKey"), "cafile": "-CaFile"}),
+                                             "session_hours": "-SessionHours", "tls": ("-TlsCert", "-TlsKey"), "cafile": "-CaFile",
+                                             "serve": "-Serve", "upstream_proxy": "-UpstreamProxy", "no_proxy": "-NoProxy", "origins": "-Origin"}),
 }
 
 

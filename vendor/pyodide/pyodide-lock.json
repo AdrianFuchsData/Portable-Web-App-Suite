@@ -173,6 +173,36 @@
    "unvendored_tests": false,
    "version": "3.11"
   },
+  "jinja2": {
+   "depends": [
+    "markupsafe"
+   ],
+   "file_name": "jinja2-3.1.6-py3-none-any.whl",
+   "imports": [
+    "jinja2"
+   ],
+   "install_dir": "site",
+   "name": "Jinja2",
+   "package_type": "package",
+   "sha256": "9330ec9cf2241fb8fc352928ea5e72016bf82de1d3d3b71ffea52a093a3ebab8",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "3.1.6"
+  },
+  "joblib": {
+   "depends": [],
+   "file_name": "joblib-1.5.3-py3-none-any.whl",
+   "imports": [
+    "joblib"
+   ],
+   "install_dir": "site",
+   "name": "joblib",
+   "package_type": "package",
+   "sha256": "fb2860ff70d0b6b43a3df5e3ce52d3a938ad2fcacd80a3f2f3f37e930843e607",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "1.5.3"
+  },
   "kiwisolver": {
    "depends": [],
    "file_name": "kiwisolver-1.5.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
@@ -200,6 +230,20 @@
    "tool": {},
    "unvendored_tests": false,
    "version": "6.1.3"
+  },
+  "markupsafe": {
+   "depends": [],
+   "file_name": "markupsafe-3.0.3-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "markupsafe"
+   ],
+   "install_dir": "site",
+   "name": "MarkupSafe",
+   "package_type": "package",
+   "sha256": "b44c364dc0d19e4210ce68ab77833c2b5d608f78fe6966263add4fc1fa667d97",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "3.0.3"
   },
   "matplotlib": {
    "depends": [
@@ -455,6 +499,40 @@
    "unvendored_tests": false,
    "version": "2.33.1"
   },
+  "scikit-learn": {
+   "depends": [
+    "scipy",
+    "joblib",
+    "threadpoolctl"
+   ],
+   "file_name": "scikit_learn-1.8.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "sklearn"
+   ],
+   "install_dir": "site",
+   "name": "scikit-learn",
+   "package_type": "package",
+   "sha256": "432f560f54c5283d13e9d7c11dddc8bdf2f15aec326cc1d7314f600786154181",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "1.8.0"
+  },
+  "scipy": {
+   "depends": [
+    "numpy"
+   ],
+   "file_name": "scipy-1.18.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "scipy"
+   ],
+   "install_dir": "site",
+   "name": "scipy",
+   "package_type": "package",
+   "sha256": "17ee329a957863516d1bb6a6aaa0c60576fac027e9cd3d43de27f58b5b599b50",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "1.18.0"
+  },
   "setuptools": {
    "depends": [
     "pyparsing"
@@ -533,6 +611,34 @@
    "unvendored_tests": true,
    "version": "1.14.0"
   },
+  "threadpoolctl": {
+   "depends": [],
+   "file_name": "threadpoolctl-3.6.0-py3-none-any.whl",
+   "imports": [
+    "threadpoolctl"
+   ],
+   "install_dir": "site",
+   "name": "threadpoolctl",
+   "package_type": "package",
+   "sha256": "3521783ffb6bf212e03fb67ec1955af206d6ba7ea09ac21f200875077bbbe7c2",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "3.6.0"
+  },
+  "tqdm": {
+   "depends": [],
+   "file_name": "tqdm-4.67.3-py3-none-any.whl",
+   "imports": [
+    "tqdm"
+   ],
+   "install_dir": "site",
+   "name": "tqdm",
+   "package_type": "package",
+   "sha256": "68e0f4945f9f6fc5ef23c3eb198fb3df7363559b21523f0e65a82583f1e614e8",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "4.67.3"
+  },
   "typing-extensions": {
    "depends": [],
    "file_name": "typing_extensions-4.15.0-py3-none-any.whl",
@@ -546,6 +652,20 @@
    "tool": {},
    "unvendored_tests": false,
    "version": "4.15.0"
+  },
+  "tzdata": {
+   "depends": [],
+   "file_name": "tzdata-2025.3-py2.py3-none-any.whl",
+   "imports": [
+    "tzdata"
+   ],
+   "install_dir": "site",
+   "name": "tzdata",
+   "package_type": "package",
+   "sha256": "9ce669f4f075843c7ff6a3f3dc306ebafa504717ec7beb6aa2233693722ddcfc",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2025.3"
   },
   "urllib3": {
    "depends": [],
@@ -720,6 +840,137 @@
     "scramp",
     "looseversion"
    ],
+   "unvendored_tests": false
+  },
+  "python-docx": {
+   "name": "python-docx",
+   "version": "1.2.0",
+   "file_name": "python_docx-1.2.0-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "3fd478f3250fbbbfd3b94fe1e985955737c145627498896a8a6bf81f4baf66c7",
+   "package_type": "package",
+   "imports": [
+    "docx"
+   ],
+   "depends": [
+    "lxml",
+    "typing-extensions"
+   ],
+   "unvendored_tests": false
+  },
+  "xlsxwriter": {
+   "name": "xlsxwriter",
+   "version": "3.3.1",
+   "file_name": "xlsxwriter-3.3.1-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "8e2c89e59d733fe59e112317218c64fbbc276d90a8c144ebd6f7fa15e7ab184a",
+   "package_type": "package",
+   "imports": [
+    "xlsxwriter"
+   ],
+   "depends": [],
+   "unvendored_tests": false
+  },
+  "python-pptx": {
+   "name": "python-pptx",
+   "version": "1.0.2",
+   "file_name": "python_pptx-1.0.2-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "160838e0b8565a8b1f67947675886e9fea18aa5e795db7ae531606d68e785cba",
+   "package_type": "package",
+   "imports": [
+    "pptx"
+   ],
+   "depends": [
+    "pillow",
+    "xlsxwriter",
+    "lxml",
+    "typing-extensions"
+   ],
+   "unvendored_tests": false
+  },
+  "pypdf": {
+   "name": "pypdf",
+   "version": "7.0.0",
+   "file_name": "pypdf-7.0.0-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "112a2c7cbabefd8dfe498f7a13977e575e762d58cdb0d832acb8886922602c6f",
+   "package_type": "package",
+   "imports": [
+    "pypdf"
+   ],
+   "depends": [],
+   "unvendored_tests": false
+  },
+  "icalendar": {
+   "name": "icalendar",
+   "version": "7.3.0",
+   "file_name": "icalendar-7.3.0-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "8355acfe17be81b368f0b1e3740817cea9b56ea889931f8f1a87c62f2d28db0b",
+   "package_type": "package",
+   "imports": [
+    "icalendar"
+   ],
+   "depends": [
+    "python-dateutil",
+    "tzdata"
+   ],
+   "unvendored_tests": false
+  },
+  "pg8000": {
+   "name": "pg8000",
+   "version": "1.31.5",
+   "file_name": "pg8000-1.31.5-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "0af2c1926b153307639868d2ee5cef6cd3a7d07448e12736989b10e1d491e201",
+   "package_type": "package",
+   "imports": [
+    "pg8000"
+   ],
+   "depends": [
+    "scramp",
+    "python-dateutil"
+   ],
+   "unvendored_tests": false
+  },
+  "pymysql": {
+   "name": "pymysql",
+   "version": "1.2.3",
+   "file_name": "pymysql-1.2.3-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "14f1c68e2ed859243ae5ca41ffbe677027fc46bc136a9f0be8a4e928e5e7415a",
+   "package_type": "package",
+   "imports": [
+    "pymysql"
+   ],
+   "depends": [],
+   "unvendored_tests": false
+  },
+  "tabulate": {
+   "name": "tabulate",
+   "version": "0.10.0",
+   "file_name": "tabulate-0.10.0-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3",
+   "package_type": "package",
+   "imports": [
+    "tabulate"
+   ],
+   "depends": [],
+   "unvendored_tests": false
+  },
+  "markdown": {
+   "name": "markdown",
+   "version": "3.11.3",
+   "file_name": "markdown-3.11.3-py3-none-any.whl",
+   "install_dir": "site",
+   "sha256": "e1a31a112232504d753e5c01bb8c2de90d3f0ba986b063e10770cf7695b09e73",
+   "package_type": "package",
+   "imports": [
+    "markdown"
+   ],
+   "depends": [],
    "unvendored_tests": false
   }
  },

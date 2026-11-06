@@ -18,7 +18,7 @@ Bearbeitungskomponente ist Univer Sheets.</p>
 <td>Excel (<code>.xlsx</code>)</td>
 <td>ja</td>
 <td>ja</td>
-<td>Werte, Formeln, Formate, Zahlenformate, verbundene Zellen, Spaltenbreiten, Zeilenhöhen, fixierte Bereiche, Registerfarben, ausgeblendete Blätter, bedingte Formatierung, Datenüberprüfung, Bilder</td>
+<td>Werte, Formeln, Formate, Zahlenformate, verbundene Zellen, Spaltenbreiten, Zeilenhöhen, fixierte Bereiche, Registerfarben, ausgeblendete Blätter, bedingte Formatierung, Datenüberprüfung, Filter, Bilder</td>
 </tr>
 <tr>
 <td>Excel mit Makros (<code>.xlsm</code>)</td>
@@ -92,6 +92,17 @@ eigene Formel), Farbskalen und Datenbalken. Die <strong>Datenüberprüfung</stro
 ganze oder Dezimalzahlen, Datumsangaben, Textlänge oder eine eigene Formel, mit Eingabehinweis und Fehlermeldung.</p>
 <p>Beides wird aus Excel-Dateien gelesen und in sie geschrieben. Symbolsätze werden aus Excel-Dateien nicht übernommen; „Duplikate“ und
 „eindeutige Werte“ werden als Formelregeln gespeichert, und Listen, die auf Bereiche der Mappe verweisen, bleiben Verweise.</p>
+<h3>Sortieren und Filtern</h3>
+<p>Im Reiter <em>Daten</em> schaltet die Schaltfläche <strong>Filter</strong> einen Autofilter für den markierten Bereich (oder die Tabelle um die markierte
+Zelle) ein und wieder aus. Die erste Zeile bekommt Filterschaltflächen: Eine Spalte wird <strong>nach Werten</strong> gefiltert (eine Liste mit
+Kontrollkästchen und Suchfeld) oder <strong>nach Bedingung</strong> (gleich, ungleich, größer/kleiner als, enthält, beginnt/endet mit, …). Zeilen, die
+nicht passen, bleiben ausgeblendet, bis der Filter geändert oder ausgeschaltet wird.</p>
+<p>Das Menü <strong>Sortieren</strong> daneben sortiert den markierten Bereich nach seiner ersten Spalte (<strong>Aufsteigend</strong>, <strong>Absteigend</strong>);
+<strong>Erweitert aufsteigend</strong> und <strong>Erweitert absteigend</strong> sortieren die ganze Tabelle um die Markierung, sodass Zeilen zusammenbleiben. Die
+<strong>benutzerdefinierte Sortierung</strong> sortiert nach mehreren Spalten nacheinander, jede auf- oder absteigend, mit oder ohne Kopfzeile. Das
+Kontextmenü einer Zelle hat dieselben Einträge unter <em>Sortieren</em>.</p>
+<p>Filter werden mit ihren Kriterien aus Excel-Dateien gelesen und in sie geschrieben (Filter nach Werten und nach Bedingungen; Farb-, Top-10-
+und Datumsfilter von Excel werden nicht übernommen), und LibreOffice und Excel zeigen sie als Filter. ODS und CSV behalten nur die Werte.</p>
 <h2>Tastenkürzel</h2>
 <p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
 <h3>Dateien</h3>

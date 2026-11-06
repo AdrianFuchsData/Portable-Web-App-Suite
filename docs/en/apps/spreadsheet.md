@@ -8,7 +8,7 @@ Univer Sheets.
 
 | Format | Open | Save | Notes |
 |---|---|---|---|
-| Excel (`.xlsx`) | yes | yes | values, formulas, styles, number formats, merged cells, column widths, row heights, frozen panes, tab colours, hidden sheets, conditional formatting, data validation, pictures |
+| Excel (`.xlsx`) | yes | yes | values, formulas, styles, number formats, merged cells, column widths, row heights, frozen panes, tab colours, hidden sheets, conditional formatting, data validation, filters, pictures |
 | Excel with macros (`.xlsm`) | yes | as `.xlsx` | macros cannot be kept |
 | OpenDocument (`.ods`) | yes | yes | values, formulas, merged cells (no formatting) |
 | Excel 97–2003 (`.xls`) | yes | yes | values and formulas (no formatting) |
@@ -64,6 +64,21 @@ whole or decimal numbers, dates, text length or an own formula, with an input me
 
 Both are read from and written to Excel files. Icon sets are not taken over from Excel files; "duplicates" and "unique values"
 are saved as formula rules, and lists that are ranges of the workbook stay references.
+
+### Sorting and filtering
+
+On the tab *Data*, the **filter** button switches an auto filter on for the selected range (or the table around the selected
+cell) and off again. The first row gets filter buttons: a column is filtered **by values** (a list with checkboxes and a search
+field) or **by condition** (equals, does not equal, greater/less than, contains, begins/ends with, …). Rows that do not match are
+hidden until the filter is changed or switched off.
+
+The **sort** menu next to it sorts the selected range by its first column (**Ascending**, **Descending**); **Expand ascending** and
+**Expand descending** sort the whole table around the selection, so that rows stay together. **Custom sort** sorts by several
+columns one after the other, each ascending or descending, with or without a header row. The context menu of a cell has the same
+*Sort* entries.
+
+Filters are read from and written to Excel files with their criteria (filters by values and by conditions; Excel's colour, top-10 and
+date filters are not taken over), and LibreOffice and Excel show them as filters. ODS and CSV keep only the values.
 
 ## Keyboard shortcuts
 

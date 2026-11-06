@@ -83,7 +83,7 @@
       'shell.licenceText': 'Licence text ({0})', 'shell.components': 'Third-party components ({0})', 'shell.noLicenceText': 'No licence text required (public domain).',
       'shell.modifiedVersion': 'Modified version', 'shell.modifiedShort': 'modified version',
       'shell.unsaved': 'You have unsaved changes.',
-      'shell.shortcuts': 'Keyboard shortcuts (F1)', 'shell.recent': 'Recent', 'shell.noRecent': 'No recently used files', 'shell.clearRecent': 'Clear list',
+      'shell.examples': 'Examples (open one to try the application)', 'shell.shortcuts': 'Keyboard shortcuts (F1)', 'shell.recent': 'Recent', 'shell.noRecent': 'No recently used files', 'shell.clearRecent': 'Clear list',
       'shell.reopenFailed': 'The file could not be opened again (moved, deleted or no permission).',
     },
     de: {
@@ -98,7 +98,7 @@
       'shell.modifiedVersion': 'Geänderte Fassung', 'shell.modifiedShort': 'geänderte Fassung',
       'shell.offline': 'Läuft vollständig offline in Ihrem Browser.',
       'shell.unsaved': 'Sie haben ungespeicherte Änderungen.',
-      'shell.shortcuts': 'Tastenkürzel (F1)', 'shell.recent': 'Zuletzt', 'shell.noRecent': 'Keine zuletzt verwendeten Dateien', 'shell.clearRecent': 'Liste leeren',
+      'shell.examples': 'Beispiele (eines öffnen, um die Anwendung auszuprobieren)', 'shell.shortcuts': 'Tastenkürzel (F1)', 'shell.recent': 'Zuletzt', 'shell.noRecent': 'Keine zuletzt verwendeten Dateien', 'shell.clearRecent': 'Liste leeren',
       'shell.reopenFailed': 'Die Datei konnte nicht erneut geöffnet werden (verschoben, gelöscht oder keine Berechtigung).',
     },
   });

@@ -3,7 +3,15 @@
  * pyodide.classic.js + pyodide.asm.classic.js + this file: on file:// pages, workers cannot load ES modules
  * (no module workers from Blob URLs in Chromium, no import()/importScripts() of Blob URLs in workers).
  *
- * Messages from the page:  {id, type: "init", files: {name: Blob}, packages, wheels, widgets: source of ipywidgets}
+ * Messages from the page:  {id, type: "init", files: {name: Blob}, packages, wheels, widgets: source of ipywidgets,
+ *                          suite: source of the module "suite" (shared/js/python-suite.py)}
+ * Calls from Python to the page (the module "suite"): await _page_call(name, json) posts {type: "call", call, name, args};
+ * the page answers {type: "call-result", call, ok, result | error} (handled at once, also while a cell runs).
+ * Synchronous calls (cross-origin isolated pages only: sockets, SSH): _sync_call(name, json, bytes) posts {type: "sync-call",
+ * call, name, args, bytes} and waits (Atomics.wait) until the page has written the answer into the shared buffers
+ * (control: [state, kind 0 JSON | 1 bytes | 2 error, length, call]); an interrupt ends the wait ({type: "sync-cancel", call}).
+ * requests (module "requests") go through the relay's /http: _relay_http(json) with a synchronous call, or without isolation
+ * with a synchronous XMLHttpRequest to the relay ({type: "relay", url, token} from the page).
  *                          {id, type: "run", code, count} | {id, type: "widget", model, data} (a change in a widget)
  *                          {id, type: "write", path, data: Uint8Array} | {id, type: "read", path} | {id, type: "list", path}
  *                          {id, type: "installWheel", name, data: Uint8Array}
@@ -15,6 +23,9 @@
 const BASE = "https://pyodide.invalid/"; // never contacted: fetch() is answered from the embedded files
 let pyodide = null;
 let current = null; // id of the running request (for streamed outputs)
+let interrupts = null; // SharedArrayBuffer for KeyboardInterrupt (cross-origin isolated pages only)
+let sync = null; // { control: Int32Array, data: Uint8Array } on SharedArrayBuffers for synchronous page calls (isolated pages only)
+let relay = null; // { url, token } for requests through the relay without isolation
 
 const post = (msg) => self.postMessage(msg);
 const log = [];
@@ -220,8 +231,44 @@ def _widget_event(model_id, data):
         _emit({"output_type": "error", "ename": type(e).__name__, "evalue": str(e), "traceback": lines})
     flush_figures()
 
+import signal as _signal
+_in_cell = False
+
+def _raise_at_next_line(frame, event, arg):
+    if event == "line":
+        sys.settrace(None)
+        frame.f_trace = None
+        raise KeyboardInterrupt
+    return _raise_at_next_line
+
+def _on_sigint(signum, frame):
+    # Pyodide checks the interrupt buffer wherever Python runs, also in its own code, e.g. the event loop or time.sleep (which
+    # waits through run_sync), and raising there breaks it: KeyboardInterrupt directly only in the cell's code or what it
+    # calls; inside Pyodide's code under a cell frame, at the cell's next line (a trace function, as pdb sets one); else the
+    # buffer is set again for the next check
+    f, internal = frame, False
+    while f is not None:
+        name = f.f_code.co_filename
+        if name.startswith("<cell"):
+            if not internal:
+                raise KeyboardInterrupt
+            sys.settrace(lambda *args: None)
+            f.f_trace_lines = True
+            f.f_trace = _raise_at_next_line
+            return
+        if "/pyodide/" in name or "/_pyodide/" in name or "/asyncio/" in name:
+            internal = True
+        f = f.f_back
+    if _in_cell:
+        _rearm_interrupt()
+
+_signal.signal(_signal.SIGINT, _on_sigint)
+
 async def _run(code, count):
+    global _in_cell
     try:
+        _in_cell = True
+        _post_running()  # from here on, an interrupt is a KeyboardInterrupt of this cell
         result = await eval_code_async(code, _ns, return_mode="last_expr", filename=f"<cell {count}>")
         flush_figures()
         if result is not None:
@@ -235,6 +282,9 @@ async def _run(code, count):
         lines += traceback.format_exception_only(type(e), e)
         _emit({"output_type": "error", "ename": type(e).__name__, "evalue": str(e), "traceback": lines})
         return "error"
+    finally:
+        _in_cell = False
+        sys.settrace(None)
 
 def _shape(v):
     shape = getattr(v, "shape", None)
@@ -282,7 +332,7 @@ function stream(name) {
   };
 }
 
-async function init({ files, packages, wheels, widgets }) {
+async function init({ files, packages, wheels, widgets, suite = {}, interruptBuffer, syncBuffers }) {
   const networkFetch = self.fetch.bind(self);
   self.fetch = async (input, options) => {
     const url = input instanceof Request ? input.url : String(input); // string or URL object
@@ -303,6 +353,8 @@ async function init({ files, packages, wheels, widgets }) {
     lockFileContents: JSON.parse(await files["pyodide-lock.json"].text()),
     stdout: undefined,
   });
+  // (set once: switching it off and on again breaks Pyodide's event loop; the kernel writes to it only while a cell runs)
+  if (interruptBuffer) { interrupts = interruptBuffer; pyodide.setInterruptBuffer(interruptBuffer); }
   pyodide.setStdout(stream("stdout"));
   pyodide.setStderr(stream("stderr"));
   post({ type: "status", text: `loading ${packages.join(", ")}` });
@@ -310,6 +362,8 @@ async function init({ files, packages, wheels, widgets }) {
   // of the bundle are installed at start because Pyodide cannot map their imports
   for (const wheel of wheels || []) await pyodide.loadPackage(BASE + wheel, callbacks);
   pyodide.globals.set("_post", (json) => post({ id: current, type: "output", output: JSON.parse(json) }));
+  pyodide.globals.set("_post_running", () => post({ id: current, type: "running" }));
+  pyodide.globals.set("_rearm_interrupt", () => { if (interrupts) interrupts[0] = 2; });
   pyodide.globals.set("_post_comm", (json) => post({ type: "comm", msg: JSON.parse(json) }));
   const lock = JSON.parse(await files["pyodide-lock.json"].text());
   const importMap = {};
@@ -318,6 +372,16 @@ async function init({ files, packages, wheels, widgets }) {
   pyodide.globals.set("_load_package", (name) => pyodide.loadPackage(name, callbacks));
   pyodide.runPython(KERNEL);
   if (widgets) pyodide.FS.writeFile("/tmp/suite/ipywidgets.py", widgets); // imported when a cell uses it
+  // the package "suite" (shared/js/python-suite.py, python-net.py, python-ssh.py): { file name: source }
+  pyodide.FS.mkdirTree("/tmp/suite/suite");
+  for (const [name, source] of Object.entries(suite)) pyodide.FS.writeFile(`/tmp/suite/suite/${name}`, source);
+  pyodide.globals.set("_page_call", (name, args) => pageCall(name, args));
+  sync = syncBuffers || null;
+  pyodide.globals.set("_sync_call", (name, args, bytes) => syncCall(name, args, bytes));
+  pyodide.globals.set("_sync_available", !!sync);
+  pyodide.globals.set("_relay_http", (spec) => relayHttp(spec));
+  pyodide.globals.set("_relay_configured", () => !!(relay && relay.url));
+  if (suite["net.py"]) pyodide.runPython("import suite.net\nsuite.net.install()"); // requests (and sockets) through the relay
   pyodide.FS.mkdirTree("/home/pyodide");
   pyodide.FS.chdir("/home/pyodide");
   return { python: pyodide.runPython("import sys; sys.version.split()[0]"), pyodide: pyodide.version, log };
@@ -328,7 +392,12 @@ const handlers = {
   async run({ code, count }) {
     await pyodide.loadPackagesFromImports(code, callbacks);
     const run = pyodide.globals.get("_run");
-    try { return await run(code, count); } finally { run.destroy(); }
+    // KeyboardInterrupt only in the cell's code: the kernel writes the buffer only between "running" (posted by _run) and the end
+    if (interrupts) interrupts[0] = 0;
+    try { return await run(code, count); } finally {
+      run.destroy();
+      if (interrupts) interrupts[0] = 0;
+    }
   },
   /** A change in a widget on the page (value, index, click …); outputs of the callbacks go to this request. */
   widget({ model, data }) {
@@ -346,7 +415,38 @@ const handlers = {
     }
     return packages;
   },
-  write({ path, data }) { pyodide.FS.writeFile(path, data); return true; },
+  write({ path, data }) { pyodide.FS.mkdirTree(path.replace(/\/[^/]*$/, "") || "/"); pyodide.FS.writeFile(path, data); return true; },
+  mkdirs({ path }) { pyodide.FS.mkdirTree(path); return true; },
+  /** All files and folders below a folder: [{ path (relative), dir, size, mtime }]. */
+  walk({ path }) {
+    const FS = pyodide.FS;
+    const out = [];
+    const visit = (dir, rel) => {
+      for (const name of FS.readdir(dir)) {
+        if (name === "." || name === "..") continue;
+        const stat = FS.stat(`${dir}/${name}`);
+        const r = rel ? `${rel}/${name}` : name;
+        const isDir = FS.isDir(stat.mode);
+        out.push({ path: r, dir: isDir, size: stat.size, mtime: +stat.mtime });
+        if (isDir) visit(`${dir}/${name}`, r);
+      }
+    };
+    if (FS.analyzePath(path).exists) visit(path, "");
+    return out;
+  },
+  /** Delete a folder with everything in it. */
+  rmtree({ path }) {
+    const FS = pyodide.FS;
+    if (!FS.analyzePath(path).exists) return false;
+    const remove = (p) => {
+      if (FS.isDir(FS.stat(p).mode)) {
+        for (const name of FS.readdir(p)) if (name !== "." && name !== "..") remove(`${p}/${name}`);
+        FS.rmdir(p);
+      } else FS.unlink(p);
+    };
+    remove(path);
+    return true;
+  },
   /** Delete a file or an empty folder. */
   remove({ path }) {
     const FS = pyodide.FS;
@@ -382,8 +482,80 @@ const handlers = {
 
 // requests are processed one after another (like a Jupyter kernel)
 let queue = Promise.resolve();
+// calls from Python to the page (module "suite"): answered at once, not queued (the calling cell is waiting)
+const calls = new Map();
+let nextCall = 1;
+function pageCall(name, args) {
+  return new Promise((resolve, reject) => {
+    const call = nextCall++;
+    calls.set(call, { resolve, reject });
+    post({ type: "call", call, name, args: String(args || "null") });
+  });
+}
+
+let nextSync = 1;
+const decoder = new TextDecoder();
+
+/** A synchronous call of the page (isolated pages): the result as a JSON string or a Uint8Array; errors are thrown. */
+function syncCall(name, args, bytes) {
+  if (!sync) throw new Error("NOT_ISOLATED");
+  const call = nextSync++;
+  Atomics.store(sync.control, 0, 0);
+  const data = bytes ? (bytes.toJs ? bytes.toJs() : bytes) : null;
+  post({ type: "sync-call", call, name, args: String(args || "null"), bytes: data });
+  for (;;) {
+    Atomics.wait(sync.control, 0, 0, 100);
+    if (Atomics.load(sync.control, 0) !== 0) {
+      if (sync.control[3] === call) break;
+      Atomics.store(sync.control, 0, 0); // (an answer to an interrupted call)
+      continue;
+    }
+    if (interrupts && interrupts[0] === 2) { // KeyboardInterrupt while waiting for the page
+      interrupts[0] = 0;
+      post({ type: "sync-cancel", call });
+      throw new Error("KeyboardInterrupt");
+    }
+  }
+  const kind = sync.control[1];
+  const result = sync.data.slice(0, sync.control[2]);
+  Atomics.store(sync.control, 0, 0);
+  if (kind === 2) throw new Error(decoder.decode(result));
+  return kind === 1 ? result : decoder.decode(result);
+}
+
+/** A request through the relay's /http (spec: JSON of the relay protocol); the relay's answer as JSON. */
+function relayHttp(spec) {
+  if (sync) return syncCall("relay.http", spec, null);
+  if (!relay || !relay.url) throw new Error("NO_RELAY");
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${relay.url}/http`, false); // (synchronous: allowed in workers)
+  xhr.setRequestHeader("Content-Type", "application/json");
+  if (relay.token) xhr.setRequestHeader("X-Relay-Token", relay.token);
+  try { xhr.send(String(spec)); } catch (e) { throw new Error(`NO_RELAY ${relay.url}`); }
+  if (xhr.status === 0) throw new Error(`NO_RELAY ${relay.url}`);
+  return xhr.responseText;
+}
+
+// file system requests are synchronous: answered at once (also while a cell waits, e.g. for a page call that reads and
+// writes files of a mounted archive, which would otherwise wait for that cell)
+const IMMEDIATE = new Set(["write", "read", "mkdirs", "walk", "rmtree", "list", "remove"]);
+
 self.onmessage = (event) => {
   const msg = event.data;
+  if (msg.type === "relay") { relay = msg.url ? { url: msg.url, token: msg.token || "" } : null; return; }
+  if (msg.type === "call-result") {
+    const c = calls.get(msg.call);
+    if (c) { calls.delete(msg.call); if (msg.ok) c.resolve(JSON.stringify(msg.result ?? null)); else c.reject(new Error(msg.error || "failed")); }
+    return;
+  }
+  if (pyodide && IMMEDIATE.has(msg.type)) {
+    try {
+      post({ id: msg.id, type: "done", result: handlers[msg.type](msg) });
+    } catch (e) {
+      post({ id: msg.id, type: "fail", error: String(e && e.message ? e.message : e) });
+    }
+    return;
+  }
   queue = queue.then(async () => {
     current = msg.id;
     try {

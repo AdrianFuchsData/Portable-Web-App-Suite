@@ -1,6 +1,6 @@
 # Übersicht
 
-`overview.html` enthält **alle Anwendungen der Suite in einer Datei** (etwa 90 MB, das meiste davon das
+`overview.html` enthält **alle Anwendungen der Suite in einer Datei** (etwa 120 MB, das meiste davon das
 Python-Notebook). So kommt die Suite am einfachsten auf einen Rechner: eine Datei kopieren, öffnen und jede Anwendung
 von dort starten.
 

@@ -684,7 +684,29 @@ def test_rar_xz_and_bz2(app_page, tmp_path):
         open_row(p, "folder")
         open_row(p, "inner.txt")
         expect(p.locator("[data-testid=preview]")).to_contain_text(f"inside {ext}")
+        p.keyboard.press("Escape")
+        # edited and saved in the same format (the own TAR writer keeps names that are not ASCII)
+        p.evaluate("AR.app.addFiles([{ file: new File(['grüße'], 'größe.txt'), path: 'größe.txt' }])")
+        d = download(p, lambda: p.keyboard.press("Control+s"))
+        assert d.suggested_filename == f"pack.{ext}"
+        with tarfile.open(d.path(), mode.replace("w", "r")) as tf:
+            assert tf.extractfile("folder/inner.txt").read() == data
+            assert tf.extractfile("folder/größe.txt").read() == "grüße".encode()
+        expect(p.locator("[data-testid=status]")).to_contain_text(label)
         assert p.errors == []
+    # ZIP converted to both (a large incompressible file: compressed data can be larger than the input)
+    p = app_page("archive", init_script=NO_PICKERS)
+    open_archive(p, make_zip(tmp_path / "src.zip"))
+    noise = list(os.urandom(300000))
+    p.evaluate("bytes => AR.app.addFiles([{ file: new File([new Uint8Array(bytes)], 'noise.bin'), path: 'noise.bin' }])", noise)
+    for fmt, mode in (("tbz2", "r:bz2"), ("txz", "r:xz")):
+        p.click("[data-testid=save-as]")
+        p.select_option("[data-testid=save-as-format]", fmt)
+        d = download(p, lambda: p.click("[data-testid=save-as-ok]"))
+        assert d.suggested_filename == "src." + {"tbz2": "tar.bz2", "txz": "tar.xz"}[fmt]
+        with tarfile.open(d.path(), mode) as tf:
+            assert tf.extractfile("readme.txt").read() == README and list(tf.extractfile("noise.bin").read()) == noise
+    assert p.errors == []
     import lzma
     (tmp_path / "notes.txt.xz").write_bytes(lzma.compress(b"just one file"))
     p = app_page("archive", init_script=NO_PICKERS)

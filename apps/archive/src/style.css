@@ -46,3 +46,6 @@
 .ar-test-ok { color: var(--pico-ins-color, #2e7d32); }
 .ar-test-bad { color: var(--pico-del-color, #c62828); }
 .ar-test-errors { max-height: 40vh; overflow: auto; font-size: .85rem; }
+.ar-link-files { list-style: none; padding: 0; margin: 0 0 .6rem; max-height: 40vh; overflow: auto; }
+.ar-link-files li { margin: 0; padding: .1rem 0; word-break: break-all; }
+.ar-link-files label { margin: 0; }

@@ -1,0 +1,46 @@
+From: Bernd Beispiel <bernd@example.org>
+To: Anna Muster <anna@example.org>
+Subject: Beispielnachricht mit Anhang
+Date: Thu, 01 Jan 2026 12:00:00 +0100
+Message-ID: <example-1@example.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============0051781740741722708=="
+
+--===============0051781740741722708==
+Content-Type: multipart/alternative;
+ boundary="===============6936494516134866457=="
+
+--===============6936494516134866457==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Hallo Anna,
+
+hier ist das Bild.
+
+Bernd
+
+--===============6936494516134866457==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+<p>Hallo Anna,</p><p>hier ist das <b>Bild</b>.</p><p>Bernd</p>
+
+--===============6936494516134866457==--
+
+--===============0051781740741722708==
+Content-Type: image/png
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="bild.png"
+MIME-Version: 1.0
+
+iVBORw0KGgoAAAANSUhEUgAAAFAAAAAyCAYAAADLLVz8AAABN0lEQVR4nO3WSU7DQBSE4TLiBpkJ
+4nwozPM2t+UYxYYOLSQvUJH0e+36V7bshfWpWvKA/Z44NACsroHv++HnFVbXfh9ncFIGFDOgmAHF
+DChmQDEDihlQzIBiBhQzoJgBxQwoZkAxA4oZUMyAYgYUM6DYeesPyBCvrj/Hnhmwipe7UaixJg3I
+7c2fwX43OUBub2W0uskA8uLuX+FKXQNyc38UtLouAbl5ODpcqStArk8HV+rmR5rrx5PjAR0ssBVc
+KfUCuXpqigckXWAEuFK6BXL1HAYPSAbIZSw8IMkR5vIlHFwp/AIj4wHBAbmIjQcEBuTiNTweEBQw
+Cx4QEDATHhAMkPO3VHhAIMCMeEAgwKyFAMy6PiAAIOfvafGAxoCc5cYDAiwwe80Ae1gf0AiQs48u
+8AAfYbkvdA9XHxol5LcAAAAASUVORK5CYII=
+
+--===============0051781740741722708==--

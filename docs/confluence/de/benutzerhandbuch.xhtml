@@ -155,6 +155,18 @@ Dateimanager): Die Datei öffnet sich in der Anwendung, und <strong>Speichern</s
 </tr>
 </tbody>
 </table>
+<h2>Grenzen: kleine und mittlere Dateien</h2>
+<p>Die Suite arbeitet im Browser und hält die Daten, mit denen sie arbeitet, <strong>im Speicher</strong> – das geöffnete Dokument, die Tabelle, das Bild
+oder Archiv, die bearbeiteten Audio- und Videodaten, die KeePass-Datenbank, die SQLite-Datei des Datenbankwerkzeugs, die Daten des Notebooks,
+sein Dateisystem und eingebundene Archive. Wie viel sie bewältigt, hängt daher vom Speicher ab, den der Browser einem Tab zugesteht (am Desktop
+oft einige GB, auf Smartphones und Tablets viel weniger), nicht von der Größe Ihrer Festplatte.</p>
+<p>Die Suite ist für <strong>kleine bis mittlere Dateien</strong> gemacht – Dokumente, Tabellen und Präsentationen alltäglicher Größe, Archive und Mediendateien bis
+zu einigen hundert Megabyte, Datensätze, die mehrfach in den Speicher passen. Sie ist <strong>bewusst kein Werkzeug für Big Data</strong>: Es gibt kein Streaming
+sehr großer Dateien, keine Verarbeitung in Teilen und keine Nutzung der Festplatte als Arbeitsspeicher. Mit zu großen Dateien wird eine Anwendung
+langsam, zeigt einen Fehler, oder der Browser beendet den Tab (ungespeicherte Arbeit kann dann verloren gehen). Für solche Daten verwenden Sie
+Werkzeuge, die auf einem Server oder einer Workstation laufen.</p>
+<p>Einige Anwendungen nennen eigene Grenzen (zum Beispiel die Wellenform des Video-Editors über 400 MB, Wiederherstellungskopien über 64 MB, das Einbinden
+von Archiven im Notebook über 512 MiB, ZIP-Archive ohne ZIP64 über 4 GiB).</p>
 <h2>Gemeinsame Funktionen</h2>
 <p>Jede Anwendung hat dieselbe Kopfzeile:</p>
 <table>
@@ -211,6 +223,11 @@ Verwerfen der Änderungen löscht die Kopie.</p>
   über insgesamt 48 MB nicht kopiert (sie werden wie bei einem gespeicherten Projekt neu verknüpft).</li>
 <li>Der Archivmanager speichert nie Passwörter; verschlüsselte Einträge bleiben in der Kopie verschlüsselt.</li>
 </ul>
+<h3>Beispiele</h3>
+<p>Jede Anwendung bringt Beispieldateien mit, die zeigen, was sie kann: Drücken Sie <code>F1</code> und öffnen Sie eine unter <strong>📂 Beispiele</strong> (in der
+Sprache der Oberfläche). Sie öffnet sich als Kopie – speichern Sie sie mit <em>Speichern unter</em>, um Ihre Änderungen zu behalten. Alle Beispiele,
+auch größere und die für die Netzwerkanwendungen, sind in <code>examples.zip</code> jeder Veröffentlichung und im Ordner <code>examples</code> des Projekts, jeweils in
+einem Ordner mit dem Namen der Anwendung. Das Passwort der Beispiel-KeePass-Datenbank und des verschlüsselten Archivs ist <strong>example</strong>.</p>
 <h3>Zuletzt verwendete Dateien</h3>
 <p>In Chrome und Edge am Computer listen die Editoren die geöffneten oder gespeicherten Dateien unter <strong>🕘 Zuletzt</strong> neben
 <strong>Öffnen</strong> auf (bis zu zehn je Anwendung). Ein Eintrag öffnet die Datei erneut; der Browser fragt eventuell einmal nach der
@@ -237,6 +254,10 @@ ansagen (derselbe Text wie der Tooltip), und die Eingabebereiche der Code-Editor
 Listeneinträge sind hell hinterlegt, damit Links und farbiger Text darauf lesbar bleiben. Im Texteditor lassen sich die
 Dateireiter fokussieren: <code>Eingabe</code> zeigt die Datei, <code>Entf</code> schließt sie. Die Bearbeitungsflächen der Textverarbeitung und der
 Tabellenkalkulation stammen aus einer Fremdkomponente (Univer) und sind weniger barrierearm als der Rest der Suite.</p>
+<p><strong>Tabulatorzeichen:</strong> In den Code-Editoren (Texteditor, Notebook-Zellen, Datenbankwerkzeug, HTTP-Werkzeug) rückt <code>Tab</code> ein und
+<code>Umschalt+Tab</code> aus; <code>Esc</code> und dann <code>Tab</code> (oder einmal <code>Strg+M</code>) springt stattdessen weiter. In anderen Textfeldern springt <code>Tab</code>
+weiter. Ein Tabulatorzeichen lässt sich in den Code-Editoren und in mehrzeiligen Textfeldern immer mit <strong><code>Strg+Alt+I</code></strong> eingeben,
+am Smartphone (ohne Tab-Taste) mit der Gruppe <strong>⇥ Leerzeichen und Tabulator</strong> der Auswahl Emoji und Symbole.</p>
 <h3>Rechtschreibung</h3>
 <p>Die Anwendungen, in denen Sie Text schreiben – Texteditor, Python-Notebook, E-Mail, Textverarbeitung, Präsentation,
 Web-Folien, Kalender, KeePass (Notizen), Diagramm-Editor, Bildbearbeitung (Text) und Video-Editor (Titel) –, können die
@@ -267,7 +288,9 @@ Akzenten, Formen …).</p>
 <ul>
 <li><strong><code>Strg+.</code></strong> (oder die Schaltfläche <strong>☺</strong> am rechten Rand des Feldes mit dem Fokus) öffnet die Auswahl neben dem Feld (am
   Smartphone unten am Bildschirm). Sie zeigt die zuletzt verwendeten Zeichen (<strong>🕘</strong>, neueste zuerst; wie die
-  Rechtschreib-Einstellung für alle Anwendungen), die Emoji-Gruppen und die Symbolgruppen.</li>
+  Rechtschreib-Einstellung für alle Anwendungen), die Emoji-Gruppen und die Symbolgruppen. Die Gruppe <strong>⇥ Leerzeichen und
+  Tabulator</strong> enthält Zeichen, die man sonst weder sieht noch tippen kann: das Tabulatorzeichen, geschützte Leerzeichen, schmale,
+  Halbgeviert- und Geviert-Leerzeichen, das breitenlose Leerzeichen und das weiche Trennzeichen (mit Beschriftungen wie <code>NBSP</code>).</li>
 <li><strong>Suchen</strong> bei offener Auswahl: nach Name oder Stichwort auf Deutsch oder Englisch (<code>glücklich</code>, <code>Pfeil rechts</code>,
   <code>Euro</code>), nach Code (<code>:wave:</code>), nach Emoticon (<code>:)</code>) oder nach Codepunkt (<code>U+1F60A</code>, <code>1F60A</code>). <code>Enter</code> fügt das erste
   Ergebnis ein; <code>↓</code> wechselt zu den Zeichen, die Pfeiltasten bewegen sich darin, <code>Enter</code> oder ein Klick fügt ein und
@@ -336,6 +359,30 @@ muss der Diagramm-Editor im selben Ordner liegen, oder die Anwendung wird aus de
 </ul>
 <p>Wenn Sie eine Anwendung mit ungespeicherten Änderungen schließen, fragt der Browser, ob Sie die Seite wirklich
 verlassen möchten.</p>
+<h3>Dateien in Archiven</h3>
+<p><strong>Öffnen</strong> und <strong>Speichern unter</strong> fragen in jeder Anwendung zuerst nach dem Ort: <strong>💾 Dateisystem</strong> (Standard, <code>Eingabe</code>)
+oder ein <strong>Archiv</strong>.</p>
+<ul>
+<li>Aufgeführt sind die im <ac:link><ri:page ri:content-title="Archivmanager" /><ac:plain-text-link-body><![CDATA[Archivmanager]]></ac:plain-text-link-body></ac:link> geöffneten Archive – in der Übersicht seine Reiter, sonst die
+  Fenster des Archivmanagers, die aus dieser Anwendung gestartet wurden (oder die sie gestartet hat). <strong>📦 Anderes Archiv…</strong>
+  startet den Archivmanager, in dem Sie ein Archiv aus dem Dateisystem öffnen oder ein neues anlegen.</li>
+<li>Der Archivmanager fragt dann nach den Einzelheiten: welche Datei(en) geöffnet werden, oder Ordner und Name zum Speichern
+  (und ob das Archiv selbst nach jeder Änderung gespeichert wird – sinnvoll in Chrome/Edge, wo das Archiv direkt in seine
+  Datei geschrieben wird; sonst ist jedes Speichern des Archivs ein Download).</li>
+<li>Eine aus einem Archiv geöffnete oder in eines gespeicherte Datei bleibt damit verbunden: <strong>Speichern</strong> schreibt sie
+  wieder in das Archiv. Der Archivmanager markiert das Archiv als geändert; speichern Sie es dort, um die Änderungen zu
+  behalten.</li>
+<li>Wird das Archiv im Archivmanager geschlossen oder ersetzt, lassen sich seine Dateien dort nicht mehr laden oder speichern:
+  <strong>Speichern</strong> meldet das – verwenden Sie <strong>Speichern unter</strong>. Der Archivmanager fragt nach, bevor er ein Archiv schließt,
+  dessen Dateien in anderen Anwendungen geöffnet sind, und führt sie auf.</li>
+<li>Auch <strong>Python-Notebooks</strong> werden angeboten (Abschnitt <em>Python-Notebooks (im Speicher)</em>): Ihr Dateisystem – das, in dem Python
+  arbeitet – lässt sich wie ein Archiv verwenden, sodass ein Notebook eine Datei verarbeiten kann, die Sie dann in einer anderen
+  Anwendung öffnen, und umgekehrt. <strong>Es existiert nur im Speicher:</strong> Dort gespeicherte Dateien sind weg, wenn die Notebook-Seite
+  geschlossen oder Python neu gestartet wird (die Dialoge sagen das). Das Notebook fragt vor einem Neustart nach, wenn Dateien daraus
+  anderswo geöffnet sind; danach meldet <strong>Speichern</strong>, dass die Datei weg ist.</li>
+<li>Die Auswahl lässt sich in den Einstellungen abschalten (<code>F1</code>, <strong>⚙ Einstellungen</strong>): Öffnen und Speichern unter gehen dann
+  direkt zum Dateisystem.</li>
+</ul>
 <h2>Anwendungsdaten: Einstellungen, Verbindungen und Passwörter</h2>
 <p>Manche Anwendungen speichern Einstellungen, Verbindungen oder Passwörter, zum Beispiel die Serververbindungen des
 SSH-Clients. Diese Daten liegen in einer Datei, die <strong>Sie</strong> wählen, niemals im Browser. Eine Datei kann die Daten
@@ -395,10 +442,22 @@ Webserver unter <code>https://relay.example.org/relay</code>. Tragen Sie dann di
 ein Client-Zertifikat oder eine Firmenanmeldung, wählen Sie <strong>Reverse-Proxy / Client-Zertifikat</strong>. <strong>Testen</strong> prüft
 Adresse und Anmeldung. Adressen anderer Rechner müssen <code>https</code> verwenden; eine unverschlüsselte <code>http</code>-Adresse
 funktioniert nur, wenn Sie sie ausdrücklich erlauben (nur in vertrauenswürdigen Netzen).</p>
+<p><strong>Die Anwendungen über das Relay.</strong> Mit <code>--serve</code> und dem Ordner der Anwendungen gestartet, stellt das Relay auch die Anwendungen bereit:</p>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">bash</ac:parameter><ac:plain-text-body><![CDATA[python3 relay.py --serve C:\Users\anna\suite]]></ac:plain-text-body></ac:structured-macro>
+<p>Öffnen Sie die angezeigte Adresse (z. B. <code>http://127.0.0.1:8765/</code>, die Übersicht). Seiten von dort sind <em>cross-origin-isoliert</em>: Das
+<ac:link><ri:page ri:content-title="Python-Notebook" /><ac:plain-text-link-body><![CDATA[Python-Notebook]]></ac:plain-text-link-body></ac:link> kann dann laufende Zellen unterbrechen und aus Python Netzwerkverbindungen öffnen (Mail, FTP, SSH …);
+seine Kopfzeile zeigt <strong>🔓 Netzwerk und Unterbrechen</strong>. Die Anwendungen verwenden dieses Relay standardmäßig; geben Sie sein Token einmal
+ein. Einstellungen und zuletzt verwendete Dateien werden für direkt geöffnete Dateien und für vom Relay bereitgestellte getrennt gehalten
+(exportieren und importieren Sie sie mit <strong>⚙ Einstellungen</strong>). Der Port wird mit <code>--port</code> gesetzt (Standard 8765).</p>
+<p><strong>Ein Firmen-Proxy.</strong> Darf das Relay das Internet nur über einen Proxy erreichen, starten Sie es mit
+<code>--upstream-proxy http://proxy.example.org:3128</code> (bei Bedarf mit <code>benutzer:passwort@</code> vor dem Host; <code>--upstream-proxy env</code> übernimmt den
+Proxy aus den Umgebungsvariablen). <code>--no-proxy</code> führt Server auf, die direkt erreicht werden.</p>
 <p>Details finden Sie in <a href="../../relay/README.md"><code>relay/README.md</code></a> und der <ac:link><ri:page ri:content-title="Portable Web App Suite – Technische Dokumentation" /><ac:plain-text-link-body><![CDATA[technischen Dokumentation]]></ac:plain-text-link-body></ac:link>.</p>
 <h2>Python-Notebook</h2>
-<p>Das Python-Notebook (<code>notebook.html</code>) führt Python mit pandas, numpy, matplotlib und weiteren Bibliotheken vollständig im
-Browser aus, mit Jupyter-Notebooks (<code>.ipynb</code>) und einer Konsole. Siehe <ac:link><ri:page ri:content-title="Python-Notebook" /><ac:plain-text-link-body><![CDATA[Python-Notebook]]></ac:plain-text-link-body></ac:link>.</p>
+<p>Das Python-Notebook (<code>notebook.html</code>) führt Python mit pandas, numpy, matplotlib, SciPy, scikit-learn und weiteren Bibliotheken
+vollständig im Browser aus, mit Jupyter-Notebooks (<code>.ipynb</code>), einer Konsole und einem Terminal mit bash-ähnlicher Shell. Es kann Archive
+einbinden, über das Relay das Netzwerk erreichen (requests; Sockets und SSH, wenn es vom Relay bereitgestellt wird) und sein Dateisystem mit den
+anderen Anwendungen teilen. Siehe <ac:link><ri:page ri:content-title="Python-Notebook" /><ac:plain-text-link-body><![CDATA[Python-Notebook]]></ac:plain-text-link-body></ac:link>.</p>
 <h2>Lizenz</h2>
 <p>Copyright © 2026 Adrian Fuchs. Die Suite ist unter der <strong>EUPL-1.2</strong> (Open-Source-Lizenz für die Europäische Union)
 lizenziert: Sie dürfen sie unter den Bedingungen der Lizenz nutzen, kopieren, ändern und weitergeben – auch kommerziell.

@@ -109,6 +109,8 @@ Auf dem Mac verwenden Sie Cmd statt Strg. `F1` (oder `?`) zeigt diese Liste in d
 |---|---|
 | `Strg+Z` | Rückgängig |
 | `Strg+Y` / `Strg+Umschalt+Z` | Wiederholen |
+| `Tab` / `Umschalt+Tab` | Einrücken / ausrücken |
+| `Strg+Alt+I` | Tabulatorzeichen einfügen |
 
 ### Hilfe
 

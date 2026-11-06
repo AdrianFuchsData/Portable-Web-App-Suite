@@ -1,0 +1,2 @@
+/* @univerjs/preset-sheets-filter@1.0.4 (jsDelivr +esm) */
+import{UniverSheetsFilterPlugin as i}from"@univerjs/sheets-filter";export*from"@univerjs/sheets-filter";import{UniverSheetsFilterUIPlugin as n}from"@univerjs/sheets-filter-ui";export*from"@univerjs/sheets-filter-ui";import"@univerjs/sheets-filter/facade";function o(e={}){const{enableSyncSwitch:r}=e;return{plugins:[[i,{enableSyncSwitch:r}],n].filter(t=>!!t)}}export{o as UniverSheetsFilterPreset};

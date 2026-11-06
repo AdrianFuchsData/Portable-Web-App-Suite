@@ -61,6 +61,22 @@ Dateimanager): Die Datei öffnet sich in der Anwendung, und **Speichern** schrei
 | Web-Inspektor | `webinspector.html` | [Web-Inspektor](apps/webinspector.md) |
 | Barcodes (QR-Codes und andere) | `barcode.html` | [Barcodes](apps/barcode.md) |
 
+## Grenzen: kleine und mittlere Dateien
+
+Die Suite arbeitet im Browser und hält die Daten, mit denen sie arbeitet, **im Speicher** – das geöffnete Dokument, die Tabelle, das Bild
+oder Archiv, die bearbeiteten Audio- und Videodaten, die KeePass-Datenbank, die SQLite-Datei des Datenbankwerkzeugs, die Daten des Notebooks,
+sein Dateisystem und eingebundene Archive. Wie viel sie bewältigt, hängt daher vom Speicher ab, den der Browser einem Tab zugesteht (am Desktop
+oft einige GB, auf Smartphones und Tablets viel weniger), nicht von der Größe Ihrer Festplatte.
+
+Die Suite ist für **kleine bis mittlere Dateien** gemacht – Dokumente, Tabellen und Präsentationen alltäglicher Größe, Archive und Mediendateien bis
+zu einigen hundert Megabyte, Datensätze, die mehrfach in den Speicher passen. Sie ist **bewusst kein Werkzeug für Big Data**: Es gibt kein Streaming
+sehr großer Dateien, keine Verarbeitung in Teilen und keine Nutzung der Festplatte als Arbeitsspeicher. Mit zu großen Dateien wird eine Anwendung
+langsam, zeigt einen Fehler, oder der Browser beendet den Tab (ungespeicherte Arbeit kann dann verloren gehen). Für solche Daten verwenden Sie
+Werkzeuge, die auf einem Server oder einer Workstation laufen.
+
+Einige Anwendungen nennen eigene Grenzen (zum Beispiel die Wellenform des Video-Editors über 400 MB, Wiederherstellungskopien über 64 MB, das Einbinden
+von Archiven im Notebook über 512 MiB, ZIP-Archive ohne ZIP64 über 4 GiB).
+
 ## Gemeinsame Funktionen
 
 Jede Anwendung hat dieselbe Kopfzeile:
@@ -98,6 +114,13 @@ Verwerfen der Änderungen löscht die Kopie.
   über insgesamt 48 MB nicht kopiert (sie werden wie bei einem gespeicherten Projekt neu verknüpft).
 - Der Archivmanager speichert nie Passwörter; verschlüsselte Einträge bleiben in der Kopie verschlüsselt.
 
+### Beispiele
+
+Jede Anwendung bringt Beispieldateien mit, die zeigen, was sie kann: Drücken Sie `F1` und öffnen Sie eine unter **📂 Beispiele** (in der
+Sprache der Oberfläche). Sie öffnet sich als Kopie – speichern Sie sie mit *Speichern unter*, um Ihre Änderungen zu behalten. Alle Beispiele,
+auch größere und die für die Netzwerkanwendungen, sind in `examples.zip` jeder Veröffentlichung und im Ordner `examples` des Projekts, jeweils in
+einem Ordner mit dem Namen der Anwendung. Das Passwort der Beispiel-KeePass-Datenbank und des verschlüsselten Archivs ist **example**.
+
 ### Zuletzt verwendete Dateien
 
 In Chrome und Edge am Computer listen die Editoren die geöffneten oder gespeicherten Dateien unter **🕘 Zuletzt** neben
@@ -128,6 +151,11 @@ ansagen (derselbe Text wie der Tooltip), und die Eingabebereiche der Code-Editor
 Listeneinträge sind hell hinterlegt, damit Links und farbiger Text darauf lesbar bleiben. Im Texteditor lassen sich die
 Dateireiter fokussieren: `Eingabe` zeigt die Datei, `Entf` schließt sie. Die Bearbeitungsflächen der Textverarbeitung und der
 Tabellenkalkulation stammen aus einer Fremdkomponente (Univer) und sind weniger barrierearm als der Rest der Suite.
+
+**Tabulatorzeichen:** In den Code-Editoren (Texteditor, Notebook-Zellen, Datenbankwerkzeug, HTTP-Werkzeug) rückt `Tab` ein und
+`Umschalt+Tab` aus; `Esc` und dann `Tab` (oder einmal `Strg+M`) springt stattdessen weiter. In anderen Textfeldern springt `Tab`
+weiter. Ein Tabulatorzeichen lässt sich in den Code-Editoren und in mehrzeiligen Textfeldern immer mit **`Strg+Alt+I`** eingeben,
+am Smartphone (ohne Tab-Taste) mit der Gruppe **⇥ Leerzeichen und Tabulator** der Auswahl [Emoji und Symbole](#emoji-und-symbole).
 
 ### Rechtschreibung
 
@@ -162,7 +190,9 @@ Akzenten, Formen …).
 
 - **`Strg+.`** (oder die Schaltfläche **☺** am rechten Rand des Feldes mit dem Fokus) öffnet die Auswahl neben dem Feld (am
   Smartphone unten am Bildschirm). Sie zeigt die zuletzt verwendeten Zeichen (**🕘**, neueste zuerst; wie die
-  Rechtschreib-Einstellung für alle Anwendungen), die Emoji-Gruppen und die Symbolgruppen.
+  Rechtschreib-Einstellung für alle Anwendungen), die Emoji-Gruppen und die Symbolgruppen. Die Gruppe **⇥ Leerzeichen und
+  Tabulator** enthält Zeichen, die man sonst weder sieht noch tippen kann: das Tabulatorzeichen, geschützte Leerzeichen, schmale,
+  Halbgeviert- und Geviert-Leerzeichen, das breitenlose Leerzeichen und das weiche Trennzeichen (mit Beschriftungen wie `NBSP`).
 - **Suchen** bei offener Auswahl: nach Name oder Stichwort auf Deutsch oder Englisch (`glücklich`, `Pfeil rechts`,
   `Euro`), nach Code (`:wave:`), nach Emoticon (`:)`) oder nach Codepunkt (`U+1F60A`, `1F60A`). `Enter` fügt das erste
   Ergebnis ein; `↓` wechselt zu den Zeichen, die Pfeiltasten bewegen sich darin, `Enter` oder ein Klick fügt ein und
@@ -246,6 +276,31 @@ Wie gespeichert wird, hängt vom Browser ab:
 Wenn Sie eine Anwendung mit ungespeicherten Änderungen schließen, fragt der Browser, ob Sie die Seite wirklich
 verlassen möchten.
 
+### Dateien in Archiven
+
+**Öffnen** und **Speichern unter** fragen in jeder Anwendung zuerst nach dem Ort: **💾 Dateisystem** (Standard, `Eingabe`)
+oder ein **Archiv**.
+
+- Aufgeführt sind die im [Archivmanager](apps/archive.md) geöffneten Archive – in der Übersicht seine Reiter, sonst die
+  Fenster des Archivmanagers, die aus dieser Anwendung gestartet wurden (oder die sie gestartet hat). **📦 Anderes Archiv…**
+  startet den Archivmanager, in dem Sie ein Archiv aus dem Dateisystem öffnen oder ein neues anlegen.
+- Der Archivmanager fragt dann nach den Einzelheiten: welche Datei(en) geöffnet werden, oder Ordner und Name zum Speichern
+  (und ob das Archiv selbst nach jeder Änderung gespeichert wird – sinnvoll in Chrome/Edge, wo das Archiv direkt in seine
+  Datei geschrieben wird; sonst ist jedes Speichern des Archivs ein Download).
+- Eine aus einem Archiv geöffnete oder in eines gespeicherte Datei bleibt damit verbunden: **Speichern** schreibt sie
+  wieder in das Archiv. Der Archivmanager markiert das Archiv als geändert; speichern Sie es dort, um die Änderungen zu
+  behalten.
+- Wird das Archiv im Archivmanager geschlossen oder ersetzt, lassen sich seine Dateien dort nicht mehr laden oder speichern:
+  **Speichern** meldet das – verwenden Sie **Speichern unter**. Der Archivmanager fragt nach, bevor er ein Archiv schließt,
+  dessen Dateien in anderen Anwendungen geöffnet sind, und führt sie auf.
+- Auch **Python-Notebooks** werden angeboten (Abschnitt *Python-Notebooks (im Speicher)*): Ihr Dateisystem – das, in dem Python
+  arbeitet – lässt sich wie ein Archiv verwenden, sodass ein Notebook eine Datei verarbeiten kann, die Sie dann in einer anderen
+  Anwendung öffnen, und umgekehrt. **Es existiert nur im Speicher:** Dort gespeicherte Dateien sind weg, wenn die Notebook-Seite
+  geschlossen oder Python neu gestartet wird (die Dialoge sagen das). Das Notebook fragt vor einem Neustart nach, wenn Dateien daraus
+  anderswo geöffnet sind; danach meldet **Speichern**, dass die Datei weg ist.
+- Die Auswahl lässt sich in den Einstellungen abschalten (`F1`, **⚙ Einstellungen**): Öffnen und Speichern unter gehen dann
+  direkt zum Dateisystem.
+
 ## Anwendungsdaten: Einstellungen, Verbindungen und Passwörter
 
 Manche Anwendungen speichern Einstellungen, Verbindungen oder Passwörter, zum Beispiel die Serververbindungen des
@@ -309,12 +364,30 @@ ein Client-Zertifikat oder eine Firmenanmeldung, wählen Sie **Reverse-Proxy / C
 Adresse und Anmeldung. Adressen anderer Rechner müssen `https` verwenden; eine unverschlüsselte `http`-Adresse
 funktioniert nur, wenn Sie sie ausdrücklich erlauben (nur in vertrauenswürdigen Netzen).
 
+**Die Anwendungen über das Relay.** Mit `--serve` und dem Ordner der Anwendungen gestartet, stellt das Relay auch die Anwendungen bereit:
+
+```sh
+python3 relay.py --serve C:\Users\anna\suite
+```
+
+Öffnen Sie die angezeigte Adresse (z. B. `http://127.0.0.1:8765/`, die Übersicht). Seiten von dort sind *cross-origin-isoliert*: Das
+[Python-Notebook](apps/notebook.md) kann dann laufende Zellen unterbrechen und aus Python Netzwerkverbindungen öffnen (Mail, FTP, SSH …);
+seine Kopfzeile zeigt **🔓 Netzwerk und Unterbrechen**. Die Anwendungen verwenden dieses Relay standardmäßig; geben Sie sein Token einmal
+ein. Einstellungen und zuletzt verwendete Dateien werden für direkt geöffnete Dateien und für vom Relay bereitgestellte getrennt gehalten
+(exportieren und importieren Sie sie mit **⚙ Einstellungen**). Der Port wird mit `--port` gesetzt (Standard 8765).
+
+**Ein Firmen-Proxy.** Darf das Relay das Internet nur über einen Proxy erreichen, starten Sie es mit
+`--upstream-proxy http://proxy.example.org:3128` (bei Bedarf mit `benutzer:passwort@` vor dem Host; `--upstream-proxy env` übernimmt den
+Proxy aus den Umgebungsvariablen). `--no-proxy` führt Server auf, die direkt erreicht werden.
+
 Details finden Sie in [`relay/README.md`](../../relay/README.md) und der [technischen Dokumentation](technische-dokumentation.md).
 
 ## Python-Notebook
 
-Das Python-Notebook (`notebook.html`) führt Python mit pandas, numpy, matplotlib und weiteren Bibliotheken vollständig im
-Browser aus, mit Jupyter-Notebooks (`.ipynb`) und einer Konsole. Siehe [Python-Notebook](apps/notebook.md).
+Das Python-Notebook (`notebook.html`) führt Python mit pandas, numpy, matplotlib, SciPy, scikit-learn und weiteren Bibliotheken
+vollständig im Browser aus, mit Jupyter-Notebooks (`.ipynb`), einer Konsole und einem Terminal mit bash-ähnlicher Shell. Es kann Archive
+einbinden, über das Relay das Netzwerk erreichen (requests; Sockets und SSH, wenn es vom Relay bereitgestellt wird) und sein Dateisystem mit den
+anderen Anwendungen teilen. Siehe [Python-Notebook](apps/notebook.md).
 
 ## Lizenz
 

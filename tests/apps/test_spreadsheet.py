@@ -257,3 +257,73 @@ def test_conditional_formatting_and_validation(app_page, tmp_path):
     texts = page.evaluate("SS.workbook.getActiveSheet().getConditionalFormattingRules().filter((r) => r.rule.subType === 'text').map((r) => [r.rule.operator, r.rule.value])")
     assert texts == [["containsText", "ab"]]
     assert page.errors == []
+
+
+def make_filter_xlsx(path):
+    """An auto filter as Excel/openpyxl writes it: criteria in <autoFilter>, the filtered rows hidden."""
+    from openpyxl.worksheet.filters import CustomFilter, CustomFilters, FilterColumn, Filters
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Liste"
+    rows = [("name", "n"), ("b", 3), ("a", 5), ("c", 1), ("a", 2), ("d & e", 4)]
+    for r in rows:
+        ws.append(r)
+    ws.auto_filter.ref = "A1:B6"
+    ws.auto_filter.filterColumn.append(FilterColumn(colId=0, filters=Filters(filter=["a", "d & e"])))
+    ws.auto_filter.filterColumn.append(FilterColumn(colId=1, customFilters=CustomFilters(customFilter=[CustomFilter(operator="greaterThan", val="2")])))
+    for r in (2, 4, 5):  # b 3 (not a), c 1, a 2 (not > 2)
+        ws.row_dimensions[r].hidden = True
+    wb.save(path)
+    return path
+
+
+def test_sort_and_filter(app_page, tmp_path):
+    page = ready(app_page)
+    open_file(page, make_filter_xlsx(tmp_path / "liste.xlsx"))
+    f = page.evaluate("""() => { const ws = SS.workbook.getActiveSheet(); const f = ws.getFilter();
+      return { range: f.getRange().getA1Notation(), a: f.getColumnFilterCriteria(0), b: f.getColumnFilterCriteria(1), out: f.getFilteredOutRows() }; }""")
+    assert f["range"] == "A1:B6"
+    assert f["a"]["filters"]["filters"] == ["a", "d & e"]
+    assert f["b"]["customFilters"]["customFilters"] == [{"operator": "greaterThan", "val": "2"}]
+    assert f["out"] == [1, 3, 4]
+    # the rows were hidden by the filter, not by hand: removing the criteria shows them again
+    page.evaluate("SS.workbook.getActiveSheet().getFilter().removeColumnFilterCriteria(1)")
+    page.wait_for_timeout(300)
+    assert page.evaluate("SS.workbook.getActiveSheet().getFilter().getFilteredOutRows()") == [1, 3]
+
+    # the Data tab: the filter button switches the filter off (and on again for the selection), the sort menu
+    page.get_by_text("Data", exact=True).first.click()
+    expect(page.locator("[data-u-command='sheet.menu.sheets-sort']:visible").first).to_be_visible()
+    page.locator("[data-u-command='sheet.command.smart-toggle-filter']:visible").first.click()
+    page.wait_for_timeout(300)
+    assert page.evaluate("SS.workbook.getActiveSheet().getFilter()") is None
+    page.evaluate("SS.workbook.getActiveSheet().getRange('A1:B6').activate()")
+    page.locator("[data-u-command='sheet.command.smart-toggle-filter']:visible").first.click()
+    page.wait_for_timeout(300)
+    assert page.evaluate("SS.workbook.getActiveSheet().getFilter().getRange().getA1Notation()") == "A1:B6"
+    page.evaluate("SS.workbook.getActiveSheet().getFilter().remove()")
+    page.evaluate("SS.workbook.getActiveSheet().getRange('A2:B6').sort({ column: 1, ascending: false })")
+    page.wait_for_timeout(300)
+    assert [value(page, f"B{r}") for r in range(2, 7)] == [5, 4, 3, 2, 1]
+    assert [value(page, f"A{r}") for r in range(2, 7)] == ["a", "d & e", "b", "a", "c"]
+
+    # a new filter is saved with its criteria; Excel's hidden rows match
+    page.evaluate("""() => { const ws = SS.workbook.getActiveSheet(); const f = ws.getRange('A1:B6').createFilter();
+      f.setColumnFilterCriteria(0, { colId: 0, filters: { filters: ['a'] } }); }""")
+    page.wait_for_timeout(300)
+    page.keyboard.press("Control+s")  # (marks the change as the user's)
+    page.wait_for_timeout(500)
+    with page.expect_download() as d:
+        page.click("[data-testid=save]")
+    saved = tmp_path / "saved.xlsx"
+    d.value.save_as(saved)
+    ws = openpyxl.load_workbook(saved)["Liste"]
+    assert ws.auto_filter.ref == "A1:B6"
+    [column] = ws.auto_filter.filterColumn
+    assert column.colId == 0 and column.filters.filter == ["a"]
+    assert [r for r in range(2, 7) if ws.row_dimensions[r].hidden] == [3, 4, 6]
+    # and opened again
+    page2 = ready(app_page)
+    open_file(page2, saved)
+    assert page2.evaluate("SS.workbook.getActiveSheet().getFilter().getFilteredOutRows()") == [2, 3, 5]
+    assert page.errors == [] and page2.errors == []

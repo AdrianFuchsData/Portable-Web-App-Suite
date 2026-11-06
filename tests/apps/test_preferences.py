@@ -24,7 +24,7 @@ def test_export_and_import(app_page, tmp_path):
     # imported elsewhere (here: after clearing), with a reload
     path = tmp_path / "suite-settings.json"
     d.value.save_as(path)
-    page.evaluate("localStorage.clear()")
+    page.evaluate("localStorage.clear(); localStorage.setItem('suite.files.archives', '0')")  # (no choice "File system or archive")
     with page.expect_file_chooser() as chooser:
         page.click("[data-testid=prefs-import]")
     chooser.value.set_files(str(path))

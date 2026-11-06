@@ -10,6 +10,7 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { openSqlite, openPostgres } from '@app/drivers.js';
 import { erDiagram } from '@app/er.js';
 import 'app/cm-symbols'; // emoji and symbols insert through the editor (shared/js/cm-symbols.js)
+import { indentKeys } from 'app/cm-indent'; // Tab indents, Ctrl+Alt+I inserts a tab character (shared/js/cm-indent.js)
 
 const { html } = Suite.shell;
 const t = Suite.t;
@@ -80,6 +81,7 @@ const editor = new EditorView({
   doc: '',
   extensions: [
     basicSetup,
+    indentKeys(),
     language.of(sql({ dialect: SQLite })),
     theme.of(dark() ? oneDark : []),
     Prec.highest(keymap.of([

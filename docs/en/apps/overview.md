@@ -1,6 +1,6 @@
 # Overview
 
-`overview.html` contains **all applications of the suite in one file** (about 90 MB, most of it the Python
+`overview.html` contains **all applications of the suite in one file** (about 120 MB, most of it the Python
 notebook). It is the easiest way to get the suite onto a computer: copy one file, open it, and start any application
 from there.
 

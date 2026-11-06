@@ -15,6 +15,10 @@
 .nb-cell { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) auto; gap: .3rem; padding: .3rem; margin-bottom: .4rem; border: 1px solid transparent; border-left: 4px solid transparent; border-radius: .3rem; outline: none; }
 .nb-cell.selected { border-color: var(--pico-muted-border-color); border-left-color: var(--pico-primary); }
 .nb-cell.running { border-left-color: #f9a825; }
+.nb-cell.marked { background: var(--suite-selected); }
+.nb-cell.queued { border-left-color: var(--pico-muted-color); border-left-style: dashed; }
+.nb-check { display: inline-flex; align-items: center; gap: .25rem; margin: 0; font-size: .85rem; white-space: nowrap; }
+.nb-check input { margin: 0; }
 .nb-prompt { font-family: ui-monospace, monospace; font-size: .8rem; color: var(--pico-muted-color); text-align: right; padding-top: .35rem; }
 .nb-editor { border: 1px solid var(--pico-muted-border-color); border-radius: .25rem; background: var(--pico-background-color); }
 .nb-editor .cm-editor { font-size: .88rem; }
@@ -102,3 +106,16 @@
 .nb-w-output pre { margin: .1rem 0; }
 .nb-w-output img { max-width: 100%; }
 .nb-w[title] input, .nb-w[title] select { cursor: not-allowed; }
+.nb-mounts { list-style: none; padding: 0; margin: 0 0 .5rem; font-size: .85rem; }
+.nb-mounts li { display: flex; gap: .3rem; align-items: center; margin: 0; }
+.nb-mounts button { margin: 0 0 0 auto; padding: .05rem .4rem; width: auto; }
+.nb-mode { font-size: .75rem; padding: .05rem .4rem; border-radius: .6rem; border: 1px solid var(--pico-muted-border-color); color: var(--pico-muted-color); white-space: nowrap; }
+.nb-mode.isolated { border-color: #2e7d32; color: #2e7d32; }
+.nb-network { margin-bottom: .5rem; font-size: .85rem; }
+.nb-network summary { margin-bottom: .3rem; }
+.nb-fs-warning { font-size: .85rem; color: var(--pico-del-color, #b71c1c); }
+.nb-fs-files { list-style: none; padding: 0; margin: 0 0 .6rem; max-height: 40vh; overflow: auto; }
+.nb-fs-files li { margin: 0; padding: .1rem 0; word-break: break-all; }
+.nb-fs-files label { margin: 0; }
+.nb-terminal-host { flex: 1; min-height: 20rem; height: calc(100vh - 11rem); padding: .3rem; background: #1e1e1e; border-radius: .3rem; }
+.nb-terminal { width: 100%; height: 100%; }

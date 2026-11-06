@@ -14,6 +14,8 @@
   const { html } = htmPreact;
   const t = (...a) => Suite.t(...a);
   const TYPES = [{ description: 'App data', accept: { 'application/octet-stream': ['.kdbx', '.json'] } }];
+  // a page served by the relay (relay.py --serve: cross-origin isolated over http/https) uses that relay by default
+  const defaultRelayUrl = () => (/^https?:$/.test(location.protocol) && self.crossOriginIsolated ? location.origin : 'http://127.0.0.1:8765');
 
   Suite.i18n.register({
     en: {
@@ -60,7 +62,7 @@
       deleteConnection(id) { app().deleteConnection(id); markDirty(); },
       get settings() { return (app() && app().settings) || {}; },
       set settings(v) { app().settings = v; markDirty(); },
-      get relay() { const s = state.store ? state.store.app('suite').settings : null; return (s && s.relay) || { url: 'http://127.0.0.1:8765', token: '' }; },
+      get relay() { const s = state.store ? state.store.app('suite').settings : null; return (s && s.relay) || { url: defaultRelayUrl(), token: '' }; },
       set relay(v) { const s = state.store.app('suite'); s.settings = { ...(s.settings || {}), relay: v }; markDirty(); },
       /** Whether the relay settings are complete (address and the credentials of the chosen sign-in). */
       relayConfigured() {
@@ -71,7 +73,7 @@
       },
       relayConfig() {
         const r = data.relay;
-        return Suite.relay.config(r.url || 'http://127.0.0.1:8765', r.auth === 'password' ? '' : r.token || '',
+        return Suite.relay.config(r.url || defaultRelayUrl(), r.auth === 'password' ? '' : r.token || '',
           { user: r.auth === 'password' ? r.user || '' : '', password: r.auth === 'password' ? r.password || '' : '', allowInsecure: !!r.allowInsecure });
       },
 

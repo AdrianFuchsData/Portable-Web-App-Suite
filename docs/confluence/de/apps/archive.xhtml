@@ -42,7 +42,12 @@ Dateien und Ordner hinzufügen, Ordner anlegen, umbenennen, löschen und zwische
 <td>– (als 7z oder ZIP speichern)</td>
 </tr>
 <tr>
-<td>TAR.XZ, TAR.BZ2, TAR.ZST, TAR.LZMA</td>
+<td>TAR.BZ2 / TBZ2, TAR.XZ / TXZ</td>
+<td>ja</td>
+<td>ja</td>
+</tr>
+<tr>
+<td>TAR.ZST, TAR.LZMA</td>
 <td>ja</td>
 <td>–</td>
 </tr>
@@ -63,7 +68,21 @@ werden unterstützt, siehe unten), ebenso wenig eine einzelne komprimierte Datei
 <li><strong>Neu</strong> beginnt ein leeres ZIP-Archiv. Werden Dateien auf das Fenster gezogen, während nichts geöffnet ist, entsteht ebenfalls
   ein neues Archiv.</li>
 <li>In Chrome/Edge am Desktop listet die Startseite die zuletzt verwendeten Archive.</li>
+<li><strong>✕ Schließen</strong> schließt das Archiv (nach einer Rückfrage bei ungespeicherten Änderungen).</li>
 </ul>
+<h3>Dateien für andere Anwendungen</h3>
+<p>Andere Anwendungen öffnen Dateien aus Archiven und speichern Dateien in sie über den Archivmanager (siehe
+<ac:link><ri:page ri:content-title="Portable Web App Suite – Benutzerhandbuch" /><ac:plain-text-link-body><![CDATA[Dateien in Archiven]]></ac:plain-text-link-body></ac:link>). Fragt eine Anwendung an, zeigt ein Dialog, was sie möchte:</p>
+<ul>
+<li><strong>Aus dem Archiv öffnen:</strong> Datei(en) wählen – aufgeführt sind Dateien der angefragten Typen, <strong>Alle Dateien zeigen</strong> zeigt alle.</li>
+<li><strong>Im Archiv speichern:</strong> Ordner und Dateinamen wählen (eine vorhandene Datei wird nach einer Rückfrage ersetzt) und ob das Archiv
+  nach jeder Änderung gespeichert wird.</li>
+<li><strong>Das Archiv einbinden</strong> (Python-Notebook): erlauben, dass es alle Dateien des Archivs liest, ändert und löscht.</li>
+<li>Ohne geöffnetes Archiv bietet der Dialog zuerst <strong>Archiv öffnen…</strong> und <strong>Neues Archiv</strong> an.</li>
+</ul>
+<p>Änderungen aus anderen Anwendungen markieren das Archiv als geändert (und lassen sich mit <code>Strg+Z</code> zurücknehmen). Wird das Archiv
+geschlossen oder ersetzt (Schließen, Öffnen, Neu), während Dateien daraus in anderen Anwendungen geöffnet sind, fragt der Archivmanager
+nach und führt sie auf; danach lassen sich diese Dateien weder daraus laden noch hineinspeichern. <em>Öffnen mit…</em> funktioniert genauso.</p>
 <h2>Durchsuchen</h2>
 <ul>
 <li>Die Liste zeigt den Inhalt des aktuellen Ordners: Name, Größe (bei Ordnern die Anzahl der Elemente), gepackte Größe (ZIP) und
@@ -119,8 +138,9 @@ Dateien brauchen das Passwort.</p>
 <ul>
 <li><strong>Speichern</strong> (<code>Strg+S</code>) schreibt das Archiv in seinem Format: in Chrome/Edge am Desktop direkt in die geöffnete Datei, in Firefox
   und unter Android als Download (ersetzen Sie die ursprüngliche Datei damit).</li>
-<li><strong>Speichern unter</strong> (<code>Strg+Umschalt+S</code>) fragt nach dem Dateinamen und dem <strong>Format</strong> (ZIP, TAR, TAR.GZ, GZ). So wird ein Archiv
-  umgewandelt, etwa ein <code>.tar.gz</code> in ein <code>.zip</code>. Eine GZ-Datei enthält genau eine Datei.</li>
+<li><strong>Speichern unter</strong> (<code>Strg+Umschalt+S</code>) fragt nach dem Dateinamen und dem <strong>Format</strong> (ZIP, 7Z, TAR, TAR.GZ, TAR.BZ2, TAR.XZ, GZ). So wird ein Archiv
+  umgewandelt, etwa ein <code>.tar.gz</code> in ein <code>.zip</code>. Eine GZ-Datei enthält genau eine Datei. Ein geöffnetes TAR.BZ2- oder TAR.XZ-Archiv wird
+  wieder in seinem Format gespeichert. Einzelne <code>.bz2</code>- und <code>.xz</code>-Dateien ohne Archiv darin lassen sich weder öffnen noch schreiben.</li>
 <li><strong>Kompression</strong> in der Statusleiste legt die Kompression neuer und geänderter Dateien fest: Speichern, Schnell, Normal, Maximal.
   Unveränderte Dateien eines geöffneten ZIP-Archivs werden unverändert übernommen, daher ist das Speichern schnell.</li>
 </ul>

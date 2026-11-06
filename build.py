@@ -32,6 +32,9 @@ In index.html:
                                                      "## Keyboard shortcuts" / "## Tastenkürzel" of
                                                      docs/<lang>/apps/<app>.md: rows "| `Ctrl+S` | Save |",
                                                      "### Group" headings start groups. Shown by the shell's ? dialog.
+                                                     Also the app's example files that examples/examples.json marks
+                                                     "embed" (#suite-examples, [{lang, name, title, data: gzip + base64}],
+                                                     made by tools/make_examples.py), offered under "Examples" there.
 * <script type="text/plain" id="x" data-src="w.js"></script>
                                                   -> the file as text, e.g. worker code that is started
                                                      from a Blob URL (workers cannot be loaded from file://).
@@ -252,6 +255,23 @@ def version():
     return path.read_text(encoding="utf-8").strip() if path.exists() else "0.0.0-dev"
 
 
+def examples(app):
+    """The embedded example files of an app (examples/examples.json, tools/make_examples.py) as #suite-examples, or ""."""
+    manifest = ROOT / "examples" / "examples.json"
+    if not manifest.exists():
+        return ""
+    items = []
+    for e in json.loads(manifest.read_text(encoding="utf-8")).get("apps", {}).get(app, []):
+        if not e.get("embed"):
+            continue
+        data = (ROOT / "examples" / e["file"]).read_bytes()
+        items.append({"lang": e["lang"], "name": e["file"].rsplit("/", 1)[-1], "title": e["title"],
+                      "data": base64.b64encode(gzip.compress(data, compresslevel=9, mtime=0)).decode("ascii")})
+    if not items:
+        return ""
+    return '<script type="application/json" id="suite-examples">' + escape_script(json.dumps(items, ensure_ascii=False, separators=(",", ":"))) + "</script>"
+
+
 def shortcuts(app):
     """Keyboard shortcuts of an app from its user documentation: {lang: [{"group", "keys": [[...]], "text"}]}."""
     out = {}
@@ -288,7 +308,7 @@ def build(project):
     html = LINK_RE.sub(lambda m: "<style>\n" + read_asset(base, m.group(1)) + "\n</style>", html)
     html = IMPORTMAP_RE.sub(lambda m: importmap(base, m.group(1), m.group(2) or "blob"), html)
     html = EMBED_RE.sub(lambda m: embed(base, *m.groups()), html)
-    html = SHORTCUTS_RE.sub(lambda m: shortcuts(m.group(1)), html)
+    html = SHORTCUTS_RE.sub(lambda m: shortcuts(m.group(1)) + examples(m.group(1)), html)
     html = BUNDLE_RE.sub(lambda m: bundle(base, m.group(1)), html)
     html = SCRIPT_RE.sub(
         lambda m: f"<!-- {m.group(2).split('/')[-1]} -->\n<script{m.group(1) or ''}>\n"

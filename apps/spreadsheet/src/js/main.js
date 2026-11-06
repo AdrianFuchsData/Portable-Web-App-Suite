@@ -15,6 +15,12 @@ import dvDeDE from '@univerjs/preset-sheets-data-validation/locales/de-DE';
 import { UniverSheetsDrawingPreset } from '@univerjs/preset-sheets-drawing';
 import drawingEnUS from '@univerjs/preset-sheets-drawing/locales/en-US';
 import drawingDeDE from '@univerjs/preset-sheets-drawing/locales/de-DE';
+import { UniverSheetsSortPreset } from '@univerjs/preset-sheets-sort';
+import sortEnUS from '@univerjs/preset-sheets-sort/locales/en-US';
+import sortDeDE from '@univerjs/preset-sheets-sort/locales/de-DE';
+import { UniverSheetsFilterPreset } from '@univerjs/preset-sheets-filter';
+import filterEnUS from '@univerjs/preset-sheets-filter/locales/en-US';
+import filterDeDE from '@univerjs/preset-sheets-filter/locales/de-DE';
 import { IUndoRedoService } from '@univerjs/core';
 import { IDrawingManagerService } from '@univerjs/drawing';
 
@@ -73,9 +79,10 @@ const locale = () => (Suite.i18n.language === 'de' ? LocaleType.DE_DE : LocaleTy
 
 const { univerAPI } = createUniver({
   locale: locale(),
-  locales: { [LocaleType.EN_US]: mergeLocales(enUS, cfEnUS, dvEnUS, drawingEnUS), [LocaleType.DE_DE]: mergeLocales(deDE, cfDeDE, dvDeDE, drawingDeDE) },
+  locales: { [LocaleType.EN_US]: mergeLocales(enUS, cfEnUS, dvEnUS, drawingEnUS, sortEnUS, filterEnUS), [LocaleType.DE_DE]: mergeLocales(deDE, cfDeDE, dvDeDE, drawingDeDE, sortDeDE, filterDeDE) },
   darkMode: dark(),
-  presets: [UniverSheetsCorePreset({ container: host }), UniverSheetsConditionalFormattingPreset(), UniverSheetsDataValidationPreset(), UniverSheetsDrawingPreset()],
+  presets: [UniverSheetsCorePreset({ container: host }), UniverSheetsConditionalFormattingPreset(), UniverSheetsDataValidationPreset(), UniverSheetsDrawingPreset(),
+    UniverSheetsSortPreset(), UniverSheetsFilterPreset()],
 });
 let workbook = univerAPI.createWorkbook({ name: t('ss.untitled') });
 let loadedAt = performance.now(); // mutations count as edits only after user input that follows the latest load

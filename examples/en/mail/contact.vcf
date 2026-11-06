@@ -1,0 +1,8 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Bernd Beispiel
+N:Beispiel;Bernd;;;
+EMAIL;TYPE=work:bernd@example.org
+TEL;TYPE=cell:+43 660 1234567
+ORG:Example Ltd.
+END:VCARD

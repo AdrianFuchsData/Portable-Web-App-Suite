@@ -19,6 +19,9 @@ test-results/
 # Hosted PWA variant (tools/build_pwa.py)
 build/
 
+# Release download, built by tools/make_examples.py --zip
+dist/examples.zip
+
 # Build output (attach the built apps to a GitHub release instead)
 dist/
 build/

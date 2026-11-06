@@ -5,15 +5,18 @@
 import { EditorView, basicSetup } from 'codemirror';
 import { keymap } from '@codemirror/view';
 import { Prec, Compartment } from '@codemirror/state';
+import { indentUnit } from '@codemirror/language';
 import { python } from '@codemirror/lang-python';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { createWidgets, VIEW_MIME } from '@app/widgets.js';
+import { createTerminal } from '@app/terminal.js';
 import 'app/spell-dom'; // spelling selector in the header, marks in text fields (shared/js/spell-dom.js)
 import { spellChecking } from 'app/cm-spell';
 import 'app/cm-symbols'; // emoji and symbols insert through the editor (shared/js/cm-symbols.js)
+import { indentKeys } from 'app/cm-indent'; // Tab indents, Ctrl+Alt+I inserts a tab character (shared/js/cm-indent.js)
 
 const { html } = Suite.shell;
 const t = Suite.t;
@@ -35,6 +38,34 @@ Suite.i18n.register({
     'nb.variables': 'Variables', 'nb.noVariables': 'No variables yet.', 'nb.name': 'Name', 'nb.type': 'Type', 'nb.shape': 'Size', 'nb.value': 'Value',
     'nb.showTable': 'Show as a table', 'nb.close': 'Close',
     'nb.clearOutputs': 'Clear outputs', 'nb.panels': 'Files · Variables', 'nb.loadError': 'The file cannot be opened: {0}', 'nb.up': 'Up',
+    'nb.interrupt': '⏹ Interrupt', 'nb.interruptTitle': 'Interrupt the running cell (KeyboardInterrupt; I, I)', 'nb.stop': '⏹ Stop',
+    'nb.stopTitle': 'Stop the running cell by restarting Python: variables are lost (I, I). Interrupting without a restart needs the notebook served by the relay (relay.py --serve).',
+    'nb.stopConfirm': 'Python cannot be interrupted here (only when the notebook is served by the relay, relay.py --serve). Stop the running cell by restarting Python? All variables are lost.',
+    'nb.stopOnError': 'Stop on error', 'nb.stopOnErrorTitle': 'When a cell raises an error, the cells queued after it are not run',
+    'nb.skipped': 'An error occurred: {0} queued cell(s) were not run.', 'nb.copied': '{0} cell(s) copied.',
+    'nb.mount': '📦 Mount archive…', 'nb.mountTitle': 'Mount an archive of the archive manager below /mnt (changes are written back after every cell)',
+    'nb.mounted': '“{0}” is mounted at {1}.', 'nb.unmount': 'Unmount (write the changes back)', 'nb.mountClosedMark': 'closed',
+    'nb.mountClosed': 'The archive “{0}” was closed in the archive manager: changes in {1} are no longer saved into it.',
+    'nb.mountNone': 'No archive is open in an archive manager this notebook can reach. Open one with “📦 Mount archive…” in the Files panel.',
+    'nb.mountWhich': 'Several archives are open ({0}): name one, e.g. await suite.archives.mount("{1}").', 'nb.mountCancelled': 'Mounting was not allowed.',
+    'nb.mountLarge': 'The archive holds {0} – mounting copies it completely into the notebook\'s memory. Continue?', 'nb.notMounted': '“{0}” is not mounted.',
+    'nb.mountsDropped': 'Python was restarted: the archives are no longer mounted ({0}).',
+    'nb.isolated': '🔓 Network and interrupt', 'nb.isolatedTitle': 'Served by the relay (cross-origin isolated): Python can open network connections through the relay (sockets, smtplib, ftplib, suite.ssh …) and running cells can be interrupted.',
+    'nb.notIsolated': 'Opened as a file', 'nb.notIsolatedTitle': 'Opened as a file: requests works through the relay (if set), but no sockets or SSH from Python, and stopping a cell restarts Python. Open the notebook through the relay (relay.py --serve) for both.',
+    'nb.hostKey': 'The server {0} presented this {1} host key:\n{2}\nCheck the fingerprint with the administrator. Trust it?',
+    'nb.hostKeyChanged': 'WARNING: the host key of {0} has CHANGED (saved: {1}, now: {2}). Someone may be intercepting the connection. Trust the new key?',
+    'nb.hostKeyRefused': 'The host key of {0} was not trusted.', 'nb.noRelay': 'No relay is set (Files panel: Relay).', 'nb.network': 'Network',
+    'nb.received': '“{0}” was put into {1} (Files panel; in the Terminal: ls).',
+    'nb.terminal': 'Terminal', 'nb.termWelcome': 'Shell on the Python file system (in memory). help lists the commands; less and nano are interactive.',
+    'nb.termQuit': 'quit, / search, n next', 'nb.termNotFound': 'Not found', 'nb.termModified': '(modified)', 'nb.termSave': 'Save', 'nb.termExit': 'Exit',
+    'nb.termSearch': 'Search', 'nb.termCut': 'Cut line', 'nb.termPaste': 'Paste', 'nb.termWrote': 'Wrote {0} lines', 'nb.termFileName': 'File name to write',
+    'nb.termSaveChanges': 'Save the changes (y/n)?', 'nb.termCancelled': 'Cancelled', 'nb.termNanoHelp': 'nano – Ctrl+O saves, Ctrl+X exits',
+    'nb.fsName': 'Python notebook “{0}”', 'nb.fsSaveTitle': 'Save “{0}” in the Python file system', 'nb.fsOpenTitle': 'Open from the Python file system',
+    'nb.fsFrom': 'Requested by {0}.', 'nb.fsFolder': 'Folder', 'nb.fsName2': 'File name', 'nb.fsSave': 'Save here', 'nb.fsOpen': 'Open',
+    'nb.fsAll': 'Show all files', 'nb.fsNone': 'No matching files in the Python file system.', 'nb.fsCancel': 'Cancel', 'nb.fsBadName': 'Enter a file name without “/”.',
+    'nb.fsReplace': '“{0}” exists. Replace it?', 'nb.fsBusy': 'Another application is already waiting for an answer here.', 'nb.fsDone': 'Done – you can go back to {0}.',
+    'nb.fsWarning': 'The Python file system lives only in memory: these files are gone when this page is closed or Python restarts.',
+    'nb.fsLinks': 'Files of the Python file system are open in other applications: {0}. After a restart they can neither be loaded nor saved there. Restart anyway?',
   },
   de: {
     'nb.editorLabel': 'Zelleninhalt',
@@ -49,6 +80,34 @@ Suite.i18n.register({
     'nb.variables': 'Variablen', 'nb.noVariables': 'Noch keine Variablen.', 'nb.name': 'Name', 'nb.type': 'Typ', 'nb.shape': 'Größe', 'nb.value': 'Wert',
     'nb.showTable': 'Als Tabelle anzeigen', 'nb.close': 'Schließen',
     'nb.clearOutputs': 'Ausgaben löschen', 'nb.panels': 'Dateien · Variablen', 'nb.loadError': 'Die Datei kann nicht geöffnet werden: {0}', 'nb.up': 'Nach oben',
+    'nb.interrupt': '⏹ Unterbrechen', 'nb.interruptTitle': 'Die laufende Zelle unterbrechen (KeyboardInterrupt; I, I)', 'nb.stop': '⏹ Stoppen',
+    'nb.stopTitle': 'Die laufende Zelle durch einen Neustart von Python stoppen: Variablen gehen verloren (I, I). Unterbrechen ohne Neustart geht, wenn das Notebook vom Relay bereitgestellt wird (relay.py --serve).',
+    'nb.stopConfirm': 'Python lässt sich hier nicht unterbrechen (nur wenn das Notebook vom Relay bereitgestellt wird, relay.py --serve). Die laufende Zelle durch einen Neustart von Python stoppen? Alle Variablen gehen verloren.',
+    'nb.stopOnError': 'Bei Fehler anhalten', 'nb.stopOnErrorTitle': 'Wenn eine Zelle einen Fehler auslöst, werden die danach eingereihten Zellen nicht ausgeführt',
+    'nb.skipped': 'Ein Fehler ist aufgetreten: {0} eingereihte Zelle(n) wurden nicht ausgeführt.', 'nb.copied': '{0} Zelle(n) kopiert.',
+    'nb.mount': '📦 Archiv einbinden…', 'nb.mountTitle': 'Ein Archiv des Archivmanagers unter /mnt einbinden (Änderungen werden nach jeder Zelle zurückgeschrieben)',
+    'nb.mounted': '„{0}“ ist unter {1} eingebunden.', 'nb.unmount': 'Lösen (die Änderungen zurückschreiben)', 'nb.mountClosedMark': 'geschlossen',
+    'nb.mountClosed': 'Das Archiv „{0}“ wurde im Archivmanager geschlossen: Änderungen in {1} werden nicht mehr darin gespeichert.',
+    'nb.mountNone': 'In keinem Archivmanager, den dieses Notebook erreicht, ist ein Archiv geöffnet. Öffnen Sie eines mit „📦 Archiv einbinden…“ im Dateibereich.',
+    'nb.mountWhich': 'Mehrere Archive sind geöffnet ({0}): Nennen Sie eines, z. B. await suite.archives.mount("{1}").', 'nb.mountCancelled': 'Das Einbinden wurde nicht erlaubt.',
+    'nb.mountLarge': 'Das Archiv enthält {0} – beim Einbinden wird es vollständig in den Speicher des Notebooks kopiert. Fortfahren?', 'nb.notMounted': '„{0}“ ist nicht eingebunden.',
+    'nb.mountsDropped': 'Python wurde neu gestartet: Die Archive sind nicht mehr eingebunden ({0}).',
+    'nb.isolated': '🔓 Netzwerk und Unterbrechen', 'nb.isolatedTitle': 'Vom Relay bereitgestellt (cross-origin-isoliert): Python kann über das Relay Netzwerkverbindungen öffnen (Sockets, smtplib, ftplib, suite.ssh …), und laufende Zellen lassen sich unterbrechen.',
+    'nb.notIsolated': 'Als Datei geöffnet', 'nb.notIsolatedTitle': 'Als Datei geöffnet: requests funktioniert über das Relay (falls eingestellt), aber keine Sockets oder SSH aus Python, und Anhalten einer Zelle startet Python neu. Öffnen Sie das Notebook über das Relay (relay.py --serve) für beides.',
+    'nb.hostKey': 'Der Server {0} hat diesen {1}-Host-Schlüssel gesendet:\n{2}\nPrüfen Sie den Fingerabdruck mit der Administration. Vertrauen?',
+    'nb.hostKeyChanged': 'WARNUNG: Der Host-Schlüssel von {0} hat sich GEÄNDERT (gespeichert: {1}, jetzt: {2}). Möglicherweise wird die Verbindung abgehört. Dem neuen Schlüssel vertrauen?',
+    'nb.hostKeyRefused': 'Dem Host-Schlüssel von {0} wurde nicht vertraut.', 'nb.noRelay': 'Kein Relay eingestellt (Dateibereich: Relay).', 'nb.network': 'Netzwerk',
+    'nb.received': '„{0}“ wurde nach {1} gelegt (Dateibereich; im Terminal: ls).',
+    'nb.terminal': 'Terminal', 'nb.termWelcome': 'Shell auf dem Python-Dateisystem (im Speicher). help listet die Befehle; less und nano sind interaktiv.',
+    'nb.termQuit': 'beenden, / suchen, n weiter', 'nb.termNotFound': 'Nicht gefunden', 'nb.termModified': '(geändert)', 'nb.termSave': 'Speichern', 'nb.termExit': 'Beenden',
+    'nb.termSearch': 'Suchen', 'nb.termCut': 'Zeile ausschneiden', 'nb.termPaste': 'Einfügen', 'nb.termWrote': '{0} Zeilen geschrieben', 'nb.termFileName': 'Dateiname zum Schreiben',
+    'nb.termSaveChanges': 'Änderungen speichern (j/n)?', 'nb.termCancelled': 'Abgebrochen', 'nb.termNanoHelp': 'nano – Strg+O speichert, Strg+X beendet',
+    'nb.fsName': 'Python-Notebook „{0}“', 'nb.fsSaveTitle': '„{0}“ im Python-Dateisystem speichern', 'nb.fsOpenTitle': 'Aus dem Python-Dateisystem öffnen',
+    'nb.fsFrom': 'Angefordert von {0}.', 'nb.fsFolder': 'Ordner', 'nb.fsName2': 'Dateiname', 'nb.fsSave': 'Hier speichern', 'nb.fsOpen': 'Öffnen',
+    'nb.fsAll': 'Alle Dateien zeigen', 'nb.fsNone': 'Keine passenden Dateien im Python-Dateisystem.', 'nb.fsCancel': 'Abbrechen', 'nb.fsBadName': 'Geben Sie einen Dateinamen ohne „/“ ein.',
+    'nb.fsReplace': '„{0}“ existiert. Ersetzen?', 'nb.fsBusy': 'Eine andere Anwendung wartet hier bereits auf eine Antwort.', 'nb.fsDone': 'Fertig – Sie können zu {0} zurückkehren.',
+    'nb.fsWarning': 'Das Python-Dateisystem existiert nur im Speicher: Diese Dateien sind weg, wenn diese Seite geschlossen oder Python neu gestartet wird.',
+    'nb.fsLinks': 'Dateien des Python-Dateisystems sind in anderen Anwendungen geöffnet: {0}. Nach einem Neustart lassen sie sich dort weder laden noch speichern. Trotzdem neu starten?',
   },
 });
 
@@ -58,9 +117,16 @@ const state = {
   cells: [], selected: null, count: 0, file: null, name: '', dirty: false, status: '', ready: false, busy: 0,
   tab: 'notebook', consoleEntries: [], history: [], historyIndex: -1, files: [], cwd: HOME, panels: false, wheels: new Map(),
   variables: [], sideTab: 'files', table: null, // table: { name, html } in the table viewer
+  marked: new Set(), anchor: null, clipboard: null, // further selected cells (with Shift), the start of the selection, copied cells
+  stopOnError: (() => { try { return localStorage.getItem('suite.notebook.stopOnError') !== '0'; } catch (e) { return true; } })(),
 };
 state.name = `${t('nb.untitled')}.ipynb`;
-const kernel = Suite.python.start({ onStatus: (s) => { state.status = s; render(); }, onComm: (msg) => widgets.onComm(msg), preloadImports: ['numpy', 'pandas', 'matplotlib.pyplot'] });
+const kernel = Suite.python.start({
+  onStatus: (s) => { state.status = s; render(); }, onComm: (msg) => widgets.onComm(msg), onCall: (name, args) => pageCall(name, args),
+  onSyncCall: (name, args, bytes) => syncCall(name, args, bytes), preloadImports: ['numpy', 'pandas', 'matplotlib.pyplot'],
+});
+// connections and the relay (shared/js/appdata.js): requests and, on isolated pages, sockets and SSH from Python go through it
+const data = Suite.appdata.create(APP, { onChange: () => { pushRelay(); render(); } });
 
 let queued = false;
 function render() {
@@ -119,7 +185,7 @@ function makeEditor(doc, lang, keys, onChange, spellMode = () => 'code') {
   const language = new Compartment();
   const view = new EditorView({
     doc,
-    extensions: [Prec.highest(keymap.of(keys)), basicSetup, EditorView.contentAttributes.of({ 'aria-label': t('nb.editorLabel') }), spellChecking(spellMode), language.of(lang), theme.of(dark() ? oneDark : []), EditorView.lineWrapping,
+    extensions: [Prec.highest(keymap.of(keys)), basicSetup, indentKeys(), indentUnit.of('    '), EditorView.contentAttributes.of({ 'aria-label': t('nb.editorLabel') }), spellChecking(spellMode), language.of(lang), theme.of(dark() ? oneDark : []), EditorView.lineWrapping,
       EditorView.updateListener.of((u) => { if (u.docChanged && onChange) onChange(); if (u.focusChanged && u.view.hasFocus && view.onFocus) view.onFocus(); })],
   });
   themes.add(() => view.dispatch({ effects: theme.reconfigure(dark() ? oneDark : []) }));
@@ -166,7 +232,7 @@ function newCell(type = 'code', source = '', { outputs = [], count = null, id = 
     { key: 'Shift-Enter', run: run('advance') }, { key: 'Mod-Enter', run: run('stay') }, { key: 'Alt-Enter', run: run('insert') },
     { key: 'Escape', run: () => { cell.view.contentDOM.blur(); document.querySelector(`[data-cell="${cell.id}"]`)?.focus(); return true; } },
   ], changed, () => (cell.type === 'markdown' ? 'prose' : 'code'));
-  cell.view.onFocus = () => { if (state.selected !== cell) { state.selected = cell; render(); } };
+  cell.view.onFocus = () => { if (state.selected !== cell || state.marked.size) select(cell); };
   return cell;
 }
 
@@ -183,6 +249,91 @@ function insertCell(type, at = null, source = '') {
 }
 
 const selectedIndex = () => Math.max(0, state.cells.indexOf(state.selected));
+
+/** Select a cell; extend: from the anchor to the cell (Shift+click, Shift+↑/↓). */
+function select(cell, { extend = false } = {}) {
+  if (extend && state.anchor && state.cells.includes(state.anchor)) {
+    const [a, b] = [state.cells.indexOf(state.anchor), state.cells.indexOf(cell)].sort((x, y) => x - y);
+    state.marked = new Set(state.cells.slice(a, b + 1));
+  } else {
+    state.marked = new Set();
+    state.anchor = cell;
+  }
+  state.selected = cell;
+  render();
+}
+
+/** The selected cells in notebook order (the current cell and those selected with Shift). */
+const selectedCells = () => state.cells.filter((c) => c === state.selected || state.marked.has(c));
+
+function setTypes(cells, type) {
+  const change = cells.filter((c) => c.type !== type);
+  if (!change.length) return;
+  recordCells('outputs');
+  for (const cell of change) {
+    cell.type = type;
+    cell.outputs = [];
+    cell.count = null;
+    cell.rendered = false;
+    cell.view.setLanguage(langOf(type));
+  }
+  changed();
+  render();
+}
+
+function deleteCells(cells) {
+  if (!cells.length) return;
+  const first = state.cells.indexOf(cells[0]);
+  recordCells();
+  state.cells = state.cells.filter((c) => !cells.includes(c));
+  if (!state.cells.length) state.cells.push(newCell());
+  select(state.cells[Math.min(first, state.cells.length - 1)]);
+  changed();
+}
+
+/** Move the selected cells one place up (-1) or down (1) as a block. */
+function moveCells(cells, dir) {
+  const idx = cells.map((c) => state.cells.indexOf(c));
+  if (dir < 0 ? idx[0] === 0 : idx[idx.length - 1] === state.cells.length - 1) return;
+  recordCells();
+  const rest = state.cells.filter((c) => !cells.includes(c));
+  const at = dir < 0 ? idx[0] - 1 : idx[0] + 1;
+  rest.splice(at, 0, ...cells);
+  state.cells = rest;
+  changed();
+  render();
+}
+
+const snapshot = (c) => ({ type: c.type, source: c.view.state.doc.toString(), outputs: structuredClone(c.outputs), count: c.count, metadata: structuredClone(c.metadata || {}) });
+
+function copyCells(cells, cut = false) {
+  state.clipboard = cells.map(snapshot);
+  Suite.shell.toast(t('nb.copied', cells.length));
+  if (cut) deleteCells(cells);
+}
+
+/** Paste the copied cells below (or above) the current cell. */
+function pasteCells(above = false) {
+  if (!state.clipboard || !state.clipboard.length) return;
+  const at = state.cells.indexOf(state.selected) + (above ? 0 : 1);
+  const cells = state.clipboard.map((c) => newCell(c.type, c.source, { outputs: structuredClone(c.outputs), count: c.count, metadata: structuredClone(c.metadata) }));
+  recordCells();
+  state.cells.splice(at, 0, ...cells);
+  state.anchor = cells[0];
+  select(cells[cells.length - 1], { extend: true });
+  changed();
+}
+
+/** Merge the selected cells (one selected cell: with the next one) into one cell of the first cell's type. */
+function mergeCells(cells) {
+  if (cells.length === 1) { const next = state.cells[state.cells.indexOf(cells[0]) + 1]; if (!next) return; cells = [cells[0], next]; }
+  const merged = newCell(cells[0].type, cells.map((c) => c.view.state.doc.toString()).join('\n\n'), { metadata: structuredClone(cells[0].metadata || {}) });
+  recordCells();
+  state.cells.splice(state.cells.indexOf(cells[0]), 0, merged);
+  state.cells = state.cells.filter((c) => !cells.includes(c));
+  select(merged);
+  changed();
+}
 
 function setType(cell, type) {
   if (cell.type === type) return;
@@ -207,26 +358,20 @@ function moveCell(cell, dir) {
   render();
 }
 
-function deleteCell(cell) {
-  const i = state.cells.indexOf(cell);
-  recordCells();
-  state.cells.splice(i, 1);
-  if (!state.cells.length) state.cells.push(newCell());
-  state.selected = state.cells[Math.min(i, state.cells.length - 1)];
-  changed();
-  render();
-}
+function deleteCell(cell) { deleteCells([cell]); }
 
 // ---- running ----------------------------------------------------------------------------------------------------
 
+/** Run code; resolves to { count, status: 'ok' | 'error' }. */
 async function execute(code, outputs) {
   const count = ++state.count;
+  let status = 'error';
   state.busy++;
   render();
   try {
     await kernel.ready;
     widgets.running(outputs); // widgets created now belong to this cell (outputs of their callbacks go here)
-    await kernel.run(code, count, (o) => appendOutput(outputs, o));
+    status = await kernel.run(code, count, (o) => appendOutput(outputs, o));
   } catch (e) {
     appendOutput(outputs, { output_type: 'error', ename: 'KernelError', evalue: e.message, traceback: [e.message] });
   } finally {
@@ -236,36 +381,116 @@ async function execute(code, outputs) {
     refreshFiles();
     refreshVariables();
   }
-  return count;
+  return { count, status };
 }
 
-async function runCell(cell, mode = 'stay') {
-  if (cell.type !== 'code') { // (raw cells are kept as they are)
-    cell.rendered = cell.type === 'markdown';
-    render();
-  } else {
-    cell.outputs = [];
-    cell.running = true;
-    render();
-    cell.count = await execute(cell.view.state.doc.toString(), cell.outputs);
-    cell.running = false;
-    changed();
+const queue = []; // cells waiting to run: [{ cell, done }]
+let draining = false;
+
+/** Queue cells to run; resolves when they have run (or were taken out of the queue). */
+function enqueue(cells) {
+  const waits = cells.map((cell) => {
+    const queued = queue.find((q) => q.cell === cell);
+    if (queued) return queued.promise;
+    const item = { cell };
+    item.promise = new Promise((resolve) => { item.done = resolve; });
+    if (cell.type === 'code') cell.queued = true;
+    queue.push(item);
+    return item.promise;
+  });
+  render();
+  drain();
+  return Promise.all(waits);
+}
+
+/** Take the waiting cells out of the queue (after an error, an interrupt or a restart); the number of code cells. */
+function clearQueue() {
+  const items = queue.splice(0);
+  for (const { cell, done } of items) { cell.queued = false; done('skipped'); }
+  render();
+  return items.filter((q) => q.cell.type === 'code').length;
+}
+
+async function drain() {
+  if (draining) return;
+  draining = true;
+  try {
+    while (queue.length) {
+      const { cell, done } = queue.shift();
+      cell.queued = false;
+      if (!state.cells.includes(cell)) { done('skipped'); continue; }
+      let status = 'ok';
+      if (cell.type !== 'code') { // (raw cells are kept as they are)
+        cell.rendered = cell.type === 'markdown';
+        render();
+      } else {
+        cell.outputs = [];
+        cell.running = true;
+        render();
+        ({ count: cell.count, status } = await execute(cell.view.state.doc.toString(), cell.outputs));
+        if (mounts.length) await syncMounts();
+        cell.running = false;
+        changed();
+        render();
+      }
+      done(status);
+      if (status === 'error' && state.stopOnError && queue.length) {
+        const skipped = clearQueue();
+        if (skipped) Suite.shell.toast(t('nb.skipped', skipped), 'warning');
+      }
+    }
+  } finally {
+    draining = false;
     render();
   }
+}
+
+/** Run a cell (mode 'advance': select the next cell, 'insert': a new cell below); resolves when it has run. */
+async function runCell(cell, mode = 'stay') {
+  const done = enqueue([cell]);
   if (mode === 'advance' || mode === 'insert') {
     const i = state.cells.indexOf(cell);
     let next = mode === 'advance' ? state.cells[i + 1] : null;
     if (!next) next = insertCell('code', i + 1);
-    state.selected = next;
-    render();
+    select(next);
     if (next.type === 'code' || !next.rendered) requestAnimationFrame(() => next.view.focus());
   }
+  return done;
 }
 
-async function runAll() { for (const c of [...state.cells]) await runCell(c, 'stay'); }
+/** Run the selected cells (command mode: Shift+Enter, Ctrl+Enter, Alt+Enter). */
+function runSelected(mode) {
+  const cells = selectedCells();
+  const done = enqueue(cells);
+  const last = cells[cells.length - 1];
+  if (mode === 'advance' || mode === 'insert') {
+    const i = state.cells.indexOf(last);
+    const next = mode === 'advance' && state.cells[i + 1] ? state.cells[i + 1] : insertCell('code', i + 1);
+    select(next);
+    if (mode === 'insert') requestAnimationFrame(() => next.view.focus());
+  }
+  return done;
+}
 
-async function restart(ask = true) {
-  if (ask && !(await Suite.shell.confirm(t('nb.restartConfirm')))) return;
+async function runAll() { await enqueue([...state.cells]); }
+
+/** Stop the running cell: KeyboardInterrupt where the page may share memory with the worker, otherwise a restart. */
+async function stop() {
+  if (kernel.canInterrupt) {
+    clearQueue();
+    kernel.interrupt();
+    return;
+  }
+  await restart(true, t('nb.stopConfirm'));
+}
+
+async function restart(ask = true, question = t('nb.restartConfirm')) {
+  if (ask && !(await Suite.shell.confirm(question))) return;
+  if (fsLinks.size && !(await Suite.shell.confirm(t('nb.fsLinks', [...fsLinks.values()].map((l) => l.label).join(', '))))) return;
+  clearQueue();
+  dropMounts();
+  closeConnections();
+  closeFsLinks();
   state.count = 0;
   state.variables = [];
   state.ready = false;
@@ -313,9 +538,347 @@ async function runConsole() {
   const entry = { code, outputs: [], count: null };
   state.consoleEntries.push(entry);
   render();
-  entry.count = await execute(code, entry.outputs);
+  entry.count = (await execute(code, entry.outputs)).count;
+  if (mounts.length) await syncMounts();
   render();
   requestAnimationFrame(() => { const log = document.querySelector('.nb-console-log'); if (log) log.scrollTop = log.scrollHeight; });
+}
+
+// ---- mounted archives (module suite.archives, shared/js/python-suite.py; links of shared/js/archive-link.js) ---------
+
+const MOUNT_ROOT = '/mnt';
+const MOUNT_WARN = 512 * 1024 * 1024; // bytes: above, mounting asks (the archive is copied into memory)
+const mounts = []; // { name, path, link, snapshot: Map(relative path -> 'dir' | 'size:mtime'), closed }
+const folderName = (name) => String(name).replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_').replace(/^\.+$/, '_') || 'archive';
+const sizeText = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MiB` : `${Math.ceil(n / 1024)} KiB`);
+
+async function snapshotOf(path) {
+  return new Map((await kernel.walk(path)).map((f) => [f.path, f.dir ? 'dir' : `${f.size}:${f.mtime}`]));
+}
+
+/** Mount the archive of a target (Suite.archiveLink): the archive manager asks the user; resolves to the folder. */
+async function mountTarget(target) {
+  const result = await Suite.archiveLink.connect(target, { mode: 'mount', label: t('app.title') });
+  if (!result) throw new Error(t('nb.mountCancelled'));
+  const { link } = result;
+  const path = `${MOUNT_ROOT}/${folderName(link.name)}`;
+  try {
+    const entries = await link.request('list');
+    const total = entries.reduce((n, e) => n + (e.dir ? 0 : e.size || 0), 0);
+    if (total > MOUNT_WARN && !(await Suite.shell.confirm(t('nb.mountLarge', sizeText(total))))) throw new Error(t('nb.mountCancelled'));
+    await kernel.ready;
+    const old = mounts.findIndex((m) => m.path === path);
+    if (old >= 0) { mounts[old].link.release(); mounts.splice(old, 1); }
+    await kernel.removeTree(path);
+    await kernel.mkdirs(path);
+    for (const e of entries) {
+      if (e.dir) await kernel.mkdirs(`${path}/${e.path}`);
+      else await kernel.writeFile(`${path}/${e.path}`, await link.request('read', { path: e.path }));
+    }
+    mounts.push({ name: link.name, path, link, snapshot: await snapshotOf(path), closed: false });
+  } catch (err) { link.release(); throw err; }
+  Suite.shell.toast(t('nb.mounted', link.name, path));
+  refreshFiles();
+  render();
+  return path;
+}
+
+async function mountFromDialog() {
+  try {
+    const choice = await Suite.archiveLink.choose('mount');
+    if (choice && choice.kind === 'archive') await mountTarget(choice.target);
+  } catch (e) { fail(e); }
+}
+
+/** Write new, changed and deleted files of the mounted archives back; the number of changes. */
+async function syncMounts() {
+  let changes = 0;
+  for (const m of mounts) {
+    if (m.closed) continue;
+    try {
+      const now = await snapshotOf(m.path);
+      for (const [rel, sig] of now) {
+        const old = m.snapshot.get(rel);
+        if (old === sig) continue;
+        if (sig === 'dir') { if (old === undefined) { await m.link.request('mkdir', { path: rel }); changes++; } continue; }
+        await m.link.request('write', { path: rel, bytes: await kernel.readFile(`${m.path}/${rel}`) });
+        changes++;
+      }
+      // (a deleted folder deletes everything below it in the archive)
+      const gone = [...m.snapshot.keys()].filter((rel) => !now.has(rel));
+      for (const rel of gone) {
+        if (gone.some((other) => rel.startsWith(`${other}/`))) continue;
+        await m.link.request('delete', { path: rel });
+        changes++;
+        // a folder that stays (empty) in the file system stays in the archive (its folder may only have been implied)
+        const parent = rel.split('/').slice(0, -1).join('/');
+        if (parent && now.get(parent) === 'dir') await m.link.request('mkdir', { path: parent });
+      }
+      m.snapshot = now;
+    } catch (e) {
+      if (!m.link.closed) { fail(e); continue; }
+      m.closed = true;
+      Suite.shell.toast(t('nb.mountClosed', m.name, m.path), 'error', 10000);
+      render();
+    }
+  }
+  return changes;
+}
+
+async function unmount(nameOrPath) {
+  const m = mounts.find((x) => x.name === nameOrPath || x.path === nameOrPath || x.path === nameOrPath.replace(/\/+$/, ''));
+  if (!m) throw new Error(t('nb.notMounted', nameOrPath));
+  if (!m.closed) await syncMounts();
+  m.link.release();
+  mounts.splice(mounts.indexOf(m), 1);
+  try { await kernel.removeTree(m.path); } catch (e) { /* the kernel was restarted */ }
+  if (state.cwd.startsWith(m.path)) state.cwd = HOME;
+  refreshFiles();
+  render();
+  return m.path;
+}
+
+/** A restart empties Python's file system: the links are released. */
+function dropMounts() {
+  if (!mounts.length) return;
+  Suite.shell.toast(t('nb.mountsDropped', mounts.map((m) => m.name).join(', ')), 'warning');
+  for (const m of mounts.splice(0)) m.link.release();
+  render();
+}
+
+/** Calls of the Python module "suite" (shared/js/python-suite.py). */
+async function pageCall(name, args = {}) {
+  switch (name) {
+    case 'archives.mount': {
+      const archives = await Suite.archiveLink.listArchives();
+      const pick = args.name ? archives.find((a) => a.name === args.name) : archives.length === 1 ? archives[0] : null;
+      if (!pick) throw new Error(archives.length && !args.name ? t('nb.mountWhich', archives.map((a) => a.name).join(', '), archives[0].name) : t('nb.mountNone'));
+      return mountTarget(pick.target);
+    }
+    case 'archives.unmount': return unmount(args.name);
+    case 'archives.sync': return syncMounts();
+    case 'archives.mounted': return mounts.map((m) => ({ name: m.name, path: m.path, closed: m.closed }));
+    default: throw new Error(`unknown call ${name}`);
+  }
+}
+
+// ---- network from Python through the relay (shared/js/python-net.py, python-ssh.py) --------------------------------------
+
+/** The relay for requests without isolation (a synchronous XMLHttpRequest of the worker): address and credential. */
+async function pushRelay() {
+  if (!data.relayConfigured()) { kernel.setRelay(null); return; }
+  const relay = data.relayConfig();
+  try {
+    const token = relay.user ? (await Suite.relay.login(relay)).token : relay.token;
+    kernel.setRelay({ url: relay.url, token });
+  } catch (e) { kernel.setRelay(null); fail(e); }
+}
+
+const sockets = new Map(); // id -> { conn, buffer: Uint8Array, eof, pending }
+const sshClients = new Map(); // id -> engine client
+const sftps = new Map(); // id -> engine sftp
+let nextNet = 1;
+const knownHostsKey = 'suite.notebook.knownHosts';
+const knownHosts = () => { try { return JSON.parse(localStorage.getItem(knownHostsKey) || '{}'); } catch (e) { return {}; } };
+const concat = (a, b) => { const out = new Uint8Array(a.length + b.length); out.set(a); out.set(b, a.length); return out; };
+const fromB64 = (text) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
+const toB64 = (bytes) => { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s); };
+const relayOrFail = () => { if (!data.relayConfigured()) throw new Error(t('nb.noRelay')); return data.relayConfig(); };
+const get = (map, id) => { const v = map.get(id); if (!v) throw new Error('the connection is closed'); return v; };
+
+/** Ask before trusting an unknown or changed SSH host key (remembered in this browser). */
+async function verifyHostKey(host, port, info) {
+  const key = `${host}:${port}`;
+  const known = knownHosts()[key];
+  if (known === info.fingerprint) return true;
+  const ok = await Suite.shell.confirm(known ? t('nb.hostKeyChanged', key, known, info.fingerprint) : t('nb.hostKey', key, info.type, info.fingerprint));
+  if (ok) { try { localStorage.setItem(knownHostsKey, JSON.stringify({ ...knownHosts(), [key]: info.fingerprint })); } catch (e) { /* storage blocked */ } }
+  return ok;
+}
+
+/** Synchronous calls of the Python modules suite.net and suite.ssh (isolated pages; the worker waits for the answer). */
+async function syncCall(name, args = {}, bytes = null) {
+  switch (name) {
+    case 'relay.status': return { configured: data.relayConfigured() };
+    case 'relay.http': {
+      const relay = relayOrFail();
+      try {
+        const r = await Suite.relay.http(relay, { ...args, body: args.body ? fromB64(args.body) : undefined });
+        return { ...r, body: toB64(r.body) };
+      } catch (e) { return { error: Suite.i18n.describe(e) }; }
+    }
+    case 'tcp.open': {
+      const conn = await Suite.relay.connect(relayOrFail(), { host: args.host, port: args.port });
+      const id = nextNet++;
+      sockets.set(id, { conn, buffer: new Uint8Array(0), eof: false, pending: null });
+      return { id };
+    }
+    case 'tcp.send': get(sockets, args.id).conn.send(bytes); return true;
+    case 'tcp.recv': {
+      const s = get(sockets, args.id);
+      if (!s.buffer.length && !s.eof) {
+        // (a read that outlives a timeout keeps its data for the next recv)
+        if (!s.pending) s.pending = s.conn.read().then((chunk) => { s.pending = null; if (chunk === null) s.eof = true; else s.buffer = concat(s.buffer, chunk); });
+        const timeout = args.timeout == null ? null : Math.max(0, args.timeout * 1000);
+        const done = await (timeout === null ? s.pending.then(() => true) : Promise.race([s.pending.then(() => true), new Promise((r) => setTimeout(() => r(false), timeout))]));
+        if (!done) return { timeout: true };
+      }
+      const out = s.buffer.slice(0, args.max);
+      s.buffer = s.buffer.slice(out.length);
+      return out;
+    }
+    case 'tcp.starttls': await get(sockets, args.id).conn.startTls(!!args.insecure); return true;
+    case 'tcp.close': { const s = sockets.get(args.id); if (s) { s.conn.close(); sockets.delete(args.id); } return true; }
+    case 'ssh.connect': {
+      const client = await Suite.ssh.connect(relayOrFail(), {
+        host: args.host, port: args.port, user: args.user, password: args.password || undefined, privateKey: args.privateKey || undefined,
+        passphrase: args.passphrase || undefined,
+        hostKey: async (info) => { if (await verifyHostKey(args.host, args.port, info)) return true; throw new Error(t('nb.hostKeyRefused', args.host)); },
+      });
+      const id = nextNet++;
+      sshClients.set(id, client);
+      return { id };
+    }
+    case 'ssh.run': {
+      const r = await get(sshClients, args.id).exec(args.command);
+      const text = (b) => new TextDecoder().decode(b);
+      return { stdout: text(r.stdout), stderr: text(r.stderr), code: r.code };
+    }
+    case 'ssh.close': { const c = sshClients.get(args.id); if (c) { c.close(); sshClients.delete(args.id); } return true; }
+    case 'sftp.open': { const id = nextNet++; sftps.set(id, await get(sshClients, args.id).sftp()); return { id }; }
+    case 'sftp.list': return get(sftps, args.id).list(args.path);
+    case 'sftp.stat': return get(sftps, args.id).stat(args.path);
+    case 'sftp.realpath': return { path: await get(sftps, args.id).realpath(args.path) };
+    case 'sftp.read': return get(sftps, args.id).readAt(args.path, args.offset, args.length);
+    case 'sftp.write': await get(sftps, args.id).writeAt(args.path, args.offset, bytes || new Uint8Array(0), !!args.truncate); return true;
+    case 'sftp.mkdir': await get(sftps, args.id).mkdir(args.path); return true;
+    case 'sftp.remove': await get(sftps, args.id).remove(args.path); return true;
+    case 'sftp.rmdir': await get(sftps, args.id).rmdir(args.path); return true;
+    case 'sftp.rename': await get(sftps, args.id).rename(args.from, args.to); return true;
+    case 'sftp.close': { const f = sftps.get(args.id); if (f) { f.close(); sftps.delete(args.id); } return true; }
+    default: throw new Error(`unknown call ${name}`);
+  }
+}
+
+/** A restart ends the worker: its connections are closed. */
+function closeConnections() {
+  for (const s of sockets.values()) s.conn.close();
+  for (const f of sftps.values()) { try { f.close(); } catch (e) { /* gone */ } }
+  for (const c of sshClients.values()) { try { c.close(); } catch (e) { /* gone */ } }
+  sockets.clear(); sftps.clear(); sshClients.clear();
+}
+
+// ---- the Python file system for other apps (shared/js/archive-link.js: open from and save into it, like an archive) ---------
+
+const fsLinks = new Map(); // id -> { id, label, port }
+let nextFsLink = 1;
+const absPath = (path) => (String(path).startsWith('/') ? String(path) : `${HOME}/${path}`).replace(/\/+/g, '/').replace(/\/$/, '');
+const relPath = (path) => (path.startsWith(`${HOME}/`) ? path.slice(HOME.length + 1) : path);
+const fsInfo = () => ({ name: t('nb.fsName', state.name), format: 'Pyodide', kind: 'python' });
+
+/** Python restarted (or the page is closed): the files that other apps have open are gone. */
+function closeFsLinks() {
+  for (const l of fsLinks.values()) { try { l.port.postMessage({ type: 'closed' }); } catch (e) { /* gone */ } }
+  fsLinks.clear();
+}
+window.addEventListener('pagehide', closeFsLinks);
+
+async function fsOp(msg) {
+  const path = absPath(msg.path || '');
+  switch (msg.op) {
+    case 'info': return fsInfo();
+    case 'list': return (await kernel.walk(HOME)).map((f) => ({ path: f.path, dir: f.dir, size: f.size, mtime: f.mtime }));
+    case 'read': return new Uint8Array(await kernel.readFile(path));
+    case 'write': await kernel.writeFile(path, new Uint8Array(msg.bytes)); refreshFiles(); return true;
+    case 'delete': await kernel.removeTree(path); refreshFiles(); return true;
+    case 'mkdir': await kernel.mkdirs(path); refreshFiles(); return true;
+    default: throw new Error(`unknown request ${msg.op}`);
+  }
+}
+
+function serveFsLink(link) {
+  link.port.onmessage = async (e) => {
+    const msg = e.data || {};
+    if (msg.op === 'release') { fsLinks.delete(link.id); return; }
+    if (!fsLinks.has(link.id)) { link.port.postMessage({ id: msg.id, ok: false, error: 'closed' }); return; }
+    try { link.port.postMessage({ id: msg.id, ok: true, result: await fsOp(msg) }); } catch (err) { link.port.postMessage({ id: msg.id, ok: false, error: Suite.i18n.describe(err) }); }
+  };
+}
+
+function finishFsLink(paths) {
+  const { request, port } = state.fsLink;
+  state.fsLink = null;
+  const link = { id: nextFsLink++, label: `${request.label || '?'}: ${paths.join(', ')}`, port };
+  fsLinks.set(link.id, link);
+  serveFsLink(link);
+  port.postMessage({ type: 'connected', paths, info: fsInfo() });
+  Suite.shell.toast(t('nb.fsDone', request.label || '?'));
+  render();
+}
+
+function cancelFsLink() {
+  if (!state.fsLink) return;
+  const { port } = state.fsLink;
+  state.fsLink = null;
+  port.postMessage({ type: 'cancelled' });
+  port.close();
+  render();
+}
+
+// other apps ask whether this is a storage (archive-info) and connect to it (archive-connect); mounting is for archives
+window.addEventListener('message', async (e) => {
+  const msg = e.data;
+  const port = e.ports && e.ports[0];
+  if (!msg || msg.suite !== 'suite-bridge' || !port) return;
+  if (msg.type === 'archive-info') { port.postMessage(state.ready ? fsInfo() : {}); return; }
+  if (msg.type !== 'archive-connect') return;
+  const request = msg.request || {};
+  if (state.fsLink || request.mode === 'mount' || !state.ready) {
+    port.postMessage({ type: 'cancelled' });
+    port.close();
+    if (state.fsLink) Suite.shell.toast(t('nb.fsBusy'), 'warning');
+    return;
+  }
+  let files = [];
+  try { files = (await kernel.walk(HOME)).filter((f) => !f.dir).map((f) => f.path).sort(); } catch (err) { /* empty */ }
+  state.fsLink = { request, port, folder: relPath(state.cwd) === HOME ? '' : relPath(state.cwd), name: request.name || '', files, chosen: new Set(), all: false, error: '' };
+  render();
+});
+
+function FsLinkDialog() {
+  const l = state.fsLink;
+  if (!l) return null;
+  const r = l.request;
+  let body;
+  let ok;
+  if (r.mode === 'save') {
+    body = html`<label>${t('nb.fsFolder')}<input data-testid="fs-folder" value=${l.folder} placeholder=${HOME} onInput=${(e) => { l.folder = e.target.value.trim().replace(/^\/+|\/+$/g, ''); }} /></label>
+      <label>${t('nb.fsName2')}<input data-testid="fs-name" value=${l.name} onInput=${(e) => { l.name = e.target.value; l.error = ''; }} /></label>`;
+    ok = html`<button data-testid="fs-ok" onClick=${async () => {
+      const name = l.name.trim();
+      if (!name || name.includes('/')) { l.error = t('nb.fsBadName'); render(); return; }
+      const path = l.folder ? `${l.folder}/${name}` : name;
+      if (l.files.includes(path) && !(await Suite.shell.confirm(t('nb.fsReplace', path)))) return;
+      finishFsLink([path]);
+    }}>${t('nb.fsSave')}</button>`;
+  } else {
+    const exts = r.exts || [];
+    const shown = l.all || !exts.length ? l.files : l.files.filter((p) => exts.some((x) => x === '*' || p.toLowerCase().endsWith(`.${x}`)));
+    body = html`${shown.length ? html`<ul class="nb-fs-files" data-testid="fs-files">${shown.map((p) => html`<li><label>
+        <input type=${r.multiple ? 'checkbox' : 'radio'} name="fs-file" data-testid="fs-file" value=${p} checked=${l.chosen.has(p)}
+          onChange=${(e) => { if (!r.multiple) l.chosen = new Set(); if (e.target.checked) l.chosen.add(p); else l.chosen.delete(p); render(); }} /> ${p}</label></li>`)}</ul>`
+      : html`<p>${t('nb.fsNone')}</p>`}
+      ${exts.length ? html`<label><input type="checkbox" data-testid="fs-all" checked=${l.all} onChange=${(e) => { l.all = e.target.checked; render(); }} /> ${t('nb.fsAll')}</label>` : null}`;
+    ok = html`<button data-testid="fs-ok" disabled=${!l.chosen.size} onClick=${() => finishFsLink(l.files.filter((p) => l.chosen.has(p)))}>${t('nb.fsOpen')}</button>`;
+  }
+  return html`<dialog open data-testid="fs-dialog"><article>
+    <header><strong>${r.mode === 'save' ? t('nb.fsSaveTitle', r.name || '') : t('nb.fsOpenTitle')}</strong></header>
+    <p><small>${t('nb.fsFrom', r.label || '?')}</small></p>
+    <p class="nb-fs-warning" data-testid="fs-warning">⚠ ${t('nb.fsWarning')}</p>
+    ${body}
+    ${l.error ? html`<p class="nb-stderr" data-testid="fs-error">${l.error}</p>` : null}
+    <footer><button type="button" class="secondary" data-testid="fs-cancel" onClick=${cancelFsLink}>${t('nb.fsCancel')}</button>${ok}</footer>
+  </article></dialog>`;
 }
 
 // ---- files ----------------------------------------------------------------------------------------------------------
@@ -421,9 +984,12 @@ Suite.autosave.register({
 });
 
 function setCells(cells, name, file) {
+  clearQueue();
   state.cells = cells.length ? cells : [newCell()];
   cellHistory.clear();
   state.selected = state.cells[0];
+  state.marked = new Set();
+  state.anchor = state.selected;
   state.name = name;
   state.file = file;
   state.dirty = false;
@@ -519,9 +1085,18 @@ function exportAs(kind) {
 
 function Cell({ cell }) {
   const selected = state.selected === cell;
-  return html`<div class=${`nb-cell ${cell.type} ${selected ? 'selected' : ''} ${cell.running ? 'running' : ''}`} data-testid="cell" data-type=${cell.type} data-cell=${cell.id} tabindex="-1"
-      onClick=${() => { if (!selected) { state.selected = cell; render(); } }}>
-    <div class="nb-prompt" data-testid="prompt">${cell.type === 'code' ? `[${cell.running ? '*' : cell.count ?? ' '}]` : cell.type === 'raw' ? t('nb.raw') : ''}</div>
+  const also = state.marked.has(cell); // (selected with Shift)
+  return html`<div class=${`nb-cell ${cell.type} ${selected || also ? 'selected' : ''} ${also ? 'marked' : ''} ${cell.running ? 'running' : ''} ${cell.queued ? 'queued' : ''}`}
+      data-testid="cell" data-type=${cell.type} data-cell=${cell.id} tabindex="-1" data-selected=${selected || also ? 'true' : 'false'}
+      onPointerDown=${(e) => { if (e.shiftKey) e.preventDefault(); }}
+      onClick=${(e) => {
+        if (e.shiftKey) { // (extends the selection of cells in command mode, not the text selection)
+          cell.view.contentDOM.blur();
+          select(cell, { extend: true });
+          document.querySelector(`[data-cell="${cell.id}"]`)?.focus();
+        } else if (!selected || state.marked.size) select(cell);
+      }}>
+    <div class="nb-prompt" data-testid="prompt">${cell.type === 'code' ? `[${cell.running || cell.queued ? '*' : cell.count ?? ' '}]` : cell.type === 'raw' ? t('nb.raw') : ''}</div>
     <div class="nb-body">
       ${cell.type === 'markdown' && cell.rendered
         ? html`<div class="nb-markdown" data-testid="markdown" onDblClick=${() => { cell.rendered = false; render(); requestAnimationFrame(() => cell.view.focus()); }}
@@ -548,6 +1123,14 @@ function Notebook() {
     <div class="nb-add"><button class="secondary outline" onClick=${() => insertCell('code')}>${t('nb.code')}</button><button class="secondary outline" onClick=${() => insertCell('markdown')}>${t('nb.markdown')}</button></div>
   </section>`;
 }
+
+// the Terminal tab: a shell on the Python file system (apps/notebook/src/js/terminal.js, shared/js/python-shell.py)
+let terminal = null;
+function TerminalTab() {
+  if (!terminal) terminal = createTerminal({ kernel, t, onFilesChanged: () => { refreshFiles(); if (mounts.length) syncMounts(); } });
+  return html`<section class="nb-terminal-host" ref=${(el) => { if (el) terminal.attach(el); }}></section>`;
+}
+window.addEventListener('resize', () => { if (terminal && state.tab === 'terminal') terminal.fit(); });
 
 function Console() {
   return html`<section class="nb-console" data-testid="console">
@@ -592,12 +1175,17 @@ function Files() {
 
 function FileList() {
   return html`<div class="nb-file-list">
+    <details class="nb-network" data-testid="network"><summary>${t('nb.network')}: ${t('appdata.relay')}</summary><${data.RelayFields} /><${data.Bar} /></details>
     <div class="nb-files-head"><strong>${t('nb.files')}</strong><code>${state.cwd}</code></div>
     <div class="nb-files-buttons">
       <button class="secondary outline" data-testid="upload" onClick=${() => pick(null, true, uploadFile)}>${t('nb.upload')}</button>
       <button class="secondary outline" data-testid="install-wheel" onClick=${() => pick('.whl', true, installWheel)}>${t('nb.wheel')}</button>
       <button class="secondary outline" title=${t('nb.refresh')} onClick=${refreshFiles}>⟳</button>
+      <button class="secondary outline" data-testid="mount-archive" title=${t('nb.mountTitle')} onClick=${mountFromDialog}>${t('nb.mount')}</button>
     </div>
+    ${mounts.length ? html`<ul class="nb-mounts" data-testid="mounts">${mounts.map((m) => html`<li data-testid="mount">
+      <a href="#" onClick=${(e) => { e.preventDefault(); state.cwd = m.path; refreshFiles(); }}>📦 ${m.path}</a>${m.closed ? html` <small class="nb-stderr">(${t('nb.mountClosedMark')})</small>` : null}
+      <button class="secondary outline" data-testid="unmount" title=${t('nb.unmount')} aria-label=${t('nb.unmount')} onClick=${() => unmount(m.path).catch(fail)}>⏏</button></li>`)}</ul>` : null}
     <ul>
       ${state.cwd !== HOME && state.cwd !== '/' ? html`<li><a href="#" data-testid="files-up" onClick=${(e) => { e.preventDefault(); state.cwd = state.cwd.replace(/\/[^/]+$/, '') || '/'; refreshFiles(); }}>📁 ..</a></li>` : null}
       ${state.files.map((f) => html`<li data-testid="file">
@@ -631,6 +1219,10 @@ function Toolbar() {
     <button class="secondary outline" data-testid="add-code" onClick=${() => insertCell('code', selectedIndex() + 1)}>${t('nb.code')}</button>
     <button class="secondary outline" data-testid="add-markdown" onClick=${() => insertCell('markdown', selectedIndex() + 1)}>${t('nb.markdown')}</button>
     <button data-testid="run-all" onClick=${runAll}>${t('nb.runAll')}</button>
+    ${state.busy || queue.length ? html`<button class="secondary" data-testid="stop" title=${kernel.canInterrupt ? t('nb.interruptTitle') : t('nb.stopTitle')}
+      onClick=${() => stop()}>${kernel.canInterrupt ? t('nb.interrupt') : t('nb.stop')}</button>` : null}
+    <label class="nb-check" title=${t('nb.stopOnErrorTitle')}><input type="checkbox" data-testid="stop-on-error" checked=${state.stopOnError}
+      onChange=${(e) => { state.stopOnError = e.target.checked; try { localStorage.setItem('suite.notebook.stopOnError', state.stopOnError ? '1' : '0'); } catch (err) { /* storage blocked */ } render(); }} />${t('nb.stopOnError')}</label>
     <button class="secondary outline" data-testid="clear-outputs" onClick=${() => { recordCells('outputs'); for (const c of state.cells) { c.outputs = []; c.count = null; } changed(); render(); }}>${t('nb.clearOutputs')}</button>
     <button class="secondary outline" data-testid="restart" onClick=${() => restart()}>${t('nb.restart')}</button>
     <button class=${state.slideshow ? '' : 'secondary outline'} aria-pressed=${!!state.slideshow} data-testid="slideshow" onClick=${() => { state.slideshow = !state.slideshow; render(); }}>${t('nb.slideshow')}</button>
@@ -646,12 +1238,14 @@ function Main() {
       <div class="nb-tabs" role="tablist">
         <button role="tab" class=${state.tab === 'notebook' ? '' : 'secondary outline'} data-testid="tab-notebook" onClick=${() => { state.tab = 'notebook'; render(); }}>📓 ${t('nb.notebook')}: ${state.name}${state.dirty ? ' •' : ''}</button>
         <button role="tab" class=${state.tab === 'console' ? '' : 'secondary outline'} data-testid="tab-console" onClick=${() => { state.tab = 'console'; render(); }}>${t('nb.console')}</button>
+        <button role="tab" class=${state.tab === 'terminal' ? '' : 'secondary outline'} data-testid="tab-terminal" onClick=${() => { state.tab = 'terminal'; render(); }}>${t('nb.terminal')}</button>
         <span class=${`nb-status ${state.busy ? 'busy' : state.ready ? 'ready' : ''}`} data-testid="status">${state.busy ? t('nb.busy') : state.status}</span>
+        <span class=${`nb-mode ${kernel.isolated ? 'isolated' : ''}`} data-testid="isolation" title=${kernel.isolated ? t('nb.isolatedTitle') : t('nb.notIsolatedTitle')}>${kernel.isolated ? t('nb.isolated') : t('nb.notIsolated')}</span>
       </div>
-      ${state.tab === 'notebook' ? html`<${Notebook} />` : html`<${Console} />`}
+      ${state.tab === 'notebook' ? html`<${Notebook} />` : state.tab === 'terminal' ? html`<${TerminalTab} />` : html`<${Console} />`}
     </div>
     <${Files} />${state.panels ? Suite.shell.backdrop(() => { state.panels = false; render(); }) : null}
-    <${TableDialog} />
+    <${TableDialog} /><${data.Dialog} /><${FsLinkDialog} />
   </div>`;
 }
 
@@ -669,25 +1263,43 @@ document.addEventListener('keydown', (e) => {
   const mod = e.ctrlKey || e.metaKey;
   if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); save(e.shiftKey); return; }
   if (mod && e.key.toLowerCase() === 'o') { e.preventDefault(); openFile(); return; }
-  if (state.tab !== 'notebook' || e.altKey) return;
+  if (state.tab !== 'notebook' || (e.altKey && e.key !== 'Enter')) return;
   const active = document.activeElement;
   if (active && (active.closest('.cm-editor') || /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName))) return;
   // command mode: Z / Shift+Z (as in Jupyter) and Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z undo and redo cell operations
   const undoKey = Suite.UndoHistory.key(e) || (!mod && e.key.toLowerCase() === 'z' ? (e.shiftKey ? 'redo' : 'undo') : null);
   if (undoKey) { e.preventDefault(); cellStep(undoKey === 'redo'); return; }
-  if (mod) return;
   const cell = state.selected;
   if (!cell) return;
   const i = state.cells.indexOf(cell);
-  const keys = {
-    Enter: () => { if (cell.type === 'markdown') cell.rendered = false; render(); requestAnimationFrame(() => cell.view.focus()); },
-    a: () => insertCell('code', i), b: () => insertCell('code', i + 1), m: () => setType(cell, 'markdown'), y: () => setType(cell, 'code'), r: () => setType(cell, 'raw'),
-    ArrowUp: () => { state.selected = state.cells[Math.max(0, i - 1)]; render(); }, ArrowDown: () => { state.selected = state.cells[Math.min(state.cells.length - 1, i + 1)]; render(); },
-    Delete: () => deleteCell(cell),
+  const cells = selectedCells();
+  const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  // two presses in a row (as in Jupyter): D, D deletes, I, I interrupts, 0, 0 restarts
+  const twice = (k) => { const now = performance.now(); const hit = lastKey.key === k && now - lastKey.time < 800; lastKey = hit ? { key: '', time: 0 } : { key: k, time: now }; return hit; };
+  const move = (j) => select(state.cells[Math.max(0, Math.min(state.cells.length - 1, j))], { extend: e.shiftKey });
+  const keys = mod ? {
+    Enter: () => runSelected('stay'), a: () => { state.anchor = state.cells[0]; select(state.cells[state.cells.length - 1], { extend: true }); },
+    ...(e.shiftKey ? { ArrowUp: () => moveCells(cells, -1), ArrowDown: () => moveCells(cells, 1) } : {}),
+  } : {
+    Enter: () => {
+      if (e.shiftKey) return runSelected('advance');
+      select(cell);
+      if (cell.type === 'markdown') cell.rendered = false;
+      render();
+      requestAnimationFrame(() => cell.view.focus());
+    },
+    a: () => insertCell('code', i), b: () => insertCell('code', i + 1),
+    m: () => (e.shiftKey ? mergeCells(cells) : setTypes(cells, 'markdown')), y: () => setTypes(cells, 'code'), r: () => setTypes(cells, 'raw'),
+    c: () => copyCells(cells), x: () => copyCells(cells, true), v: () => pasteCells(e.shiftKey),
+    d: () => { if (twice('d')) deleteCells(cells); }, i: () => { if (twice('i') && (state.busy || queue.length)) stop(); }, 0: () => { if (twice('0')) restart(); },
+    ArrowUp: () => move(i - 1), ArrowDown: () => move(i + 1), k: () => move(i - 1), j: () => move(i + 1),
+    Delete: () => deleteCells(cells), Escape: () => select(cell),
   };
-  const fn = keys[e.key];
+  if (e.altKey && key === 'Enter' && !mod) { e.preventDefault(); runSelected('insert'); return; }
+  const fn = keys[key];
   if (fn) { e.preventDefault(); fn(); }
 });
+let lastKey = { key: '', time: 0 };
 
 // start
 state.cells = [
@@ -697,6 +1309,7 @@ state.cells = [
 state.selected = state.cells[1];
 state.status = t('nb.starting');
 const started = performance.now();
+pushRelay();
 kernel.ready.then((info) => {
   state.ready = true;
   state.status = `${t('nb.ready', info.python)} (${((performance.now() - started) / 1000).toFixed(1)} s)`;
@@ -705,8 +1318,15 @@ kernel.ready.then((info) => {
   render();
 }).catch((e) => { state.status = e.message; render(); });
 
-Suite.bridge.receive((picked) => openPicked(picked), { app: 'notebook' }); // files opened from other apps ("Open with…")
+// files opened from other apps ("Open with…") or examples: notebooks and .py files open as notebooks, other files (data, shell
+// scripts …) are put into the Python file system
+Suite.bridge.receive(async (picked) => {
+  if (/\.(ipynb|py)$/i.test(picked.file.name)) { await openPicked(picked); return; }
+  await uploadFile(picked.file);
+  refreshFiles();
+  Suite.shell.toast(t('nb.received', picked.file.name, state.cwd));
+}, { app: 'notebook' }); // files opened from other apps ("Open with…")
 
 // for tests
-window.NB = { restartWidgets: () => widgets.stop(), widgets, toHtml, state, refreshVariables, cellHistory, cellStep, kernel, insertCell, runCell, toNotebook, fromPython, toPython, setCells, fromNotebook };
+window.NB = { restartWidgets: () => widgets.stop(), get terminal() { return terminal; }, widgets, toHtml, state, mounts, syncMounts, refreshVariables, cellHistory, cellStep, kernel, insertCell, runCell, toNotebook, fromPython, toPython, setCells, fromNotebook };
 document.body.dataset.ready = 'true';

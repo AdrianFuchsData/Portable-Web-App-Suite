@@ -14,6 +14,10 @@ Anleitung für Anwenderinnen und Anwender ist das <ac:link><ri:page ri:content-t
   Browserspeicher stehen nur Einstellungen (Sprache, Design, App-Einstellungen, Rechtschreibsprache und eigene Wörter), zuletzt
   verwendete Datei-Handles, Wiederherstellungskopien ungespeicherter Arbeit (nie von einer entsperrten KeePass-Datenbank) und vom
   Anwender geladene Wörterbücher.</li>
+<li><strong>Im Speicher, kleine und mittlere Daten:</strong> Dateien werden vollständig in den Speicher gelesen (<code>ArrayBuffer</code>s, dekodierte Dokumente, das
+  Pyodide-Dateisystem); es gibt kein Streaming großer Dateien und keine Nutzung des Festplattenspeichers als Arbeitsspeicher. Die Grenze ist der Speicher
+  eines Browser-Tabs, daher ist die Suite für kleine bis mittlere Dateien ausgelegt und nicht für Big Data gedacht (siehe Benutzerhandbuch, <em>Grenzen</em>).
+  Anwendungen prüfen ihre eigenen bekannten Grenzen (Autosave 64 MB, Einbinden im Notebook 512 MiB, Wellenformen 400 MB, ZIP ohne ZIP64).</li>
 <li><strong>Standardmäßig offline:</strong> Eine Content Security Policy in jeder Seite verbietet Netzwerkverbindungen, außer die
   Anwendung hat Netzwerkfunktionen.</li>
 <li><strong>Eingabefelder und Neuzeichnen:</strong> Preact setzt <code>value</code> bei jedem Zeichnen, wenn es vom DOM abweicht. Felder, die erst bei <code>change</code>,
@@ -175,7 +179,15 @@ GitHub-Release (<code>gh release create … --notes-file</code>): was sich seit 
   Platzhaltermodule für ausgeschlossene, nachgeladene Module.</li>
 <li>Pyodide und Python-Pakete: <code>tools/vendor_pyodide.py vendor/pyodide.json</code> (SHA-256-geprüft).</li>
 <li>Die SSH/SFTP-Engine: <code>tools/build_engine_ssh.py</code> (braucht Go; das Ergebnis ist eingecheckt).</li>
-<li>Emoji- und Symboldaten: <code>tools/build_symbols.py</code> nach dem Einbinden von <code>vendor/symbols.esm.json</code> (das Ergebnis ist eingecheckt).</li>
+<li>Beispieldateien: <code>.venv/bin/python tools/make_examples.py [--zip]</code> schreibt <code>examples/&lt;Sprache&gt;/&lt;App&gt;/…</code> und <code>examples/examples.json</code> (erstellt mit
+  python-docx, openpyxl, python-pptx, pykeepass, Pillow, sqlite3, LibreOffice und ffmpeg; ZIP-basierte Dateien mit festen Zeitstempeln) und mit <code>--zip</code>
+  <code>dist/examples.zip</code>. <code>build.py</code> bettet die mit <code>embed</code> markierten Dateien (bis 300 KiB) neben den Tastenkürzeln ein (<code>#suite-examples</code>, gzip + base64);
+  der Hilfedialog der Shell führt sie in der Sprache der Oberfläche auf und öffnet eine mit <code>Suite.bridge.openLocal(file)</code>, das sie an den Handler
+  übergibt, den die Anwendung mit <code>Suite.bridge.receive</code> angemeldet hat (als schreibgeschützte Kopie). <code>tests/apps/test_examples.py</code> öffnet jedes
+  eingebaute Beispiel auf Englisch und Deutsch und führt die Offline-Notebooks aus.</li>
+<li>Emoji- und Symboldaten: <code>tools/build_symbols.py</code> nach dem Einbinden von <code>vendor/symbols.esm.json</code> (das Ergebnis ist eingecheckt).
+  Neben den Unicode-Gruppen schreibt es die Gruppe <code>spaces</code> (Tabulator, geschützte, schmale, Halbgeviert-, Geviert- und breitenlose Leerzeichen,
+  weiches Trennzeichen), die <code>symbols.js</code> mit Beschriftungen zeigt (<code>VISIBLE</code>).</li>
 </ul>
 <h2>Gemeinsame Module</h2>
 <p>Die gemeinsamen Module der ersten Tabelle sind klassische Skripte, die das globale Objekt <code>Suite</code> erweitern; die zweite Tabelle nennt
@@ -218,6 +230,11 @@ ES-Module, die Anwendungen über ihre Import-Maps importieren.</p>
 <td><code>diagram-embed.js</code></td>
 <td><code>Suite.diagrams</code></td>
 <td>Diagramme als PNG-Bilder mit der draw.io-Datei darin: erkennen, einfügen und über den Diagramm-Editor bearbeiten (siehe <em>Diagramme in anderen Anwendungen</em>)</td>
+</tr>
+<tr>
+<td><code>archive-link.js</code></td>
+<td><code>Suite.archiveLink</code></td>
+<td>Dateien in Archiven: der Dialog „Dateisystem oder Archiv“ von <code>Suite.files.open/saveAs</code> (Einstellung <code>suite.files.archives</code>), Finden von Archivmanagern, Verbindungen (<code>MessagePort</code>) mit einem Ersatz für Datei-Handles, der über den Archivmanager liest und schreibt</td>
 </tr>
 <tr>
 <td><code>bridge.js</code></td>
@@ -301,6 +318,10 @@ ES-Module, die Anwendungen über ihre Import-Maps importieren.</p>
 <tr>
 <td><code>cm-symbols.js</code></td>
 <td>Emoji und Symbole in CodeMirror-Editoren (Adapter für <code>symbols.js</code>)</td>
+</tr>
+<tr>
+<td><code>cm-indent.js</code></td>
+<td>Tab-Taste der CodeMirror-Editoren: einrücken / bis zum nächsten Tabstopp einfügen, <code>Umschalt+Tab</code>, <code>Strg+Alt+I</code> fügt <code>\t</code> ein</td>
 </tr>
 <tr>
 <td><code>spell.js</code>, <code>spell-dom.js</code>, <code>cm-spell.js</code></td>
@@ -466,6 +487,39 @@ das eigene Rückgängig des Browsers. Verfahren:</p>
 </ol>
 <p>Quellen: Archivmanager, FTP/SFTP-Client, SSH-Dateibereich, KeePass-Anhänge, E-Mail-Anhänge, Notebook-Dateien, die
 Übersicht. Ziele: jede Anwendung, die Dateien öffnet.</p>
+<h3>Dateien in Archiven</h3>
+<p><code>shared/js/archive-link.js</code> (<code>Suite.archiveLink</code>, ein klassisches Skript nach <code>bridge.js</code> in jeder Anwendung) lässt jede Anwendung Dateien
+aus Archiven öffnen und in sie speichern, während der Archivcode im Archivmanager bleibt:</p>
+<ul>
+<li><code>Suite.files.open()</code> und <code>saveAs()</code> rufen zuerst <code>choose('open' | 'save', name)</code> auf: ein Dialog mit <strong>Dateisystem</strong> (mit Fokus) und den
+  Archiven, die während der Anzeige gefunden werden, dazu <strong>Anderes Archiv…</strong>, das aus dem Klick einen Archivmanager startet (<code>window.open</code> von
+  <code>archive.html</code> oder ein neuer Reiter der Übersicht). Aus, wenn <code>localStorage</code> <code>suite.files.archives</code> <code>0</code> ist (globale Einstellungen), und im
+  Archivmanager und in der Übersicht selbst (<code>disabled</code>). Die Tests schalten es in jedem Browser-Kontext ab (<code>tests/conftest.py</code>), außer wo sie es
+  prüfen.</li>
+<li><strong>Archive finden:</strong> Standalone bekommen die Fenster der Archivmanager, die die Anwendung gestartet hat, und ihr Opener
+  <code>{ suite: 'suite-bridge', type: 'archive-info' }</code> mit einem Port; ein Archivmanager mit geöffnetem Archiv antwortet <code>{ name, format }</code> (600 ms).
+  In der Übersicht lässt <code>{ type: 'archive-list' }</code> den Hub seine Archivreiter fragen und <code>[{ tab, name, format }]</code> antworten.</li>
+<li><strong>Verbinden:</strong> <code>{ type: 'archive-connect', request: { mode: 'open' | 'save' | 'mount', name, multiple, exts, label } }</code> mit einem Port geht an
+  den Archivmanager (in der Übersicht über den Hub, der diesen Reiter zeigt und bei <code>tab: null</code> einen neuen öffnet und die Anfrage bei dessen
+  <code>ready</code> zustellt). Der Archivmanager zeigt seinen <code>LinkDialog</code> (Dateien, Ordner und Namen wählen oder das Einbinden erlauben; ohne geöffnetes
+  Archiv zuerst Öffnen/Neu) und antwortet <code>{ type: 'connected', paths, info }</code> oder <code>{ type: 'cancelled' }</code>; die Anwendung sendet dann
+  <code>{ type: 'activate' }</code> an den Hub, um wieder nach vorne zu kommen.</li>
+<li><strong>Protokoll</strong> auf dem Port: Anfragen <code>{ id, op, … }</code> → <code>{ id, ok, result | error }</code> mit <code>info</code>, <code>list</code>, <code>read { path }</code>, <code>write { path, bytes }</code>,
+  <code>delete { path }</code>, <code>mkdir { path }</code> und <code>release</code>. <code>link.handle(path)</code> ist ein Ersatz für ein Datei-Handle (<code>bridged: true</code>, daher schreibt
+  <code>Suite.files.save()</code> darüber und <code>remember()</code> übergeht es), dessen <code>createWritable().close()</code> <code>write</code> sendet. Schreibvorgänge laufen über
+  <code>writeEntry()</code> (Rückgängig-Schritt, Archiv als geändert markiert); eine mit <em>Das Archiv nach jeder Änderung speichern</em> angelegte Verbindung
+  speichert das Archiv nach jedem Schreiben.</li>
+<li><strong>Sitzungen:</strong> Der Archivmanager nummeriert das geöffnete Archiv (<code>state.session</code>); jede Verbindung (auch die von <em>Öffnen mit…</em>) merkt sie sich.
+  Öffnen, Anlegen oder Schließen eines Archivs ruft <code>closeLinks()</code> auf, das <code>{ type: 'closed' }</code> an die Verbindungen sendet und die Sitzung
+  erhöht, sodass spätere Anfragen mit <code>alink.closed</code> scheitern. <code>confirmDiscard()</code> führt die Verbindungen der aktuellen Sitzung auf und fragt
+  vorher nach; <em>Öffnen mit…</em>-Verbindungen, deren Anwendungsauswahl abgebrochen wurde, werden verworfen. Verbindungen werden freigegeben, wenn die
+  Seite der Anwendung verborgen wird (<code>pagehide</code>).</li>
+<li><strong>Python-Dateisysteme:</strong> Das Notebook beantwortet <code>archive-info</code> mit <code>{ name, format: 'Pyodide', kind: 'python' }</code> (sobald Python bereit ist) und
+  <code>archive-connect</code> (nicht <code>mount</code>) mit einem eigenen Dialog (<code>FsLinkDialog</code>: Ordner und Name oder Dateien von <code>/home/pyodide</code>, mit dem Hinweis auf
+  den Speicher); das Protokoll läuft über die Dateianfragen des Kernels (<code>walk</code>, <code>readFile</code>, <code>writeFile</code>, <code>removeTree</code>, <code>mkdirs</code>; Pfade relativ zu
+  <code>/home/pyodide</code>). Die Übersicht fragt auch ihre Notebook-Reiter. <code>choose()</code> führt sie in einem eigenen Abschnitt mit dem Hinweis auf; Verbindungen
+  der Art <code>python</code> melden <code>alink.closedPython</code>. Ein Neustart fragt nach, solange solche Verbindungen bestehen, und schließt sie.</li>
+</ul>
 <h3>Diagramme in anderen Anwendungen</h3>
 <p><code>shared/js/diagram-embed.js</code> (<code>Suite.diagrams</code>, ein klassisches Skript von Präsentation, Web-Folien, Dokument und Tabellenkalkulation) setzt
 Spike S-11 um: Ein Diagramm ist ein PNG mit dem draw.io-XML in einem <code>tEXt</code>-Chunk <code>mxfile</code> (das „bearbeitbare PNG“ von draw.io), das PPTX
@@ -711,9 +765,12 @@ Formate und schreibt 7z über libarchive.js 2.0 (libarchive als WebAssembly, <co
 <li><code>detectMulti</code> erkennt die Formate an ihren Signaturen; <code>readMulti</code> entpackt alle Einträge auf einmal (<code>client.extractFiles()</code>, libarchive
   liest sequenziell) und hält sie im Speicher. libarchive entschlüsselt kein 7z/RAR: verschlüsselte ergeben <code>ar.encryptedUnsupported</code>; keine
   Einträge aus xz/bzip2/zstd/lzma-Daten bedeuten eine einzelne komprimierte Datei (das Format <code>raw</code> ist nicht aktiviert).</li>
+<li><code>write7z</code>: libarchive.js hat keine funktionierende Option „ohne Filter“, daher wird der 7z-Strom durch den gzip-Filter geschrieben und mit
+  <code>DecompressionStream</code> wieder entpackt. Einträge haben keine Ordnereinträge (Ordner ergeben sich aus den Pfaden) und keine Verschlüsselung.</li>
 <li>
-<p><code>write7z</code>: libarchive.js hat keine funktionierende Option „ohne Filter“, daher wird der 7z-Strom durch den gzip-Filter geschrieben und mit
-  <code>DecompressionStream</code> wieder entpackt. Einträge haben keine Ordnereinträge (Ordner ergeben sich aus den Pfaden) und keine Verschlüsselung.</p>
+<p><code>compress(bytes, 'bzip2' | 'xz')</code>: TAR.BZ2 und TAR.XZ sind die Ausgabe des eigenen TAR-Schreibers (Unicode-Namen, Links), komprimiert mit
+  dem Filter von libarchive im Format <code>raw</code>. Eine geöffnete XZ/BZip2-Datei mit Einträgen bekommt das Format <code>txz</code>/<code>tbz2</code> und wird so gespeichert.
+  Der angepasste Ausgabepuffer des Workers erlaubt 2 % Wachstum (nicht komprimierbare Daten wachsen beim Komprimieren).</p>
 </li>
 <li>
 <p><strong>ZIP lesen</strong> beginnt beim End-of-Central-Directory-Eintrag (ZIP64-Locator und -Zusatzfeld werden unterstützt). Die Einträge werden
@@ -1073,8 +1130,66 @@ Pyodide-Dateien sind mit <code>data-bundle</code> eingebettet. Die Kernel-Schnit
 <li><strong>Dateien</strong>: <code>.ipynb</code> wird als nbformat 4.5 gelesen und geschrieben (Zell-IDs bleiben oder werden erzeugt); <code>.py</code> mit <code># %%</code>- /
   <code># %% [markdown]</code>-Markierungen (Percent-Format) wird gelesen und exportiert.</li>
 <li><strong>Konsole</strong>: eine CodeMirror-Eingabe mit Verlauf auf demselben Kernel; die Ausführungszähler werden mit dem Notebook geteilt.</li>
-<li><strong>Tastatur</strong>: in einer Zelle <code>Umschalt/Strg/Alt+Eingabe</code>; Befehlsmodus (Fokus auf dem Zellelement) <code>Eingabe</code>, <code>A</code>, <code>B</code>, <code>M</code>, <code>Y</code>, Pfeiltasten, <code>Entf</code>.</li>
-<li>Ein Neustart beendet den Worker und startet einen neuen; in der Sitzung installierte Wheels werden erneut installiert.</li>
+<li><strong>Tastatur</strong>: in einer Zelle <code>Umschalt/Strg/Alt+Eingabe</code>, <code>Tab</code>/<code>Umschalt+Tab</code>/<code>Strg+Alt+I</code> (<code>shared/js/cm-indent.js</code>, Einrückung 4 Leerzeichen);
+  Befehlsmodus (Fokus auf dem Zellelement) wie in JupyterLab. Die Auswahl ist <code>state.selected</code> (die aktuelle Zelle) plus <code>state.marked</code> (mit
+  Umschalt gewählte Zellen, ab <code>state.anchor</code>); <code>selectedCells()</code> liefert sie in Notebook-Reihenfolge. Kopieren/Ausschneiden hält Abbilder (Typ,
+  Quelltext, Ausgaben, Zähler, Metadaten) in <code>state.clipboard</code>; Einfügen, Zusammenfügen (eine neue Zelle, die zusammengefügten entfernt), Löschen
+  und Verschieben sind je ein Rückgängig-Schritt. Tastenpaare (<code>D D</code>, <code>I I</code>, <code>0 0</code>) zählen, wenn sie innerhalb von 800 ms gedrückt werden.</li>
+<li><strong>Warteschlange</strong>: <code>enqueue(cells)</code> reiht Zellen in eine Warteschlange der Anwendung ein, die <code>drain()</code> nacheinander ausführt (<code>[*]</code> beim Warten);
+  <code>execute()</code> liefert <code>{ count, status }</code> aus <code>_run</code> des Kernels (<code>"ok"</code>/<code>"error"</code>). Mit <strong>Bei Fehler anhalten</strong> (<code>localStorage</code>
+  <code>suite.notebook.stopOnError</code>, standardmäßig an) leert ein Fehler die Warteschlange. Neustart, Unterbrechen und Laden eines Notebooks leeren sie auch.</li>
+<li><strong>Unterbrechen</strong>: Auf einer cross-origin-isolierten Seite (<code>crossOriginIsolated</code>, z. B. von <code>relay.py --serve</code> mit COOP/COEP bereitgestellt)
+  legt <code>python-kernel.js</code> einen <code>SharedArrayBuffer</code> von einem Byte an, den der Worker einmal mit <code>pyodide.setInterruptBuffer</code> anmeldet (Aus- und
+  wieder Einschalten bringt Pyodides Ereignisschleife durcheinander). Der Kernel schreibt <code>2</code> (SIGINT) nur zwischen der Meldung <code>running</code> des Workers
+  (von <code>_run</code> selbst unmittelbar vor dem Code der Zelle gesendet) und dem Ende dieser Anfrage; eine frühere Unterbrechung wartet darauf, damit das
+  Laden von Paketen im Hintergrund nie unterbrochen wird. Pyodide prüft den Puffer überall, wo Python läuft, auch in seiner Ereignisschleife und in
+  <code>time.sleep</code> (das über <code>run_sync</code> wartet), wo ein Auslösen es beschädigt: Der SIGINT-Handler des Kernels löst <code>KeyboardInterrupt</code> nur aus, wenn die
+  Rahmenkette einen Rahmen <code>&lt;cell …&gt;</code> erreicht, ohne Code von Pyodide oder asyncio zu passieren; unter solchem Code setzt er am Zellrahmen eine
+  Trace-Funktion, die bei der nächsten Zeile der Zelle auslöst (wie <code>pdb</code>), sonst setzt er den Puffer für die nächste Prüfung erneut. Ohne Isolation
+  fragt <strong>Stoppen</strong> nach und startet neu.</li>
+<li>Ein Neustart beendet den Worker und startet einen neuen; in der Sitzung installierte Wheels werden erneut installiert. Er ist jederzeit möglich,
+  auch während eine Zelle läuft.</li>
+<li><strong>Modul <code>suite</code></strong> (<code>shared/js/python-suite.py</code>, vom Worker als Paket <code>suite</code> installiert): Seine Funktionen rufen die Seite mit
+  <code>await _page_call(name, json)</code> auf; der Worker sendet <code>{ type: 'call', call, name, args }</code>, <code>python-kernel.js</code> gibt es an <code>onCall(name, args)</code>
+  der Anwendung weiter und antwortet mit <code>call-result</code>, das der Worker sofort behandelt (außerhalb seiner Anfragewarteschlange, die Zelle wartet).
+  Dateisystem-Anfragen (<code>write</code>, <code>read</code>, <code>mkdirs</code>, <code>walk</code>, <code>rmtree</code>, <code>list</code>, <code>remove</code>) werden ebenfalls sofort beantwortet, damit ein Seitenaufruf
+  sie nutzen kann, während die aufrufende Zelle wartet.</li>
+<li><strong>Eingebundene Archive</strong> (<code>suite.archives</code>, <em>Archiv einbinden…</em>): eine Verbindung von <code>shared/js/archive-link.js</code> im Modus <code>mount</code>; die Dateien
+  werden nach <code>/mnt/&lt;Name&gt;</code> kopiert. Ein Abbild (<code>walk</code>: relativer Pfad → <code>dir</code> oder <code>size:mtime</code>) wird nach jeder Zelle und jedem Konsolenbefehl
+  verglichen (<code>syncMounts</code>): Geänderte und neue Dateien werden geschrieben, neue Ordner angelegt, gelöschte Dateien und Ordner gelöscht (der
+  bleibende Ordner einer gelöschten Datei bleibt erhalten). Eine vom Archivmanager geschlossene Verbindung markiert die Einbindung als <code>closed</code> mit
+  einer Meldung; ein Neustart gibt alle Einbindungen frei.</li>
+<li><strong>Netzwerk</strong> (<code>shared/js/python-net.py</code> als <code>suite.net</code>, beim Start installiert): Ein Import-Hook ersetzt <code>requests.adapters.HTTPAdapter.send</code>;
+  mit eingestelltem Relay werden Anfragen als JSON von <code>/http</code> des Relays über <code>_relay_http</code> gesendet – auf isolierten Seiten als synchroner
+  Seitenaufruf (<code>Suite.relay.http</code>), sonst als synchroner <code>XMLHttpRequest</code> des Workers an das Relay (Adresse und Zugangsdaten aus
+  <code>kernel.setRelay</code>, bei Änderungen der Relay-Einstellungen übertragen; eine Anmeldung mit Passwort meldet sich zuerst auf der Seite an). Auf
+  isolierten Seiten werden <code>socket.socket</code>, <code>create_connection</code>, <code>getaddrinfo</code>, <code>gethostbyname</code> durch <code>RelaySocket</code> ersetzt (synchrone Aufrufe
+  <code>tcp.open</code>, <code>send</code>, <code>recv</code> mit Zeitlimit, <code>starttls</code>, <code>close</code> auf Tunneln von <code>Suite.relay.connect</code>; ein Lesen, das ein Zeitlimit überdauert,
+  behält seine Daten), und <code>ssl.SSLContext.wrap_socket</code> schaltet einen Relay-Socket im Relay auf TLS (<code>insecure</code>, wenn der Kontext nicht prüft).</li>
+<li><strong>Synchrone Aufrufe</strong> (isolierte Seiten): <code>python-kernel.js</code> legt einen Steuer- (<code>Int32Array(4)</code>) und einen Datenpuffer (8 MiB) auf
+  <code>SharedArrayBuffer</code>s an; der Worker sendet <code>sync-call</code> und wartet mit <code>Atomics.wait</code> (in Schritten von 100 ms, damit ein Unterbrechen das Warten
+  mit <code>KeyboardInterrupt</code> und <code>sync-cancel</code> beendet); die Seite schreibt Art (JSON, Bytes, Fehler), Länge und Aufruf-ID und benachrichtigt.
+  Antworten auf abgebrochene Aufrufe werden verworfen.</li>
+<li><strong>SSH</strong> (<code>shared/js/python-ssh.py</code> als <code>suite.ssh</code>): eine Teilmenge von Fabrics <code>Connection</code> (<code>run</code>, <code>put</code>, <code>get</code>, <code>sftp</code>) und von paramikos
+  <code>SFTPClient</code> auf der SSH-Engine (<code>shared/js/ssh.js</code>, <code>vendor/wasm/ssh-engine.wasm</code>, im Notebook eingebettet); Host-Schlüssel werden in einem
+  Dialog bestätigt und in <code>localStorage</code> <code>suite.notebook.knownHosts</code> gespeichert. Entfernte Dateien werden in Stücken von 1 MiB gelesen und
+  geschrieben (<code>readAt</code>, <code>writeAt</code>). Die Engine schließt Clients und SFTP-Sitzungen in Goroutinen (Blockieren in einem JavaScript-Callback würde das
+  Go-Programm beenden).</li>
+<li><strong>Relay-Einstellungen</strong>: <code>Suite.appdata</code> (Dateibereich, <em>Netzwerk</em>); auf einer vom Relay bereitgestellten Seite ist die Standard-Relay-Adresse
+  die Herkunft der Seite.</li>
+<li><strong>Terminal</strong> (<code>apps/notebook/src/js/terminal.js</code>, xterm.js aus <code>vendor/esm/xterm</code>): Die Seite bearbeitet die Zeile (Verlauf, Pfeiltasten,
+  Tab-Ergänzung) und sendet sie als <code>await suite.shell._terminal(line)</code> an Python; Ausgaben fließen in xterm (<code>\n</code> → <code>\r\n</code>), die Antwort (Status,
+  Arbeitsordner, eine interaktive Anfrage) kommt als Anzeigeausgabe des Typs <code>application/vnd.suite.terminal+json</code> (mit <code>_emit</code> geschrieben, in Zellen
+  nie angezeigt). <code>less</code> und <code>nano</code> laufen in der Seite auf dem alternativen Bildschirm von xterm mit dem Text, den die Shell übergibt; nano speichert
+  mit <code>kernel.writeFile</code>. Die Ergänzung fragt <code>suite.shell._complete(line)</code> auf dieselbe Weise.</li>
+<li><strong>Shell</strong> (<code>shared/js/python-shell.py</code> als <code>suite.shell</code>): Ein Vorlauf ersetzt Variablen außerhalb einfacher Anführungszeichen und Platzhalter in
+  Anführungszeichen durch private Zeichen, dann zerlegt <code>shlex</code> (<code>punctuation_chars</code>) Wörter und Operatoren; Globs verwenden <code>glob</code>. Pipelines reichen
+  Text (<code>io.StringIO</code>) von Befehl zu Befehl; <code>&amp;&amp;</code>/<code>||</code>/<code>;</code> folgen dem Rückgabewert. Jeder Befehl ist eine Methode <code>c_&lt;name&gt;(args, stdin, out, err)</code>;
+  Optionen zerlegt ein kleiner getopt-artiger Helfer. <code>python</code> führt Skripte mit <code>runpy</code> im Interpreter des Notebooks aus (stdout/stderr umgeleitet,
+  <code>sys.argv</code> gesetzt); <code>pip</code> verwendet micropip; <code>mount</code> ruft <code>suite.archives</code> auf. <code>tests/shared/test_python_shell.py</code> prüft die Shell mit CPython,
+  <code>tests/apps/test_notebook_shell.py</code> den Reiter Terminal.</li>
+<li><strong>Empfangene Dateien:</strong> Dateien aus anderen Anwendungen oder Beispielen, die keine Notebooks sind, werden in den aktuellen Ordner des
+  Python-Dateisystems gelegt.</li>
 <li><strong>Export</strong>: <code>toHtml()</code> schreibt aus den Zellen eine eigenständige Seite (CSS eingebettet): Markdown und HTML-/SVG-Ausgaben durch denselben
   DOMPurify-Filter wie am Bildschirm, Bilder als <code>data:</code>-URLs, Code maskiert; PDF druckt diese Seite aus einem verborgenen <code>srcdoc</code>-Rahmen.</li>
 <li><strong>Variablen</strong>: <code>_variables()</code> im Worker durchläuft den Zell-Namensraum <code>_ns</code> (ohne Module, Funktionen, Klassen und <code>_</code>-Namen) und liefert
@@ -1113,6 +1228,15 @@ wird, mit der Dateikonvertierung aus Spike S-6 (<code>shared/js/univer-xlsx.js</
 <code>bg</code>/<code>cl</code>/<code>bl</code>/<code>it</code>/<code>ul</code>/<code>st</code>) und auf <code>dataValidation</code> der Zellen ab. ExcelJS listet Überprüfungen je Zelle; gleiche Einstellungen werden wieder
 zu Spaltenläufen zusammengefasst. Fehlerstile: Univer INFO=0, STOP=1, WARNING=2. ExcelJS schreibt containsText-Regeln ohne das Attribut <code>text</code>,
 daher entnimmt das Lesen den Text der Formel.</p>
+<p>Sortieren und Filtern kommen aus <code>@univerjs/preset-sheets-sort</code> und <code>-filter</code> (1.0.4, Apache-2.0). Sortieren ändert die Zellen und braucht keine
+Unterstützung im Dateiformat. Das Filtermodell (Ressource <code>SHEET_FILTER_PLUGIN</code>: <code>{ sheetId: { ref, filterColumns: [{ colId, filters: { filters,
+blank } | customFilters: { and, customFilters: [{ operator, val }] } }], cachedFilteredOut: [Zeilen] } }</code>) folgt <code>&lt;autoFilter&gt;</code> von SpreadsheetML.
+ExcelJS behält nur den Filterbereich, daher liest <code>univer-xlsx.js</code> die Kriterien selbst aus dem Blatt-XML (<code>readAutoFilters</code>: Blattnamen → Teile aus
+<code>workbook.xml</code> und seinen Beziehungen, <code>DOMParser</code>) und schreibt sie nach ExcelJS (<code>writeAutoFilters</code>: <code>&lt;autoFilter ref/&gt;</code> des Blatts wird ersetzt,
+und der verborgene Name <code>_xlnm._FilterDatabase</code> wird wie bei Excel in <code>workbook.xml</code> ergänzt; ohne ihn übergeht LibreOffice den Filter). Zeilen,
+die Excel im Filterbereich ausgeblendet hat, werden zu <code>cachedFilteredOut</code> statt zu von Hand ausgeblendeten Zeilen; beim Speichern werden sie als
+ausgeblendete Zeilen geschrieben. Farb-, dynamische und Top-10-Filter werden nicht erhalten. Die ZIP-Hilfen (<code>readZip</code>, <code>zipPart</code>, <code>writeZip</code>) teilt
+sich der Code mit der Korrektur der Beziehungen von openpyxl-Dateien.</p>
 <ul>
 <li><strong>Styles</strong>: Die Anwendung lädt <code>vendor/pico.conditional.min.css</code>, das nur Elemente innerhalb von <code>.pico</code> gestaltet; Kopfzeile, Banner, Hinweise und
   Dialoge der Shell tragen diese Klasse, die Univer-Oberfläche behält ihr eigenes Aussehen. Dialoge mit <code>.pico</code> erhalten einen <code>z-index</code> über
@@ -1454,7 +1578,7 @@ eigenen, daher ist die Richtlinie der Übersicht die Vereinigung aller Richtlini
 <p>Rahmen und Fenster erhalten den Namen <code>suite-hub-app</code>; <code>Suite.bridge.hub()</code> liefert dann den Elternrahmen bzw. das
 <code>opener</code>-Fenster. Die Übersicht leitet „Öffnen mit…“-Anfragen in neue Tabs (keine Pop-ups) und erhält <code>dirty</code>-Nachrichten
 von <code>Suite.shell.setDirty</code> für die Markierungen der Tabs. „Alle Anwendungen speichern“ schreibt in einen Ordner
-(<code>showDirectoryPicker</code>) oder erzeugt ein ZIP (<code>js/zip.js</code>, unkomprimierte Einträge). Die Übersicht ist etwa 90 MB groß;
+(<code>showDirectoryPicker</code>) oder erzeugt ein ZIP (<code>js/zip.js</code>, unkomprimierte Einträge). Die Übersicht ist etwa 120 MB groß;
 sie lädt in etwa 2 s, weil die Anwendungen erst beim Start entpackt werden.</p>
 <h3>Web-Folien (<code>apps/reveal</code>)</h3>
 <p>Diagrammblöcke (<code>js/mermaid-svg.js</code>) importieren <code>mermaid.js</code>, <code>layout.js</code> und <code>model.js</code> des Diagrammeditors über die Import-Map
@@ -1542,6 +1666,17 @@ meldet es sich an, merkt sich die Sitzung je Relay und Zugangsdaten und meldet s
 Benutzername und Passwort sowie Reverse-Proxy / Client-Zertifikat; <code>data.relayConfigured()</code> sagt den Anwendungen, ob die
 Einstellungen vollständig sind. Die Anwendungen, die das Relay verwenden, erlauben <code>connect-src http: https: ws: wss:</code>,
 damit das Relay auf jedem Rechner laufen kann.</p>
+<p><strong>Anwendungen bereitstellen</strong> (<code>--serve DIR</code> / <code>-Serve DIR</code>): <code>GET</code>/<code>HEAD</code>-Anfragen für andere Pfade beantwortet das Relay mit regulären Dateien
+unter <code>DIR</code> (aufgelöste Pfade müssen darin bleiben, keine versteckten Teile; <code>/</code> leitet auf <code>overview.html</code> um), mit
+<code>Cross-Origin-Opener-Policy: same-origin</code>, <code>Cross-Origin-Embedder-Policy: require-corp</code>, <code>Cross-Origin-Resource-Policy: same-origin</code>,
+<code>X-Content-Type-Options: nosniff</code> und <code>Cache-Control: no-cache</code>. Nach dem Binden ergänzt das Relay seine eigenen Herkünfte
+(<code>http(s)://127.0.0.1|localhost|[::1]|&lt;--host&gt;:&lt;Port&gt;</code>) bei den erlaubten Herkünften. <code>appdata.js</code> verwendet auf solchen Seiten <code>location.origin</code> als
+Standard-Relay-Adresse.</p>
+<p><strong>Vorgelagerter Proxy</strong> (<code>--upstream-proxy URL|env</code>, <code>--no-proxy</code>): Tunnel öffnen eine TCP-Verbindung zum Proxy, senden <code>CONNECT host:port</code> (mit
+<code>Proxy-Authorization: Basic …</code> aus den Benutzerangaben der URL), lesen den Antwortkopf (Python: <code>readuntil</code>, PowerShell: Byte für Byte, damit nichts
+vom Tunnel verbraucht wird) und setzen bei Bedarf TLS darauf (<code>upgrade_tls</code>, mit STARTTLS geteilt; <code>SslStream</code>). <code>/http</code> verwendet den <code>ProxyHandler</code>
+von <code>urllib</code> (Python; ein ausdrücklich leerer für <code>--no-proxy</code>-Hosts) oder denselben <code>CONNECT</code>-Tunnel (der rohe HTTP-Client von PowerShell).
+<code>--no-proxy</code>-Muster passen auf den Host, <code>*.domain</code>-Globs und Domain-Endungen.</p>
 <h2>Tests</h2>
 <ac:structured-macro ac:name="code"><ac:parameter ac:name="language">bash</ac:parameter><ac:plain-text-body><![CDATA[python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt

@@ -8,6 +8,7 @@
     "app/spell-dom": "../../../../shared/js/spell-dom.js",
     "app/cm-spell": "../../../../shared/js/cm-spell.js",
     "app/cm-symbols": "../../../../shared/js/cm-symbols.js",
-    "app/cm-colors": "../../../../shared/js/cm-colors.js"
+    "app/cm-colors": "../../../../shared/js/cm-colors.js",
+    "app/cm-indent": "../../../../shared/js/cm-indent.js"
   }
 }

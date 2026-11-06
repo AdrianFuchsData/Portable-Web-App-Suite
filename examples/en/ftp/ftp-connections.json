@@ -1,0 +1,29 @@
+{
+  "format": "portable-web-app-suite",
+  "version": 1,
+  "apps": {
+    "ftp": {
+      "settings": {},
+      "connections": [
+        {
+          "id": "rebex-sftp",
+          "name": "Rebex demo (SFTP, read-only)",
+          "protocol": "sftp",
+          "host": "test.rebex.net",
+          "port": 22,
+          "username": "demo",
+          "password": "password"
+        },
+        {
+          "id": "rebex-ftp",
+          "name": "Rebex demo (FTP, read-only)",
+          "protocol": "ftp",
+          "host": "test.rebex.net",
+          "port": 21,
+          "username": "demo",
+          "password": "password"
+        }
+      ]
+    }
+  }
+}

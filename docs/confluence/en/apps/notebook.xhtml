@@ -2,8 +2,10 @@
 <ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
 <p>The Python notebook (<code>notebook.html</code>) runs Python 3 in the browser — without installation, server or internet connection. It works
 like Jupyter: notebooks with code and text cells, results directly below the code, plots, tables. A console runs single commands.</p>
-<p>Included libraries: numpy, pandas, matplotlib, seaborn, sympy, networkx, lxml, beautifulsoup4, pyyaml, openpyxl, xlrd, regex, requests,
-sqlite3, SQLAlchemy, pykeepass, nzpy and micropip. They are loaded when they are imported for the first time; numpy, pandas and matplotlib
+<p>Included libraries: numpy, pandas, matplotlib, seaborn, scipy, scikit-learn, sympy, networkx, lxml, beautifulsoup4, pyyaml, openpyxl, xlrd, regex, requests,
+sqlite3, SQLAlchemy, pykeepass, nzpy, micropip; for office files python-docx, python-pptx, XlsxWriter (also as pandas' Excel writer), pypdf and
+icalendar; for databases over the relay pg8000 (PostgreSQL) and PyMySQL (MySQL/MariaDB), also through SQLAlchemy; Jinja2 (with MarkupSafe),
+Markdown, tabulate and tqdm. They are loaded when they are imported for the first time; numpy, pandas and matplotlib
 are prepared in the background after the start. The first start takes a few seconds; the status at the top right shows when Python is
 ready.</p>
 <h2>Notebooks</h2>
@@ -48,10 +50,24 @@ ready.</p>
 <td><code>Escape</code></td>
 <td>leave the editor (command mode)</td>
 </tr>
+<tr>
+<td><code>Tab</code> / <code>Shift+Tab</code></td>
+<td>indent / unindent (4 spaces)</td>
+</tr>
+<tr>
+<td><code>Ctrl+Alt+I</code></td>
+<td>insert a tab character</td>
+</tr>
 </tbody>
 </table>
-<p>In command mode (a cell is selected, the cursor is not in it): <code>Enter</code> edits, <code>A</code>/<code>B</code> insert a cell above/below, <code>M</code> makes it a Markdown
-cell, <code>Y</code> a code cell, <code>↑</code>/<code>↓</code> select, <code>Delete</code> deletes the cell.</p>
+<p>In <strong>command mode</strong> (a cell is selected, the cursor is not in it) the keys work as in JupyterLab: <code>Enter</code> edits, <code>A</code>/<code>B</code> insert a cell
+above/below, <code>M</code>/<code>Y</code>/<code>R</code> make the cells Markdown, code or raw cells, <code>↑</code>/<code>↓</code> (or <code>K</code>/<code>J</code>) select the previous/next cell.</p>
+<p><strong>Several cells:</strong> <code>Shift+↑</code>/<code>Shift+↓</code> (or <code>Shift+K</code>/<code>Shift+J</code>) and <code>Shift+click</code> select several cells, <code>Ctrl+A</code> all of them. The keys then
+apply to all selected cells: <code>Shift+Enter</code>, <code>Ctrl+Enter</code> and <code>Alt+Enter</code> run them, <code>C</code> copies, <code>X</code> cuts, <code>V</code> pastes below (<code>Shift+V</code> above),
+<code>D</code>, <code>D</code> (twice) or <code>Delete</code> deletes, <code>Shift+M</code> merges them into one cell (one selected cell: with the next one), <code>Ctrl+Shift+↑</code>/<code>↓</code>
+moves them.</p>
+<p><strong>Running:</strong> cells run one after another; waiting cells show <code>[*]</code>. <strong>Stop on error</strong> (on by default, next to <strong>▶▶ Run all</strong>): when a cell
+raises an error, the cells waiting after it are not run, as in Jupyter. Switched off, they run anyway.</p>
 <p>Outputs: printed text, errors (only your code in the traceback), the result of the last line, tables (pandas), plots (matplotlib, also
 without <code>plt.show()</code>), HTML and Markdown. HTML and Markdown from notebooks are shown without scripts.</p>
 <p>In command mode, <code>Z</code> or <code>Ctrl+Z</code> (and ↶ in the toolbar) undoes the last cell operation: inserting, deleting, moving, changing the type, clearing outputs; <code>Shift+Z</code>, <code>Ctrl+Y</code> or ↷ redoes it. Inside a cell, <code>Ctrl+Z</code> undoes typing in that cell. Running cells is not undone.</p>
@@ -61,6 +77,32 @@ cells in their comments and strings; right-click an underlined word for suggesti
 <h2>Console</h2>
 <p>The <strong>Console</strong> tab runs single commands in the same Python session as the notebook (variables are shared). <code>Enter</code> runs, <code>Shift+Enter</code> starts a
 new line, <code>↑</code>/<code>↓</code> recall earlier commands. <strong>Clear</strong> empties the console.</p>
+<h2>Terminal</h2>
+<p>The <strong>Terminal</strong> tab has a bash-like shell on Python's file system (the same files as the Files panel and the cells; it lives only in
+memory). It is written in Python and runs in the notebook's Python, so it works offline everywhere.</p>
+<ul>
+<li><strong>Commands:</strong> <code>ls</code>, <code>cd</code>, <code>pwd</code>, <code>cat</code>, <code>cp</code>, <code>mv</code>, <code>rm</code>, <code>mkdir</code>, <code>rmdir</code>, <code>touch</code>, <code>find</code> (<code>-name</code>, <code>-iname</code>, <code>-type</code>, <code>-maxdepth</code>), <code>du</code>,
+  <code>head</code>, <code>tail</code>, <code>wc</code>, <code>grep</code> (Python regular expressions; <code>-i -v -n -c -l -r -o -w -x -F</code>), <code>sed</code> (<code>s///</code> with <code>g</code>, <code>i</code> and a number, <code>d</code>,
+  <code>p</code>, <code>=</code>, <code>q</code>; addresses <code>N</code>, <code>$</code>, <code>/re/</code> and ranges; <code>-n</code>, <code>-i</code>, <code>-e</code>), <code>sort</code> (<code>-r -n -u -k -t -f</code>), <code>uniq</code> (<code>-c -d -u</code>), <code>cut</code> (<code>-d -f -c</code>),
+  <code>tr</code> (ranges, classes, <code>-d -s</code>), <code>diff</code> (<code>-u</code>, <code>-q</code>), <code>echo</code>, <code>printf</code>, <code>tar</code> (<code>-c -x -t</code>, <code>-z -j -J</code>, <code>-f</code>, <code>-C</code>), <code>zip</code> (<code>-r</code>), <code>unzip</code> (<code>-l -d</code>),
+  <code>python script.py</code> / <code>python -c …</code>, <code>pip install</code> (micropip; needs the network), <code>mount</code> / <code>umount</code> (archives of the archive manager,
+  see Archives in Python), <code>env</code>, <code>export</code>, <code>unset</code>, <code>history</code>, <code>clear</code>, <code>which</code>, <code>basename</code>, <code>dirname</code>, <code>date</code>, <code>sleep</code>,
+  <code>true</code>, <code>false</code> and <code>help</code>.</li>
+<li><strong>Command lines</strong> are split like in a POSIX shell (<code>shlex</code>): quotes, <code>\</code>, comments (<code>#</code>), pipes <code>|</code>, redirections <code>&gt;</code>, <code>&gt;&gt;</code>, <code>&lt;</code>, <code>2&gt;</code>,
+  <code>2&gt;&amp;1</code>, <code>&amp;&amp;</code>, <code>||</code> and <code>;</code>, globs (<code>*</code>, <code>?</code>, <code>[…]</code>), variables (<code>NAME=value</code>, <code>$NAME</code>, <code>${NAME}</code>, <code>$?</code>, <code>~</code>) and <code>!N</code> (a line of the history).
+  There are no control structures (<code>if</code>, <code>for</code>, <code>while</code>), no background jobs and no other programs.</li>
+<li><strong>Scripts:</strong> <code>sh script.sh arguments</code> (also <code>bash</code>, <code>source</code> or <code>./script.sh</code>) runs the lines of a script in this shell with <code>$1</code>…<code>$9</code>,
+  <code>$#</code> and <code>$@</code>; <code>set -e</code> stops at the first error, <code>exit</code> ends the script. Scripts from an archive run after mounting it, e.g.
+  <code>mount data.zip &amp;&amp; sh /mnt/data.zip/run.sh</code>.</li>
+<li><strong>Keys:</strong> <code>↑</code>/<code>↓</code> history, <code>Tab</code> completes commands and paths (twice: shows the choices), <code>Ctrl+C</code> cancels the line (or interrupts a running
+  command where possible), <code>Ctrl+L</code> clears the screen, <code>Ctrl+U</code> deletes the line, <code>Ctrl+A</code>/<code>Ctrl+E</code> start/end of the line.</li>
+<li><strong>less</strong> shows a file or the output of a pipe (<code>… | less</code>): <code>Space</code>/<code>PgDn</code> and <code>b</code>/<code>PgUp</code> page, <code>↑</code>/<code>↓</code>/<code>j</code>/<code>k</code> line, <code>g</code>/<code>G</code> start/end,
+  <code>/text</code> searches, <code>n</code>/<code>N</code> next/previous match, <code>q</code> quits.</li>
+<li><strong>nano</strong> edits a file: type, cursor keys, <code>Ctrl+O</code> saves (asks for the name), <code>Ctrl+X</code> exits (asks about unsaved changes), <code>Ctrl+W</code> searches,
+  <code>Ctrl+K</code> cuts the line, <code>Ctrl+U</code> pastes. Changes are written to Python's file system.</li>
+<li><strong>In cells:</strong> <code>await suite.shell.run("ls -l | head")</code> runs a command line and prints its output (less shows the text, nano works only in the
+  Terminal tab).</li>
+</ul>
 <h2>Files and packages</h2>
 <p>The <strong>Files</strong> panel shows Python's working folder (<code>/home/pyodide</code>):</p>
 <ul>
@@ -71,7 +113,119 @@ new line, <code>↑</code>/<code>↓</code> recall earlier commands. <strong>Cle
   Pyodide. They stay installed until the page is closed (also after a restart).</li>
 </ul>
 <p>The files only exist while the page is open: download results you want to keep.</p>
+<p>Other applications of the suite open files from this file system and save files into it (<em>Open</em> / <em>Save as</em>, section <em>Python
+notebooks (in memory)</em>, see <ac:link><ri:page ri:content-title="Portable Web App Suite – User Guide" /><ac:plain-text-link-body><![CDATA[Files in archives]]></ac:plain-text-link-body></ac:link>): the notebook then shows what is asked for –
+the folder and the name for saving, or the files to open – with the reminder that the files exist only in memory. <strong>Save</strong> in the
+other application writes the file here again. A restart of Python asks first while such files are open elsewhere.</p>
 <p>↗ next to a file in the files panel (<strong>Open with…</strong>) opens it in another application of the suite (e.g. the text editor or spreadsheet); saving there writes it back into the Python file system.</p>
+<h3>Adding packages at runtime</h3>
+<p>Packages built for Pyodide that are not bundled – for example <strong>statsmodels</strong>, <strong>shapely</strong>, <strong>pyproj</strong> and <strong>scikit-image</strong> – can be
+added while the notebook runs. They must match the bundled Pyodide version (314.0.7); the files are in the Pyodide distribution at
+<code>https://cdn.jsdelivr.net/pyodide/v314.0.7/full/&lt;file&gt;</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Files (in this order, after the bundled dependencies)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>statsmodels</td>
+<td><code>patsy-1.0.2-py2.py3-none-any.whl</code>, <code>statsmodels-0.14.6-cp314-cp314-pyemscripten_2026_0_wasm32.whl</code></td>
+</tr>
+<tr>
+<td>shapely</td>
+<td><code>shapely-2.1.2-cp314-cp314-pyemscripten_2026_0_wasm32.whl</code></td>
+</tr>
+<tr>
+<td>pyproj</td>
+<td><code>pyproj-3.7.2-cp314-cp314-pyemscripten_2026_0_wasm32.whl</code></td>
+</tr>
+<tr>
+<td>scikit-image</td>
+<td><code>imageio-2.37.3-py3-none-any.whl</code>, <code>pywavelets-1.9.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl</code>, <code>lazy_loader-0.5-py3-none-any.whl</code>, <code>scikit_image-0.26.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Offline:</strong> download the files once, then choose all of them at once with <strong>Install wheel…</strong> in the Files panel. They stay
+  installed until the page is closed, also after a restart.</li>
+<li><strong>With internet access:</strong> install them in a cell (they are gone after a restart):</li>
+</ul>
+<p><code>python
+  import micropip
+  base = "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/"
+  await micropip.install([base + "patsy-1.0.2-py2.py3-none-any.whl", base + "statsmodels-0.14.6-cp314-cp314-pyemscripten_2026_0_wasm32.whl"])
+  import statsmodels.api as sm</code></p>
+<p>Pure-Python packages from PyPI (wheels ending in <code>py3-none-any.whl</code>) are added the same way; packages with compiled code need wheels
+built for Pyodide.</p>
+<h2>Archives in Python</h2>
+<p>Archives open in the <ac:link><ri:page ri:content-title="Archive manager" /><ac:plain-text-link-body><![CDATA[archive manager]]></ac:plain-text-link-body></ac:link> can be <strong>mounted</strong>: their files appear as ordinary files below
+<code>/mnt/&lt;archive name&gt;</code>, so <code>os</code>, <code>open</code>, <code>pathlib</code>, <code>shutil</code>, <code>glob</code> and libraries such as pandas use them without anything
+special.</p>
+<ul>
+<li><strong>📦 Mount archive…</strong> in the Files panel lists the open archives (or starts the archive manager to open or create one); the
+  archive manager asks you to allow it. Mounted archives are listed in the Files panel; ⏏ unmounts one.</li>
+<li>After <strong>every cell</strong> (and console command) new, changed and deleted files are written back into the archive. The archive
+  manager marks it as changed – save the archive there to keep the changes.</li>
+<li>The whole archive is copied into the notebook's memory (it asks first above 512 MiB). Changes made in the archive manager
+  while the archive is mounted are not seen by the notebook: unmount and mount it again.</li>
+<li>If the archive is closed or replaced in the archive manager, the notebook says so after the next cell; the files stay in
+  <code>/mnt</code>, but further changes are no longer saved into the archive. A restart of Python unmounts all archives.</li>
+</ul>
+<p>In code, the module <code>suite</code> does the same (awaited in a cell):</p>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">py</ac:parameter><ac:plain-text-body><![CDATA[import suite
+path = await suite.archives.mount()            # the archive open in the archive manager (it asks you to allow it)
+path = await suite.archives.mount("data.zip")  # one of several open archives, by name
+await suite.archives.sync()                    # write the changes back now
+await suite.archives.mounted()                 # [{"name", "path", "closed"}]
+await suite.archives.unmount("data.zip")       # write the changes back and remove the folder]]></ac:plain-text-body></ac:structured-macro>
+<p><code>suite.archives.mount()</code> can only reach archive managers that are already open (in the overview: its tabs; otherwise the
+archive manager windows started from the notebook, or the one that started it): to open or create an archive, use the button.
+Notebooks that should also run in a regular Jupyter installation import <code>suite</code> in a <code>try</code> block and use a folder there
+(see the example notebooks).</p>
+<h2>Network from Python</h2>
+<p>Python in the browser cannot open network connections itself; the notebook uses the <ac:link><ri:page ri:content-title="Portable Web App Suite – User Guide" /><ac:plain-text-link-body><![CDATA[relay]]></ac:plain-text-link-body></ac:link>
+for them. Set it in the Files panel under <strong>Network: Relay</strong> (address and token, or a connections file). The header shows what is
+possible:</p>
+<ul>
+<li><strong>Opened as a file</strong> (<code>file://</code>): <strong><code>requests</code></strong> goes through the relay – every request of the module, to any server, with all
+  headers and cookies. Without a relay, <code>requests</code> only reaches servers that allow access from web pages (CORS). Sockets and SSH
+  are not possible, and stopping a cell restarts Python.</li>
+<li><strong>🔓 Network and interrupt</strong> – the notebook served by the relay (<code>relay.py --serve</code>): additionally <strong>sockets</strong> – the standard
+  library's network modules work unchanged through the relay: <code>smtplib</code> (also <code>starttls()</code> and <code>SMTP_SSL</code>), <code>imaplib</code>, <code>poplib</code>,
+  <code>ftplib</code> (passive mode), <code>http.client</code>, <code>urllib.request</code> and pure-Python database drivers. TLS is done by the relay, which checks the
+  server's certificate (unless the code switches checking off). Listening sockets, UDP and raw sockets are not possible. Running cells
+  can be interrupted.</li>
+</ul>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">py</ac:parameter><ac:plain-text-body><![CDATA[import requests
+r = requests.get("https://api.example.org/items", params={"q": "x"}, timeout=10)
+r.raise_for_status(); r.json()
+
+import smtplib                                   # served by the relay only
+with smtplib.SMTP("mail.example.org", 587) as s:
+    s.starttls(); s.login("anna", password); s.send_message(message)]]></ac:plain-text-body></ac:structured-macro>
+<p><strong>SSH and SFTP</strong> (served by the relay only) use the suite's SSH engine with a subset of Fabric's <code>Connection</code> – so a notebook can use
+Fabric itself in a regular Jupyter installation:</p>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">py</ac:parameter><ac:plain-text-body><![CDATA[try:
+    from suite.ssh import Connection             # in the suite
+except ModuleNotFoundError:
+    from fabric import Connection                # regular Jupyter with Fabric
+
+with Connection("server.example.org", user="anna", connect_kwargs={"key_filename": "id_ed25519"}) as c:
+    result = c.run("df -h", hide=True)           # Result: stdout, stderr, exited, ok; warn=True: no exception on failure
+    print(result.stdout)
+    c.put("report.csv", "/tmp/report.csv")       # upload
+    c.get("/var/log/syslog", "syslog.txt")       # download
+    sftp = c.sftp()                              # like paramiko's SFTPClient
+    print(sftp.listdir("/tmp"))
+    with sftp.open("/tmp/notes.txt", "w") as f:
+        f.write("hello")]]></ac:plain-text-body></ac:structured-macro>
+<p><code>connect_kwargs</code> takes <code>password</code>, <code>key_filename</code> (a key file in the Files panel, OpenSSH or PEM format), <code>passphrase</code> or <code>pkey_text</code>
+(the key as text). The first connection to a server shows its host key fingerprint and asks whether to trust it (remembered in this
+browser); a changed key is asked for with a warning. The encryption is end to end between the browser and the server. <code>suite.net.status()</code>
+reports what is available.</p>
 <h2>Variables</h2>
 <p><strong>Variables</strong> next to <strong>Files</strong> in the side panel lists the variables of the running Python session after every run: name,
 type (with the <code>dtype</code> of NumPy arrays), size (<code>rows × columns</code> of DataFrames and arrays, the length of lists and strings)
@@ -92,12 +246,21 @@ the containers <code>HBox</code>, <code>VBox</code>, <code>GridBox</code>, <code
 <p>Prints and errors of callbacks outside an <code>Output</code> widget appear below the cell that created the widget. Saved notebooks keep the
 state of the widgets (in the format of Jupyter): after opening, the controls are shown as they were but are inactive until the cell
 runs again; the same applies after a restart. Custom widget libraries (e.g. <code>ipyleaflet</code>, <code>bqplot</code>) are not supported.</p>
-<h2>Restart</h2>
-<p><strong>⟲ Restart</strong> stops a running cell and starts Python again: all variables are lost, files and installed wheels stay.</p>
+<h2>Stop and restart</h2>
+<p>While cells run, the toolbar shows a stop button (also <code>I</code>, <code>I</code> in command mode):</p>
+<ul>
+<li><strong>⏹ Interrupt</strong> – when the notebook is served by the relay (<code>relay.py --serve</code>, see <ac:link><ri:page ri:content-title="Portable Web App Suite – User Guide" /><ac:plain-text-link-body><![CDATA[Relay]]></ac:plain-text-link-body></ac:link>): the running cell
+  stops with a <code>KeyboardInterrupt</code>, as in Jupyter; variables and imports are kept. The cells waiting after it are not run. Code inside
+  a long single call of compiled code (one huge numpy operation) stops when that call returns.</li>
+<li><strong>⏹ Stop</strong> – when the notebook is opened as a file (<code>file://</code>): browsers only let a page interrupt Python when it is served with special
+  headers, so stopping means restarting Python after a confirmation; variables are lost.</li>
+</ul>
+<p><strong>⟲ Restart</strong> (also <code>0</code>, <code>0</code> in command mode) starts Python again at any time, also while code runs: all variables are lost, files
+and installed wheels stay.</p>
 <h2>Limits</h2>
 <ul>
-<li>Network: <code>requests</code> works for servers that allow access from web pages (CORS); raw TCP connections (databases, SSH, mail) are not possible in
-  the browser — use the suite's database tool, SSH client or mail client for those.</li>
+<li>Network: through the relay only (see Network from Python); sockets and SSH only when the notebook is served by the
+  relay.</li>
 <li>Only packages included in the suite or available as wheels can be used; packages with compiled code need wheels built for Pyodide.</li>
 </ul>
 <h2>Keyboard shortcuts</h2>
@@ -150,6 +313,14 @@ runs again; the same applies after a restart. Custom widget libraries (e.g. <cod
 <td><code>Esc</code></td>
 <td>Leave the cell (command mode)</td>
 </tr>
+<tr>
+<td><code>Tab</code> / <code>Shift+Tab</code></td>
+<td>Indent / unindent</td>
+</tr>
+<tr>
+<td><code>Ctrl+Alt+I</code></td>
+<td>Insert a tab character</td>
+</tr>
 </tbody>
 </table>
 <h3>Command mode</h3>
@@ -166,24 +337,87 @@ runs again; the same applies after a restart. Custom widget libraries (e.g. <cod
 <td>Edit the cell</td>
 </tr>
 <tr>
+<td><code>Shift+Enter</code> / <code>Ctrl+Enter</code> / <code>Alt+Enter</code></td>
+<td>Run the selected cells and go on / stay / insert a cell below</td>
+</tr>
+<tr>
 <td><code>A</code> / <code>B</code></td>
 <td>Insert a cell above / below</td>
 </tr>
 <tr>
 <td><code>M</code> / <code>Y</code> / <code>R</code></td>
-<td>Make it Markdown / code / raw (kept unchanged for nbconvert)</td>
+<td>Make them Markdown / code / raw (kept unchanged for nbconvert)</td>
 </tr>
 <tr>
-<td><code>↑</code> / <code>↓</code></td>
+<td><code>↑</code> / <code>↓</code>, <code>K</code> / <code>J</code></td>
 <td>Previous / next cell</td>
 </tr>
 <tr>
-<td><code>Delete</code></td>
-<td>Delete the cell</td>
+<td><code>Shift+↑</code> / <code>Shift+↓</code>, <code>Shift+K</code> / <code>Shift+J</code></td>
+<td>Select further cells</td>
+</tr>
+<tr>
+<td><code>Ctrl+A</code></td>
+<td>Select all cells</td>
+</tr>
+<tr>
+<td><code>C</code> / <code>X</code> / <code>V</code></td>
+<td>Copy / cut / paste below</td>
+</tr>
+<tr>
+<td><code>Shift+V</code></td>
+<td>Paste above</td>
+</tr>
+<tr>
+<td><code>D</code>, <code>D</code> / <code>Delete</code></td>
+<td>Delete the selected cells</td>
+</tr>
+<tr>
+<td><code>Shift+M</code></td>
+<td>Merge the selected cells</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+↑</code> / <code>Ctrl+Shift+↓</code></td>
+<td>Move the selected cells</td>
+</tr>
+<tr>
+<td><code>I</code>, <code>I</code></td>
+<td>Interrupt (or stop by restarting)</td>
+</tr>
+<tr>
+<td><code>0</code>, <code>0</code></td>
+<td>Restart Python</td>
 </tr>
 <tr>
 <td><code>Z</code> / <code>Shift+Z</code></td>
 <td>Undo / redo cell operations</td>
+</tr>
+</tbody>
+</table>
+<h3>Terminal</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>↑</code> / <code>↓</code></td>
+<td>Previous / next command</td>
+</tr>
+<tr>
+<td><code>Tab</code></td>
+<td>Complete a command or path</td>
+</tr>
+<tr>
+<td><code>Ctrl+C</code></td>
+<td>Cancel the line, interrupt a command</td>
+</tr>
+<tr>
+<td><code>Ctrl+L</code></td>
+<td>Clear the screen</td>
 </tr>
 </tbody>
 </table>

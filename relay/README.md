@@ -20,6 +20,32 @@ them needs admin rights, an installation or additional packages.
 At start, the relay prints its address (default `127.0.0.1:8765`) and a random **token**. Enter both in the app's
 relay settings (sign-in “Token”). Only programs on the same machine can connect.
 
+### Serving the apps (cross-origin isolated)
+
+With `--serve DIR` (`-Serve DIR`) the relay also serves the app files in `DIR` – the folder with the downloaded `.html` files –
+at its own address, e.g. `http://127.0.0.1:8765/notebook.html` (`/` opens `overview.html`). The files get the headers that make a
+page **cross-origin isolated** (`Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Embedder-Policy: require-corp`): there,
+the Python notebook can interrupt running cells (`KeyboardInterrupt`) and open network connections from Python (sockets, SSH).
+The relay's own origin is allowed besides `--origin`, and the apps use the relay at that address by default; the token is still
+needed for the relay functions (the files themselves are public).
+
+```sh
+python3 relay.py --serve ~/suite            # then open the address it prints
+pwsh -File relay.ps1 -Serve C:\suite -Port 9000
+```
+
+Browsers keep the data of a page (settings, recently used files) per origin: what is stored under `file://` is not seen at
+`http://127.0.0.1:8765` and the other way round, and another port is another origin. Keep the port (default 8765) and move
+settings with the export and import of the settings (`F1`, **⚙ Settings**).
+
+### Through a company proxy
+
+With `--upstream-proxy http://[user:password@]proxy.example.org:3128` (`-UpstreamProxy …`) all outgoing connections go through
+an HTTP proxy: TCP tunnels with `CONNECT` (TLS to the target on top, so the proxy only sees the target's name), `/http` requests
+as well. `--no-proxy` (`-NoProxy`) lists hosts reached directly (`intranet.example.org`, `*.lan`, …). `--upstream-proxy env`
+takes the proxy from `HTTPS_PROXY`/`HTTP_PROXY` and the exceptions from `NO_PROXY`. Without the option, the Python relay's `/http`
+follows these environment variables (Python's default) and tunnels connect directly.
+
 ## Shared relay with user accounts
 
 1. Create accounts (asks for the password; at least 8 characters). The file holds PBKDF2-SHA256 hashes only and is
@@ -69,6 +95,9 @@ With `--users` and without `--token`, the token sign-in is switched off. Both ca
 | `--origin O` | `-Origin O` | Allowed page origin (default `null`, i.e. pages opened from `file://`). Add the origin of the hosted PWA variant if used. Repeatable. |
 | `--allow P` | `-Allow P` | Allowed targets as `host:port` patterns (e.g. `*.example.org:993`) for everybody. Default: all. Repeatable. |
 | `--cafile F` | `-CaFile F` | Additional trusted CA certificates (PEM) for TLS to the targets, e.g. a company CA |
+| `--serve DIR` | `-Serve DIR` | Also serve the apps in `DIR` with the headers of cross-origin isolated pages (see above); the relay's own origin is allowed |
+| `--upstream-proxy URL` | `-UpstreamProxy URL` | Route outgoing connections through an HTTP proxy (`http://[user:password@]host:port`, default port 8080), or `env` |
+| `--no-proxy H` | `-NoProxy H` | Host (or `*.domain`) reached without the upstream proxy. Repeatable, comma-separated. |
 | | `-Log` | Write errors to stderr |
 
 PowerShell takes several values as `-Allow a,b` or as an array.
@@ -165,11 +194,16 @@ implementation. SSH stays encrypted end to end by the SSH client in the browser.
 * Requests from other web pages are rejected (the `Origin` header must be allowed), and so are requests with an
   unknown `Host` header (DNS rebinding). Forwarded headers are only trusted from `--trusted-proxy` addresses.
 * Allow-lists of targets for everybody (`--allow`) and per account.
+* Served files (`--serve`) need no credentials; only regular files inside the folder are served (no `..`, no hidden files).
+  Pages served by the relay can use it with its token like `file://` pages, so serve only the apps of the suite there.
 
 ## Tests
 
 `tests/relay/test_conformance.py` and `tests/relay/test_auth.py` run the same protocol tests against every
 implementation (accounts, sessions, rate limiting, TLS listener, trusted proxies, base path), and
 `tests/relay/test_browser.py` uses the browser client (`shared/js/relay.js`) from a `file://` page in Chromium and
-Firefox, also with password sign-in through a TLS reverse proxy (`tests/helpers/reverse_proxy.py`). PowerShell tests
+Firefox, also with password sign-in through a TLS reverse proxy (`tests/helpers/reverse_proxy.py`).
+`tests/relay/test_serve_and_proxy.py` checks serving the apps and the upstream proxy (`tests/helpers/upstream_proxy.py`, with
+`CONNECT`, absolute-form requests and Basic credentials) for both implementations, and `tests/apps/test_notebook_network.py` uses
+the served notebook with sockets, requests and SSH. PowerShell tests
 run if `pwsh` is on the `PATH` or in `.tools/pwsh/`.

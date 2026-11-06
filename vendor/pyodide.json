@@ -6,6 +6,8 @@
     "pandas",
     "matplotlib",
     "micropip",
+    "scipy",
+    "scikit-learn",
     "sympy",
     "networkx",
     "lxml",
@@ -16,7 +18,13 @@
     "requests",
     "pycryptodome",
     "argon2-cffi",
-    "sqlalchemy"
+    "sqlalchemy",
+    "jinja2",
+    "tqdm",
+    "tzdata",
+    "typing-extensions",
+    "python-dateutil",
+    "pillow"
   ],
   "preload": [
     "numpy",
@@ -75,6 +83,51 @@
         "scramp",
         "looseversion"
       ]
+    },
+    {
+      "requirement": "python-docx==1.2.0",
+      "depends": [
+        "lxml",
+        "typing-extensions"
+      ]
+    },
+    {
+      "requirement": "XlsxWriter==3.3.1"
+    },
+    {
+      "requirement": "python-pptx==1.0.2",
+      "depends": [
+        "pillow",
+        "xlsxwriter",
+        "lxml",
+        "typing-extensions"
+      ]
+    },
+    {
+      "requirement": "pypdf==7.0.0"
+    },
+    {
+      "requirement": "icalendar==7.3.0",
+      "depends": [
+        "python-dateutil",
+        "tzdata"
+      ]
+    },
+    {
+      "requirement": "pg8000==1.31.5",
+      "depends": [
+        "scramp",
+        "python-dateutil"
+      ]
+    },
+    {
+      "requirement": "PyMySQL==1.2.3"
+    },
+    {
+      "requirement": "tabulate==0.10.0"
+    },
+    {
+      "requirement": "Markdown==3.11.3"
     }
   ]
 }

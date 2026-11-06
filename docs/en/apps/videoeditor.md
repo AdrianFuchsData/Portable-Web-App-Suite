@@ -122,5 +122,7 @@ clip to select it and drag it with the finger; use ＋ in the media list instead
 
 ## Limits
 
-No transitions between clips other than fades, no keyframes, no effects on the picture (colour, blur, …), no speed
-changes. Long 4K projects may exceed the memory of the browser.
+Transitions are fades, wipes, slides, zooms and circles of a clip over what lies below it (no automatic transitions between
+neighbouring clips on one track); the only movement over time is the motion from start to end (no general keyframes); the picture
+can be changed in brightness, contrast, saturation, rotation and cropping (no blur or other effects). The editor keeps its data in
+memory, so long 4K projects may exceed the memory of the browser.

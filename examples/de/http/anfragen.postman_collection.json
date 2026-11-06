@@ -1,0 +1,74 @@
+{
+  "info": {
+    "name": "Beispielanfragen",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base",
+      "value": "https://httpbin.org"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get mit Abfrage",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/get?lang=de",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "JSON senden",
+      "request": {
+        "method": "POST",
+        "url": "{{base}}/post",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"Beispiel\"}"
+        }
+      }
+    },
+    {
+      "name": "Basic-Anmeldung",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/basic-auth/anna/secret",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "anna"
+            },
+            {
+              "key": "password",
+              "value": "secret"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

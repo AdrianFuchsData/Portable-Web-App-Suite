@@ -44,6 +44,17 @@ SYMBOL_GROUPS = [
 ]
 
 
+# invisible characters that text fields cannot type otherwise (Tab moves the focus; phones have no Tab key): char, English and German
+# name and keywords; the picker shows them with a visible label (shared/js/symbols.js, VISIBLE)
+SPACES = [("\t", "tab", "Tabulator", "tab character indent", "Tabulatorzeichen Tab Einrückung"),
+          ("\u00a0", "no-break space", "geschütztes Leerzeichen", "nbsp space", "nbsp Leerzeichen"),
+          ("\u202f", "narrow no-break space", "schmales geschütztes Leerzeichen", "nnbsp space", "Leerzeichen"),
+          ("\u2009", "thin space", "schmales Leerzeichen", "space", "Leerzeichen"),
+          ("\u2002", "en space", "Halbgeviert-Leerzeichen", "space", "Leerzeichen"),
+          ("\u2003", "em space", "Geviert-Leerzeichen", "space", "Leerzeichen"),
+          ("\u200b", "zero width space", "breitenloses Leerzeichen", "zwsp line break", "Zeilenumbruch"),
+          ("\u00ad", "soft hyphen", "weiches Trennzeichen", "shy hyphenation", "Silbentrennung")]
+
 TONES = ("1F3FB", "1F3FC", "1F3FD", "1F3FE", "1F3FF")
 # German names of Latin and Greek letters, translated from their Unicode names (CLDR has none for them)
 GERMAN_WORDS = [("latin capital letter", "lateinischer Großbuchstabe"), ("latin small letter", "lateinischer Kleinbuchstabe"),
@@ -146,6 +157,11 @@ def main():
             official = name.lower()
             items.append([ch, g, en_name or official, de_name or german_letter_name(official),
                           " ".join(en_keys + ([official] if en_name and en_name.lower() != official else [])), " ".join(de_keys), "", "", ""])
+
+    g = len(groups)
+    groups.append({"id": "spaces", "icon": "⇥", "en": "Spaces and tab", "de": "Leerzeichen und Tabulator", "kind": "symbol"})
+    for ch, en_name, de_name, en_keys, de_keys in SPACES:
+        items.append([ch, g, en_name, de_name, en_keys, de_keys, "", "", ""])
 
     OUT.write_text(json.dumps({"unicode": unicodedata.unidata_version, "groups": groups, "items": items}, ensure_ascii=False, separators=(",", ":")) + "\n",
                    encoding="utf-8")

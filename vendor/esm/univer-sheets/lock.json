@@ -195,6 +195,14 @@
     "version": "1.0.4",
     "license": "Apache-2.0"
   },
+  "@univerjs/preset-sheets-filter": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/preset-sheets-sort": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
   "@univerjs/presets": {
     "version": "1.0.4",
     "license": "Apache-2.0"
@@ -235,6 +243,14 @@
     "version": "1.0.4",
     "license": "Apache-2.0"
   },
+  "@univerjs/sheets-filter": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/sheets-filter-ui": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
   "@univerjs/sheets-formula": {
     "version": "1.0.4",
     "license": "Apache-2.0"
@@ -248,6 +264,14 @@
     "license": "Apache-2.0"
   },
   "@univerjs/sheets-numfmt-ui": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/sheets-sort": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/sheets-sort-ui": {
     "version": "1.0.4",
     "license": "Apache-2.0"
   },

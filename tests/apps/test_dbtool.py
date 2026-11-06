@@ -322,7 +322,7 @@ def test_history_and_explain(app_page, tmp_path):
     expect(items).to_have_count(2)
     # a click puts the query into the editor; the history survives a reload
     items.nth(1).click()
-    assert page.evaluate("DB.editor.state.doc.toString()") == "SELECT name FROM people ORDER BY name"
+    page.wait_for_function("DB.editor.state.doc.toString() === 'SELECT name FROM people ORDER BY name'")
     page.click("[data-testid=run]")
     expect(page.locator("[data-testid=row]")).to_have_count(3)
     expect(items.first).to_contain_text("ORDER BY name")  # moved to the top
@@ -334,13 +334,14 @@ def test_history_and_explain(app_page, tmp_path):
     page.evaluate("s => DB.setEditorText(s)", "SELECT p.name FROM people p JOIN notes n ON n.body = p.name WHERE p.age > 30")
     page.click("[data-testid=explain]")
     expect(page.locator("[data-testid=grid] th").nth(1)).to_have_text("Query plan")
+    expect(page.locator("[data-testid=cell]").filter(has_text="SCAN").first).to_be_visible()
     plan = page.locator("[data-testid=cell]").all_text_contents()
     assert any("SCAN" in p for p in plan) and len(plan) >= 2
     expect(page.locator("[data-testid=history-item]")).to_have_count(2)  # explaining is not recorded
     page.click("[data-testid=clear-history]")
     page.click("[data-testid=confirm-ok]")
     expect(page.locator("[data-testid=history]")).to_have_count(0)
-    assert page.evaluate("localStorage.getItem('suite.dbtool.history')") is None
+    page.wait_for_function("localStorage.getItem('suite.dbtool.history') === null")
     assert page.errors == []
 
 

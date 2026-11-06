@@ -4,8 +4,8 @@
  */
 import { EditorView, basicSetup } from "codemirror";
 import { keymap, highlightWhitespace } from "@codemirror/view";
-import { EditorState, EditorSelection, Compartment, Prec, Annotation, Transaction } from "@codemirror/state";
-import { undo, redo, undoDepth, redoDepth, indentMore, indentLess } from "@codemirror/commands";
+import { EditorState, Compartment, Prec, Annotation, Transaction } from "@codemirror/state";
+import { undo, redo, undoDepth, redoDepth } from "@codemirror/commands";
 import { indentUnit } from "@codemirror/language";
 import { openSearchPanel, gotoLine, selectNextOccurrence } from "@codemirror/search";
 import { oneDark } from "@codemirror/theme-one-dark";
@@ -17,6 +17,7 @@ import "app/spell-dom"; // spelling selector in the header, marks in text fields
 import { spellChecking } from "app/cm-spell";
 import "app/cm-symbols"; // emoji and symbols insert through the editor (shared/js/cm-symbols.js)
 import { colorSwatches } from "app/cm-colors";
+import { indentKeys } from "app/cm-indent"; // Tab, Shift+Tab, Ctrl+Alt+I (shared/js/cm-indent.js)
 
 const { html } = Suite.shell;
 const t = Suite.t;
@@ -152,34 +153,6 @@ function detectIndent(text, fallback) {
   const best = Object.entries(steps).sort((a, b) => b[1] - a[1])[0];
   return best[1] ? `s${best[0]}` : fallback;
 }
-
-/** Tab: indent the selected lines, or insert indentation up to the next stop at the cursor (a tab with "Tabs"). */
-function indentOrInsert(target) {
-  const { state } = target;
-  if (state.selection.ranges.some((r) => !r.empty)) return indentMore(target);
-  const unit = state.facet(indentUnit);
-  target.dispatch(state.changeByRange((range) => {
-    let insert = unit;
-    if (unit !== "\t") {
-      const line = state.doc.lineAt(range.head);
-      const column = range.head - line.from;
-      insert = " ".repeat(unit.length - (column % unit.length));
-    }
-    return { changes: { from: range.head, insert }, range: EditorSelection.cursor(range.head + insert.length) };
-  }), { userEvent: "input.indent", scrollIntoView: true });
-  return true;
-}
-
-/** Ctrl+Alt+I: a tab character, whatever the indentation setting. */
-function insertTabCharacter(target) {
-  target.dispatch(target.state.replaceSelection("\t"), { userEvent: "input", scrollIntoView: true });
-  return true;
-}
-
-const indentKeys = () => keymap.of([
-  { key: "Tab", run: indentOrInsert, shift: indentLess },
-  { key: "Ctrl-Alt-i", run: insertTabCharacter, preventDefault: true },
-]);
 
 function setIndent(indent) {
   const doc = currentDoc();

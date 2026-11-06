@@ -2,8 +2,10 @@
 <ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
 <p>Das Python-Notebook (<code>notebook.html</code>) führt Python 3 im Browser aus – ohne Installation, Server oder Internetverbindung. Es arbeitet wie Jupyter:
 Notebooks mit Code- und Textzellen, Ergebnisse direkt unter dem Code, Diagramme, Tabellen. Eine Konsole führt einzelne Befehle aus.</p>
-<p>Enthaltene Bibliotheken: numpy, pandas, matplotlib, seaborn, sympy, networkx, lxml, beautifulsoup4, pyyaml, openpyxl, xlrd, regex, requests,
-sqlite3, SQLAlchemy, pykeepass, nzpy und micropip. Sie werden beim ersten Import geladen; numpy, pandas und matplotlib werden nach dem Start im
+<p>Enthaltene Bibliotheken: numpy, pandas, matplotlib, seaborn, scipy, scikit-learn, sympy, networkx, lxml, beautifulsoup4, pyyaml, openpyxl, xlrd, regex, requests,
+sqlite3, SQLAlchemy, pykeepass, nzpy, micropip; für Office-Dateien python-docx, python-pptx, XlsxWriter (auch als Excel-Schreiber von pandas), pypdf und
+icalendar; für Datenbanken über das Relay pg8000 (PostgreSQL) und PyMySQL (MySQL/MariaDB), auch über SQLAlchemy; Jinja2 (mit MarkupSafe), Markdown,
+tabulate und tqdm. Sie werden beim ersten Import geladen; numpy, pandas und matplotlib werden nach dem Start im
 Hintergrund vorbereitet. Der erste Start dauert einige Sekunden; der Status rechts oben zeigt, wann Python bereit ist.</p>
 <h2>Notebooks</h2>
 <ul>
@@ -47,10 +49,26 @@ Hintergrund vorbereitet. Der erste Start dauert einige Sekunden; der Status rech
 <td><code>Esc</code></td>
 <td>Editor verlassen (Befehlsmodus)</td>
 </tr>
+<tr>
+<td><code>Tab</code> / <code>Umschalt+Tab</code></td>
+<td>einrücken / ausrücken (4 Leerzeichen)</td>
+</tr>
+<tr>
+<td><code>Strg+Alt+I</code></td>
+<td>ein Tabulatorzeichen einfügen</td>
+</tr>
 </tbody>
 </table>
-<p>Im Befehlsmodus (eine Zelle ist gewählt, die Schreibmarke steht nicht darin): <code>Eingabe</code> bearbeitet, <code>A</code>/<code>B</code> fügen eine Zelle darüber/darunter ein,
-<code>M</code> macht eine Markdown-Zelle, <code>Y</code> eine Codezelle, <code>↑</code>/<code>↓</code> wählen, <code>Entf</code> löscht die Zelle.</p>
+<p>Im <strong>Befehlsmodus</strong> (eine Zelle ist gewählt, die Schreibmarke steht nicht darin) arbeiten die Tasten wie in JupyterLab: <code>Eingabe</code> bearbeitet,
+<code>A</code>/<code>B</code> fügen eine Zelle darüber/darunter ein, <code>M</code>/<code>Y</code>/<code>R</code> machen die Zellen zu Markdown-, Code- oder Rohzellen, <code>↑</code>/<code>↓</code> (oder <code>K</code>/<code>J</code>) wählen
+die vorherige/nächste Zelle.</p>
+<p><strong>Mehrere Zellen:</strong> <code>Umschalt+↑</code>/<code>Umschalt+↓</code> (oder <code>Umschalt+K</code>/<code>Umschalt+J</code>) und <code>Umschalt+Klick</code> wählen mehrere Zellen, <code>Strg+A</code> alle. Die
+Tasten gelten dann für alle gewählten Zellen: <code>Umschalt+Eingabe</code>, <code>Strg+Eingabe</code> und <code>Alt+Eingabe</code> führen sie aus, <code>C</code> kopiert, <code>X</code> schneidet
+aus, <code>V</code> fügt darunter ein (<code>Umschalt+V</code> darüber), <code>D</code>, <code>D</code> (zweimal) oder <code>Entf</code> löscht, <code>Umschalt+M</code> fügt sie zu einer Zelle zusammen (eine
+gewählte Zelle: mit der nächsten), <code>Strg+Umschalt+↑</code>/<code>↓</code> verschiebt sie.</p>
+<p><strong>Ausführen:</strong> Zellen laufen nacheinander; wartende Zellen zeigen <code>[*]</code>. <strong>Bei Fehler anhalten</strong> (standardmäßig an, neben <strong>▶▶ Alle
+ausführen</strong>): Löst eine Zelle einen Fehler aus, werden die danach wartenden Zellen nicht ausgeführt, wie in Jupyter. Ausgeschaltet laufen
+sie trotzdem.</p>
 <p>Ausgaben: gedruckter Text, Fehler (im Traceback nur Ihr Code), das Ergebnis der letzten Zeile, Tabellen (pandas), Diagramme (matplotlib, auch ohne
 <code>plt.show()</code>), HTML und Markdown. HTML und Markdown aus Notebooks werden ohne Skripte angezeigt.</p>
 <p>Im Befehlsmodus macht <code>Z</code> oder <code>Strg+Z</code> (und ↶ in der Werkzeugleiste) die letzte Zellenaktion rückgängig: Einfügen, Löschen, Verschieben, Typ ändern, Ausgaben löschen; <code>Umschalt+Z</code>, <code>Strg+Y</code> oder ↷ wiederholt sie. In einer Zelle macht <code>Strg+Z</code> die Eingabe in dieser Zelle rückgängig. Das Ausführen von Zellen wird nicht rückgängig gemacht.</p>
@@ -61,6 +79,32 @@ Code-Zellen in Kommentaren und Zeichenketten geprüft; ein Rechtsklick auf ein u
 <h2>Konsole</h2>
 <p>Der Reiter <strong>Konsole</strong> führt einzelne Befehle in derselben Python-Sitzung wie das Notebook aus (Variablen werden geteilt). <code>Eingabe</code> führt aus,
 <code>Umschalt+Eingabe</code> beginnt eine neue Zeile, <code>↑</code>/<code>↓</code> holen frühere Befehle zurück. <strong>Leeren</strong> leert die Konsole.</p>
+<h2>Terminal</h2>
+<p>Der Reiter <strong>Terminal</strong> hat eine bash-ähnliche Shell auf dem Dateisystem von Python (dieselben Dateien wie im Dateibereich und in den Zellen; es
+existiert nur im Speicher). Sie ist in Python geschrieben und läuft im Python des Notebooks, funktioniert also überall offline.</p>
+<ul>
+<li><strong>Befehle:</strong> <code>ls</code>, <code>cd</code>, <code>pwd</code>, <code>cat</code>, <code>cp</code>, <code>mv</code>, <code>rm</code>, <code>mkdir</code>, <code>rmdir</code>, <code>touch</code>, <code>find</code> (<code>-name</code>, <code>-iname</code>, <code>-type</code>, <code>-maxdepth</code>), <code>du</code>,
+  <code>head</code>, <code>tail</code>, <code>wc</code>, <code>grep</code> (reguläre Ausdrücke von Python; <code>-i -v -n -c -l -r -o -w -x -F</code>), <code>sed</code> (<code>s///</code> mit <code>g</code>, <code>i</code> und einer Zahl, <code>d</code>,
+  <code>p</code>, <code>=</code>, <code>q</code>; Adressen <code>N</code>, <code>$</code>, <code>/re/</code> und Bereiche; <code>-n</code>, <code>-i</code>, <code>-e</code>), <code>sort</code> (<code>-r -n -u -k -t -f</code>), <code>uniq</code> (<code>-c -d -u</code>), <code>cut</code> (<code>-d -f -c</code>),
+  <code>tr</code> (Bereiche, Klassen, <code>-d -s</code>), <code>diff</code> (<code>-u</code>, <code>-q</code>), <code>echo</code>, <code>printf</code>, <code>tar</code> (<code>-c -x -t</code>, <code>-z -j -J</code>, <code>-f</code>, <code>-C</code>), <code>zip</code> (<code>-r</code>), <code>unzip</code> (<code>-l -d</code>),
+  <code>python skript.py</code> / <code>python -c …</code>, <code>pip install</code> (micropip; braucht das Netzwerk), <code>mount</code> / <code>umount</code> (Archive des Archivmanagers, siehe
+  Archive in Python), <code>env</code>, <code>export</code>, <code>unset</code>, <code>history</code>, <code>clear</code>, <code>which</code>, <code>basename</code>, <code>dirname</code>, <code>date</code>, <code>sleep</code>, <code>true</code>,
+  <code>false</code> und <code>help</code>.</li>
+<li><strong>Befehlszeilen</strong> werden wie in einer POSIX-Shell zerlegt (<code>shlex</code>): Anführungszeichen, <code>\</code>, Kommentare (<code>#</code>), Pipes <code>|</code>, Umleitungen <code>&gt;</code>, <code>&gt;&gt;</code>, <code>&lt;</code>,
+  <code>2&gt;</code>, <code>2&gt;&amp;1</code>, <code>&amp;&amp;</code>, <code>||</code> und <code>;</code>, Globs (<code>*</code>, <code>?</code>, <code>[…]</code>), Variablen (<code>NAME=wert</code>, <code>$NAME</code>, <code>${NAME}</code>, <code>$?</code>, <code>~</code>) und <code>!N</code> (eine Zeile des Verlaufs).
+  Es gibt keine Kontrollstrukturen (<code>if</code>, <code>for</code>, <code>while</code>), keine Hintergrundprozesse und keine anderen Programme.</li>
+<li><strong>Skripte:</strong> <code>sh skript.sh argumente</code> (auch <code>bash</code>, <code>source</code> oder <code>./skript.sh</code>) führt die Zeilen eines Skripts in dieser Shell aus, mit <code>$1</code>…<code>$9</code>,
+  <code>$#</code> und <code>$@</code>; <code>set -e</code> hält beim ersten Fehler an, <code>exit</code> beendet das Skript. Skripte aus einem Archiv laufen nach dem Einbinden, z. B.
+  <code>mount daten.zip &amp;&amp; sh /mnt/daten.zip/start.sh</code>.</li>
+<li><strong>Tasten:</strong> <code>↑</code>/<code>↓</code> Verlauf, <code>Tab</code> ergänzt Befehle und Pfade (zweimal: zeigt die Möglichkeiten), <code>Strg+C</code> verwirft die Zeile (oder unterbricht einen
+  laufenden Befehl, wo möglich), <code>Strg+L</code> leert den Bildschirm, <code>Strg+U</code> löscht die Zeile, <code>Strg+A</code>/<code>Strg+E</code> Anfang/Ende der Zeile.</li>
+<li><strong>less</strong> zeigt eine Datei oder die Ausgabe einer Pipe (<code>… | less</code>): <code>Leertaste</code>/<code>Bild↓</code> und <code>b</code>/<code>Bild↑</code> blättern, <code>↑</code>/<code>↓</code>/<code>j</code>/<code>k</code> zeilenweise,
+  <code>g</code>/<code>G</code> Anfang/Ende, <code>/Text</code> sucht, <code>n</code>/<code>N</code> nächster/vorheriger Treffer, <code>q</code> beendet.</li>
+<li><strong>nano</strong> bearbeitet eine Datei: tippen, Pfeiltasten, <code>Strg+O</code> speichert (fragt nach dem Namen), <code>Strg+X</code> beendet (fragt bei ungespeicherten
+  Änderungen), <code>Strg+W</code> sucht, <code>Strg+K</code> schneidet die Zeile aus, <code>Strg+U</code> fügt ein. Änderungen werden in das Dateisystem von Python geschrieben.</li>
+<li><strong>In Zellen:</strong> <code>await suite.shell.run("ls -l | head")</code> führt eine Befehlszeile aus und gibt ihre Ausgabe aus (less zeigt den Text, nano funktioniert
+  nur im Reiter Terminal).</li>
+</ul>
 <h2>Dateien und Pakete</h2>
 <p>Der Bereich <strong>Dateien</strong> zeigt den Arbeitsordner von Python (<code>/home/pyodide</code>):</p>
 <ul>
@@ -71,7 +115,118 @@ Code-Zellen in Kommentaren und Zeichenketten geprüft; ein Rechtsklick auf ein u
   Pakete. Sie bleiben installiert, bis die Seite geschlossen wird (auch nach einem Neustart).</li>
 </ul>
 <p>Die Dateien existieren nur, solange die Seite geöffnet ist: Laden Sie Ergebnisse herunter, die Sie behalten möchten.</p>
+<p>Andere Anwendungen der Suite öffnen Dateien aus diesem Dateisystem und speichern Dateien hinein (<em>Öffnen</em> / <em>Speichern unter</em>, Abschnitt
+<em>Python-Notebooks (im Speicher)</em>, siehe <ac:link><ri:page ri:content-title="Portable Web App Suite – Benutzerhandbuch" /><ac:plain-text-link-body><![CDATA[Dateien in Archiven]]></ac:plain-text-link-body></ac:link>): Das Notebook zeigt dann, was angefragt
+wird – Ordner und Namen zum Speichern oder die zu öffnenden Dateien – mit dem Hinweis, dass die Dateien nur im Speicher existieren. <strong>Speichern</strong>
+in der anderen Anwendung schreibt die Datei wieder hierher. Ein Neustart von Python fragt nach, solange solche Dateien anderswo geöffnet sind.</p>
 <p>↗ neben einer Datei im Dateibereich (<strong>Öffnen mit…</strong>) öffnet sie in einer anderen Anwendung der Suite (z. B. Texteditor oder Tabellenkalkulation); Speichern dort schreibt sie ins Python-Dateisystem zurück.</p>
+<h3>Pakete zur Laufzeit hinzufügen</h3>
+<p>Für Pyodide gebaute Pakete, die nicht mitgeliefert werden – zum Beispiel <strong>statsmodels</strong>, <strong>shapely</strong>, <strong>pyproj</strong> und <strong>scikit-image</strong> –
+lassen sich hinzufügen, während das Notebook läuft. Sie müssen zur mitgelieferten Pyodide-Version (314.0.7) passen; die Dateien liegen in der
+Pyodide-Distribution unter <code>https://cdn.jsdelivr.net/pyodide/v314.0.7/full/&lt;Datei&gt;</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Paket</th>
+<th>Dateien (in dieser Reihenfolge, nach den mitgelieferten Abhängigkeiten)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>statsmodels</td>
+<td><code>patsy-1.0.2-py2.py3-none-any.whl</code>, <code>statsmodels-0.14.6-cp314-cp314-pyemscripten_2026_0_wasm32.whl</code></td>
+</tr>
+<tr>
+<td>shapely</td>
+<td><code>shapely-2.1.2-cp314-cp314-pyemscripten_2026_0_wasm32.whl</code></td>
+</tr>
+<tr>
+<td>pyproj</td>
+<td><code>pyproj-3.7.2-cp314-cp314-pyemscripten_2026_0_wasm32.whl</code></td>
+</tr>
+<tr>
+<td>scikit-image</td>
+<td><code>imageio-2.37.3-py3-none-any.whl</code>, <code>pywavelets-1.9.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl</code>, <code>lazy_loader-0.5-py3-none-any.whl</code>, <code>scikit_image-0.26.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Offline:</strong> Laden Sie die Dateien einmal herunter und wählen Sie sie dann alle auf einmal mit <strong>Wheel installieren…</strong> im Dateibereich. Sie bleiben
+  installiert, bis die Seite geschlossen wird, auch nach einem Neustart.</li>
+<li><strong>Mit Internetzugang:</strong> Installieren Sie sie in einer Zelle (nach einem Neustart sind sie weg):</li>
+</ul>
+<p><code>python
+  import micropip
+  base = "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/"
+  await micropip.install([base + "patsy-1.0.2-py2.py3-none-any.whl", base + "statsmodels-0.14.6-cp314-cp314-pyemscripten_2026_0_wasm32.whl"])
+  import statsmodels.api as sm</code></p>
+<p>Reine Python-Pakete von PyPI (Wheels mit der Endung <code>py3-none-any.whl</code>) werden genauso hinzugefügt; Pakete mit kompiliertem Code brauchen für
+Pyodide gebaute Wheels.</p>
+<h2>Archive in Python</h2>
+<p>Im <ac:link><ri:page ri:content-title="Archivmanager" /><ac:plain-text-link-body><![CDATA[Archivmanager]]></ac:plain-text-link-body></ac:link> geöffnete Archive lassen sich <strong>einbinden</strong>: Ihre Dateien erscheinen als gewöhnliche Dateien unter
+<code>/mnt/&lt;Archivname&gt;</code>, sodass <code>os</code>, <code>open</code>, <code>pathlib</code>, <code>shutil</code>, <code>glob</code> und Bibliotheken wie pandas sie ohne Besonderheiten verwenden.</p>
+<ul>
+<li><strong>📦 Archiv einbinden…</strong> im Dateibereich führt die geöffneten Archive auf (oder startet den Archivmanager, um eines zu öffnen oder
+  anzulegen); der Archivmanager fragt nach Ihrer Erlaubnis. Eingebundene Archive stehen im Dateibereich; ⏏ löst eines.</li>
+<li>Nach <strong>jeder Zelle</strong> (und jedem Konsolenbefehl) werden neue, geänderte und gelöschte Dateien in das Archiv zurückgeschrieben. Der
+  Archivmanager markiert es als geändert – speichern Sie das Archiv dort, um die Änderungen zu behalten.</li>
+<li>Das ganze Archiv wird in den Speicher des Notebooks kopiert (über 512 MiB fragt es vorher). Änderungen, die im Archivmanager gemacht
+  werden, während das Archiv eingebunden ist, sieht das Notebook nicht: lösen und neu einbinden.</li>
+<li>Wird das Archiv im Archivmanager geschlossen oder ersetzt, meldet das Notebook das nach der nächsten Zelle; die Dateien bleiben in
+  <code>/mnt</code>, weitere Änderungen werden aber nicht mehr in das Archiv gespeichert. Ein Neustart von Python löst alle Archive.</li>
+</ul>
+<p>Im Code macht das Modul <code>suite</code> dasselbe (in einer Zelle mit <code>await</code>):</p>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">py</ac:parameter><ac:plain-text-body><![CDATA[import suite
+path = await suite.archives.mount()            # das im Archivmanager geöffnete Archiv (er fragt nach Ihrer Erlaubnis)
+path = await suite.archives.mount("daten.zip") # eines von mehreren geöffneten Archiven, nach Namen
+await suite.archives.sync()                    # die Änderungen jetzt zurückschreiben
+await suite.archives.mounted()                 # [{"name", "path", "closed"}]
+await suite.archives.unmount("daten.zip")      # die Änderungen zurückschreiben und den Ordner entfernen]]></ac:plain-text-body></ac:structured-macro>
+<p><code>suite.archives.mount()</code> erreicht nur bereits geöffnete Archivmanager (in der Übersicht ihre Reiter, sonst die aus dem Notebook
+gestarteten Fenster des Archivmanagers oder das, das es gestartet hat): Zum Öffnen oder Anlegen eines Archivs dient die Schaltfläche.
+Notebooks, die auch in einer gewöhnlichen Jupyter-Installation laufen sollen, importieren <code>suite</code> in einem <code>try</code>-Block und verwenden
+dort einen Ordner (siehe die Beispiel-Notebooks).</p>
+<h2>Netzwerk aus Python</h2>
+<p>Python im Browser kann selbst keine Netzwerkverbindungen öffnen; das Notebook verwendet dafür das
+<ac:link><ri:page ri:content-title="Portable Web App Suite – Benutzerhandbuch" /><ac:plain-text-link-body><![CDATA[Relay]]></ac:plain-text-link-body></ac:link>. Stellen Sie es im Dateibereich unter <strong>Netzwerk: Relay</strong> ein (Adresse und Token
+oder eine Verbindungsdatei). Die Kopfzeile zeigt, was möglich ist:</p>
+<ul>
+<li><strong>Als Datei geöffnet</strong> (<code>file://</code>): <strong><code>requests</code></strong> läuft über das Relay – jede Anfrage des Moduls, an jeden Server, mit allen Headern und
+  Cookies. Ohne Relay erreicht <code>requests</code> nur Server, die Zugriffe von Webseiten erlauben (CORS). Sockets und SSH sind nicht möglich, und
+  das Anhalten einer Zelle startet Python neu.</li>
+<li><strong>🔓 Netzwerk und Unterbrechen</strong> – das vom Relay bereitgestellte Notebook (<code>relay.py --serve</code>): zusätzlich <strong>Sockets</strong> – die Netzwerkmodule der
+  Standardbibliothek funktionieren unverändert über das Relay: <code>smtplib</code> (auch <code>starttls()</code> und <code>SMTP_SSL</code>), <code>imaplib</code>, <code>poplib</code>, <code>ftplib</code>
+  (passiver Modus), <code>http.client</code>, <code>urllib.request</code> und reine Python-Datenbanktreiber. TLS übernimmt das Relay, das das Zertifikat des Servers
+  prüft (außer der Code schaltet die Prüfung ab). Lauschende Sockets, UDP und Raw-Sockets sind nicht möglich. Laufende Zellen lassen sich
+  unterbrechen.</li>
+</ul>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">py</ac:parameter><ac:plain-text-body><![CDATA[import requests
+r = requests.get("https://api.example.org/items", params={"q": "x"}, timeout=10)
+r.raise_for_status(); r.json()
+
+import smtplib                                   # nur vom Relay bereitgestellt
+with smtplib.SMTP("mail.example.org", 587) as s:
+    s.starttls(); s.login("anna", passwort); s.send_message(nachricht)]]></ac:plain-text-body></ac:structured-macro>
+<p><strong>SSH und SFTP</strong> (nur vom Relay bereitgestellt) verwenden die SSH-Engine der Suite mit einer Teilmenge von Fabrics <code>Connection</code> – so kann ein
+Notebook in einer gewöhnlichen Jupyter-Installation Fabric selbst verwenden:</p>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">py</ac:parameter><ac:plain-text-body><![CDATA[try:
+    from suite.ssh import Connection             # in der Suite
+except ModuleNotFoundError:
+    from fabric import Connection                # gewöhnliches Jupyter mit Fabric
+
+with Connection("server.example.org", user="anna", connect_kwargs={"key_filename": "id_ed25519"}) as c:
+    result = c.run("df -h", hide=True)           # Result: stdout, stderr, exited, ok; warn=True: keine Ausnahme bei Fehlern
+    print(result.stdout)
+    c.put("bericht.csv", "/tmp/bericht.csv")     # hochladen
+    c.get("/var/log/syslog", "syslog.txt")       # herunterladen
+    sftp = c.sftp()                              # wie SFTPClient von paramiko
+    print(sftp.listdir("/tmp"))
+    with sftp.open("/tmp/notiz.txt", "w") as f:
+        f.write("hallo")]]></ac:plain-text-body></ac:structured-macro>
+<p><code>connect_kwargs</code> nimmt <code>password</code>, <code>key_filename</code> (eine Schlüsseldatei im Dateibereich, OpenSSH- oder PEM-Format), <code>passphrase</code> oder <code>pkey_text</code>
+(der Schlüssel als Text). Die erste Verbindung zu einem Server zeigt den Fingerabdruck seines Host-Schlüssels und fragt, ob ihm vertraut wird
+(in diesem Browser gespeichert); ein geänderter Schlüssel wird mit einer Warnung nachgefragt. Die Verschlüsselung reicht vom Browser bis zum Server.
+<code>suite.net.status()</code> meldet, was verfügbar ist.</p>
 <h2>Variablen</h2>
 <p><strong>Variablen</strong> neben <strong>Dateien</strong> in der Seitenleiste listet nach jedem Ausführen die Variablen der laufenden Python-Sitzung: Name,
 Typ (mit dem <code>dtype</code> von NumPy-Arrays), Größe (<code>Zeilen × Spalten</code> bei DataFrames und Arrays, die Länge von Listen und Texten) und
@@ -93,12 +248,23 @@ Auch <code>from IPython.display import display, clear_output, HTML, Markdown</co
 Notebooks behalten den Zustand der Widgets (im Format von Jupyter): Nach dem Öffnen werden die Bedienelemente wie zuvor angezeigt, sind
 aber inaktiv, bis die Zelle erneut läuft; dasselbe gilt nach einem Neustart. Eigene Widget-Bibliotheken (etwa <code>ipyleaflet</code>, <code>bqplot</code>)
 werden nicht unterstützt.</p>
-<h2>Neustart</h2>
-<p><strong>⟲ Neu starten</strong> hält eine laufende Zelle an und startet Python neu: Alle Variablen gehen verloren, Dateien und installierte Wheels bleiben.</p>
+<h2>Anhalten und Neustart</h2>
+<p>Während Zellen laufen, zeigt die Werkzeugleiste eine Schaltfläche zum Anhalten (auch <code>I</code>, <code>I</code> im Befehlsmodus):</p>
+<ul>
+<li><strong>⏹ Unterbrechen</strong> – wenn das Notebook vom Relay bereitgestellt wird (<code>relay.py --serve</code>, siehe <ac:link><ri:page ri:content-title="Portable Web App Suite – Benutzerhandbuch" /><ac:plain-text-link-body><![CDATA[Relay]]></ac:plain-text-link-body></ac:link>): Die
+  laufende Zelle endet mit einem <code>KeyboardInterrupt</code>, wie in Jupyter; Variablen und Importe bleiben erhalten. Die danach wartenden Zellen
+  werden nicht ausgeführt. Code in einem langen einzelnen Aufruf von kompiliertem Code (eine riesige numpy-Operation) hält an, wenn dieser
+  Aufruf zurückkehrt.</li>
+<li><strong>⏹ Stoppen</strong> – wenn das Notebook als Datei geöffnet ist (<code>file://</code>): Browser lassen eine Seite Python nur unterbrechen, wenn sie mit
+  besonderen Headern bereitgestellt wird; Anhalten bedeutet daher nach einer Rückfrage einen Neustart von Python, die Variablen gehen
+  verloren.</li>
+</ul>
+<p><strong>⟲ Neu starten</strong> (auch <code>0</code>, <code>0</code> im Befehlsmodus) startet Python jederzeit neu, auch während Code läuft: Alle Variablen gehen verloren, Dateien
+und installierte Wheels bleiben.</p>
 <h2>Grenzen</h2>
 <ul>
-<li>Netzwerk: <code>requests</code> funktioniert bei Servern, die Zugriffe von Webseiten erlauben (CORS); direkte TCP-Verbindungen (Datenbanken, SSH, E-Mail) sind
-  im Browser nicht möglich – verwenden Sie dafür das Datenbankwerkzeug, den SSH-Client oder den E-Mail-Client der Suite.</li>
+<li>Netzwerk: nur über das Relay (siehe Netzwerk aus Python); Sockets und SSH nur, wenn das Notebook vom Relay bereitgestellt
+  wird.</li>
 <li>Es können nur Pakete der Suite oder als Wheel verfügbare Pakete verwendet werden; Pakete mit kompiliertem Code brauchen für Pyodide gebaute Wheels.</li>
 </ul>
 <h2>Tastenkürzel</h2>
@@ -151,6 +317,14 @@ werden nicht unterstützt.</p>
 <td><code>Esc</code></td>
 <td>Zelle verlassen (Befehlsmodus)</td>
 </tr>
+<tr>
+<td><code>Tab</code> / <code>Umschalt+Tab</code></td>
+<td>Einrücken / ausrücken</td>
+</tr>
+<tr>
+<td><code>Strg+Alt+I</code></td>
+<td>Tabulatorzeichen einfügen</td>
+</tr>
 </tbody>
 </table>
 <h3>Befehlsmodus</h3>
@@ -167,6 +341,10 @@ werden nicht unterstützt.</p>
 <td>Zelle bearbeiten</td>
 </tr>
 <tr>
+<td><code>Umschalt+Eingabe</code> / <code>Strg+Eingabe</code> / <code>Alt+Eingabe</code></td>
+<td>Gewählte Zellen ausführen und weiter / bleiben / Zelle darunter einfügen</td>
+</tr>
+<tr>
 <td><code>A</code> / <code>B</code></td>
 <td>Zelle darüber / darunter einfügen</td>
 </tr>
@@ -175,16 +353,75 @@ werden nicht unterstützt.</p>
 <td>In Markdown / Code / Roh (unverändert für nbconvert) umwandeln</td>
 </tr>
 <tr>
-<td><code>↑</code> / <code>↓</code></td>
+<td><code>↑</code> / <code>↓</code>, <code>K</code> / <code>J</code></td>
 <td>Vorherige / nächste Zelle</td>
 </tr>
 <tr>
-<td><code>Entf</code></td>
-<td>Zelle löschen</td>
+<td><code>Umschalt+↑</code> / <code>Umschalt+↓</code>, <code>Umschalt+K</code> / <code>Umschalt+J</code></td>
+<td>Weitere Zellen wählen</td>
+</tr>
+<tr>
+<td><code>Strg+A</code></td>
+<td>Alle Zellen wählen</td>
+</tr>
+<tr>
+<td><code>C</code> / <code>X</code> / <code>V</code></td>
+<td>Kopieren / ausschneiden / darunter einfügen</td>
+</tr>
+<tr>
+<td><code>Umschalt+V</code></td>
+<td>Darüber einfügen</td>
+</tr>
+<tr>
+<td><code>D</code>, <code>D</code> / <code>Entf</code></td>
+<td>Gewählte Zellen löschen</td>
+</tr>
+<tr>
+<td><code>Umschalt+M</code></td>
+<td>Gewählte Zellen zusammenfügen</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+↑</code> / <code>Strg+Umschalt+↓</code></td>
+<td>Gewählte Zellen verschieben</td>
+</tr>
+<tr>
+<td><code>I</code>, <code>I</code></td>
+<td>Unterbrechen (oder durch Neustart anhalten)</td>
+</tr>
+<tr>
+<td><code>0</code>, <code>0</code></td>
+<td>Python neu starten</td>
 </tr>
 <tr>
 <td><code>Z</code> / <code>Umschalt+Z</code></td>
 <td>Zellenoperationen rückgängig / wiederholen</td>
+</tr>
+</tbody>
+</table>
+<h3>Terminal</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>↑</code> / <code>↓</code></td>
+<td>Vorheriger / nächster Befehl</td>
+</tr>
+<tr>
+<td><code>Tab</code></td>
+<td>Befehl oder Pfad ergänzen</td>
+</tr>
+<tr>
+<td><code>Strg+C</code></td>
+<td>Zeile verwerfen, Befehl unterbrechen</td>
+</tr>
+<tr>
+<td><code>Strg+L</code></td>
+<td>Bildschirm leeren</td>
 </tr>
 </tbody>
 </table>

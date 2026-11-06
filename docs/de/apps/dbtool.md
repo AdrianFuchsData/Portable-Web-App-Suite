@@ -86,6 +86,8 @@ Auf dem Mac verwenden Sie Cmd statt Strg. `F1` (oder `?`) zeigt diese Liste in d
 |---|---|
 | `Strg+Eingabe` | Anweisung am Cursor (oder die Auswahl) ausführen |
 | `Strg+Umschalt+Eingabe` | Alle Anweisungen ausführen |
+| `Tab` / `Umschalt+Tab` | Einrücken / ausrücken |
+| `Strg+Alt+I` | Tabulatorzeichen einfügen |
 
 ### Tabelle
 

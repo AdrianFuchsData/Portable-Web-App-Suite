@@ -28,9 +28,22 @@ def playwright():
         yield p
 
 
+# Open and Save as go straight to the file system in the tests; the tests of the choice "File system or archive"
+# (shared/js/archive-link.js) switch it on again with localStorage.setItem('suite.files.archives', '1') in an init script
+NO_ARCHIVE_CHOICE = "try { localStorage.setItem('suite.files.archives', '0'); } catch (e) {}"
+
+
 @pytest.fixture(scope="session", params=BROWSERS)
 def browser(request, playwright):
     browser = getattr(playwright, request.param).launch()
+    plain_context = browser.new_context
+
+    def suite_context(**options):
+        context = plain_context(**options)
+        context.add_init_script(NO_ARCHIVE_CHOICE)
+        return context
+
+    browser.new_context = suite_context
     if request.config.getoption("--mobile"):
         # every context gets the phone display unless a test sets its own viewport
         new_context = browser.new_context

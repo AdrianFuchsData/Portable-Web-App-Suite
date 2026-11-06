@@ -3,6 +3,7 @@
     "@app/model.js": "model.js",
     "@app/scripts.js": "scripts.js",
     "@app/openapi.js": "openapi.js",
-    "app/cm-symbols": "../../../../shared/js/cm-symbols.js"
+    "app/cm-symbols": "../../../../shared/js/cm-symbols.js",
+    "app/cm-indent": "../../../../shared/js/cm-indent.js"
   }
 }

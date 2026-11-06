@@ -109,6 +109,8 @@ On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the applicat
 |---|---|
 | `Ctrl+Z` | Undo |
 | `Ctrl+Y` / `Ctrl+Shift+Z` | Redo |
+| `Tab` / `Shift+Tab` | Indent / unindent |
+| `Ctrl+Alt+I` | Insert a tab character |
 
 ### Help
 

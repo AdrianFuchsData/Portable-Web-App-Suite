@@ -1,0 +1,18 @@
+{
+  "format": "portable-web-app-suite",
+  "version": 1,
+  "apps": {
+    "ssh": {
+      "settings": {},
+      "connections": [
+        {
+          "id": "own",
+          "name": "Mein Server (bearbeiten)",
+          "host": "server.example.org",
+          "port": 22,
+          "username": "anna"
+        }
+      ]
+    }
+  }
+}

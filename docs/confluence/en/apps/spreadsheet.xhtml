@@ -18,7 +18,7 @@ Univer Sheets.</p>
 <td>Excel (<code>.xlsx</code>)</td>
 <td>yes</td>
 <td>yes</td>
-<td>values, formulas, styles, number formats, merged cells, column widths, row heights, frozen panes, tab colours, hidden sheets, conditional formatting, data validation, pictures</td>
+<td>values, formulas, styles, number formats, merged cells, column widths, row heights, frozen panes, tab colours, hidden sheets, conditional formatting, data validation, filters, pictures</td>
 </tr>
 <tr>
 <td>Excel with macros (<code>.xlsm</code>)</td>
@@ -91,6 +91,17 @@ formula), colour scales and data bars. <strong>Data validation</strong> (tab <em
 whole or decimal numbers, dates, text length or an own formula, with an input message and an error message.</p>
 <p>Both are read from and written to Excel files. Icon sets are not taken over from Excel files; "duplicates" and "unique values"
 are saved as formula rules, and lists that are ranges of the workbook stay references.</p>
+<h3>Sorting and filtering</h3>
+<p>On the tab <em>Data</em>, the <strong>filter</strong> button switches an auto filter on for the selected range (or the table around the selected
+cell) and off again. The first row gets filter buttons: a column is filtered <strong>by values</strong> (a list with checkboxes and a search
+field) or <strong>by condition</strong> (equals, does not equal, greater/less than, contains, begins/ends with, …). Rows that do not match are
+hidden until the filter is changed or switched off.</p>
+<p>The <strong>sort</strong> menu next to it sorts the selected range by its first column (<strong>Ascending</strong>, <strong>Descending</strong>); <strong>Expand ascending</strong> and
+<strong>Expand descending</strong> sort the whole table around the selection, so that rows stay together. <strong>Custom sort</strong> sorts by several
+columns one after the other, each ascending or descending, with or without a header row. The context menu of a cell has the same
+<em>Sort</em> entries.</p>
+<p>Filters are read from and written to Excel files with their criteria (filters by values and by conditions; Excel's colour, top-10 and
+date filters are not taken over), and LibreOffice and Excel show them as filters. ODS and CSV keep only the values.</p>
 <h2>Keyboard shortcuts</h2>
 <p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
 <h3>Files</h3>

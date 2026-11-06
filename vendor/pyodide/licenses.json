@@ -113,6 +113,26 @@
    "idna-3.11.dist-info/licenses/LICENSE.md"
   ]
  },
+ "jinja2-3.1.6-py3-none-any.whl": {
+  "name": "Jinja2",
+  "version": "3.1.6",
+  "license": null,
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "jinja2-3.1.6.dist-info/licenses/LICENSE.txt"
+  ]
+ },
+ "joblib-1.5.3-py3-none-any.whl": {
+  "name": "joblib",
+  "version": "1.5.3",
+  "license": "BSD-3-Clause",
+  "classifiers": [],
+  "license_files": [
+   "joblib-1.5.3.dist-info/licenses/LICENSE.txt"
+  ]
+ },
  "kiwisolver-1.5.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
   "name": "kiwisolver",
   "version": "1.5.0",
@@ -132,6 +152,15 @@
   "license_files": [
    "lxml-6.1.3.dist-info/licenses/LICENSE.txt",
    "lxml-6.1.3.dist-info/licenses/LICENSES.txt"
+  ]
+ },
+ "markupsafe-3.0.3-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "MarkupSafe",
+  "version": "3.0.3",
+  "license": "BSD-3-Clause",
+  "classifiers": [],
+  "license_files": [
+   "markupsafe-3.0.3.dist-info/licenses/LICENSE.txt"
   ]
  },
  "matplotlib-3.10.8-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
@@ -318,6 +347,32 @@
    "requests-2.33.1.dist-info/licenses/NOTICE"
   ]
  },
+ "scikit_learn-1.8.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "scikit-learn",
+  "version": "1.8.0",
+  "license": "BSD-3-Clause",
+  "classifiers": [],
+  "license_files": [
+   "scikit_learn-1.8.0.dist-info/licenses/COPYING",
+   "sklearn/externals/array_api_compat/LICENSE",
+   "sklearn/externals/array_api_extra/LICENSE"
+  ]
+ },
+ "scipy-1.18.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl": {
+  "name": "scipy",
+  "version": "1.18.0",
+  "license": "Copyright (c) 2001-2002 Enthought, Inc. 2003, SciPy Developers.",
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "scipy/_lib/_uarray/LICENSE",
+   "scipy/fft/_duccfft/LICENSE.md",
+   "scipy/integrate/LICENSE_DOP",
+   "scipy/spatial/qhull_src/COPYING_QHULL.txt",
+   "scipy-1.18.0.dist-info/LICENSE.txt"
+  ]
+ },
  "setuptools-82.0.1-py3-none-any.whl": {
   "name": "setuptools",
   "version": "82.0.1",
@@ -380,6 +435,26 @@
    "sympy-1.14.0.dist-info/licenses/LICENSE"
   ]
  },
+ "threadpoolctl-3.6.0-py3-none-any.whl": {
+  "name": "threadpoolctl",
+  "version": "3.6.0",
+  "license": "BSD-3-Clause",
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "threadpoolctl-3.6.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "tqdm-4.67.3-py3-none-any.whl": {
+  "name": "tqdm",
+  "version": "4.67.3",
+  "license": "MPL-2.0 AND MIT",
+  "classifiers": [],
+  "license_files": [
+   "tqdm-4.67.3.dist-info/licenses/LICENCE"
+  ]
+ },
  "typing_extensions-4.15.0-py3-none-any.whl": {
   "name": "typing_extensions",
   "version": "4.15.0",
@@ -387,6 +462,16 @@
   "classifiers": [],
   "license_files": [
    "typing_extensions-4.15.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "tzdata-2025.3-py2.py3-none-any.whl": {
+  "name": "tzdata",
+  "version": "2025.3",
+  "license": "Apache-2.0",
+  "classifiers": [],
+  "license_files": [
+   "tzdata-2025.3.dist-info/licenses/LICENSE",
+   "tzdata-2025.3.dist-info/licenses/licenses/LICENSE_APACHE"
   ]
  },
  "urllib3-2.6.3-py3-none-any.whl": {
@@ -518,6 +603,95 @@
   ],
   "license_files": [
    "nzpy-1.17.8.dist-info/licenses/LICENSE"
+  ]
+ },
+ "python_docx-1.2.0-py3-none-any.whl": {
+  "name": "python-docx",
+  "version": "1.2.0",
+  "license": "MIT",
+  "classifiers": [
+   "MIT License"
+  ],
+  "license_files": [
+   "python_docx-1.2.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "xlsxwriter-3.3.1-py3-none-any.whl": {
+  "name": "xlsxwriter",
+  "version": "3.3.1",
+  "license": "BSD-2-Clause",
+  "classifiers": [],
+  "license_files": [
+   "xlsxwriter-3.3.1.dist-info/licenses/LICENSE.txt"
+  ]
+ },
+ "python_pptx-1.0.2-py3-none-any.whl": {
+  "name": "python-pptx",
+  "version": "1.0.2",
+  "license": "MIT",
+  "classifiers": [
+   "MIT License"
+  ],
+  "license_files": [
+   "python_pptx-1.0.2.dist-info/LICENSE"
+  ]
+ },
+ "pypdf-7.0.0-py3-none-any.whl": {
+  "name": "pypdf",
+  "version": "7.0.0",
+  "license": "BSD-3-Clause",
+  "classifiers": [],
+  "license_files": [
+   "pypdf-7.0.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "icalendar-7.3.0-py3-none-any.whl": {
+  "name": "icalendar",
+  "version": "7.3.0",
+  "license": "BSD-2-Clause",
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "icalendar-7.3.0.dist-info/licenses/LICENSE.rst"
+  ]
+ },
+ "pg8000-1.31.5-py3-none-any.whl": {
+  "name": "pg8000",
+  "version": "1.31.5",
+  "license": "BSD 3-Clause License",
+  "classifiers": [
+   "BSD License"
+  ],
+  "license_files": [
+   "pg8000-1.31.5.dist-info/licenses/LICENSE"
+  ]
+ },
+ "pymysql-1.2.3-py3-none-any.whl": {
+  "name": "PyMySQL",
+  "version": "1.2.3",
+  "license": "MIT",
+  "classifiers": [],
+  "license_files": [
+   "pymysql-1.2.3.dist-info/licenses/LICENSE"
+  ]
+ },
+ "tabulate-0.10.0-py3-none-any.whl": {
+  "name": "tabulate",
+  "version": "0.10.0",
+  "license": "MIT",
+  "classifiers": [],
+  "license_files": [
+   "tabulate-0.10.0.dist-info/licenses/LICENSE"
+  ]
+ },
+ "markdown-3.11.3-py3-none-any.whl": {
+  "name": "Markdown",
+  "version": "3.11.3",
+  "license": "BSD-3-Clause",
+  "classifiers": [],
+  "license_files": [
+   "markdown-3.11.3.dist-info/licenses/LICENSE.md"
   ]
  },
  "pyodide": {

@@ -131,6 +131,7 @@
         <header><strong>${Suite.t(app.title)}</strong></header>
         ${aboutInfo().modified ? html`<p class="suite-modified" data-testid="modified-notice" role="note"><strong>${Suite.t('shell.modifiedVersion')}:</strong> ${aboutInfo().modified}</p>` : null}
         <p>${Suite.t('shell.offline')}</p>
+        <${Examples} />
         <${Shortcuts} />
         ${Suite.preferences ? html`<${Suite.preferences.Section} />` : null}
         <${Licence} />
@@ -183,6 +184,31 @@
     </details>`;
   }
 
+  /** Example files of the app (#suite-examples, embedded by build.py from tools/make_examples.py): opened in the app. */
+  function Examples() {
+    const el = document.getElementById('suite-examples');
+    if (!el || !Suite.bridge || !Suite.bridge.openLocal) return null;
+    let items = [];
+    try { items = JSON.parse(el.textContent); } catch (e) { return null; }
+    const lang = Suite.i18n.language;
+    const shown = items.some((x) => x.lang === lang) ? items.filter((x) => x.lang === lang) : items.filter((x) => x.lang === 'en');
+    if (!shown.length) return null;
+    const open = async (item) => {
+      try {
+        const binary = atob(item.data);
+        const packed = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+        const blob = await new Response(new Blob([packed]).stream().pipeThrough(new DecompressionStream('gzip'))).blob();
+        state.about = false;
+        refresh();
+        await Suite.bridge.openLocal(new File([blob], item.name));
+      } catch (e) { toast(Suite.i18n.describe(e), 'error'); }
+    };
+    return html`<details class="suite-examples" data-testid="examples">
+      <summary>📂 ${Suite.t('shell.examples')}</summary>
+      <ul>${shown.map((x) => html`<li><button class="secondary outline" data-testid="example" data-name=${x.name} onClick=${() => open(x)}>${x.name}</button> <small>${x.title}</small></li>`)}</ul>
+    </details>`;
+  }
+
   /** Keyboard shortcuts of the app (#suite-shortcuts, built from the user documentation by build.py). */
   let shortcutData;
   function shortcutList() {
@@ -206,6 +232,17 @@
     </details>`;
   }
 
+  // Escape closes the information dialog, before an editor of the app (e.g. Univer, which listens on window) handles the key itself
+  window.addEventListener('keydown', (e) => {
+    if (!state.about || e.key !== 'Escape' || e.defaultPrevented) return;
+    const inDialog = e.target && e.target.closest && e.target.closest('dialog');
+    if (inDialog && !inDialog.matches('[data-testid=about-dialog]')) return; // (a dialog of its own, e.g. the colour picker)
+    e.preventDefault();
+    e.stopPropagation();
+    state.about = false;
+    refresh();
+  }, true);
+
   // F1 or ? (outside of text fields) shows the information and keyboard shortcuts of the app
   document.addEventListener('keydown', (e) => {
     if (state.about && e.key === 'Escape' && !e.defaultPrevented) { e.preventDefault(); state.about = false; refresh(); return; }
@@ -216,6 +253,20 @@
     e.preventDefault();
     state.about = true;
     refresh();
+  });
+
+  // Ctrl+Alt+I inserts a tab character into a multi-line text field (Tab itself moves the focus there; CodeMirror editors
+  // have the same key in shared/js/cm-indent.js)
+  document.addEventListener('keydown', (e) => {
+    if (!e.ctrlKey || !e.altKey || e.shiftKey || e.metaKey || e.code !== 'KeyI' || e.defaultPrevented) return;
+    const el = e.target;
+    if (!el || el.tagName !== 'TEXTAREA' || el.readOnly || el.disabled) return;
+    e.preventDefault();
+    // (insertText keeps the browser's undo; setRangeText where it is not supported)
+    if (!document.execCommand || !document.execCommand('insertText', false, '\t')) {
+      el.setRangeText('\t', el.selectionStart, el.selectionEnd, 'end');
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    }
   });
 
   function Shell() {
@@ -441,6 +492,8 @@
         <label><input type="checkbox" role="switch" data-testid="pref-symbols-emoticons" checked=${Suite.symbols.settings.emoticons}
           onChange=${(e) => Suite.symbols.setSetting('emoticons', e.target.checked)} /> ${Suite.t('sym.settingEmoticons')}</label>
       </fieldset>` : null}
+      ${Suite.archiveLink ? html`<label class="suite-prefs-archives"><input type="checkbox" role="switch" data-testid="pref-archives" checked=${Suite.archiveLink.settings.enabled}
+          onChange=${(e) => Suite.archiveLink.setEnabled(e.target.checked)} /> ${Suite.t('alink.setting')}</label>` : null}
       ${Suite.colors ? html`<label class="suite-prefs-colors">${Suite.t('col.setting')}
         <select data-testid="pref-colors" onChange=${(e) => Suite.colors.setNative(e.target.value === 'browser')}>
           <option value="own" selected=${!Suite.colors.settings.native}>${Suite.t('col.own')}</option>

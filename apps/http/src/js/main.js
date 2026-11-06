@@ -13,6 +13,7 @@ import { newRequest, newId, paramsOf, withParams, variableMap, build, fromCurl, 
 import { runScript } from '@app/scripts.js';
 import { fromOpenApi } from '@app/openapi.js';
 import 'app/cm-symbols'; // emoji and symbols insert through the editor (shared/js/cm-symbols.js)
+import { indentKeys } from 'app/cm-indent'; // Tab indents, Ctrl+Alt+I inserts a tab character (shared/js/cm-indent.js)
 
 const { html } = Suite.shell;
 const t = Suite.t;
@@ -154,7 +155,7 @@ function makeEditor(readOnly, onChange) {
   const theme = new Compartment();
   const view = new EditorView({
     doc: '',
-    extensions: [basicSetup, lang.of([]), theme.of(dark() ? oneDark : []), EditorState.readOnly.of(readOnly), EditorView.lineWrapping,
+    extensions: [basicSetup, ...(readOnly ? [] : [indentKeys()]), lang.of([]), theme.of(dark() ? oneDark : []), EditorState.readOnly.of(readOnly), EditorView.lineWrapping,
       EditorView.updateListener.of((u) => { if (u.docChanged && onChange && !view.silent) onChange(u.state.doc.toString()); })],
   });
   view.setLang = (name) => view.dispatch({ effects: lang.reconfigure((LANGS[name] || LANGS.text)()) });
@@ -245,14 +246,18 @@ const countRequests = (items) => items.reduce((n, it) => n + (it.type === 'folde
 async function openCollection() {
   if (state.dirty && !(await Suite.shell.confirm(t('h.discard')))) return;
   const picked = await Suite.files.open({ types: COLLECTION_TYPES }).catch(fail);
-  if (!picked) return;
+  if (picked) await loadCollection(picked[0]);
+}
+
+/** Open a collection file ({ file, handle }): Postman collection, or OpenAPI/Swagger description. */
+async function loadCollection(picked) {
   try {
-    const text = await picked[0].file.text();
+    const text = await picked.file.text();
     // OpenAPI/Swagger descriptions become a new collection (saved as a Postman collection next to them)
-    const openapi = /^\s*(\{[\s\S]*"(openapi|swagger)"\s*:|(openapi|swagger)\s*:)/m.test(text) || /\.ya?ml$/i.test(picked[0].file.name);
+    const openapi = /^\s*(\{[\s\S]*"(openapi|swagger)"\s*:|(openapi|swagger)\s*:)/m.test(text) || /\.ya?ml$/i.test(picked.file.name);
     const collection = openapi ? fromOpenApi(text) : fromPostman(text);
     state.collection = collection;
-    state.file = openapi ? { name: `${collection.name.replace(/[\\/:*?"<>|]+/g, '_')}.postman_collection.json`, handle: null } : { name: picked[0].file.name, handle: picked[0].handle };
+    state.file = openapi ? { name: `${collection.name.replace(/[\\/:*?"<>|]+/g, '_')}.postman_collection.json`, handle: null } : { name: picked.file.name, handle: picked.handle };
     state.dirty = false;
     Suite.shell.setDirty(false);
     const firstReq = (function find(items) { for (const it of items) { if (it.type === 'folder') { const r = find(it.items); if (r) return r; } else return it; } return null; }(collection.items));
@@ -686,4 +691,7 @@ document.addEventListener('keydown', (e) => {
 
 // for tests
 window.HTTP = { state, history, undoStep, data, select, get ws() { return ws; } };
+// collections opened from other apps or as an example (Help: Examples)
+Suite.bridge.receive(async (picked) => { if (!state.dirty || await Suite.shell.confirm(t('h.discard'))) await loadCollection(picked); }, { app: APP });
+
 document.body.dataset.ready = 'true';

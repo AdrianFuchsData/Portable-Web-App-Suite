@@ -11,7 +11,8 @@ Dateien und Ordner hinzufügen, Ordner anlegen, umbenennen, löschen und zwische
 | GZ (eine einzelne komprimierte Datei) | ja | ja |
 | 7z | ja | ja (ohne Verschlüsselung; Dateinamen nur aus ASCII-Zeichen) |
 | RAR (Version 4 und 5) | ja | – (als 7z oder ZIP speichern) |
-| TAR.XZ, TAR.BZ2, TAR.ZST, TAR.LZMA | ja | – |
+| TAR.BZ2 / TBZ2, TAR.XZ / TXZ | ja | ja |
+| TAR.ZST, TAR.LZMA | ja | – |
 | ISO, CAB, DEB, RPM, CPIO, AR, XAR | ja | – |
 
 7z, RAR und die weiteren Formate werden mit libarchive gelesen (in die Anwendung eingebaut). Beim Öffnen wird das ganze Archiv entpackt,
@@ -25,6 +26,22 @@ werden unterstützt, siehe unten), ebenso wenig eine einzelne komprimierte Datei
 - **Neu** beginnt ein leeres ZIP-Archiv. Werden Dateien auf das Fenster gezogen, während nichts geöffnet ist, entsteht ebenfalls
   ein neues Archiv.
 - In Chrome/Edge am Desktop listet die Startseite die zuletzt verwendeten Archive.
+- **✕ Schließen** schließt das Archiv (nach einer Rückfrage bei ungespeicherten Änderungen).
+
+### Dateien für andere Anwendungen
+
+Andere Anwendungen öffnen Dateien aus Archiven und speichern Dateien in sie über den Archivmanager (siehe
+[Dateien in Archiven](../benutzerhandbuch.md#dateien-in-archiven)). Fragt eine Anwendung an, zeigt ein Dialog, was sie möchte:
+
+- **Aus dem Archiv öffnen:** Datei(en) wählen – aufgeführt sind Dateien der angefragten Typen, **Alle Dateien zeigen** zeigt alle.
+- **Im Archiv speichern:** Ordner und Dateinamen wählen (eine vorhandene Datei wird nach einer Rückfrage ersetzt) und ob das Archiv
+  nach jeder Änderung gespeichert wird.
+- **Das Archiv einbinden** (Python-Notebook): erlauben, dass es alle Dateien des Archivs liest, ändert und löscht.
+- Ohne geöffnetes Archiv bietet der Dialog zuerst **Archiv öffnen…** und **Neues Archiv** an.
+
+Änderungen aus anderen Anwendungen markieren das Archiv als geändert (und lassen sich mit `Strg+Z` zurücknehmen). Wird das Archiv
+geschlossen oder ersetzt (Schließen, Öffnen, Neu), während Dateien daraus in anderen Anwendungen geöffnet sind, fragt der Archivmanager
+nach und führt sie auf; danach lassen sich diese Dateien weder daraus laden noch hineinspeichern. *Öffnen mit…* funktioniert genauso.
 
 ## Durchsuchen
 
@@ -69,8 +86,9 @@ Rückgängig (↶, `Strg+Z`) und Wiederholen (↷, `Strg+Y`) wirken auf Hinzufü
 
 - **Speichern** (`Strg+S`) schreibt das Archiv in seinem Format: in Chrome/Edge am Desktop direkt in die geöffnete Datei, in Firefox
   und unter Android als Download (ersetzen Sie die ursprüngliche Datei damit).
-- **Speichern unter** (`Strg+Umschalt+S`) fragt nach dem Dateinamen und dem **Format** (ZIP, TAR, TAR.GZ, GZ). So wird ein Archiv
-  umgewandelt, etwa ein `.tar.gz` in ein `.zip`. Eine GZ-Datei enthält genau eine Datei.
+- **Speichern unter** (`Strg+Umschalt+S`) fragt nach dem Dateinamen und dem **Format** (ZIP, 7Z, TAR, TAR.GZ, TAR.BZ2, TAR.XZ, GZ). So wird ein Archiv
+  umgewandelt, etwa ein `.tar.gz` in ein `.zip`. Eine GZ-Datei enthält genau eine Datei. Ein geöffnetes TAR.BZ2- oder TAR.XZ-Archiv wird
+  wieder in seinem Format gespeichert. Einzelne `.bz2`- und `.xz`-Dateien ohne Archiv darin lassen sich weder öffnen noch schreiben.
 - **Kompression** in der Statusleiste legt die Kompression neuer und geänderter Dateien fest: Speichern, Schnell, Normal, Maximal.
   Unveränderte Dateien eines geöffneten ZIP-Archivs werden unverändert übernommen, daher ist das Speichern schnell.
 

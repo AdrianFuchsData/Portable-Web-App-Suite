@@ -60,6 +60,22 @@ In Chrome and Edge on the desktop, installed applications are offered by the ope
 | Web inspector | `webinspector.html` | [Web inspector](apps/webinspector.md) |
 | Barcodes (QR codes and others) | `barcode.html` | [Barcodes](apps/barcode.md) |
 
+## Limits: small and medium files
+
+The suite works in the browser and keeps the data it works on **in memory** – the open document, spreadsheet, image or archive,
+the audio and video being edited, the KeePass database, the database tool's SQLite file, the notebook's data, its file system and
+mounted archives. How much it can handle therefore depends on the memory that the browser gives one tab (often a few GB on a
+desktop, much less on phones and tablets), not on the size of your disk.
+
+The suite is made for **small to medium files** – documents, spreadsheets and presentations of everyday size, archives and media
+files of up to a few hundred megabytes, data sets that fit into memory several times. It is **by design not a tool for big data**:
+there is no streaming of very large files, no processing in parts and no use of the disk as working memory. With files that are too
+large, an application becomes slow, shows an error, or the browser ends the tab (unsaved work can then be lost). For such data,
+use tools that run on a server or a workstation.
+
+Some applications state their own limits (for example the waveform of the video editor above 400 MB, recovery copies above 64 MB,
+mounting archives in the notebook above 512 MiB, ZIP archives without ZIP64 above 4 GiB).
+
 ## Common functions
 
 Every application has the same header:
@@ -98,6 +114,13 @@ well.
   larger than 48 MB in total are not copied (they are opened again with "relink" like a saved project).
 - The archive manager never stores passwords; encrypted entries stay encrypted in the copy.
 
+### Examples
+
+Every application comes with example files that show what it can do: press `F1` and open one under **📂 Examples** (in the
+language of the interface). It opens as a copy – save it with *Save as* to keep your changes. All examples, also larger ones and
+those for the network applications, are in `examples.zip` of every release and in the `examples` folder of the project, each in
+a folder named after its application. The password of the example KeePass database and the encrypted archive is **example**.
+
 ### Recently used files
 
 In Chrome and Edge on a computer, the editors list the files you opened or saved under **🕘 Recent** next to
@@ -128,6 +151,11 @@ with a light tint, so that links and coloured text on them stay readable. In the
 focused: `Enter` shows the file, `Delete` closes it. The editing surfaces of the document editor and the spreadsheet
 come from a third-party component (Univer) and are less accessible than the rest of the suite.
 
+**Tab characters:** in the code editors (text editor, notebook cells, database tool, HTTP tool) `Tab` indents and `Shift+Tab`
+unindents; `Esc`, then `Tab` (or `Ctrl+M` once) moves the focus on instead. In other text fields `Tab` moves the focus. A tab
+character can always be typed with **`Ctrl+Alt+I`** in the code editors and in multi-line text fields, and on phones (which
+have no Tab key) with the group **⇥ Spaces and tab** of the [emoji and symbols](#emoji-and-symbols) picker.
+
 ### Spelling
 
 The applications in which you write text – text editor, Python notebook, mail, document, presentation, web slides,
@@ -156,7 +184,9 @@ other Unicode characters (arrows, currency signs, mathematical symbols, Greek le
 
 - **`Ctrl+.`** (or the **☺** button at the right edge of the focused field) opens the picker next to the field (on phones
   at the bottom of the screen). It shows the characters you used last (**🕘**, newest first; shared by the applications
-  like the spelling setting), the emoji groups and the symbol groups.
+  like the spelling setting), the emoji groups and the symbol groups. The group **⇥ Spaces and tab** holds characters you
+  cannot see or type otherwise: the tab character, no-break spaces, thin, en and em spaces, the zero-width space and the soft
+  hyphen (shown with labels such as `NBSP`).
 - **Search** while the picker is open: by name or keyword in English or German (`happy`, `Pfeil rechts`, `euro`), by
   code (`:wave:`), by emoticon (`:)`) or by code point (`U+1F60A`, `1F60A`). `Enter` inserts the first result; `↓` moves
   into the characters, the arrow keys move between them, `Enter` or a click inserts and closes the picker,
@@ -237,6 +267,29 @@ How files are saved depends on the browser:
 
 When you close an application with unsaved changes, the browser asks whether you really want to leave.
 
+### Files in archives
+
+**Open** and **Save as** in every application first ask where: **💾 File system** (the default, `Enter`) or an **archive**.
+
+- The archives that are open in the [archive manager](apps/archive.md) are listed – in the overview its tabs, otherwise the
+  archive manager windows started from this application (or the one that started it). **📦 Another archive…** starts the
+  archive manager, where you open an archive from the file system or create a new one.
+- The archive manager then asks for the details: which file(s) to open, or the folder and the name for saving (and whether
+  the archive itself is saved after every change – useful in Chrome/Edge, where the archive is written directly into its
+  file; elsewhere every save of the archive is a download).
+- A file opened from or saved into an archive stays connected to it: **Save** writes it into the archive again. The
+  archive manager marks the archive as changed; save the archive there to keep the changes.
+- When the archive is closed or replaced in the archive manager, its files can no longer be loaded or saved there: **Save**
+  says so – use **Save as**. The archive manager asks before it closes an archive whose files are open in other applications
+  and lists them.
+- **Python notebooks** are offered as well (section *Python notebooks (in memory)*): their file system – the one Python
+  works in – can be used like an archive, so a notebook can process a file that you then open in another application, and
+  the other way round. **It lives only in memory:** files saved there are gone when the notebook page is closed or Python
+  restarts (the dialogs say so). The notebook asks before a restart while files of it are open elsewhere; afterwards **Save**
+  says that the file is gone.
+- The choice can be switched off in the settings (`F1`, **⚙ Settings**): Open and Save as then go straight to the file
+  system.
+
 ## Application data: settings, connections and passwords
 
 Some applications store settings, connections or passwords, for example server connections of the SSH client.
@@ -300,12 +353,30 @@ itself, choose **Reverse proxy / client certificate**. **Test** checks the addre
 other computers must use `https`; an unencrypted `http` address only works if you allow it explicitly (trusted
 networks only).
 
+**The apps through the relay.** Started with `--serve` and the folder of the apps, the relay also serves the applications:
+
+```sh
+python3 relay.py --serve C:\Users\anna\suite
+```
+
+Open the address it prints (e.g. `http://127.0.0.1:8765/`, the overview). Pages from there are *cross-origin isolated*: the
+[Python notebook](apps/notebook.md) can then interrupt running cells and open network connections from Python (mail, FTP, SSH …);
+its header shows **🔓 Network and interrupt**. The apps use that relay by default; enter its token once. Settings and recently
+used files are kept separately for the files opened directly and for those served by the relay (export and import them with
+**⚙ Settings**). The port is set with `--port` (default 8765).
+
+**A company proxy.** If the relay may only reach the internet through a proxy, start it with
+`--upstream-proxy http://proxy.example.org:3128` (with `user:password@` before the host if needed; `--upstream-proxy env` takes
+the proxy from the environment variables). `--no-proxy` lists servers reached directly.
+
 Details are in [`relay/README.md`](../../relay/README.md) and the [technical documentation](technical-documentation.md).
 
 ## Python notebook
 
-The Python notebook (`notebook.html`) runs Python with pandas, numpy, matplotlib and other libraries completely in the
-browser, with Jupyter notebooks (`.ipynb`) and a console. See [Python notebook](apps/notebook.md).
+The Python notebook (`notebook.html`) runs Python with pandas, numpy, matplotlib, SciPy, scikit-learn and other libraries
+completely in the browser, with Jupyter notebooks (`.ipynb`), a console and a terminal with a bash-like shell. It can mount archives,
+reach the network through the relay (requests; sockets and SSH when served by the relay) and share its file system with the other
+applications. See [Python notebook](apps/notebook.md).
 
 ## Licence
 

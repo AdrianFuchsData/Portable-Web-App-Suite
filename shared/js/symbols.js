@@ -26,6 +26,8 @@
   const KEYS = { button: 'suite.symbols.button', emoticons: 'suite.symbols.emoticons', recent: 'suite.symbols.recent', skin: 'suite.symbols.skin' };
   const RECENT_MAX = 36;
   const TONES = ['', '🏻', '🏼', '🏽', '🏾', '🏿'];
+  // invisible characters of the group "Spaces and tab" get a visible label in the picker
+  const VISIBLE = { '\t': '⇥', '\u00a0': 'NBSP', '\u202f': 'NNBSP', '\u2009': 'THIN', '\u2002': 'EN', '\u2003': 'EM', '\u200b': 'ZWSP', '\u00ad': 'SHY' };
 
   Suite.i18n.register({
     en: {
@@ -350,7 +352,7 @@
       type: 'button', role: 'option', className: 'suite-symbols-cell', tabIndex: i === 0 ? 0 : -1, title: `${nameOf(it)} (${codeOf(it.c)})`, 'aria-label': nameOf(it),
       dataset: { testid: 'symbol', index: String(i) },
       onClick: (e) => choose(it, e.shiftKey), onFocus: () => describe(it), onMouseenter: () => describe(it),
-    }, withSkin(it))));
+    }, VISIBLE[it.c] ? el('small', { className: 'suite-symbols-label' }, VISIBLE[it.c]) : withSkin(it))));
     if (!items.length) picker.grid.append(el('p', { className: 'suite-symbols-empty', dataset: { testid: 'symbols-empty' } }, emptyText));
     describe(items[0] || null);
     picker.grid.scrollTop = 0;
@@ -358,7 +360,7 @@
   }
 
   function describe(it) {
-    picker.info.textContent = it ? `${withSkin(it)}  ${nameOf(it)} · ${codeOf(withSkin(it))}${it.codes[0] ? ` · :${it.codes[0]}:` : ''}${it.emoticons[0] ? ` · ${it.emoticons[0]}` : ''}` : '';
+    picker.info.textContent = it ? `${VISIBLE[it.c] || withSkin(it)}  ${nameOf(it)} · ${codeOf(withSkin(it))}${it.codes[0] ? ` · :${it.codes[0]}:` : ''}${it.emoticons[0] ? ` · ${it.emoticons[0]}` : ''}` : '';
   }
 
   function focusCell(i) {

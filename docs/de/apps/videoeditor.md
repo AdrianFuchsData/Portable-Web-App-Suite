@@ -124,5 +124,7 @@ wählt einen Clip, Ziehen mit dem Finger verschiebt ihn; verwenden Sie ＋ in de
 
 ## Grenzen
 
-Keine Übergänge zwischen Clips außer Blenden, keine Keyframes, keine Bildeffekte (Farbe, Unschärfe, …), keine
-Geschwindigkeitsänderung. Lange 4K-Projekte können den Speicher des Browsers übersteigen.
+Übergänge sind Blenden, Wischen, Schieben, Zoom und Kreis eines Clips über dem, was darunter liegt (keine automatischen Übergänge
+zwischen benachbarten Clips einer Spur); die einzige Bewegung über die Zeit ist die Bewegung vom Anfang zum Ende (keine allgemeinen
+Keyframes); das Bild lässt sich in Helligkeit, Kontrast, Sättigung, Drehung und Zuschnitt ändern (keine Unschärfe oder andere Effekte).
+Der Editor hält seine Daten im Speicher, daher können lange 4K-Projekte den Speicher des Browsers übersteigen.

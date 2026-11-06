@@ -15,11 +15,16 @@
     By default it listens on 127.0.0.1 with a random token. It can also run on another machine
     (-Bind, -TlsCert) or behind a reverse proxy (-TrustedProxy, -BasePath), with user accounts
     (-Users; create them with -AddUser) instead of or in addition to the token.
+    -Serve DIR also serves the apps in DIR with the headers of cross-origin isolated pages (the notebook can then interrupt
+    Python and open network connections from Python); the relay's own origin is then allowed besides -Origin.
+    -UpstreamProxy http://[user:password@]host:port (or "env": HTTPS_PROXY/HTTP_PROXY/NO_PROXY) routes the outgoing
+    connections through an HTTP proxy (CONNECT); -NoProxy lists hosts reached directly.
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File relay.ps1
     pwsh -File relay.ps1 -Port 8765 -Allow '*.example.org:993'
     pwsh -File relay.ps1 -Users users.json -AddUser anna
+    pwsh -File relay.ps1 -Serve C:\suite -UpstreamProxy http://proxy.example.org:3128 -NoProxy '*.intranet.example.org'
     pwsh -File relay.ps1 -Bind 0.0.0.0 -Users users.json -TlsCert relay.pfx -TlsPassword secret -HostName relay.example.org
 #>
 param(
@@ -42,6 +47,9 @@ param(
     [string]$ProxyUserHeader,
     [double]$SessionHours = 12,
     [switch]$InsecureTransport,
+    [string]$Serve,
+    [string]$UpstreamProxy,
+    [string[]]$NoProxy = @(),
     [switch]$Log
 )
 
@@ -51,7 +59,7 @@ Add-Type -AssemblyName System.Numerics  # loads an existing .NET assembly, no co
 # arrays given as one argument ("a,b") with -File
 function Split-List($values) { return @($values | ForEach-Object { "$_" -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ }) }
 $Origin = Split-List $Origin; $Allow = Split-List $Allow; $AllowUser = Split-List $AllowUser
-$HostName = Split-List $HostName; $TrustedProxy = Split-List $TrustedProxy
+$HostName = Split-List $HostName; $TrustedProxy = Split-List $TrustedProxy; $NoProxy = Split-List $NoProxy
 
 # Password hashes (shared with the Python relay): pbkdf2-sha256$<iterations>$<salt base64>$<hash base64>
 $common = {
@@ -179,6 +187,35 @@ if ($Token) { $authMethods += 'token' }
 if ($userMap.Count) { $authMethods += 'password' }
 if ($ProxyUserHeader) { $authMethods += 'proxy' }
 
+# -Serve: the folder of the apps; -UpstreamProxy: @{ Host; Port; Auth (Proxy-Authorization value or $null) }
+$serveDir = $null
+if ($Serve) {
+    if (-not (Test-Path -LiteralPath $Serve -PathType Container)) { Write-Error "-Serve: no such folder: $Serve"; exit 2 }
+    $serveDir = [System.IO.Path]::GetFullPath((Resolve-Path -LiteralPath $Serve).Path).TrimEnd([System.IO.Path]::DirectorySeparatorChar)
+}
+$upstream = $null
+if ($UpstreamProxy) {
+    $proxySpec = $UpstreamProxy
+    if ($proxySpec -eq 'env') {
+        $proxySpec = @($env:HTTPS_PROXY, $env:https_proxy, $env:HTTP_PROXY, $env:http_proxy) | Where-Object { $_ } | Select-Object -First 1
+        $envNoProxy = @($env:NO_PROXY, $env:no_proxy) | Where-Object { $_ } | Select-Object -First 1
+        if ($envNoProxy) { $NoProxy = @($NoProxy) + (Split-List $envNoProxy) }
+    }
+    if ($proxySpec) {
+        if ($proxySpec -notmatch '://') { $proxySpec = "http://$proxySpec" }
+        $proxyUri = [Uri]$proxySpec
+        if ($proxyUri.Scheme -ne 'http') { Write-Error "unsupported upstream proxy (only http://host:port): $UpstreamProxy"; exit 2 }
+        $proxyAuth = $null
+        if ($proxyUri.UserInfo) {
+            $creds = ($proxyUri.UserInfo.Split(':', 2) | ForEach-Object { [Uri]::UnescapeDataString($_) }) -join ':'
+            if ($proxyUri.UserInfo -notmatch ':') { $creds += ':' }
+            $proxyAuth = 'Basic ' + [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($creds))
+        }
+        $proxyPort = if ($proxyUri.Authority -match ':\d+$') { $proxyUri.Port } else { 8080 }
+        $upstream = @{ Host = $proxyUri.Host; Port = $proxyPort; Auth = $proxyAuth }
+    }
+}
+
 $config = @{
     Token = $Token; Origins = $Origin; Allow = $Allow; CaCerts = $caCerts; Log = [bool]$Log
     Users = $userMap; Hosts = @($HostName | ForEach-Object { $_.ToLowerInvariant() }); BasePath = $(if ($BasePath.Trim('/')) { '/' + $BasePath.Trim('/') } else { '' })
@@ -186,6 +223,7 @@ $config = @{
     SessionSeconds = $SessionHours * 3600; Cert = $serverCert; Insecure = [bool]$InsecureTransport; AuthMethods = $authMethods
     Common = $common.ToString()
     Sessions = [hashtable]::Synchronized(@{}); Failures = [hashtable]::Synchronized(@{})
+    Serve = $serveDir; Proxy = $upstream; NoProxy = @($NoProxy)
 }
 
 # Everything below runs in its own runspace per connection.
@@ -387,6 +425,81 @@ $handler = {
         return $tcp
     }
 
+    # the upstream proxy for a target host, or $null (no proxy, or the host is in -NoProxy)
+    function Get-ProxyFor([string]$targetHost) {
+        if (-not $config.Proxy) { return $null }
+        $name = $targetHost.ToLowerInvariant().Trim('[', ']')
+        foreach ($pattern in $config.NoProxy) {
+            $p = ([string]$pattern).ToLowerInvariant().Trim()
+            if ($p -eq '*' -or $name -like $p -or $name -eq $p.TrimStart('.') -or $name.EndsWith('.' + $p.TrimStart('.'))) { return $null }
+        }
+        return $config.Proxy
+    }
+
+    # a TCP connection to a target: direct, or through the upstream proxy (CONNECT)
+    function Connect-Target([string]$targetHost, [int]$targetPort, [int]$timeoutMs) {
+        $proxy = Get-ProxyFor $targetHost
+        if (-not $proxy) { return Connect-Tcp $targetHost $targetPort $timeoutMs }
+        $tcp = Connect-Tcp $proxy.Host $proxy.Port $timeoutMs
+        try {
+            $s = $tcp.GetStream()
+            $s.ReadTimeout = $timeoutMs
+            $target = if ($targetHost.Contains(':')) { "[$targetHost]:$targetPort" } else { "${targetHost}:$targetPort" }
+            $request = "CONNECT $target HTTP/1.1`r`nHost: $target`r`n"
+            if ($proxy.Auth) { $request += "Proxy-Authorization: $($proxy.Auth)`r`n" }
+            $bytes = [System.Text.Encoding]::ASCII.GetBytes($request + "`r`n")
+            $s.Write($bytes, 0, $bytes.Length)
+            $s.Flush()
+            # the answer head byte by byte (nothing of the tunnel may be read here)
+            $head = New-Object System.Collections.Generic.List[byte]
+            while ($head.Count -lt 4 -or $head[$head.Count - 4] -ne 13 -or $head[$head.Count - 3] -ne 10 -or $head[$head.Count - 2] -ne 13 -or $head[$head.Count - 1] -ne 10) {
+                $b = $s.ReadByte()
+                if ($b -lt 0) { throw 'upstream proxy closed the connection' }
+                $head.Add([byte]$b)
+                if ($head.Count -gt 16384) { throw 'upstream proxy: invalid answer' }
+            }
+            $line = ([System.Text.Encoding]::ASCII.GetString($head.ToArray()) -split "`r`n")[0]
+            if (($line.Split(' '))[1] -ne '200') { throw "upstream proxy: $line" }
+            $s.ReadTimeout = [System.Threading.Timeout]::Infinite
+        } catch {
+            $tcp.Close()
+            throw
+        }
+        return $tcp
+    }
+
+    # a file of -Serve with the headers of cross-origin isolated pages (no token needed: the built apps are public)
+    function Send-StaticFile($stream, [string]$path, [bool]$headOnly) {
+        $root = $config.Serve
+        $rel = [Uri]::UnescapeDataString($path).TrimStart('/')
+        if (-not $rel) {
+            foreach ($n in 'overview.html', 'index.html') {
+                if (Test-Path -LiteralPath (Join-Path $root $n) -PathType Leaf) { Write-HttpResponse $stream 302 'Found' ([ordered]@{ Location = "$($config.BasePath)/$n" }) $null; return }
+            }
+            throw (New-HttpError 404 'not found')
+        }
+        $sep = [System.IO.Path]::DirectorySeparatorChar
+        $full = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($root, $rel))
+        if (-not $full.StartsWith($root + $sep, [System.StringComparison]::Ordinal) -or -not (Test-Path -LiteralPath $full -PathType Leaf) -or
+            @($full.Substring($root.Length + 1) -split '[\\/]' | Where-Object { $_.StartsWith('.') }).Count) { throw (New-HttpError 404 'not found') }
+        $types = @{ '.html' = 'text/html; charset=utf-8'; '.htm' = 'text/html; charset=utf-8'; '.js' = 'text/javascript; charset=utf-8'; '.mjs' = 'text/javascript; charset=utf-8'
+                    '.css' = 'text/css; charset=utf-8'; '.json' = 'application/json'; '.webmanifest' = 'application/manifest+json'; '.svg' = 'image/svg+xml'
+                    '.png' = 'image/png'; '.ico' = 'image/x-icon'; '.wasm' = 'application/wasm'; '.txt' = 'text/plain; charset=utf-8'; '.md' = 'text/plain; charset=utf-8' }
+        $ext = [System.IO.Path]::GetExtension($full).ToLowerInvariant()
+        $h = [ordered]@{ 'Content-Type' = $(if ($types[$ext]) { $types[$ext] } else { 'application/octet-stream' })
+                         'Cross-Origin-Opener-Policy' = 'same-origin'; 'Cross-Origin-Embedder-Policy' = 'require-corp'
+                         'Cross-Origin-Resource-Policy' = 'same-origin'; 'X-Content-Type-Options' = 'nosniff'; 'Cache-Control' = 'no-cache' }
+        $body = [System.IO.File]::ReadAllBytes($full)
+        if (-not $headOnly) { Write-HttpResponse $stream 200 'OK' $h $body; return }
+        $sb = New-Object System.Text.StringBuilder
+        [void]$sb.Append("HTTP/1.1 200 OK`r`n")
+        foreach ($k in $h.Keys) { [void]$sb.Append("${k}: $($h[$k])`r`n") }
+        [void]$sb.Append("Content-Length: $($body.Length)`r`nConnection: close`r`n`r`n")
+        $bytes = [System.Text.Encoding]::ASCII.GetBytes($sb.ToString())
+        $stream.Write($bytes, 0, $bytes.Length)
+        $stream.Flush()
+    }
+
     # ---- WebSocket framing ---------------------------------------------------------------------
 
     function Invoke-Unmask([byte[]]$data, [byte[]]$mask) {
@@ -518,7 +631,7 @@ $handler = {
             $user = Confirm-Token $spec.token $ws.Client
             $targetHost = [string]$spec.host; $targetPort = [int]$spec.port
             if (-not (Test-TargetAllowed $targetHost $targetPort $user)) { throw "target not allowed: ${targetHost}:$targetPort" }
-            $tcp = Connect-Tcp $targetHost $targetPort 20000
+            $tcp = Connect-Target $targetHost $targetPort 20000
             $tcpStream = $tcp.GetStream()
             if ($spec.tls) { $tcpStream = New-TlsStream $tcpStream $targetHost ([bool]$spec.insecure) }
         } catch {
@@ -641,7 +754,7 @@ $handler = {
         $headers = @(); if ($spec.headers) { $headers = @($spec.headers) }
         $watch = [System.Diagnostics.Stopwatch]::StartNew()
         for ($redirects = 0; ; $redirects++) {
-            $tcp = Connect-Tcp $url.Host $url.Port $timeoutMs
+            $tcp = Connect-Target $url.Host $url.Port $timeoutMs
             try {
                 $stream = $tcp.GetStream()
                 $stream.ReadTimeout = $timeoutMs; $stream.WriteTimeout = $timeoutMs
@@ -799,6 +912,8 @@ $handler = {
             } catch {
                 Write-Json $stream 502 (Get-CorsHeaders $origin) @{ error = "$($_.Exception.Message)" }
             }
+        } elseif (@('GET', 'HEAD') -contains $method -and $config.Serve) {
+            Send-StaticFile $stream $path ($method -eq 'HEAD')
         } else {
             throw (New-HttpError 404 'not found')
         }
@@ -822,6 +937,20 @@ Write-Host "Relay listening on ${shown}:$($listener.LocalEndpoint.Port)$(if ($se
 if ($Token) { Write-Host "Token: $Token" }
 if ($userMap.Count) { Write-Host "User accounts: $($userMap.Count) ($Users)" }
 if ($ProxyUserHeader) { Write-Host "Users authenticated by the reverse proxy (header $ProxyUserHeader)" }
+if ($serveDir) {
+    # the pages are served from the relay's own origin: allowed besides -Origin
+    $listenPort = $listener.LocalEndpoint.Port
+    $scheme = if ($serverCert) { 'https' } else { 'http' }
+    $names = @('127.0.0.1', 'localhost', '[::1]') + @($config.Hosts | Where-Object { $_ -ne '*' })
+    $own = @($names | ForEach-Object { "${scheme}://${_}:$listenPort" })
+    if (@(80, 443) -contains $listenPort) { $own += @($names | ForEach-Object { "${scheme}://$_" }) }
+    $config.Origins = @($config.Origins) + $own
+    Write-Host "Serving the apps of ${serveDir}: ${scheme}://127.0.0.1:$listenPort$($config.BasePath)/"
+}
+if ($upstream) {
+    $direct = if (@($config.NoProxy).Count) { '; direct: ' + (@($config.NoProxy) -join ', ') } else { '' }
+    Write-Host "Upstream proxy: $($upstream.Host):$($upstream.Port)$(if ($upstream.Auth) { ' (with credentials)' })$direct"
+}
 [Console]::Out.Flush()
 
 $pool = [runspacefactory]::CreateRunspacePool(1, 64)

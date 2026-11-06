@@ -11,7 +11,8 @@ add files and folders, create folders, rename, delete and convert between format
 | GZ (a single compressed file) | yes | yes |
 | 7z | yes | yes (without encryption; file names of ASCII characters only) |
 | RAR (versions 4 and 5) | yes | – (save as 7z or ZIP) |
-| TAR.XZ, TAR.BZ2, TAR.ZST, TAR.LZMA | yes | – |
+| TAR.BZ2 / TBZ2, TAR.XZ / TXZ | yes | yes |
+| TAR.ZST, TAR.LZMA | yes | – |
 | ISO, CAB, DEB, RPM, CPIO, AR, XAR | yes | – |
 
 7z, RAR and the further formats are read with libarchive (built into the application). The whole archive is unpacked when it
@@ -24,6 +25,22 @@ below), and a single compressed file without an archive inside (e.g. `notes.txt.
 - **Open** (`Ctrl+O`) opens an archive. You can also drop an archive onto the window while no archive is open.
 - **New** starts an empty ZIP archive. Dropping files onto the window while nothing is open also starts a new archive.
 - In Chrome/Edge on the desktop the start page lists recently used archives.
+- **✕ Close** closes the archive (after asking about unsaved changes).
+
+### Files for other applications
+
+Other applications open files from archives and save files into them through the archive manager (see
+[Files in archives](../user-guide.md#files-in-archives)). When an application asks, a dialog shows what it wants:
+
+- **Open from the archive:** choose the file(s) – files of the requested types are listed, **Show all files** lists all.
+- **Save in the archive:** choose the folder and the file name (an existing file is replaced after a question) and whether the
+  archive is saved after every change.
+- **Mount the archive** (Python notebook): allow it to read, change and delete all files of the archive.
+- Without an open archive, the dialog first offers **Open archive…** and **New archive**.
+
+Changes from other applications mark the archive as changed (and can be undone with `Ctrl+Z`). Closing or replacing the
+archive (Close, Open, New) while files of it are open in other applications asks first and lists them; afterwards those files
+can neither be loaded from nor saved into it. *Open with…* works the same way.
 
 ## Browsing
 
@@ -67,8 +84,9 @@ Undo (↶, `Ctrl+Z`) and redo (↷, `Ctrl+Y`) work for adding, renaming, deletin
 
 - **Save** (`Ctrl+S`) writes the archive in its format: directly into the opened file in Chrome/Edge on the desktop, as a
   download in Firefox and on Android (replace the original file with it).
-- **Save as** (`Ctrl+Shift+S`) asks for the file name and the **format** (ZIP, TAR, TAR.GZ, GZ). This converts an archive, for
-  example a `.tar.gz` into a `.zip`. A GZ file holds exactly one file.
+- **Save as** (`Ctrl+Shift+S`) asks for the file name and the **format** (ZIP, 7Z, TAR, TAR.GZ, TAR.BZ2, TAR.XZ, GZ). This converts an archive, for
+  example a `.tar.gz` into a `.zip`. A GZ file holds exactly one file. An opened TAR.BZ2 or TAR.XZ archive is saved in its format
+  again. Single `.bz2` and `.xz` files without an archive inside can neither be opened nor written.
 - **Compression** in the status bar sets the compression of new and changed files: Store, Fastest, Normal, Maximum. Unchanged
   files of an opened ZIP archive are copied as they are, so saving is fast.
 

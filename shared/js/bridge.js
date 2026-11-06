@@ -259,6 +259,7 @@
   // ---- target side ------------------------------------------------------------------------------------------------
 
   let receiving = false;
+  let receiver = null; // the app's onOpen (for openLocal)
 
   /** A file handle stand-in that saves through the bridge port. */
   function bridgedHandle(file, port, source) {
@@ -315,6 +316,7 @@
   function receive(onOpen, { app: appId = '' } = {}) {
     if (receiving) return;
     receiving = true;
+    receiver = onOpen;
     const host = hub() || (window.opener && !window.opener.closed ? window.opener : null);
     // files are opened one after the other (several files of one "Open with…" arrive at once); one message at the end
     let queue = Promise.resolve();
@@ -344,5 +346,12 @@
     }
   }
 
-  Suite.bridge = { APPS, HUB_NAME, app, appName, appsFor, hub, openIn, openWith, openWithMany, chooseApp, receive, serve };
+  /** Open a file in this app as if it came from another app (read-only copy), e.g. an example; false if the app opens none. */
+  async function openLocal(file) {
+    if (!receiver) return false;
+    await receiver({ file, handle: null });
+    return true;
+  }
+
+  Suite.bridge = { APPS, HUB_NAME, app, appName, appsFor, hub, openIn, openWith, openWithMany, chooseApp, receive, serve, openLocal };
 })(window.Suite = window.Suite || {});
