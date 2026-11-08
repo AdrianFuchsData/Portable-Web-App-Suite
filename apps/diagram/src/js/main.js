@@ -1656,6 +1656,15 @@ Suite.files.recent(APP);
 
 Suite.bridge.receive((picked) => openPicked(picked), { app: 'diagram' }); // files opened from other apps ("Open with…")
 
+// the open file(s) for "Create an archive from the open files" (about dialog)
+Suite.openFiles.register(async () => {
+  if (!app.dirty && app.name === `${t('dg.untitled')}.drawio`) return [];
+  const format = imageFormat();
+  const bytes = format === 'png' ? await pngBytes(app.doc.pages[0]) : format === 'svg' ? new TextEncoder().encode(exportSvgText(app.doc.pages[0]).svg)
+    : new TextEncoder().encode(writeDrawio(app.doc, { version: '%%BUILD_VERSION%%' }));
+  return [{ name: app.name, bytes, dirty: !!app.dirty }];
+});
+
 // for tests
 window.DG = { app, page, setDoc, readDrawio, writeDrawio, exportSvgText, render, parseMermaid, autoLayout, group, ungroup, lockSelection, unlockAll, rotateSelection, setRotation, selectItems, readExcalidraw };
 document.body.dataset.ready = 'true';

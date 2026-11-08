@@ -6,6 +6,8 @@
     "app/deck-convert": "../../../../shared/js/deck-convert.js",
     "app/reveal-deck": "../../../reveal/src/js/deck.js",
     "app/spell": "../../../../shared/js/spell.js",
-    "app/spell-dom": "../../../../shared/js/spell-dom.js"
+    "app/spell-dom": "../../../../shared/js/spell-dom.js",
+    "app/spelling": "../../../document/src/js/spelling.js",
+    "app/odp": "../../../../shared/js/odp.js"
   }
 }

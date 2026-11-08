@@ -190,3 +190,37 @@ dialog.pico[open] { z-index: 2000; }
 .suite-examples ul { list-style: none; padding: 0; margin: .4rem 0 0; }
 .suite-examples li { margin: 0 0 .3rem; }
 .suite-examples button { margin: 0 .4rem 0 0; padding: .15rem .5rem; font-size: .85rem; width: auto; }
+.suite-prefs-form { margin: .5rem 0 0; font-size: .85rem; display: flex; flex-direction: column; gap: .3rem; }
+.suite-prefs-form label { margin: 0; } .suite-prefs-form input, .suite-prefs-form select { margin: .15rem 0 0; padding: .25rem .5rem; height: auto; font-size: .85rem; }
+.suite-prefs-error { color: var(--pico-del-color, #c62828); }
+.suite-prefs-items { margin: 0; padding: .3rem .5rem; border: 1px solid var(--pico-muted-border-color, #ccc); border-radius: .3rem; max-height: 14rem; overflow-y: auto; }
+.suite-prefs-items legend { font-size: .85rem; font-weight: 600; padding: 0 .2rem; }
+.suite-prefs-item { display: flex; align-items: center; gap: .3rem; font-size: .85rem; margin: .1rem 0; } .suite-prefs-item small { color: var(--pico-muted-color); }
+.suite-prefs-secret { color: #b26a00 !important; }
+.suite-prefs-warning { border: 1px solid #e0a000; background: rgba(224, 160, 0, .12); border-radius: .3rem; padding: .4rem .5rem; font-size: .8rem; }
+.suite-prefs-warning label { margin: .3rem 0 0; font-weight: 600; }
+
+/* fonts in the settings (shared/js/fonts.js) */
+.suite-fonts { display: flex; flex-direction: column; gap: .3rem; margin: .5rem 0; }
+.suite-fonts-item { display: flex; align-items: center; gap: .4rem; }
+.suite-fonts-item span { font-size: 1.05rem; }
+.suite-fonts-item button { margin-left: auto; padding: 0 .5rem; }
+.suite-fonts button[data-testid=fonts-import] { width: auto; align-self: flex-start; }
+
+/* a question asked from another dialog (the about dialog) comes in front of it */
+dialog.suite-confirm { z-index: 1000; }
+
+/* the chart dialog (shared/js/charts.js) */
+.suite-chart article { width: min(46rem, calc(100vw - 2rem)); max-width: none; max-height: calc(100vh - 3rem); overflow-y: auto; }
+.suite-chart-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .5rem; }
+.suite-chart-options label { margin: 0; font-size: .85rem; }
+.suite-chart-options input, .suite-chart-options select { margin: 0; padding: .2rem .4rem; height: auto; font-size: .85rem; }
+.suite-chart-checks { display: flex; flex-wrap: wrap; gap: 1rem; margin: .4rem 0; font-size: .85rem; }
+.suite-chart-preview { display: block; width: 100%; height: 14rem; border: 1px solid var(--pico-muted-border-color); border-radius: .25rem; background: #fff; }
+.suite-chart-grid { overflow: auto; max-height: 14rem; }
+.suite-chart-grid table { margin: 0; font-size: .8rem; }
+.suite-chart-grid th, .suite-chart-grid td { padding: .1rem; }
+.suite-chart-grid input:not([type=color]) { margin: 0; padding: .1rem .3rem; height: auto; min-width: 4.5rem; font-size: .8rem; }
+.suite-chart-grid input[type=color] { width: 1.6rem; height: 1.4rem; padding: 0; margin: 0 0 .15rem; border: none; }
+.suite-chart-rows { margin-top: .4rem; }
+.suite-chart-rows button { font-size: .8rem; padding: .2rem .5rem; }

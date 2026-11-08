@@ -1,0 +1,66 @@
+{
+ "@fontsource/arimo": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ },
+ "@fontsource/caladea": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ },
+ "@fontsource/carlito": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ },
+ "@fontsource/cousine": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ },
+ "@fontsource/fira-code": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ },
+ "@fontsource/gelasio": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ },
+ "@fontsource/inter": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ },
+ "@fontsource/jetbrains-mono": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ },
+ "@fontsource/lato": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ },
+ "@fontsource/merriweather": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ },
+ "@fontsource/montserrat": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ },
+ "@fontsource/open-sans": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ },
+ "@fontsource/roboto": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ },
+ "@fontsource/source-code-pro": {
+  "license": "OFL-1.1",
+  "version": "5.3.1"
+ },
+ "@fontsource/source-serif-4": {
+  "license": "OFL-1.1",
+  "version": "5.3.1"
+ },
+ "@fontsource/tinos": {
+  "license": "OFL-1.1",
+  "version": "5.3.0"
+ }
+}

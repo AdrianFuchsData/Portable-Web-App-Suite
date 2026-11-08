@@ -535,3 +535,44 @@ Further findings:
 lowest risk), then web slides and the document editor; do the spreadsheet as a separate step together with general image
 support. PNG at 2× is the safest format for all targets (PPTX needs a PNG fallback for SVG, Univer's SVG support is uncertain);
 SVG can be offered later for web slides.
+
+## S-12: Editing slide masters and layouts in the presentation editor ✅ feasible (M–L), not built
+
+**Question (roadmap item 19 of 1.3.0):** How could the presentation editor let users edit slide masters and layouts – a common background,
+logo, footer and the places and looks of title and text – and keep them in PowerPoint and OpenDocument files?
+
+**Today:** `pptx-import.js` flattens the hierarchy slide → layout → master: the non-placeholder shapes of layout and master become
+**locked elements** (`locked: true`) at the start of each slide's list, and placeholders inherit position and text styles while reading. The
+editor has no master object; the PPTX writer (PptxGenJS) writes every slide with PptxGenJS's default master, so the locked elements are
+written onto each slide as ordinary shapes. ODP (`odp.js`) reads the master's shapes and background the same way and writes one empty
+master page.
+
+**Checked:**
+
+| Step | Result |
+|---|---|
+| PptxGenJS `defineSlideMaster({ title, background, objects: [rect/text/image/placeholder] })` and `addSlide({ masterName })` | ✅ writes a real slide layout (named, with its shapes and title/body placeholders); slide texts `addText(…, { placeholder })` link to them (python-pptx sees layout "Brand" with TITLE and BODY placeholders and the slide's placeholders filled) |
+| Reading such a file with `pptx-import.js` | ✅ unchanged: the layout's shapes come as locked decorations, placeholder positions are inherited |
+| OpenDocument | `style:master-page` holds shapes and a drawing-page style (background); `draw:page draw:master-page-name` refers to it – a direct match |
+| PptxGenJS: master/layout hierarchy | ❌ only one level: each defined master is a *layout* below one fixed slide master; theme colours and fonts cannot be defined (only literal values) |
+
+**Proposed design:**
+
+- Model: `deck.masters = [{ id, name, background, elements, placeholders: { title, body, subTitle, … } }]` (one level, like PptxGenJS and
+  LibreOffice's master pages) and `slide.master`. The locked elements and the placeholder places of today's import become a master per
+  distinct PowerPoint layout (deduplicated by layout part), slides refer to it instead of carrying copies.
+- Editor: a *Masters* view (a toggle next to the thumbnails) that lists the masters and edits their elements with the normal tools;
+  placeholders are boxes with sample text whose position and first-run formatting are the defaults of new slides with that master.
+  Changing a master re-renders all its slides; *Reset slide to master* takes the master's places again. The layout menu of new slides
+  (item 18) becomes the list of masters (the six built-in layouts as initial masters of a new deck).
+- PPTX: `defineSlideMaster` per master (background, objects, placeholders with their options), `addSlide({ masterName })`, texts of
+  placeholder elements with `placeholder`; ODP: one `style:master-page` per master with its shapes.
+
+**Effort and risks:** M–L (model and migration of the reader 1–2 days, master view and re-rendering 2 days, writers 1 day, tests).
+Risks: PowerPoint files with theme-based formatting lose the theme link (colours and fonts become literal values, as today); placeholder
+formatting set on the slide must win over the master's (already the case in the reader); undo must cover master changes; files with many
+layouts produce many masters (only the used ones should be kept).
+
+**Recommendation:** worth doing as its own item in a later release (not 1.4.0, which is about image, audio and video): it removes the
+duplicated locked shapes on export and makes corporate templates usable. Start with the model and the reader (no visible change, smaller
+files), then the PPTX/ODP writers, then the master view.

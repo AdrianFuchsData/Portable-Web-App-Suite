@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; script-src 'wasm-unsafe-eval' 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src data: blob:; form-action 'none'; base-uri 'none'">
+        content="default-src 'none'; script-src 'wasm-unsafe-eval' 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; connect-src data: blob:; form-action 'none'; base-uri 'none'">
   <title>Presentation</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23d24726' d='M2 4h20v13H2z'/%3E%3Cpath fill='white' d='M10 7v7l5-3.5z'/%3E%3Cpath stroke='%23d24726' stroke-width='2' d='M12 17v4M8 21h8'/%3E%3C/svg%3E">
   <!-- conditional Pico: only inside .pico elements, so that it does not restyle the slides -->
   <link rel="stylesheet" href="../../../vendor/pico.conditional.min.css">
   <link rel="stylesheet" href="../../../shared/css/suite.css">
+  <link rel="stylesheet" href="../../../vendor/fonts/fonts.css">
   <link rel="stylesheet" href="../../../shared/css/office-fonts.css">
   <link rel="stylesheet" href="style.css">
   <script type="importmap" data-src="../../../vendor/esm/slides/importmap.json ../../../vendor/esm/fflate/importmap.json ../../../vendor/esm/spell/importmap.json js/importmap.json"></script>
@@ -31,7 +32,13 @@
   <script src="../../../shared/js/bridge.js"></script>
   <script src="../../../shared/js/archive-link.js"></script>
   <script src="../../../shared/js/diagram-embed.js"></script>
+  <script src="../../../shared/js/charts.js"></script>
+  <script src="../../../vendor/kdbxweb.min.js"></script>
+  <script src="../../../vendor/hash-wasm-argon2.umd.min.js"></script>
+  <script src="../../../shared/js/kdbx.js"></script>
+  <script src="../../../shared/js/settings.js"></script>
   <script src="../../../shared/js/shell.js"></script>
+  <script src="../../../shared/js/fonts.js"></script>
   <script type="application/octet-stream" id="suite-symbols" data-src="../../../vendor/esm/symbols/symbols.json"></script>
   <script src="../../../shared/js/symbols.js"></script>
   <script src="../../../shared/js/colorpicker.js"></script>

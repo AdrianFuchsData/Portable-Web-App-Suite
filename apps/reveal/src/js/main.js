@@ -1037,6 +1037,10 @@ document.addEventListener('keydown', (e) => { if (state.presenting) { if (e.key 
 Suite.files.dropZone(document.body, async (picked) => { if (picked.length && await confirmDiscard()) await openPicked(picked[0]); });
 Suite.bridge.receive((picked) => openPicked(picked), { app: 'reveal' }); // files opened from other apps ("Open with…")
 
+// the open file(s) for "Create an archive from the open files" (about dialog)
+Suite.openFiles.register(() => (state.dirty || state.name
+  ? [{ name: state.name || `${t('rv.untitled')}.html`, bytes: new TextEncoder().encode(presentationHtml()), dirty: state.dirty }] : []));
+
 // for tests
 window.RV = { state, history, drawDiagram, editDiagramBlock, presentationHtml, setDeck, normalizeDeck, fromHtml, fromMarkdown, fromNotebook, toMarkdown, previewWindow, updatePreview };
 document.body.dataset.ready = 'true';

@@ -8,6 +8,17 @@
  *
  * The language is detected from the browser and remembered in localStorage (a UI preference only).
  */
+// Settings imported just before a reload (shell.js: Suite.preferences.applyAndReload) are also kept in sessionStorage and written
+// again here, before anything reads them, in case the browser starts the reloaded page without the latest writes to localStorage.
+(function () {
+  try {
+    const pending = sessionStorage.getItem('suite.importedPrefs');
+    if (!pending) return;
+    sessionStorage.removeItem('suite.importedPrefs');
+    for (const [k, v] of Object.entries(JSON.parse(pending))) if (typeof v === 'string' && localStorage.getItem(k) !== v) localStorage.setItem(k, v);
+  } catch (e) { /* storage blocked */ }
+})();
+
 (function (Suite) {
   'use strict';
 

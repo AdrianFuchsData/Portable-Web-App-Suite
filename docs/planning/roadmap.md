@@ -12,7 +12,9 @@ points below come from the documentation, not from the code.
 4. Commit it – one feature per commit.
 
 Before a release, the **whole test suite** runs on the desktop and with `--mobile`. A release gets release notes
-(`docs/release-notes/vX.Y.Z.md`), a tag, and one commit in the public GitHub repository (`tools/publish_release.py`).
+(`docs/release-notes/vX.Y.Z.md`), a tag, and one commit in the public GitHub repository (`tools/publish_release.py`). The GitHub release
+gets the built applications, `examples.zip` and `SHA256SUMS` as assets, so that nothing has to be built on the users' side
+(`examples.zip` is made with `tools/make_examples.py --zip`; it is not kept in the repository).
 
 ## 1.3.0 – Office
 
@@ -38,7 +40,17 @@ Small items first, then the larger ones in this order:
 | 16 | Spreadsheet, presentation | Charts with one shared renderer (picture plus own data first) | L |
 | 17 | Presentation | OpenDocument presentations (`.odp`) | M–L |
 | 18 | Presentation | Built-in layouts, video and audio on slides, crop images | M |
-| 19 | Presentation | **Spike:** editing slide masters and layouts (findings only) | – |
+| 19 | Presentation | **Spike:** editing slide masters and layouts (findings only: `spike-results.md`, S-12 – feasible, M–L, proposed for a later release) | – |
+
+Added during 1.3.0 (requested 2026-11-07), for all applications:
+
+| # | Feature | Effort |
+|---|---|---|
+| 20 | Settings export and import also as an encrypted KeePass database | S |
+| 21 | Export dialog: choose what to include (general settings, the settings of the application – or of all applications in the overview –, connections and passwords, relay sign-in); a warning before credentials are written unencrypted; import shows what a file contains | M |
+| 22 | Create an archive from the open files (then saved or used in the archive manager) | M |
+| 23 | Workspace (`*.suite.zip`): the open files in folders per application (current content, also unsaved changes), `workspace.json` (format, version, application of each file, tab order, active file; later view state such as slide or cursor) and optionally `settings.json`; credentials only in an AES-256 ZIP or a separate KeePass file. Import in the overview: all applications reopen their files; in one application: only its files and settings. Restored files are copies (Save works like Save as, or back into the workspace archive); the dialog shows sizes so that large media can be left out. An example workspace (English and German) is part of the examples (`examples.zip`) of the release. Builds on the per-application hook of 22 (open files → `[{ name, bytes, state }]`, `restore(…)`) | M–L |
+| 24 | Fonts (requested 2026-11-07): bundle free fonts for every system where the licence allows it (Liberation family, Arimo, Tinos, Cousine, Carlito, Caladea, Gelasio, Inter, Open Sans, Roboto, Lato, Montserrat, Source Serif, Merriweather, JetBrains Mono, Fira Code, Source Code Pro); import further fonts from the file system and from archives; imported fonts are part of the settings and workspace exports | M–L |
 
 Not planned: pivot tables (the notebook covers them). Not decided: tracked changes, text columns and text boxes in documents,
 templates, version comparison, mail merge.

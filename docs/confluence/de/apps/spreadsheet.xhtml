@@ -18,7 +18,7 @@ Bearbeitungskomponente ist Univer Sheets.</p>
 <td>Excel (<code>.xlsx</code>)</td>
 <td>ja</td>
 <td>ja</td>
-<td>Werte, Formeln, Formate, Zahlenformate, verbundene Zellen, Spaltenbreiten, Zeilenhöhen, fixierte Bereiche, Registerfarben, ausgeblendete Blätter, bedingte Formatierung, Datenüberprüfung, Filter, Bilder</td>
+<td>Werte, Formeln, Formate, Zahlenformate, verbundene Zellen, Spaltenbreiten, Zeilenhöhen, fixierte Bereiche, Zeilen- und Spaltengruppen, Registerfarben, ausgeblendete Blätter, bedingte Formatierung, Datenüberprüfung, Filter, Hyperlinks, Notizen, Bilder</td>
 </tr>
 <tr>
 <td>Excel mit Makros (<code>.xlsm</code>)</td>
@@ -92,6 +92,62 @@ eigene Formel), Farbskalen und Datenbalken. Die <strong>Datenüberprüfung</stro
 ganze oder Dezimalzahlen, Datumsangaben, Textlänge oder eine eigene Formel, mit Eingabehinweis und Fehlermeldung.</p>
 <p>Beides wird aus Excel-Dateien gelesen und in sie geschrieben. Symbolsätze werden aus Excel-Dateien nicht übernommen; „Duplikate“ und
 „eindeutige Werte“ werden als Formelregeln gespeichert, und Listen, die auf Bereiche der Mappe verweisen, bleiben Verweise.</p>
+<h3>Suchen und ersetzen</h3>
+<p><code>Strg+F</code> öffnet das Suchfeld oben rechts: Text eingeben, ‹ › (oder <code>Enter</code>) gehen zum vorigen und nächsten Treffer, und das Feld zeigt, der wievielte
+von wie vielen Treffern markiert ist. <strong>Erweitertes Suchen &amp; Ersetzen</strong> (oder <code>Strg+H</code>) ergänzt den Ersetzungstext und die Optionen: <strong>Suchbereich</strong>
+<em>Aktuelles Blatt</em> oder <em>Arbeitsmappe</em> (alle Blätter: die Treffer der anderen Blätter werden der Reihe nach angesprungen, dabei wechselt das Blatt), die
+Suchrichtung (nach Zeilen oder Spalten), <strong>Suchen nach</strong> Wert oder Formel, <em>Groß-/Kleinschreibung beachten</em> und <em>Ganze Zelle vergleichen</em>.
+<strong>Ersetzen</strong> ersetzt den aktuellen Treffer, <strong>Alle ersetzen</strong> nach einer Rückfrage alle Treffer im Bereich.</p>
+<h3>Zeilen und Spalten fixieren</h3>
+<p><strong>Ansicht → Einfrieren</strong> (die erste Schaltfläche des Reiters) hält Zeilen oder Spalten fest, während der Rest scrollt: <em>Erste Zeile einfrieren</em>,
+<em>Erste Spalte einfrieren</em>, bis zur Zeile oder Spalte der markierten Zelle oder beides (<em>Bis zur aktiven Zelle einfrieren</em>); dasselbe Menü hebt es
+wieder auf. Die Kontextmenüs der Zeilen- und Spaltenköpfe haben dieselben Einträge. Fixierte Bereiche bleiben in Excel-Dateien erhalten.</p>
+<h3>Duplikate entfernen und Text aufteilen</h3>
+<p><strong>Daten → Bereinigen</strong> (auf einem Smartphone im ⋮-Menü des Reiters) enthält zwei Werkzeuge:</p>
+<ul>
+<li><strong>Duplikate entfernen…</strong> arbeitet auf dem markierten Bereich oder, wenn nur eine Zelle markiert ist, auf der Tabelle um sie herum. Enthält die erste
+  Zeile nur Text, gilt sie als Überschrift (im Dialog abschaltbar). Kreuzen Sie die Spalten an, die verglichen werden: Eine Zeile ist doppelt, wenn ihre
+  Werte in diesen Spalten denen einer früheren Zeile gleichen – Groß- und Kleinschreibung sowie Leerzeichen am Anfang oder Ende zählen nicht. Die
+  Duplikate werden entfernt, die Zeilen darunter rücken innerhalb des Bereichs nach oben (Zellen außerhalb bleiben, wo sie sind); eine Meldung nennt die
+  Zahl der entfernten Zeilen.</li>
+<li><strong>Text in Spalten…</strong> teilt die markierten Zellen einer Spalte (oder, bei einer Zelle, die Spalte von dort nach unten) an einem Trennzeichen auf: Komma,
+  Strichpunkt, Tabulator, Leerzeichen oder ein anderes Zeichen; das wahrscheinlichste ist vorgewählt, und die Vorschau zeigt das Ergebnis. Text in
+  Anführungszeichen darf das Trennzeichen enthalten. Wie beim CSV-Import werden Zahlen (mit dem gewählten Dezimaltrennzeichen) und Datumswerte erkannt,
+  oder alles bleibt Text. <em>Aufeinanderfolgende Trennzeichen als eines behandeln</em> überspringt leere Felder, z. B. bei Text, der mit mehreren Leerzeichen
+  ausgerichtet ist. Die Teile kommen in die Zellen rechts davon; sind diese nicht leer, fragt die Anwendung, bevor sie sie ersetzt.</li>
+</ul>
+<p>Beides lässt sich in einem Schritt rückgängig machen (<code>Strg+Z</code>).</p>
+<h3>Zeilen und Spalten gruppieren</h3>
+<p><strong>Daten → Gruppieren</strong> gruppiert die markierten Zeilen oder Spalten wie die Gliederung von Excel (auf einem Smartphone steht die Schaltfläche im ⋮-Menü des Reiters):</p>
+<ul>
+<li><strong>Zeilen gruppieren</strong> / <strong>Spalten gruppieren</strong> fassen die markierten Zeilen (Spalten) zu einer Gruppe zusammen, oder eine Ebene tiefer, wenn sie
+  schon in einer sind (bis zu sieben Ebenen); <strong>Zeilengruppierung aufheben</strong> / <strong>Spaltengruppierung aufheben</strong> nehmen sie eine Ebene heraus.</li>
+<li><strong>Details ausblenden</strong> blendet die Gruppe an der markierten Zelle aus (die Markierung wandert in die Zeile darunter bzw. die Spalte rechts davon),
+  <strong>Details einblenden</strong> zeigt sie wieder – auch von dieser Zeile oder Spalte aus, wo die Markierung nach dem Ausblenden steht.</li>
+<li><strong>Alle Gruppen des Blatts entfernen</strong> entfernt die Gruppen und zeigt ihre Zeilen und Spalten.</li>
+</ul>
+<p>Die Zeilen- und Spaltenköpfe zeigen die Gruppen: <code>│</code> für jede Ebene vor einer gruppierten Zeile oder Spalte, ⊟ an der Zeile unter einer Gruppe (der
+Spalte rechts davon), solange sie angezeigt wird, und ⊞, solange sie ausgeblendet ist. Die Zeichen sind nur Markierungen: Ein- und ausgeblendet wird
+über das Menü. Gruppen wandern mit, wenn Zeilen oder Spalten eingefügt oder gelöscht werden, lassen sich rückgängig machen (<code>Strg+Z</code>) und bleiben in
+Excel-Dateien erhalten (Gliederungsebenen und ausgeblendete Zeilen von Excel); LibreOffice zeigt sie als Gruppen.</p>
+<h3>Notizen</h3>
+<p>Rechtsklick auf eine Zelle und <strong>Notiz hinzufügen</strong> hängt ihr eine Notiz (einen Kommentar) an; Text in das Feld tippen und woanders hinklicken. Eine
+Zelle mit Notiz hat eine kleine Markierung in der rechten oberen Ecke, und Zeigen auf die Zelle zeigt die Notiz. Das Kontextmenü einer solchen Zelle
+bearbeitet sie (<strong>Notiz anzeigen/ausblenden</strong> hält sie offen, <strong>Notiz löschen</strong> entfernt sie). Notizen wandern mit ihren Zellen und lassen sich
+rückgängig machen.</p>
+<p>Notizen sind die Notizen von Excel (in älteren Excel-Versionen: Kommentare; LibreOffice: Kommentare): Sie werden aus Excel-Dateien gelesen und in sie
+geschrieben, auch an leeren Zellen, mit ihrem Text (Formatierung des Texts und Größe des Felds bleiben nicht erhalten, Notizen werden ausgeblendet
+gespeichert). In <code>.ods</code>-Dateien bleiben die Notizen von Zellen mit Inhalt erhalten. Die neueren Unterhaltungs-Kommentare von Excel werden nicht
+angezeigt.</p>
+<h3>Hyperlinks</h3>
+<p><strong>Einfügen → 🔗</strong> (oder <code>Strg+K</code>) fügt der markierten Zelle einen Link hinzu: die <strong>Beschriftung</strong> (der Text, den die Zelle zeigt), einen
+optionalen <strong>Hinweistext</strong> und den <strong>Typ</strong> – eine Web- oder E-Mail-Adresse (<code>https://…</code>, <code>mailto:…</code>), einen <strong>Bereich</strong> oder ein
+<strong>Arbeitsblatt</strong> der Mappe oder einen <strong>definierten Namen</strong>. Zeigen auf (oder Tippen auf) eine Zelle mit Link zeigt ein kleines Feld, um den Link zu öffnen,
+zu kopieren, zu bearbeiten oder aufzuheben. Webadressen öffnen sich in einem neuen Tab; Links in die Mappe markieren das Ziel.</p>
+<p>Links werden aus Excel-Dateien gelesen und in sie geschrieben (auch Links auf Zellen anderer Blätter, denen LibreOffice und Excel folgen), und in
+<code>.ods</code>-Dateien bleiben die Web- und E-Mail-Links erhalten. Ein Link auf einen definierten Namen wird als Link auf den Bereich des Namens
+gespeichert. Excel kennt einen Link je Zelle: Hat eine Zelle mehrere Links, wird der erste gespeichert. Zellen mit Link werden in der
+Linkfarbe von Excel (blau, unterstrichen) gespeichert, wenn sie keine eigene Schriftfarbe haben.</p>
 <h3>Sortieren und Filtern</h3>
 <p>Im Reiter <em>Daten</em> schaltet die Schaltfläche <strong>Filter</strong> einen Autofilter für den markierten Bereich (oder die Tabelle um die markierte
 Zelle) ein und wieder aus. Die erste Zeile bekommt Filterschaltflächen: Eine Spalte wird <strong>nach Werten</strong> gefiltert (eine Liste mit
@@ -103,6 +159,34 @@ nicht passen, bleiben ausgeblendet, bis der Filter geändert oder ausgeschaltet 
 Kontextmenü einer Zelle hat dieselben Einträge unter <em>Sortieren</em>.</p>
 <p>Filter werden mit ihren Kriterien aus Excel-Dateien gelesen und in sie geschrieben (Filter nach Werten und nach Bedingungen; Farb-, Top-10-
 und Datumsfilter von Excel werden nicht übernommen), und LibreOffice und Excel zeigen sie als Filter. ODS und CSV behalten nur die Werte.</p>
+<h2>Diagramme</h2>
+<p>Markieren Sie eine Tabelle (Namen in der ersten Zeile und Spalte, Zahlen darunter; eine einzelne Zelle steht für die Tabelle um sie herum) und
+klicken Sie <strong>📊 Diagramm</strong>: Daneben erscheint ein Säulendiagramm daraus. Klicken Sie das Diagramm und dann <strong>📊 Diagramm bearbeiten</strong>, um es im
+Diagrammdialog zu ändern:</p>
+<ul>
+<li><strong>Art</strong> (Säulen, Balken, Linien, Flächen, Kreis, Ring, Punkte), <strong>Titel</strong>, <strong>Legende</strong> (rechts, unten, keine), <strong>gestapelt</strong>, <strong>Werte im Diagramm</strong>;</li>
+<li>die <strong>Daten</strong> – Namen, Kategorien, Werte und die Farbe jeder Reihe –, mit Zeilen und Reihen zum Hinzufügen und Entfernen; die Vorschau folgt jeder
+  Änderung;</li>
+<li><strong>Aus den Zellen aktualisieren</strong> übernimmt die aktuellen Werte der Zellen, aus denen das Diagramm gemacht wurde (Art, Titel und Farben bleiben).</li>
+</ul>
+<p>Ein Diagramm ist ein Bild, das seine Daten mitträgt: Es wird in der <code>.xlsx</code>-Datei als Bild gespeichert (Excel und LibreOffice zeigen es) und bleibt
+bearbeitbar, wenn die Datei hier wieder geöffnet wird. Diagramme von Excel- und LibreOffice-Dateien werden als solche Bilder an ihrer Stelle gezeigt –
+mit den Daten der Datei – und als Bilder gespeichert (nicht als Excel-Diagramme).</p>
+<h2>Drucken und PDF</h2>
+<p><strong>🖨 Drucken / PDF</strong> (<code>Strg+P</code>) druckt die Zellen mit ihren Formaten, Rahmen, verbundenen Zellen, Spaltenbreiten und Zeilenhöhen:</p>
+<ul>
+<li><strong>Drucken:</strong> die Markierung (wenn mehr als eine Zelle markiert ist), dieses Blatt oder alle Blätter (jedes beginnt auf einer neuen
+  Seite; ausgeblendete Blätter, Zeilen und Spalten entfallen). Ein Blatt druckt die Zellen mit Inhalt, Hintergrund oder Rahmen.</li>
+<li><strong>Papier</strong> (A4 oder Letter) und <strong>Ausrichtung</strong> (Hoch- oder Querformat).</li>
+<li><strong>Größe:</strong> tatsächliche Größe, <strong>alle Spalten auf einer Seite</strong> (Standard: breitere Tabellen werden verkleinert) oder <strong>Blatt auf
+  einer Seite</strong>.</li>
+<li><strong>Zeilen, die oben auf jeder Seite wiederholt werden:</strong> die ersten Zeilen des Blatts, etwa die Überschriftenzeile. Fixierte Zeilen
+  werden vorgeschlagen.</li>
+<li><strong>Gitternetzlinien</strong> zwischen allen Zellen.</li>
+</ul>
+<p>Danach folgt der Druckdialog des Browsers: Wählen Sie einen Drucker oder <strong>Als PDF speichern</strong> für eine PDF-Datei. Papier, Ausrichtung,
+Größe und Gitternetzlinien werden gemerkt. Bilder und Diagramme auf dem Blatt und die Farben der bedingten Formatierung werden nicht
+gedruckt; die Einstellungen werden nicht in der Datei gespeichert.</p>
 <h2>Tastenkürzel</h2>
 <p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
 <h3>Dateien</h3>
@@ -125,6 +209,10 @@ und Datumsfilter von Excel werden nicht übernommen), und LibreOffice und Excel 
 <tr>
 <td><code>Strg+Umschalt+S</code></td>
 <td>Speichern unter</td>
+</tr>
+<tr>
+<td><code>Strg+P</code></td>
+<td>Drucken / PDF</td>
 </tr>
 </tbody>
 </table>
@@ -167,7 +255,15 @@ und Datumsfilter von Excel werden nicht übernommen), und LibreOffice und Excel 
 </tr>
 <tr>
 <td><code>Strg+F</code></td>
+<td>Suchen</td>
+</tr>
+<tr>
+<td><code>Strg+H</code></td>
 <td>Suchen und ersetzen</td>
+</tr>
+<tr>
+<td><code>Strg+K</code></td>
+<td>Link einfügen</td>
 </tr>
 </tbody>
 </table>

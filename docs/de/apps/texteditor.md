@@ -39,8 +39,9 @@ eine Registerkarte mit × oder `Alt+W`; bei ungespeicherten Änderungen fragt de
 Mit mehreren Cursorn geschieht alles, was Sie tippen, löschen oder einfügen, an jedem Cursor. `Esc` kehrt zu einem
 Cursor zurück.
 
-Die Schaltflächen ↩ (Zeilenumbruch), · (Leerzeichen und Tabulatoren anzeigen), A− und A+ (Schriftgröße) ändern die
-Ansicht; der Editor merkt sich diese Einstellungen.
+Die Schaltflächen ↩ (Zeilenumbruch), · (Leerzeichen und Tabulatoren anzeigen), A− und A+ (Schriftgröße) und das Schriftmenü (die
+nichtproportionale Schrift des Systems oder eine der mitgelieferten – Cousine/Liberation Mono, JetBrains Mono, Fira Code, Source Code Pro – und
+importierte Schriften, siehe *Schriften* im Benutzerhandbuch) ändern die Ansicht; der Editor merkt sich diese Einstellungen.
 
 Jedes Dokument hat einen eigenen Verlauf: ↶ und ↷ in der Werkzeugleiste oder `Strg+Z` und `Strg+Y` / `Strg+Umschalt+Z`.
 

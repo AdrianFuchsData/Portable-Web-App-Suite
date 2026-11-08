@@ -1,0 +1,2 @@
+/* @univerjs/thread-comment-ui@1.0.4/locale/en-US (jsDelivr +esm) */
+const e={"thread-comment-ui":{mobile:{back:"Back"},panel:{title:"Comment Management",empty:"No comments yet",reset:"Reset Filter",addComment:"Add Comment",solved:"Solved"},editor:{placeholder:"Reply or add others with @",reply:"Comment",cancel:"Cancel",save:"Save"},item:{edit:"Edit",delete:"Delete This Comment",more:"More"},filter:{sheet:{all:"All sheet",current:"Current sheet"},status:{all:"All comments",resolved:"Resolved",unsolved:"Not resolved",concernMe:"Concern me"}}}};export{e as default};

@@ -322,7 +322,7 @@ def test_history_and_explain(app_page, tmp_path):
     expect(items).to_have_count(2)
     # a click puts the query into the editor; the history survives a reload
     items.nth(1).click()
-    page.wait_for_function("DB.editor.state.doc.toString() === 'SELECT name FROM people ORDER BY name'")
+    page.wait_for_function("() => DB.editor.state.doc.toString() === 'SELECT name FROM people ORDER BY name'")
     page.click("[data-testid=run]")
     expect(page.locator("[data-testid=row]")).to_have_count(3)
     expect(items.first).to_contain_text("ORDER BY name")  # moved to the top
@@ -341,7 +341,7 @@ def test_history_and_explain(app_page, tmp_path):
     page.click("[data-testid=clear-history]")
     page.click("[data-testid=confirm-ok]")
     expect(page.locator("[data-testid=history]")).to_have_count(0)
-    page.wait_for_function("localStorage.getItem('suite.dbtool.history') === null")
+    page.wait_for_function("() => localStorage.getItem('suite.dbtool.history') === null")
     assert page.errors == []
 
 

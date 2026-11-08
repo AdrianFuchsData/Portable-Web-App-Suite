@@ -1327,6 +1327,10 @@ Suite.bridge.receive(async (picked) => {
   Suite.shell.toast(t('nb.received', picked.file.name, state.cwd));
 }, { app: 'notebook' }); // files opened from other apps ("Open with…")
 
+// the open file(s) for "Create an archive from the open files" (about dialog)
+Suite.openFiles.register(() => (state.dirty || state.name !== `${t('nb.untitled')}.ipynb`
+  ? [{ name: state.name, bytes: new TextEncoder().encode(`${JSON.stringify(toNotebook(), null, 1)}\n`), dirty: state.dirty }] : []));
+
 // for tests
 window.NB = { restartWidgets: () => widgets.stop(), get terminal() { return terminal; }, widgets, toHtml, state, mounts, syncMounts, refreshVariables, cellHistory, cellStep, kernel, insertCell, runCell, toNotebook, fromPython, toPython, setCells, fromNotebook };
 document.body.dataset.ready = 'true';

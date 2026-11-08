@@ -11,8 +11,9 @@
  */
 import { unzipSync, zipSync, strFromU8, strToU8 } from "fflate";
 import { buildDocTransform } from "@univerjs/docs";
-import { Body } from "app/docx-import";
-import { headings, TOC_PREFIX } from "app/doc-toc";
+import { Body, closeField, FIELD_START } from "app/docx-import";
+import { headings, sectionConfig, TOC_PREFIX } from "app/doc-toc";
+import { authorOf, buildThreads, dateOf, textOf, threadsOf, withThreads } from "app/doc-comments";
 
 const NS = {
   office: "urn:oasis:names:tc:opendocument:xmlns:office:1.0",
@@ -23,6 +24,8 @@ const NS = {
   fo: "urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0",
   xlink: "http://www.w3.org/1999/xlink",
   svg: "urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0",
+  dc: "http://purl.org/dc/elements/1.1/",
+  loext: "urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0", // LibreOffice: replies and resolved comments
 };
 const MIME = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif", bmp: "image/bmp", svg: "image/svg+xml", webp: "image/webp" };
 const randomId = (prefix) => `${prefix}${Math.random().toString(36).slice(2, 10)}`;
@@ -64,6 +67,8 @@ class OdtReader {
     this.drawingsOrder = [];
     this.notes = [];
     this.warnings = new Set();
+    this.main = null; // the body of the document (comments are read there only)
+    this.annotations = []; // { key, start, end, author, date, text, parentKey, resolved }
   }
 
   /** The style and its parents, outermost first (with the family default first of all, unless withDefault is false). */
@@ -192,11 +197,34 @@ class OdtReader {
         const label = citation ? citation.textContent : String(this.notes.length + 1);
         out.text(label, clean({ ...ts, va: 3 }));
         this.notes.push({ label, body: kid(node, "text", "note-body") });
+      } else if (ns === NS.text && (name === "page-number" || name === "page-count")) {
+        // page fields: Univer fields (their current text between the field marks)
+        const start = out.length;
+        out.text(FIELD_START, clean(ts));
+        this.inlines(node, out, ts, para);
+        const kind = name === "page-number" ? "PAGE" : "NUMPAGES";
+        closeField(out, start, kind, kind, "odt", clean(ts));
+      } else if (ns === NS.office && name === "annotation") this.annotation(node, out);
+      else if (ns === NS.office && name === "annotation-end") {
+        const c = this.annotations.find((x) => x.name && x.name === a(node, "office", "name"));
+        if (c && out === this.main) c.end = out.length - 1;
       } else if (ns === NS.draw && name === "frame") this.frame(node, out);
       else if (ns === NS.text && ["soft-page-break", "bookmark", "bookmark-start", "bookmark-end", "reference-mark", "change-start", "change-end"].includes(name)) continue;
       else if (ns === NS.text && name === "tracked-changes") continue;
-      else this.inlines(node, out, ts, para); // fields (page numbers, dates, …): their current text
+      else this.inlines(node, out, ts, para); // other fields (dates, …): their current text
     }
+  }
+
+  /** A comment (office:annotation): its text, author and date; its range ends at office:annotation-end with the same name. */
+  annotation(node, out) {
+    if (out !== this.main) return;
+    const text = kids(node, "text").filter((p) => p.localName === "p" || p.localName === "h").map((p) => p.textContent).join("\n");
+    const date = kid(node, "dc", "date");
+    const name = a(node, "office", "name");
+    this.annotations.push({
+      key: name || `a${this.annotations.length}`, name, start: out.length, end: name ? null : out.length, author: (kid(node, "dc", "creator") || {}).textContent || "",
+      date: date ? new Date(date.textContent) : null, text, parentKey: a(node, "loext", "parent-name") || null, resolved: a(node, "loext", "resolved") === "true",
+    });
   }
 
   frame(frame, out) {
@@ -272,7 +300,10 @@ class OdtReader {
   read() {
     const text = this.content.getElementsByTagNameNS(NS.office, "text")[0];
     const out = new Body();
+    this.main = out;
     if (text) this.blocks(text, out);
+    const { threads, decorations } = buildThreads(this.annotations, { stream: out.body.dataStream, unitId: this.id });
+    out.body.customDecorations.push(...decorations);
     if (this.notes.length) { // notes at the end, after a separator line
       out.text("—————");
       out.paragraph({}, null);
@@ -308,10 +339,10 @@ class OdtReader {
       documentStyle[`default${prefix}Id`] = id;
     }
     return {
-      data: {
+      data: withThreads({
         id: this.id, title: "", body: out.body, documentStyle, tableSource: this.tableSource, drawings: this.drawings, drawingsOrder: this.drawingsOrder, headers, footers,
         resources: [{ name: "DOC_DRAWING_PLUGIN", data: JSON.stringify({ data: this.drawings, order: this.drawingsOrder }) }],
-      },
+      }, threads),
       warnings: [...this.warnings],
     };
   }
@@ -376,8 +407,26 @@ class OdtWriter {
     return props.length ? this.auto("paragraph", `<style:paragraph-properties ${props.join(" ")}/>`, ` style:parent-style-name="${parent}"`) : parent;
   }
 
-  body(body) {
+  /** An office:annotation (a comment or a reply) for content.xml. */
+  annotationXml(c, attrs) {
+    const date = dateOf(c.dT);
+    return `<office:annotation${attrs}><dc:creator>${xml(authorOf(c))}</dc:creator>${date ? `<dc:date>${date.toISOString().replace(/Z$/, "")}</dc:date>` : ""}${textOf(c.text).split("\n").map((line) => `<text:p>${xml(line)}</text:p>`).join("")}</office:annotation>`;
+  }
+
+  /** comments: the threads of the main body (doc-comments.js threadsOf): annotations around their text, replies after them. */
+  body(body, comments = []) {
     const stream = body.dataStream || "";
+    const named = comments.map((t, n) => ({ t, name: `__Annotation__${n + 1}` }));
+    const opened = new Set(), closed = new Set();
+    const openAt = (i, start) => named.filter((c) => !opened.has(c) && c.t.start < i + 1 && c.t.start >= Math.min(i, start - 1)).map((c) => {
+      opened.add(c);
+      return this.annotationXml(c.t, ` office:name="${c.name}"${c.t.resolved ? ' loext:resolved="true"' : ""}`);
+    }).join("");
+    const closeAt = (j) => named.filter((c) => opened.has(c) && !closed.has(c) && c.t.end + 1 <= j).map((c) => {
+      closed.add(c);
+      return `<office:annotation-end office:name="${c.name}"/>${(c.t.children || []).map((r) => this.annotationXml(r, ` loext:parent-name="${c.name}"`)).join("")}`;
+    }).join("");
+    const bounds = new Set(comments.flatMap((t) => [t.start, t.end + 1]));
     const runs = body.textRuns || [];
     const paragraphsByEnd = new Map((body.paragraphs || []).map((p) => [p.startIndex, p]));
     const blocksAt = new Map((body.customBlocks || []).map((b) => [b.startIndex, b.blockId]));
@@ -386,14 +435,26 @@ class OdtWriter {
     const tables = this.data.tableSource || {};
     const drawings = this.data.drawings || {};
     const tsAt = (i) => { const r = runs.find((x) => i >= x.st && i < x.ed); return r ? r.ts : null; };
+    // page fields (Univer FIELD ranges): text:page-number / text:page-count with their current text
+    const fieldsAt = new Map((body.customRanges || []).filter((r) => r.rangeType === 1 && r.properties && /^(PAGE|NUMPAGES)$/.test(r.properties.fieldType)).map((r) => [r.startIndex, r]));
     const anchors = new Map(headings(body).map((h) => [h.end, h.anchor])); // table of contents targets
 
     const inline = (start, end) => {
       let out = "";
       let i = start;
       while (i < end) {
+        out += closeAt(i) + openAt(i, start);
         const ch = stream[i];
         if (ch === C.PAGE_BREAK) { i += 1; continue; } // handled as break-before of the paragraph
+        const field = fieldsAt.get(i);
+        if (field) {
+          const result = xml(stream.slice(i + 1, field.endIndex).replace(SKIP, ""));
+          const tag = field.properties.fieldType === "PAGE" ? `<text:page-number text:select-page="current">${result}</text:page-number>` : `<text:page-count>${result}</text:page-count>`;
+          const style = this.textStyle(tsAt(i + 1) || tsAt(i));
+          out += style ? `<text:span text:style-name="${style}">${tag}</text:span>` : tag;
+          i = field.endIndex + 1;
+          continue;
+        }
         if (ch === C.CUSTOM_BLOCK) {
           const d = drawings[blocksAt.get(i)];
           const m = d && /^data:([^;,]+);base64,(.*)$/s.exec(d.source || "");
@@ -411,7 +472,7 @@ class OdtWriter {
         const ts = tsAt(i);
         const link = links.find((l) => i >= l.startIndex && i <= l.endIndex);
         let j = i;
-        while (j < end && ![C.PAGE_BREAK, C.CUSTOM_BLOCK].includes(stream[j]) && tsAt(j) === ts && links.find((l) => j >= l.startIndex && j <= l.endIndex) === link) j += 1;
+        while (j < end && (j === i || !bounds.has(j)) && ![C.PAGE_BREAK, C.CUSTOM_BLOCK].includes(stream[j]) && !fieldsAt.has(j) && tsAt(j) === ts && links.find((l) => j >= l.startIndex && j <= l.endIndex) === link) j += 1;
         let text = xml(stream.slice(i, j).replace(SKIP, "")).replace(/\t/g, "<text:tab/>").replace(/ {2,}/g, (m) => ` <text:s text:c="${m.length - 1}"/>`);
         const style = this.textStyle(ts);
         if (style && text) text = `<text:span text:style-name="${style}">${text}</text:span>`;
@@ -419,7 +480,7 @@ class OdtWriter {
         out += text;
         i = j;
       }
-      return out;
+      return out + closeAt(end + 1); // (comments that end at the paragraph mark; one starting there opens in the next paragraph)
     };
 
     const blocks = (start, end) => {
@@ -495,12 +556,12 @@ class OdtWriter {
 
   write() {
     const d = this.data;
-    const ds = d.documentStyle || {};
-    const text = this.body(d.body || { dataStream: "" });
+    const ds = sectionConfig(d);
+    const text = this.body(d.body || { dataStream: "" }, threadsOf(d));
     const part = (store, id) => (id && store && store[id] && store[id].body ? this.body(store[id].body) : "");
     const header = part(d.headers, ds.defaultHeaderId), footer = part(d.footers, ds.defaultFooterId);
     const autos = [...this.autoStyles.values()].map((s) => `<style:style style:name="${s.name}" style:family="${s.family}"${s.extra}>${s.props}</style:style>`).join("");
-    const ns = 'xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" office:version="1.3"';
+    const ns = 'xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:loext="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0" office:version="1.3"';
     const lists = ["LBullet", "LNumber"].map((name, n) => `<text:list-style style:name="${name}">${Array.from({ length: 9 }, (_, i) => (n
       ? `<text:list-level-style-number text:level="${i + 1}" style:num-suffix="." style:num-format="1"><style:list-level-properties text:list-level-position-and-space-mode="label-alignment"><style:list-level-label-alignment text:label-followed-by="listtab" fo:text-indent="-0.635cm" fo:margin-left="${(0.635 * (i + 2)).toFixed(3)}cm"/></style:list-level-properties></text:list-level-style-number>`
       : `<text:list-level-style-bullet text:level="${i + 1}" text:bullet-char="${["•", "◦", "▪"][i % 3]}"><style:list-level-properties text:list-level-position-and-space-mode="label-alignment"><style:list-level-label-alignment text:label-followed-by="listtab" fo:text-indent="-0.635cm" fo:margin-left="${(0.635 * (i + 2)).toFixed(3)}cm"/></style:list-level-properties></text:list-level-style-bullet>`)).join("")}</text:list-style>`).join("");
@@ -514,7 +575,7 @@ class OdtWriter {
       + '<style:style style:name="Title" style:family="paragraph" style:parent-style-name="Heading"><style:paragraph-properties fo:text-align="center"/><style:text-properties fo:font-size="26pt" fo:font-weight="bold"/></style:style>'
       + '<style:style style:name="Subtitle" style:family="paragraph" style:parent-style-name="Heading"><style:paragraph-properties fo:text-align="center"/><style:text-properties fo:font-size="16pt" fo:color="#595959"/></style:style>'
       + [[1, 18], [2, 16], [3, 14], [4, 13], [5, 12]].map(([n, s]) => heading(n, s)).join("")
-      + `</office:styles><office:automatic-styles><style:page-layout style:name="pm1"><style:page-layout-properties fo:page-width="${cm(page.width)}" fo:page-height="${cm(page.height)}" fo:margin-top="${cm(ds.marginTop ?? 75.6)}" fo:margin-bottom="${cm(ds.marginBottom ?? 75.6)}" fo:margin-left="${cm(ds.marginLeft ?? 75.6)}" fo:margin-right="${cm(ds.marginRight ?? 75.6)}"/></style:page-layout></office:automatic-styles>`
+      + `</office:styles><office:automatic-styles><style:page-layout style:name="pm1"><style:page-layout-properties fo:page-width="${cm(page.width)}" fo:page-height="${cm(page.height)}" style:print-orientation="${page.width > page.height ? "landscape" : "portrait"}" fo:margin-top="${cm(ds.marginTop ?? 75.6)}" fo:margin-bottom="${cm(ds.marginBottom ?? 75.6)}" fo:margin-left="${cm(ds.marginLeft ?? 75.6)}" fo:margin-right="${cm(ds.marginRight ?? 75.6)}"/></style:page-layout></office:automatic-styles>`
       + `<office:master-styles><style:master-page style:name="Standard" style:page-layout-name="pm1">${header ? `<style:header>${header}</style:header>` : ""}${footer ? `<style:footer>${footer}</style:footer>` : ""}</style:master-page></office:master-styles></office:document-styles>`;
     // the header/footer styles were collected while writing them: content.xml has all automatic styles; styles.xml needs those of the header/footer too
     const stylesWithAutos = styles.replace("<office:automatic-styles>", `<office:automatic-styles>${[...this.autoStyles.values()].map((s) => `<style:style style:name="${s.name}" style:family="${s.family}"${s.extra}>${s.props}</style:style>`).join("")}${lists}`);

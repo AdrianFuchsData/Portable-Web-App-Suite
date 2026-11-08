@@ -21,7 +21,7 @@ Suite.i18n.register({
     'ssh.hostKeyChanged': 'WARNING: the host key of {0} has CHANGED. Someone may be intercepting the connection. Saved fingerprint: {1}',
     'ssh.acceptOnce': 'Accept once', 'ssh.acceptSave': 'Accept and save', 'ssh.reject': 'Reject', 'ssh.upload': 'Upload…', 'ssh.mkdir': 'New folder', 'ssh.refresh': 'Refresh',
     'ssh.folderName': 'Folder name', 'ssh.rename': 'Rename', 'ssh.delete': 'Delete', 'ssh.deleteConfirm': 'Delete “{0}”?', 'ssh.uploaded': '{0} file(s) uploaded.',
-    'ssh.download': 'Download', 'ssh.savedBack': '“{0}” was uploaded to the server.', 'ssh.deleteConnection': 'Delete the connection “{0}”?', 'ssh.edit': 'Edit', 'ssh.fontSize': 'Font size', 'ssh.copy': 'Copy', 'ssh.paste': 'Paste',
+    'ssh.download': 'Download', 'ssh.savedBack': '“{0}” was uploaded to the server.', 'ssh.deleteConnection': 'Delete the connection “{0}”?', 'ssh.edit': 'Edit', 'ssh.fontSize': 'Font size', 'ssh.font': 'Font', 'ssh.systemFont': 'System font', 'ssh.copy': 'Copy', 'ssh.paste': 'Paste',
     'ssh.relayMissing': 'Configure the relay first (address and token).', 'ssh.newName': 'New name',
     'ssh.keygen': 'New key pair…', 'ssh.keyType': 'Key type', 'ssh.comment': 'Comment', 'ssh.keyPassphrase': 'Passphrase (optional, encrypts the private key)',
     'ssh.generate': 'Generate', 'ssh.generating': 'Generating…', 'ssh.publicKey': 'Public key (add it to ~/.ssh/authorized_keys on the server)', 'ssh.fingerprint': 'Fingerprint',
@@ -40,7 +40,7 @@ Suite.i18n.register({
     'ssh.hostKeyChanged': 'WARNUNG: Der Host-Schlüssel von {0} hat sich GEÄNDERT. Möglicherweise wird die Verbindung abgehört. Gespeicherter Fingerabdruck: {1}',
     'ssh.acceptOnce': 'Einmal akzeptieren', 'ssh.acceptSave': 'Akzeptieren und speichern', 'ssh.reject': 'Ablehnen', 'ssh.upload': 'Hochladen…', 'ssh.mkdir': 'Neuer Ordner', 'ssh.refresh': 'Aktualisieren',
     'ssh.folderName': 'Ordnername', 'ssh.rename': 'Umbenennen', 'ssh.delete': 'Löschen', 'ssh.deleteConfirm': '„{0}“ löschen?', 'ssh.uploaded': '{0} Datei(en) hochgeladen.',
-    'ssh.download': 'Herunterladen', 'ssh.savedBack': '„{0}“ wurde auf den Server hochgeladen.', 'ssh.deleteConnection': 'Die Verbindung „{0}“ löschen?', 'ssh.edit': 'Bearbeiten', 'ssh.fontSize': 'Schriftgröße', 'ssh.copy': 'Kopieren', 'ssh.paste': 'Einfügen',
+    'ssh.download': 'Herunterladen', 'ssh.savedBack': '„{0}“ wurde auf den Server hochgeladen.', 'ssh.deleteConnection': 'Die Verbindung „{0}“ löschen?', 'ssh.edit': 'Bearbeiten', 'ssh.fontSize': 'Schriftgröße', 'ssh.font': 'Schrift', 'ssh.systemFont': 'Systemschrift', 'ssh.copy': 'Kopieren', 'ssh.paste': 'Einfügen',
     'ssh.relayMissing': 'Richten Sie zuerst das Relay ein (Adresse und Token).', 'ssh.newName': 'Neuer Name',
     'ssh.keygen': 'Neues Schlüsselpaar…', 'ssh.keyType': 'Schlüsseltyp', 'ssh.comment': 'Kommentar', 'ssh.keyPassphrase': 'Passphrase (optional, verschlüsselt den privaten Schlüssel)',
     'ssh.generate': 'Erzeugen', 'ssh.generating': 'Erzeuge…', 'ssh.publicKey': 'Öffentlicher Schlüssel (auf dem Server in ~/.ssh/authorized_keys eintragen)', 'ssh.fingerprint': 'Fingerabdruck',
@@ -50,7 +50,9 @@ Suite.i18n.register({
   },
 });
 
-const state = { tabs: [], active: null, dialog: null, hostKey: null, panels: false, fontSize: 14, ctrl: false };
+const state = { tabs: [], active: null, dialog: null, hostKey: null, panels: false, fontSize: 14, ctrl: false, font: (() => { try { return localStorage.getItem('suite.ssh.font') || ''; } catch (e) { return ''; } })() };
+const TERM_FONTS = 'ui-monospace, Menlo, Consolas, "DejaVu Sans Mono", monospace';
+const termFont = () => (state.font ? `"${state.font}", ${TERM_FONTS}` : TERM_FONTS);
 let nextTab = 1;
 const data = Suite.appdata.create(APP, { onChange: () => render() });
 
@@ -91,7 +93,7 @@ function answerHostKey(accept, save) {
 // ---- sessions -------------------------------------------------------------------------------------------
 
 function newTerminal() {
-  const term = new Terminal({ cursorBlink: true, fontSize: state.fontSize, fontFamily: 'ui-monospace, Menlo, Consolas, "DejaVu Sans Mono", monospace', allowProposedApi: false, scrollback: 5000 });
+  const term = new Terminal({ cursorBlink: true, fontSize: state.fontSize, fontFamily: termFont(), allowProposedApi: false, scrollback: 5000 });
   const fit = new FitAddon();
   term.loadAddon(fit);
   const el = document.createElement('div');
@@ -329,6 +331,14 @@ function Toolbar() {
       <button class="secondary outline" title=${t('ssh.paste')} data-testid="paste" onClick=${async () => { try { const text = await navigator.clipboard.readText(); if (tb.shell) tb.shell.write(new TextEncoder().encode(text)); } catch (e) { fail(e); } }}>📋</button>` : null}
     <label class="ssh-font">${t('ssh.fontSize')}<select data-testid="font-size" onChange=${(e) => { state.fontSize = +e.target.value; for (const x of state.tabs) x.term.options.fontSize = state.fontSize; render(); }}>
       ${[11, 12, 13, 14, 16, 18, 20].map((s) => html`<option value=${s} selected=${state.fontSize === s}>${s}</option>`)}</select></label>
+    ${Suite.fonts && Suite.fonts.families('monospace').length ? html`<label class="ssh-font">${t('ssh.font')}<select data-testid="font" onChange=${(e) => {
+      state.font = e.target.value;
+      try { localStorage.setItem('suite.ssh.font', state.font); } catch (err) { /* storage blocked */ }
+      // (a terminal measures its cells with the font: loaded first)
+      document.fonts.load(`14px ${termFont()}`).catch(() => null).then(() => { for (const x of state.tabs) x.term.options.fontFamily = termFont(); });
+      render();
+    }}><option value="" selected=${!state.font}>${t('ssh.systemFont')}</option>
+      ${Suite.fonts.families('monospace').map((f) => html`<option value=${f.name} selected=${state.font === f.name}>${f.name}</option>`)}</select></label>` : null}
   </nav>`;
 }
 

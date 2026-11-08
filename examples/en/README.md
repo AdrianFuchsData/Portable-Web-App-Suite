@@ -120,3 +120,7 @@ SSH the notebook served by the relay (`relay.py --serve`).
 - `report.sh` – Shell script: a report from CSV data (Terminal: sh report.sh)
 - `backup.sh` – Shell script: back up a folder (sh backup.sh FOLDER)
 - `example-data.zip` – Data for the archive notebook (open it in the archive manager)
+
+## overview
+
+- `office.suite.zip` – Workspace with a text, a document, a spreadsheet and a diagram (F1 → Workspace → Open workspace…, in the overview)

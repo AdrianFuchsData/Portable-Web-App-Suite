@@ -67,6 +67,7 @@ BUNDLE_RE = re.compile(r'<script\s+type="application/octet-stream"\s+data-bundle
 SHORTCUTS_RE = re.compile(r'<script\s+type="application/json"\s+data-shortcuts="([^"]+)"\s*></script>')
 SHORTCUT_SECTIONS = {"en": "## Keyboard shortcuts", "de": "## Tastenkürzel"}
 EMBED_RE = re.compile(r'<script\s+type="(application/octet-stream|text/plain)"\s+id="([^"]+)"\s+data-src="([^"]+)"\s*></script>')
+FONTS_BLOCK_RE = re.compile(r"<style>\n(/\* suite-fonts(?:-mono)? \*/)\n[^<]*</style>")
 SOURCEMAP_RE = re.compile(r"^\s*//[#@] sourceMappingURL=.*$|/\*[#@] sourceMappingURL=.*?\*/", re.M)
 
 
@@ -139,6 +140,9 @@ def bundle(base, href):
         if src.is_relative_to(ROOT / "dist"):  # built apps come from SUITE_DIST if set
             src = DIST / src.relative_to(ROOT / "dist")
         data = src.read_bytes()
+        if src.suffix == ".html":
+            # the bundled fonts once for all: the overview puts its own copy back when it starts or saves an app (appHtml)
+            data = FONTS_BLOCK_RE.sub(lambda m: f"<style>\n{m.group(1)}\n</style>", data.decode("utf-8")).encode("utf-8")
         content = base64.b64encode(gzip.compress(data, compresslevel=6, mtime=0)).decode("ascii")
         parts.append(f'<script type="application/octet-stream" data-bundle-file="{name}">{content}</script>')
     return "\n".join(parts)
@@ -193,6 +197,16 @@ def components(project):
                     base["files"] = base["files"] + [f for f in entry["files"] if f not in base["files"]]
                 else:
                     out.append(entry)
+    if any(r.startswith("fonts/") for r in refs):  # the bundled fonts (tools/vendor_fonts.py); fonts-mono.css: the monospaced ones
+        mono_only = not any(r == "fonts/fonts.css" for r in refs)
+        lock = json.loads((VENDOR / "fonts" / "lock.json").read_text(encoding="utf-8"))
+        for family in json.loads((VENDOR / "fonts" / "fonts.json").read_text(encoding="utf-8")):
+            if mono_only and family["category"] != "monospace":
+                continue
+            package = family["package"]
+            names = ", ".join([family["name"], *family["aliases"]])
+            out.append({"name": f"{names} (font, {package})", "version": lock[package]["version"], "license": lock[package]["license"],
+                        "files": [f"fonts/licenses/{package.split('/')[-1]}.LICENSE.txt", "fonts/licenses/NOTICE.txt"]})
     if any(r.startswith("pyodide/") for r in refs):
         for wheel, info in sorted(json.loads((VENDOR / "pyodide" / "licenses.json").read_text(encoding="utf-8")).items()):
             if not wheel.endswith(".whl"):

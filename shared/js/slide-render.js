@@ -57,7 +57,62 @@ function autoNumber(type, n) {
 }
 
 /** Render the text model into a container element. */
-export function renderText(container, text) {
+/** The text a field shows: the number of the slide, or today's date (fields keep the text they had for other renderers). */
+function fieldText(run, ctx) {
+  if (run.field === "slidenum" && ctx.number) return String(ctx.number);
+  if (run.field === "datetime") return new Date().toLocaleDateString(ctx.locale || undefined);
+  return run.text;
+}
+
+/** The marker of a list paragraph (counters: the numbers of the levels so far, updated). */
+function listMarker(para, counters) {
+  const level = para.level || 0;
+  counters[level] = para.bullet.auto ? (counters[level] || 0) + 1 : 0;
+  counters.length = level + 1;
+  return para.bullet.auto ? autoNumber(para.bullet.auto, counters[level]) : para.bullet.char || "•";
+}
+
+/** The properties of a paragraph element while it is edited (data-level, data-bullet, data-align; null: not set). */
+export function paragraphProps(p) {
+  if (!p || !p.dataset || p.dataset.level === undefined) return null;
+  let bullet = null;
+  try { bullet = p.dataset.bullet ? JSON.parse(p.dataset.bullet) : null; } catch (e) { bullet = null; }
+  return { level: Math.max(0, Math.min(8, Number(p.dataset.level) || 0)), bullet, align: p.dataset.align || "l" };
+}
+/** Set the list properties of a paragraph element (then refreshLists). */
+export function setParagraphProps(p, { level, bullet }) {
+  if (level !== undefined) p.dataset.level = String(Math.max(0, Math.min(8, level)));
+  if (bullet !== undefined) p.dataset.bullet = bullet ? JSON.stringify(bullet) : "";
+  if (p.dataset.align === undefined) p.dataset.align = "l";
+}
+
+/**
+ * Bring the markers and indents of the list paragraphs of an edited text up to date (after typing, Enter, Tab or a list command):
+ * markers are only added, changed or removed where needed, so the caret stays where it is.
+ */
+export function refreshLists(container) {
+  const counters = [];
+  for (const p of container.children) {
+    if (p.nodeName !== "P" && p.nodeName !== "DIV") continue;
+    const props = paragraphProps(p) || { level: 0, bullet: null };
+    const markers = [...p.children].filter((n) => n.classList.contains("bullet"));
+    p.style.marginLeft = `${props.level * 0.5 + (props.bullet ? 0.3 : 0)}in`;
+    if (!props.bullet) { counters.length = props.level; markers.forEach((m) => m.remove()); continue; }
+    const text = listMarker(props, counters);
+    const [marker, ...extra] = markers; // (a split paragraph may have taken a copy of the marker along)
+    extra.forEach((m) => m.remove());
+    if (marker && marker !== p.firstChild) p.prepend(marker);
+    if (marker) { if (marker.textContent !== text) marker.textContent = text; continue; }
+    const m = document.createElement("span");
+    m.className = "bullet";
+    m.contentEditable = "false";
+    m.textContent = text;
+    p.prepend(m);
+  }
+}
+
+/** ctx: { number: the slide's number (1, 2, …), locale } – for slide number and date fields. */
+export function renderText(container, text, ctx = {}) {
   container.replaceChildren();
   const counters = [];
   for (const para of text.paragraphs) {
@@ -65,24 +120,27 @@ export function renderText(container, text) {
     p.style.textAlign = ALIGN[para.align] || "left";
     const firstSize = (para.runs.find((r) => r.text) || para.runs[0] || { size: 18 }).size;
     p.style.fontSize = `${firstSize}pt`;
-    p.style.marginLeft = `${para.level * 0.5 + (para.bullet ? 0.3 : 0)}in`;
+    // the paragraph's properties travel with it while it is edited (the browser copies them to a paragraph split off with Enter)
+    p.dataset.level = String(para.level || 0);
+    p.dataset.bullet = para.bullet ? JSON.stringify(para.bullet) : "";
+    p.dataset.align = para.align || "l";
+    p.style.marginLeft = `${(para.level || 0) * 0.5 + (para.bullet ? 0.3 : 0)}in`;
     if (para.bullet) {
       const marker = document.createElement("span");
       marker.className = "bullet";
       marker.contentEditable = "false";
-      counters[para.level] = para.bullet.auto ? (counters[para.level] || 0) + 1 : 0;
-      counters.length = para.level + 1;
-      marker.textContent = para.bullet.auto ? autoNumber(para.bullet.auto, counters[para.level]) : para.bullet.char || "•";
+      marker.textContent = listMarker(para, counters);
       const run = para.runs[0] || {};
       if (run.color) marker.style.color = run.color;
       p.append(marker);
     } else {
-      counters.length = para.level;
+      counters.length = para.level || 0;
     }
     for (const run of para.runs) {
       if (run.text === "\n") { p.append(document.createElement("br")); continue; }
       const span = document.createElement("span");
-      span.textContent = run.text;
+      span.textContent = run.field ? fieldText(run, ctx) : run.text;
+      if (run.field) { span.dataset.field = run.field; if (run.fieldType) span.dataset.fieldType = run.fieldType; span.contentEditable = "false"; }
       span.style.fontSize = `${run.size}pt`;
       if (run.bold) span.style.fontWeight = "bold";
       if (run.italic) span.style.fontStyle = "italic";
@@ -123,8 +181,9 @@ export function readText(container, previous) {
       const text = node.textContent;
       if (!text) continue;
       const s = node.nodeType === Node.ELEMENT_NODE ? node.style : null;
+      const field = node.nodeType === Node.ELEMENT_NODE && node.dataset.field ? { field: node.dataset.field, ...(node.dataset.fieldType ? { fieldType: node.dataset.fieldType } : {}) } : {};
       runs.push({
-        ...base, text,
+        ...base, field: undefined, fieldType: undefined, text, ...field,
         ...(s ? {
           bold: s.fontWeight === "bold" || Number(s.fontWeight) >= 600 || node.closest("b,strong") !== null,
           italic: s.fontStyle === "italic" || node.closest("i,em") !== null,
@@ -135,7 +194,8 @@ export function readText(container, previous) {
         } : {}),
       });
     }
-    paragraphs.push({ align: old.align, level: old.level, bullet: old.bullet, runs: runs.length ? runs : [{ ...base, text: "" }] });
+    const props = paragraphProps(p); // (set while editing; otherwise the paragraph at the same place before)
+    paragraphs.push({ align: props ? props.align : old.align, level: props ? props.level : old.level, bullet: props ? props.bullet : old.bullet, runs: runs.length ? runs : [{ ...base, text: "" }] });
   });
   return { ...previous, paragraphs };
 }
@@ -145,12 +205,12 @@ function toHex(cssColor) {
   return m ? "#" + m.slice(1, 4).map((v) => Number(v).toString(16).padStart(2, "0")).join("").toUpperCase() : cssColor;
 }
 
-function textBox(el) {
+function textBox(el, ctx = {}) {
   const box = document.createElement("div");
   box.className = "text";
   const [l, t, r, b] = el.text.insets || [9.6, 4.8, 9.6, 4.8];
   Object.assign(box.style, { padding: `${t}px ${r}px ${b}px ${l}px`, justifyContent: ANCHOR[el.text.anchor] || "flex-start" });
-  renderText(box, el.text);
+  renderText(box, el.text, ctx);
   return box;
 }
 
@@ -180,7 +240,7 @@ function table(el) {
 }
 
 /** Render one element as an absolutely positioned div. */
-export function renderElement(el) {
+export function renderElement(el, ctx = {}) {
   const div = document.createElement("div");
   div.className = `el el-${el.type}${el.locked ? " locked" : ""}`;
   div.dataset.id = el.id;
@@ -208,19 +268,43 @@ export function renderElement(el) {
     img.src = el.image.src;
     img.alt = el.name || "";
     img.draggable = false;
+    const c = el.image.crop; // { l, t, r, b }: the parts cut off (fractions of the picture)
+    if (c && (c.l || c.t || c.r || c.b)) {
+      const fw = el.w / Math.max(0.05, 1 - c.l - c.r), fh = el.h / Math.max(0.05, 1 - c.t - c.b);
+      Object.assign(img.style, { width: `${fw}px`, height: `${fh}px`, left: `${-c.l * fw}px`, top: `${-c.t * fh}px`, right: "auto", bottom: "auto" });
+      div.style.overflow = "hidden";
+    }
     div.append(img);
   }
+  if (el.type === "media" && el.media) {
+    // video: its first frame (or poster) on the slide, playable with controls in the show (ctx.play); audio: a speaker symbol
+    const video = el.media.kind === "video";
+    const player = document.createElement(video ? "video" : "audio");
+    player.src = el.media.src;
+    player.preload = "metadata";
+    if (el.media.poster) player.poster = el.media.poster;
+    player.setAttribute("playsinline", "");
+    if (ctx.play) player.controls = true;
+    if (!video) {
+      const icon = document.createElement("span");
+      icon.className = "media-icon";
+      icon.textContent = "🔊";
+      div.append(icon);
+    }
+    div.append(player);
+    div.classList.toggle("playable", !!ctx.play);
+  }
   if (el.type === "table") div.append(table(el));
-  if (el.text) div.append(textBox(el));
+  if (el.text) div.append(textBox(el, ctx));
   return div;
 }
 
-/** Render a slide; returns a div of the deck's size (scale it with CSS transforms). */
-export function renderSlide(slide, deck) {
+/** Render a slide; returns a div of the deck's size (scale it with CSS transforms). ctx: { number, locale } for fields. */
+export function renderSlide(slide, deck, ctx = {}) {
   const div = document.createElement("div");
   div.className = "slide";
   Object.assign(div.style, { width: `${deck.width}px`, height: `${deck.height}px`, background: slide.background || "#FFFFFF" });
-  for (const el of slide.elements) div.append(renderElement(el));
+  for (const el of slide.elements) div.append(renderElement(el, ctx));
   return div;
 }
 
@@ -231,6 +315,11 @@ export const SLIDE_CSS = `
 .slide .el.locked { pointer-events: none; }
 .slide .el > svg { position: absolute; inset: 0; }
 .slide .el > img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.slide .el-media { background: #000; }
+.slide .el-media > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.slide .el-media > audio { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; display: none; }
+.slide .el-media.playable > video, .slide .el-media.playable > audio { pointer-events: auto; display: block; }
+.slide .el-media .media-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 48px; color: #fff; }
 .slide .text { position: absolute; inset: 0; display: flex; flex-direction: column; box-sizing: border-box; overflow: visible; outline: none; word-wrap: break-word; }
 .slide .text p { margin: 0; position: relative; }
 .slide .text .bullet { position: absolute; margin-left: -0.3in; width: 0.3in; user-select: none; }

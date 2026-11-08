@@ -1068,6 +1068,9 @@
 
   Suite.bridge.receive((picked) => openPicked(picked), { app: 'calendar' }); // files opened from other apps ("Open with…")
 
+  // the open file(s) for "Create an archive from the open files" (about dialog)
+  Suite.openFiles.register(() => state.cals.map((c) => ({ name: c.fileName || `${c.name.replace(/[\\/:*?"<>|]/g, '_')}.ics`, bytes: new TextEncoder().encode(calendarText(c)), dirty: !!c.dirty })));
+
   // for tests
   window.CAL = { state, history, step, calendarText, addCalendar, parseIcs, occurrences, checkReminders };
   document.body.dataset.ready = 'true';

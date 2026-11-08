@@ -1,19 +1,27 @@
 {
   "out": "esm/univer-docs",
   "packages": {
-    "@univerjs/presets": "1",
-    "@univerjs/preset-docs-core": "1",
-    "react": "18",
-    "react-dom": "18",
-    "rxjs": "7",
-    "@univerjs/preset-docs-drawing": "1"
+    "@univerjs/presets": "1.0.4",
+    "@univerjs/preset-docs-core": "1.0.4",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "rxjs": "7.8.2",
+    "@univerjs/preset-docs-drawing": "1.0.4",
+    "@univerjs/preset-docs-hyper-link": "1.0.4",
+    "@univerjs/ui": "1.0.4",
+    "@univerjs/preset-docs-thread-comment": "1.0.4"
   },
   "modules": [
     "@univerjs/preset-docs-core/locales/en-US",
     "@univerjs/preset-docs-core/locales/de-DE",
     "react-dom/client",
     "@univerjs/preset-docs-drawing/locales/en-US",
-    "@univerjs/preset-docs-drawing/locales/de-DE"
+    "@univerjs/preset-docs-drawing/locales/de-DE",
+    "@univerjs/preset-docs-hyper-link/locales/en-US",
+    "@univerjs/preset-docs-hyper-link/locales/de-DE",
+    "@univerjs/ui/facade",
+    "@univerjs/preset-docs-thread-comment/locales/en-US",
+    "@univerjs/preset-docs-thread-comment/locales/de-DE"
   ],
   "exclude": [
     "@univerjs/engine-render/lib/es/*"
@@ -28,6 +36,12 @@
     ],
     "@univerjs/preset-docs-drawing": [
       "lib/index.css"
+    ],
+    "@univerjs/preset-docs-hyper-link": [
+      "lib/index.css"
+    ],
+    "@univerjs/preset-docs-thread-comment": [
+      "lib/index.css"
     ]
   },
   "stub": {
@@ -36,5 +50,17 @@
       "regex": "^.*/lib/es/(.+)-[A-Za-z0-9_-]{8}\\.js$",
       "pascal": true
     }
+  },
+  "patches": {
+    "@univerjs/docs-hyper-link-ui": [
+      [
+        "function Fn(i){return/^[a-zA-Z]+:\\/\\//.test(i)}",
+        "function Fn(i){return/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(i)}"
+      ],
+      [
+        "`mailto://${i}`",
+        "`mailto:${i}`"
+      ]
+    ]
   }
 }

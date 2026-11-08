@@ -675,6 +675,22 @@
     "embed": false,
     "size": 1162
    }
+  ],
+  "overview": [
+   {
+    "file": "en/overview/office.suite.zip",
+    "lang": "en",
+    "title": "Workspace with a text, a document, a spreadsheet and a diagram (F1 → Workspace → Open workspace…, in the overview)",
+    "embed": false,
+    "size": 45493
+   },
+   {
+    "file": "de/overview/buero.suite.zip",
+    "lang": "de",
+    "title": "Arbeitsbereich mit Text, Dokument, Tabelle und Diagramm (F1 → Arbeitsbereich → Arbeitsbereich öffnen…, in der Übersicht)",
+    "embed": false,
+    "size": 45544
+   }
   ]
  }
 }

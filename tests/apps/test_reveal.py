@@ -103,7 +103,7 @@ def test_edit_slides_and_save_presentation(app_page, tmp_path, browser):
     deck_page.on("pageerror", lambda e: errors.append(str(e)))
     deck_page.on("request", lambda r: not r.url.startswith(("file:", "data:", "blob:", "about:")) and errors.append(r.url))
     deck_page.goto(saved.as_uri())
-    deck_page.wait_for_function("window.Reveal && Reveal.isReady()")
+    deck_page.wait_for_function("() => window.Reveal && Reveal.isReady()")
     assert deck_page.evaluate("Reveal.getTotalSlides()") == 3
     deck_page.keyboard.press("ArrowRight")
     assert deck_page.evaluate("Reveal.getIndices().h") == 1
@@ -299,7 +299,7 @@ def test_math(app_page, tmp_path, browser):
     context = browser.new_context(offline=True)
     show = context.new_page()
     show.goto(path.as_uri())
-    show.wait_for_function("document.body.dataset.math === 'rendered'", timeout=15000)
+    show.wait_for_function("() => document.body.dataset.math === 'rendered'", timeout=15000)
     assert show.locator(".katex").count() >= 3
     context.close()
     assert page.errors == []

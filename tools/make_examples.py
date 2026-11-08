@@ -705,12 +705,28 @@ def network_connections(lang, app):
              T(lang, "Connections file (Connections: Open…)", "Verbindungsdatei (Verbindungen: Öffnen…)"), False)]
 
 
+def workspace(lang):
+    """A workspace of the overview (*.suite.zip, shared/js/shell.js: Suite.workspace): some of the other examples in tabs."""
+    tabs = [("texteditor", texteditor(lang)[2:4]), ("document", document(lang)[:1]), ("spreadsheet", spreadsheet(lang)[:1]), ("diagram", diagram(lang)[:1])]
+    files = [{"path": f"{app}/{name}", "app": app, "name": name, "tab": i, "data": data} for i, (app, made) in enumerate(tabs) for name, data, _, _ in made]
+    manifest = {"format": "portable-web-app-suite-workspace", "version": 1, "created": "2026-01-01T00:00:00.000Z", "app": "overview",
+                "files": [{k: f[k] for k in ("path", "app", "name", "tab")} for f in files], "activeTab": 1, "settings": None}
+    out = io.BytesIO()
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr(zipfile.ZipInfo("workspace.json", FIXED), json.dumps(manifest, indent=2, ensure_ascii=False), compress_type=zipfile.ZIP_DEFLATED)
+        for f in files:
+            z.writestr(zipfile.ZipInfo(f["path"], FIXED), f["data"], compress_type=zipfile.ZIP_DEFLATED)
+    return [(T(lang, "office.suite.zip", "buero.suite.zip"), out.getvalue(),
+             T(lang, "Workspace with a text, a document, a spreadsheet and a diagram (F1 → Workspace → Open workspace…, in the overview)",
+               "Arbeitsbereich mit Text, Dokument, Tabelle und Diagramm (F1 → Arbeitsbereich → Arbeitsbereich öffnen…, in der Übersicht)"), False)]
+
+
 APPS = {
     "texteditor": texteditor, "hexeditor": hexeditor, "archive": archive, "mediaplayer": mediaplayer, "audioeditor": audioeditor,
     "videoeditor": videoeditor, "imageeditor": imageeditor, "diagram": diagram, "keepass": keepass, "spreadsheet": spreadsheet,
     "document": document, "presentation": presentation, "reveal": reveal, "pdfviewer": None, "calendar": calendar, "mail": mail,
     "dbtool": dbtool, "ftp": lambda lang: network_connections(lang, "ftp"), "ssh": lambda lang: network_connections(lang, "ssh"),
-    "http": http, "webinspector": webinspector, "barcode": barcode, "notebook": notebook,
+    "http": http, "webinspector": webinspector, "barcode": barcode, "notebook": notebook, "overview": workspace,
 }
 
 

@@ -1,15 +1,32 @@
 /*
- * Table of contents for Univer documents. Univer Docs has no fields, so the table is ordinary text: one paragraph per heading,
+ * Table of contents for Univer documents (and the section settings of a document). Univer Docs has no TOC field, so the table is ordinary text: one paragraph per heading,
  * indented by level, whose text is a link to "#toc-<n>" (the n-th heading of the document). These links mark the table, so it can be
  * found and updated, and the DOCX/ODT exports turn them into internal links to bookmarks on the headings.
  *
  *   headings(body)                 -> [{ start, end, level, text, anchor }]   (Title/Subtitle are not listed)
  *   tocRange(body)                 -> { start, end } of the table's paragraphs, or null
  *   insertToc(data, offset, title) -> new document data with a (new or updated) table at the paragraph of offset
+ *   sectionConfig(data)            -> the page settings, with the header and footer settings of the body's section
  */
 
 const CONTROL = /[\x00-\x1f]/g;
 export const TOC_PREFIX = "#toc-";
+
+// header and footer settings that Univer keeps on a section (the body's section break) when they are made in the editor
+const SECTION_KEYS = ["defaultHeaderId", "defaultFooterId", "firstPageHeaderId", "firstPageFooterId", "evenPageHeaderId", "evenPageFooterId",
+  "useFirstPageHeaderFooter", "evenAndOddHeaders", "marginHeader", "marginFooter"];
+
+/**
+ * The page settings of a document: documentStyle, overridden by the header and footer settings of the body's last section break
+ * (Univer's header & footer tab writes them there; files read by the suite have them in documentStyle).
+ */
+export function sectionConfig(data) {
+  const config = { ...(data.documentStyle || {}) };
+  const breaks = (data.body && data.body.sectionBreaks) || [];
+  const last = breaks[breaks.length - 1] || {};
+  for (const key of SECTION_KEYS) if (last[key] !== undefined && last[key] !== null && last[key] !== "") config[key] = last[key];
+  return config;
+}
 
 /** Paragraph boundaries: [{ start, end (index of the \r), paragraph }]. */
 export function paragraphs(body) {

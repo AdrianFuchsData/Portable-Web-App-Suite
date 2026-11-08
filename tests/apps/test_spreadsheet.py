@@ -327,3 +327,308 @@ def test_sort_and_filter(app_page, tmp_path):
     open_file(page2, saved)
     assert page2.evaluate("SS.workbook.getActiveSheet().getFilter().getFilteredOutRows()") == [2, 3, 5]
     assert page.errors == [] and page2.errors == []
+
+
+def make_links_xlsx(path):
+    from openpyxl.worksheet.hyperlink import Hyperlink
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Start"
+    ws["A1"] = "Web"
+    ws["A1"].hyperlink = "https://example.com/page"
+    ws["A1"].hyperlink.tooltip = "Example page"
+    ws["A2"] = "Mail"
+    ws["A2"].hyperlink = "mailto:info@example.com"
+    ws["A3"] = "Jump"
+    ws["A3"].hyperlink = Hyperlink(ref="A3", location="'Daten 2'!B3")
+    ws["A4"] = 42
+    wb.create_sheet("Daten 2")["B3"] = "Ziel"
+    wb.save(path)
+    return path
+
+
+LINKS = "a1 => SS.workbook.getActiveSheet().getRange(a1).getHyperLinks().map((l) => [l.url, l.label])"
+
+
+def test_hyperlinks(app_page, tmp_path):
+    page = ready(app_page)
+    open_file(page, make_links_xlsx(tmp_path / "links.xlsx"))
+    second = page.evaluate("SS.workbook.getSheetByName('Daten 2').getSheetId()")
+    assert page.evaluate(LINKS, "A1") == [["https://example.com/page", "Web"]]
+    assert page.evaluate(LINKS, "A2") == [["mailto:info@example.com", "Mail"]]
+    assert page.evaluate(LINKS, "A3") == [[f"#gid={second}&range=B3", "Jump"]]  # a place in the workbook
+    assert page.evaluate(LINKS, "A4") == []
+
+    # Ctrl+K opens the link dialog for the selected cell
+    page.evaluate("SS.workbook.getActiveSheet().getRange('B1').activate()")
+    page.keyboard.press("Control+k")
+    page.get_by_placeholder("Enter label").fill("Suite")
+    page.get_by_placeholder("Enter link").fill("https://suite.example.org/")
+    page.get_by_role("button", name="Confirm").click()
+    page.wait_for_timeout(500)
+    assert page.evaluate(LINKS, "B1") == [["https://suite.example.org/", "Suite"]]
+    # an e-mail address becomes a mailto: link (patched in Univer, which wrote mailto://)
+    page.evaluate("SS.workbook.getActiveSheet().getRange('B2').activate()")
+    page.keyboard.press("Control+k")
+    page.get_by_placeholder("Enter label").fill("Write")
+    page.get_by_placeholder("Enter link").fill("info@example.com")
+    page.get_by_role("button", name="Confirm").click()
+    page.wait_for_timeout(500)
+    assert page.evaluate(LINKS, "B2") == [["mailto:info@example.com", "Write"]]
+    page.evaluate(f"async () => {{ const r = SS.workbook.getActiveSheet().getRange('C1'); r.setValue('x'); await r.setHyperLink('#gid={second}&range=B3', 'To the data'); }}")
+    # a link to a defined name points to its range in the file
+    page.evaluate("""async () => { const wb = SS.workbook; wb.insertDefinedName('Target', "'Daten 2'!$B$3:$C$4");
+      const names = JSON.parse(wb.save().resources.find((r) => r.name === 'SHEET_DEFINED_NAME_PLUGIN').data);
+      const id = Object.values(names).find((n) => n.name === 'Target').id;
+      const r = wb.getActiveSheet().getRange('D1'); r.setValue('x'); await r.setHyperLink('#rangeid=' + id, 'Named'); }""")
+    page.wait_for_timeout(300)
+
+    with page.expect_download() as d:
+        page.click("[data-testid=save]")
+    saved = tmp_path / "saved.xlsx"
+    d.value.save_as(saved)
+    ws = openpyxl.load_workbook(saved)["Start"]
+    link = lambda a1: (ws[a1].value, ws[a1].hyperlink and (ws[a1].hyperlink.target, ws[a1].hyperlink.location, ws[a1].hyperlink.tooltip))
+    assert link("A1") == ("Web", ("https://example.com/page", None, "Example page"))
+    assert link("A2") == ("Mail", ("mailto:info@example.com", None, None))
+    assert link("A3") == ("Jump", (None, "'Daten 2'!B3", None))
+    assert link("A4") == (42, None)
+    assert link("B1") == ("Suite", ("https://suite.example.org/", None, None))
+    assert link("C1") == ("To the data", (None, "'Daten 2'!B3", None))
+    assert link("D1") == ("Named", (None, "'Daten 2'!B3:C4", None))
+    assert ws["B1"].font.underline and ws["B1"].font.color.rgb == "FF0563C1"  # looks like a link in Excel
+
+    # and opened again
+    page2 = ready(app_page)
+    open_file(page2, saved)
+    assert page2.evaluate(LINKS, "B1") == [["https://suite.example.org/", "Suite"]]
+    assert page2.evaluate(LINKS, "C1")[0][0].startswith("#gid=")
+    assert page.errors == [] and page2.errors == []
+
+
+def test_find_replace_in_all_sheets_and_freeze(app_page, tmp_path):
+    page = ready(app_page)
+    page.evaluate("""() => { const wb = SS.workbook; wb.getActiveSheet().getRange('A1').setValue('apple');
+      const two = wb.insertSheet('Two'); two.getRange('B5').setValue('green apple'); wb.setActiveSheet(wb.getSheets()[0]); }""")
+    page.wait_for_timeout(500)
+    page.evaluate("SS.workbook.getActiveSheet().getRange('C3').activate()")
+    page.keyboard.press("Control+h")  # find and replace (Ctrl+F: find)
+    page.get_by_placeholder("Find", exact=True).fill("apple")
+    page.get_by_placeholder("Input Replace String").fill("pear")
+    page.get_by_text("Current Sheet", exact=True).click()
+    page.get_by_text("Workbook", exact=True).click()
+    page.get_by_role("button", name="Find", exact=True).click()
+    expect(page.get_by_text("1/2", exact=True)).to_be_visible()  # a match in each sheet
+    page.get_by_role("button", name="Replace All").click()
+    ok = page.get_by_role("button", name="OK")
+    if ok.count():
+        ok.first.click()
+    page.wait_for_timeout(500)
+    assert page.evaluate("SS.workbook.getSheets().map((s) => s.getRange('A1:C6').getValues().flat().filter(Boolean))") == [["pear"], ["green pear"]]
+    page.get_by_role("button", name="Close").click()
+
+    # View → Freeze → first row
+    page.get_by_text("View", exact=True).first.click()
+    page.locator("[data-u-command='sheet.toolbar.sheet-frozen']:visible").first.click()
+    page.get_by_text("Freeze first row", exact=True).click()
+    page.wait_for_timeout(300)
+    assert page.evaluate("SS.workbook.getActiveSheet().getFreeze()")["ySplit"] == 1
+    with page.expect_download() as d:
+        page.click("[data-testid=save]")
+    saved = tmp_path / "saved.xlsx"
+    d.value.save_as(saved)
+    wb = openpyxl.load_workbook(saved)
+    assert wb.worksheets[0]["A1"].value == "pear" and wb["Two"]["B5"].value == "green pear"
+    assert wb.worksheets[0].freeze_panes == "A2"
+    assert page.errors == []
+
+
+def make_outline_xlsx(path):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Outline"
+    for r in range(1, 8):
+        ws.cell(r, 1, f"row {r}")
+    for r in (2, 3, 4):
+        ws.row_dimensions[r].outline_level = 2 if r == 3 else 1
+        ws.row_dimensions[r].hidden = True
+    ws.column_dimensions["C"].outline_level = 1
+    ws.column_dimensions["D"].outline_level = 1
+    wb.save(path)
+    return path
+
+
+ROWS = "() => { const ws = SS.workbook.getActiveSheet(); const d = ws.getSheet().getConfig().rowData; return [1, 2, 3, 4, 5].map((r) => [(d[r] && d[r].custom && d[r].custom.outline) || 0, !!(d[r] && d[r].hd)]); }"
+COLUMNS = "() => { const d = SS.workbook.getActiveSheet().getSheet().getConfig().columnData; return [1, 2, 3, 4, 5].map((c) => (d[c] && d[c].custom && d[c].custom.outline) || 0); }"
+
+
+def group_menu(page, entry):
+    page.get_by_text("Data", exact=True).first.click()
+    button = page.locator("[data-u-command='ss-outline-menu']:visible")
+    if not button.count():  # on a phone the last buttons of the tab are in the ⋮ menu
+        page.locator("[data-u-comp=ribbon-toolbar] .univerjs-icon-more-vertical-icon:visible").first.click()
+    button.first.click()
+    page.locator("[role=menu]").get_by_text(entry, exact=True).click()
+    page.wait_for_timeout(400)
+
+
+def test_row_and_column_groups(app_page, tmp_path):
+    page = ready(app_page)
+    open_file(page, make_outline_xlsx(tmp_path / "outline.xlsx"))
+    # Excel's outline levels and collapsed (hidden) rows
+    assert page.evaluate(ROWS) == [[1, True], [2, True], [1, True], [0, False], [0, False]]
+    assert page.evaluate(COLUMNS) == [0, 1, 1, 0, 0]
+    # Show details at the summary row below the group
+    page.evaluate("SS.workbook.getActiveSheet().getRange('A5').activate()")
+    group_menu(page, "Show details")
+    assert page.evaluate(ROWS) == [[1, False], [2, False], [1, False], [0, False], [0, False]]
+    # the inner group (row 3) is hidden on its own, the selection moves to its summary row
+    page.evaluate("SS.workbook.getActiveSheet().getRange('A3').activate()")
+    group_menu(page, "Hide details")
+    assert page.evaluate(ROWS) == [[1, False], [2, True], [1, False], [0, False], [0, False]]
+    assert page.evaluate("SS.workbook.getActiveSheet().getSelection().getActiveRange().getA1Notation()") == "A4"
+    group_menu(page, "Show details")
+    # group and ungroup the selection; undo
+    page.evaluate("SS.workbook.getActiveSheet().getRange('E1:F1').activate()")
+    group_menu(page, "Group columns")
+    assert page.evaluate(COLUMNS) == [0, 1, 1, 1, 1]
+    page.keyboard.press("Control+z")
+    page.wait_for_timeout(300)
+    assert page.evaluate(COLUMNS) == [0, 1, 1, 0, 0]
+    page.evaluate("SS.workbook.getActiveSheet().getRange('A3:A4').activate()")
+    group_menu(page, "Ungroup rows")
+    assert page.evaluate(ROWS) == [[1, False], [1, False], [0, False], [0, False], [0, False]]
+    # inserting rows above moves the group along
+    page.evaluate("SS.workbook.getActiveSheet().insertRowsBefore(0, 1)")
+    page.wait_for_timeout(300)
+    assert page.evaluate(ROWS) == [[0, False], [1, False], [1, False], [0, False], [0, False]]
+
+    with page.expect_download() as d:
+        page.click("[data-testid=save]")
+    saved = tmp_path / "saved.xlsx"
+    d.value.save_as(saved)
+    ws = openpyxl.load_workbook(saved).active
+    assert [ws.row_dimensions[r].outline_level for r in range(1, 7)] == [0, 0, 1, 1, 0, 0]
+    levels = {}  # (a <col> element may cover several columns)
+    for dim in ws.column_dimensions.values():
+        for c in range(dim.min or 0, (dim.max or 0) + 1):
+            levels[c] = dim.outline_level
+    assert [levels.get(c, 0) for c in (2, 3, 4, 5)] == [0, 1, 1, 0]
+
+    # remove all groups of the sheet
+    group_menu(page, "Remove all groups of the sheet")
+    assert page.evaluate(ROWS) == [[0, False]] * 5 and page.evaluate(COLUMNS) == [0] * 5
+    assert page.errors == []
+
+
+def make_notes_xlsx(path):
+    from openpyxl.comments import Comment
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws["A1"] = "Total"
+    ws["A1"].comment = Comment("Sum of all rows\nchecked", "Anna")
+    ws["C3"].comment = Comment("Note on an empty cell", "Bob")  # (openpyxl: plain text, xl/comments/comment1.xml)
+    wb.save(path)
+    return path
+
+
+NOTES = "() => SS.workbook.getActiveSheet().getNotes().map((n) => [n.row, n.col, n.note]).sort((a, b) => a[0] - b[0] || a[1] - b[1])"
+
+
+def test_notes(app_page, tmp_path):
+    page = ready(app_page)
+    open_file(page, make_notes_xlsx(tmp_path / "notes.xlsx"))
+    assert page.evaluate(NOTES) == [[0, 0, "Sum of all rows\nchecked"], [2, 2, "Note on an empty cell"]]
+    # a new note from the context menu of a cell
+    page.evaluate("SS.workbook.getActiveSheet().getRange('E5').activate()")
+    box = page.locator("[data-testid=sheet] canvas").last.bounding_box()
+    page.mouse.click(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2, button="right")
+    page.get_by_text("Add Note", exact=True).click()
+    page.wait_for_timeout(400)
+    page.keyboard.type("Typed note")
+    page.evaluate("SS.workbook.getActiveSheet().getRange('A10').activate()")
+    page.wait_for_timeout(400)
+    notes = page.evaluate(NOTES)
+    [typed] = [(r, c) for r, c, text in notes if text == "Typed note"]  # (at the cell that was right-clicked)
+    assert len(notes) == 3, notes
+    # notes move along with their cells; undo
+    page.evaluate("SS.workbook.getActiveSheet().insertRowsBefore(0, 1)")
+    page.wait_for_timeout(300)
+    assert page.evaluate(NOTES)[0] == [1, 0, "Sum of all rows\nchecked"]
+    page.evaluate("SS.univerAPI.executeCommand('univer.command.undo')")
+    page.wait_for_timeout(300)
+    assert page.evaluate(NOTES)[0] == [0, 0, "Sum of all rows\nchecked"]
+
+    with page.expect_download() as d:
+        page.click("[data-testid=save]")
+    saved = tmp_path / "saved.xlsx"
+    d.value.save_as(saved)
+    ws = openpyxl.load_workbook(saved).active
+    found = {c.coordinate: c.comment.text for row in ws.iter_rows() for c in row if c.comment}
+    assert found["A1"] == "Sum of all rows\nchecked" and found["C3"] == "Note on an empty cell"
+    assert found[openpyxl.utils.get_column_letter(typed[1] + 1) + str(typed[0] + 1)] == "Typed note"
+    # and opened again (ExcelJS's file this time)
+    page2 = ready(app_page)
+    open_file(page2, saved)
+    assert len(page2.evaluate(NOTES)) == 3
+    assert page.errors == [] and page2.errors == []
+
+
+def tools_menu(page, entry):
+    page.get_by_text("Data", exact=True).first.click()
+    button = page.locator("[data-u-command='ss-tools-menu']:visible")
+    if not button.count():  # on a phone the last buttons of the tab are in the ⋮ menu
+        page.locator("[data-u-comp=ribbon-toolbar] .univerjs-icon-more-vertical-icon:visible").first.click()
+    button.first.click()
+    page.locator("[role=menu]").get_by_text(entry, exact=True).click()
+
+
+def test_remove_duplicates_and_text_to_columns(app_page, tmp_path):
+    import datetime
+    page = ready(app_page)
+    page.evaluate("""() => { const ws = SS.workbook.getActiveSheet();
+      ws.getRange('A1:C6').setValues([['Name', 'City', 'Amount'], ['Anna', 'Wien', 10], ['Bob', 'Graz', 20], ['anna ', 'wien', 30], ['Bob', 'Graz', 20], ['Cleo', 'Linz', 5]]);
+      ws.getRange('E1:E3').setValues([['1;Wien;2026-10-16'], ['"x;y";Graz;3,5'], ['7;;Linz']]); ws.getRange('B3').activate(); }""")
+    page.wait_for_timeout(300)
+    # a cell stands for the table around it; the first row is recognised as headers
+    tools_menu(page, "Remove duplicates…")
+    expect(page.locator("[data-testid=dedupe-dialog]")).to_contain_text("A1:C6")
+    expect(page.locator("[data-testid=dedupe-header]")).to_be_checked()
+    expect(page.locator("[data-testid=dedupe-dialog] label").filter(has_text="C – Amount")).to_be_visible()
+    page.locator("[data-testid=dedupe-column]").nth(2).uncheck()  # compare name and city only (case and spaces do not count)
+    page.click("[data-testid=dedupe-ok]")
+    expect(page.locator("[data-testid=toast]").last).to_have_text("2 duplicate rows removed, 3 rows remain.")
+    assert page.evaluate("SS.workbook.getActiveSheet().getRange('A1:C6').getValues()") == [
+        ["Name", "City", "Amount"], ["Anna", "Wien", 10], ["Bob", "Graz", 20], ["Cleo", "Linz", 5], [None] * 3, [None] * 3]
+    page.evaluate("SS.univerAPI.executeCommand('univer.command.undo')")  # one step
+    page.wait_for_timeout(300)
+    assert page.evaluate("SS.workbook.getActiveSheet().getRange('A4:C4').getValues()") == [["anna ", "wien", 30]]
+
+    # text to columns: the separator is detected, quotes and the decimal comma work, numbers and dates are recognised
+    page.evaluate("SS.workbook.getActiveSheet().getRange('E1:E3').activate()")
+    tools_menu(page, "Text to columns…")
+    expect(page.locator("[data-testid=split-separator]")).to_have_value(";")
+    expect(page.locator("[data-testid=split-preview] tr").first.locator("td")).to_have_text(["1", "Wien", "2026-10-16"])
+    page.click("[data-testid=split-ok]")
+    page.wait_for_timeout(500)
+    assert page.evaluate("SS.workbook.getActiveSheet().getRange('E1:G3').getValues()") == [[1, "Wien", "2026-10-16"], ["x;y", "Graz", 3.5], [7, None, "Linz"]]
+    # cells to the right are only replaced after a question
+    page.evaluate("SS.workbook.getActiveSheet().getRange('I1:I2').setValues([['a b'], ['c d']]); SS.workbook.getActiveSheet().getRange('J1').setValue('keep')")
+    page.evaluate("SS.workbook.getActiveSheet().getRange('I1:I2').activate()")
+    tools_menu(page, "Text to columns…")
+    page.select_option("[data-testid=split-separator]", " ")
+    page.click("[data-testid=split-ok]")
+    page.get_by_role("button", name="Cancel").last.click()  # (the question)
+    assert page.evaluate("SS.workbook.getActiveSheet().getRange('J1').getValue()") == "keep"
+    page.click("[data-testid=split-ok]")
+    page.locator("[data-testid=confirm-ok]").click()
+    page.wait_for_timeout(300)
+    assert page.evaluate("SS.workbook.getActiveSheet().getRange('I1:J2').getValues()") == [["a", "b"], ["c", "d"]]
+
+    with page.expect_download() as d:
+        page.click("[data-testid=save]")
+    saved = tmp_path / "saved.xlsx"
+    d.value.save_as(saved)
+    ws = openpyxl.load_workbook(saved).active
+    assert ws["G1"].value == datetime.datetime(2026, 10, 16) and ws["G2"].value == 3.5 and ws["E2"].value == "x;y"
+    assert page.errors == []

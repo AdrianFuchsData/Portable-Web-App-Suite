@@ -133,6 +133,13 @@ the text of the GitHub release (`gh release create … --notes-file`): what chan
   groups it writes the group `spaces` (tab, no-break, narrow, thin, en, em and zero-width spaces, soft hyphen), which `symbols.js` shows
   with labels (`VISIBLE`).
 
+- Fonts: `tools/vendor_fonts.py` writes `vendor/fonts/` from the Fontsource packages (jsDelivr; all OFL-1.1, versions in `lock.json`,
+  licence texts in `licenses/`): `fonts.css` (`@font-face` rules with the WOFF2 data as `data:` URLs – 400/700, normal/italic, subsets
+  latin and latin-ext with their `unicode-range`, one rule per line), `fonts-mono.css` (the monospaced families) and `fonts.json` (families,
+  categories, aliases). The first line of the CSS is a marker (`/* suite-fonts */`, `/* suite-fonts-mono */`): `build.py` empties these
+  blocks in the apps it bundles into the overview (`FONTS_BLOCK_RE`), and the overview's `appHtml` puts its own copy back (the monospaced
+  rules by family), so the overview holds the fonts once. The about dialog lists each family with its licence (`components`).
+
 ## Shared modules
 
 The shared modules in the first table are classic scripts that extend the global `Suite` object; the second table lists
@@ -167,7 +174,7 @@ ES modules that applications import through their import maps.
 | `cm-symbols.js` | Emoji and symbols in CodeMirror editors (adapter for `symbols.js`) |
 | `cm-indent.js` | Tab key of the CodeMirror editors: indent / insert up to the next stop, `Shift+Tab`, `Ctrl+Alt+I` inserts `\t` |
 | `spell.js`, `spell-dom.js`, `cm-spell.js` | Spell checking: Hunspell service, marks and menu in text fields and contenteditable elements, header selector; CodeMirror extension (see *Spell checking*) |
-| `odt.js`, `doc-toc.js`, `doc-html.js` | Document editor: OpenDocument text, table of contents, HTML rendering for printing and saving |
+| `odt.js`, `doc-toc.js`, `doc-html.js`, `doc-comments.js` | Document editor: OpenDocument text, table of contents, HTML rendering for printing and saving, comments |
 | `deck-convert.js` | Conversion between PowerPoint decks and web slides |
 | `python-widgets.py` | Interactive widgets of the notebook (installed as the Python module `ipywidgets`) |
 
@@ -232,6 +239,41 @@ with punctuation before a typed space); not in code editors. Settings: `suite.sy
 `tests/apps/test_symbols.py` (search in English and German, keyboard, recently used, skin tones, inline codes and
 suggestions, times and URLs left alone, Alt+X, rich text, settings and their persistence, code editor with undo, opted-out
 fields, phone sheet).
+
+### Fonts
+
+`shared/js/fonts.js` (every app, after `shell.js`): `Suite.fonts.families(category)` lists the bundled families whose rules are in the
+page (document editor, spreadsheet, presentation, image editor and the overview include `fonts.css`; text editor and SSH
+`fonts-mono.css`) and the imported ones. Aliases are registered with the FontFace API from the bundled rules, so the data is in the file
+once: Liberation Sans/Serif/Mono → Arimo/Tinos/Cousine (Liberation 2 is built from them), and – with `local()` first, so an installed
+original wins – Calibri → Carlito, Cambria → Caladea, Arial and Helvetica → Arimo, Times New Roman → Tinos, Courier New → Cousine.
+Imported fonts (TTF/OTF/TTC/WOFF/WOFF2) are stored in IndexedDB (`suite-fonts`, shared by the apps of a browser profile) with family,
+weight and style from the `name` (16/1, 17/2) and `OS/2` tables (`usWeightClass`, `fsSelection`; WOFF tables inflated with
+`DecompressionStream`; WOFF2 – brotli – by its file name), checked by loading them, and added with `FontFace` at every start; a
+`storage` event (`suite.fonts.changed`) tells the other open apps. The source `fonts` of `Suite.preferences` writes them as base64 into
+`apps.suite.settings.fonts` of a settings file (also KeePass and workspaces; non-sensitive sources are preselected in the workspace
+dialog). `cssFor(names)` gives the rules of some families for print frames (`srcdoc` frames do not see the page's fonts). The document
+editor and the spreadsheet add the families to Univer's font menu (`IFontService.addFont`); the image editor waits for
+`document.fonts.load` before drawing text on the canvas. Apps without bundled fonts got `font-src data:` in their CSP for imported fonts.
+A question of `Suite.shell.confirm` is now rendered after the about dialog, so that it comes in front of it. Test:
+`tests/apps/test_fonts.py`.
+
+### Charts
+
+`shared/js/charts.js` (spreadsheet, presentation): Univer's charts belong to Univer Pro, so the suite has its own. The model
+`{ type, title, categories, series: [{ name, values, color }], legend, stacked, labels, source }` (`normalize`) is drawn on a canvas
+(`draw`: value axis with a "nice" scale, gridlines, clustered or stacked columns and bars – bars bottom-up as in Office –, lines with
+markers, areas, pie and doughnut with percentages, scatter on a numeric x axis; legend right or bottom; the bundled Carlito, loaded
+early, as Office's Calibri). `toPng` draws at twice the size with `canvas.toDataURL` (synchronous, so importers can use it) and adds a
+`tEXt` chunk `suite-chart` with the model (base64 of UTF-8 JSON); `modelOf` reads it back (cached per source). `fromRows` makes a model of
+cell values (text in the first row/column = names), `fromChartXml` of a DrawingML chart part (`barChart` with `barDir`/`grouping`,
+`line`, `area`, `pie`, `doughnut`, `scatter`, also 3-D; series names, categories and values from `strCache`/`numCache`, or – XLSX
+without caches, e.g. openpyxl – through a `resolve(formula)` from the workbook's cells; `srgbClr` fills, title, legend position). The
+dialog (`edit`) is a Preact form with a live preview and a data grid. The spreadsheet inserts a chart as an over-grid picture next to
+the selected table (`insertChart`, with `source` = sheet and range for *Update from cells*) and replaces the picture's source on edit;
+the XLSX reader (`readCharts`/`importCharts` in `univer-xlsx.js`) follows sheet → drawing → chart relationships and places the charts
+like pictures. The presentation editor adds them as image elements; `pptx-import.js` turns `graphicFrame`s with a chart into such
+elements (`readChart`). Office files get the charts as pictures (no native chart parts yet). Test: `tests/apps/test_charts.py`.
 
 ### Colour picker
 
@@ -363,9 +405,30 @@ and `notes` are stored in the standard fields, other properties as custom fields
 The app `suite` holds what all apps share: `settings.relay` and `settings.preferences`, the localStorage entries of the
 suite (keys `suite.*` and `<app>.prefs`, without `suite.mediaplayer.resume`) as strings. `Suite.preferences` (end of
 `shared/js/shell.js`) collects and applies them; the about dialog exports them as a JSON file in this format
-(`suite-settings.json`, only `apps.suite.settings.preferences`) and imports the same part of any JSON app data file, then
-asks to reload. `Suite.appdata` writes the current preferences into every connection file it saves and, when a file
-with different preferences is opened, shows a banner to apply them. Test: `tests/apps/test_preferences.py`.
+(`suite-settings.json`, only `apps.suite.settings.preferences`) or as a KeePass store of `shared/js/settings.js`
+(`suite-settings.kdbx`, the same data as attachment of the entry "Settings"; every app loads kdbxweb, hash-wasm's Argon2 –
+CSP `'wasm-unsafe-eval'` –, `kdbx.js` and `settings.js` for this), and imports the same part of any app data file (JSON or
+KeePass with its password), then asks to reload. The export and import list what is included: preference groups (`groupOf`: keys `suite.<app>…` and
+`<app>.prefs` belong to that application, the rest to "general"; an application offers its own group and the general one, the
+overview all) and the sources that applications register with `Suite.preferences.register({ id, label, sensitive, available, write,
+count, read })` – `appdata.js` registers the connections of its application and the relay settings as sensitive sources (a JSON
+export with one of them needs a confirmation). The imported preferences are also put into `sessionStorage` before the
+reload and written again at the start of `i18n.js`, in case the reloaded page starts without the latest localStorage writes. `Suite.appdata` writes the current preferences into every connection file it saves and, when a file
+with different preferences is opened, shows a banner to apply them. Test: `tests/apps/test_preferences.py`. `Suite.openFiles` (also in `shell.js`) builds the archive of the open files: applications register a provider with
+`Suite.openFiles.register(async () => [{ name, bytes, dirty }])` (the current content in the format they save; registered at the
+end of each app's `main.js`), `list()` collects them (the overview asks the shell of each tab's frame and puts the files into a
+folder per application) and makes names unique, `zip(files)` writes a ZIP (deflate via `CompressionStream('deflate-raw')` when it
+is smaller, CRC-32, UTF-8 names) and `createArchive(files)` opens it in the archive manager via `Suite.bridge.openIn` – the overview
+sets `setOpener` to open an archive tab instead –, or downloads it when that fails. Test: `tests/apps/test_open_files.py`. `Suite.workspace` (end of `shell.js`) saves and opens workspaces (`*.suite.zip`, written with `Suite.openFiles.zip`):
+`workspace.json` (`format: "portable-web-app-suite-workspace"`, `version: 1`, `created`, `app`, `files: [{ path, app, name, tab }]`,
+`activeTab`, `settings`), the files under `<app>/<name>` and, optionally, `settings.json` or – with a password, always when a
+sensitive source is included – `settings.kdbx` (`Suite.preferences.settingsBytes`). `unzip()` reads stored and deflated entries
+(`DecompressionStream`). `restore()` opens the settings first (a wrong password fails before anything opens), then the files –
+an application through `Suite.bridge.openLocal` (copies, only its own), the overview through the host it registers with
+`setHost({ restore(files, activeTab) })`: a tab per saved tab (`openTab` with the files, waiting for each tab's `ready`) –,
+applies the preferences of this page (`groupsOf`) and reads the sources (in the overview also those of its tabs:
+`Suite.preferences.setHosted`/`allSources`). The overview's open-files provider adds `tab`, `file` and `active` for this.
+The example workspace is made by `workspace()` in `tools/make_examples.py`. Test: `tests/apps/test_workspace.py`.
 
 ## Applications
 
@@ -952,6 +1015,52 @@ filter without it). Rows that Excel hid inside the filter range become `cachedFi
 are written as hidden rows. Colour, dynamic and top-10 filters are not kept. The ZIP helpers (`readZip`, `zipPart`, `writeZip`) are shared
 with the relationship fix-up for openpyxl files.
 
+**Data → Clean up** is the app's own (`apps/spreadsheet/src/js/tools.js`, dialogs in `main.js`): *Remove duplicates* compares the chosen
+columns (`SSTools.duplicates`: text trimmed and in lower case) and writes the range again with `FRange.setValues` (cell data with styles,
+the kept rows moved up, the rest emptied), one undo step; a single cell stands for its current region (grown while a neighbouring row or
+column has content). *Text to columns* uses the CSV parser and value recognition of the import (`SSCSV.parse`/`convert`) instead of
+Univer's `sheet.command.split-text-to-columns`, which has no dialog, keeps numbers as text and ignores quotes; dates become serial numbers with
+a date format (Univer then keeps them as formatted values of type number, which the XLSX export writes as dates). The ribbon menus of the
+app's own functions are added by `menu.js` (`SSMenu.submenu`).
+
+**Print / PDF** (`apps/spreadsheet/src/js/print.js`, dialog in `main.js`): `SSPrint.html(parts, options)` renders the printed cells from
+the workbook snapshot – column widths (`<colgroup>`, `table-layout: fixed`), row heights, styles (font, colours, alignment – numbers
+right –, wrapping, borders mapped from Univer's border styles), merged cells clipped to the printed rows and columns, hidden rows and
+columns left out – with the display values of `FRange.getDisplayValues` (number formats applied). The repeated rows are a `<thead>`,
+which browsers repeat on every page; *fit to width/page* sets CSS `zoom` on the table from the printable size of the paper (`@page`
+size and a 12 mm margin). `usedRange` finds the cells with content, background or borders. `main.js` prints the HTML from a hidden
+frame (`print()`; "Save as PDF" of the print dialog makes the PDF) and keeps paper, orientation, size and gridlines in
+`suite.spreadsheet.print`. Test: `tests/apps/test_spreadsheet_print.py`.
+
+Row and column groups are the app's own (`apps/spreadsheet/src/js/outline.js`): Univer's outline is part of Univer Pro
+(`@univerjs-pro/sheets-outline`). The level is kept in the custom data of a row or column (`rowData[r].custom.outline`,
+`columnData[c].custom.outline`), written with the undoable commands `sheet.command.set-row-data` / `set-col-data`; Univer moves row and column
+data along with inserted, removed and moved rows and columns. Hiding a group uses `hideRows`/`hideColumns`. The headers are labelled with
+`customizeRowHeader`/`customizeColumnHeader` (`rowsCfg`/`columnsCfg`: `│` per level, ⊟/⊞ at the summary row or column; the row header is widened
+by the depth), refreshed after mutations and sheet changes. The menu is merged into `ribbon.data.organization` by `SSMenu.submenu` in the shape of Univer's own menus,
+because the facade's `createSubmenu` puts the items into group nodes that the ribbon's dropdown does not show; its commands are registered under
+the item ids, which the dropdown executes. `univer-xlsx.js` reads ExcelJS's `outlineLevel` of rows and columns and writes it back; rows that are
+only hidden or grouped get their height, because ExcelJS writes a row only with cells or a height.
+
+Notes come from `@univerjs/preset-sheets-note` (1.0.4, Apache-2.0); the model is the resource `SHEET_NOTE_PLUGIN` (`{ sheetId: { row: { col:
+{ note, width, height, show, id, row, col } } } }`). ExcelJS reads only formatted runs of legacy comments, drops the comments of cells without
+a `<c>` element and fails on openpyxl's part names, so `univer-xlsx.js` reads the notes itself (`readNotes`: the comments part of each sheet,
+all `<t>` texts), and `normalizeRelationships` renames comment and VML parts to the names ExcelJS expects (`xl/comments<n>.xml`,
+`xl/drawings/vmlDrawing<n>.vml`). Notes are written with ExcelJS (`cell.note`), as text, in the default size, hidden.
+
+Find and replace is `@univerjs/preset-sheets-find-replace` (1.0.4, Apache-2.0); it works on the cells and needs no file support.
+
+Hyperlinks come from `@univerjs/preset-sheets-hyper-link` (1.0.4, Apache-2.0). Univer keeps a link in the cell's rich text (`cell.p`) as a
+custom range of type HYPERLINK (`{ startIndex, endIndex, rangeType: 0, rangeId, properties: { url, tooltip } }`); the cell shows the text of
+`p`, not `v`. Places in the workbook are URLs `#gid=<sheet id>&range=A1` and `#rangeid=<defined name id>`. ExcelJS drops links that have a
+`location` but no relationship and writes every link as an external relationship, so `univer-xlsx.js` handles `<hyperlinks>` itself, like
+the filters: `readHyperlinks` reads `ref`, `r:id` (target from the sheet's `_rels`), `location`, `tooltip` and `display`; `fromExcelJS`
+turns them into `cell.p` (locations `Sheet!A1` into `#gid=…`, ranges of several cells into a link on every cell). On export, cells keep
+their text (the plain text of `p`), `cellLinks` collects the first link of each cell, and `writeHyperlinks` inserts `<hyperlinks>` before
+the elements that follow it in `CT_Worksheet` (`pageMargins`, …), with `TargetMode="External"` relationships `rIdLink<n>` for addresses
+and `location` (with `display`) for places in the workbook; links to defined names become their range. Linked cells without their
+own font colour get Excel's link look (`0563C1`, underlined).
+
 - **Styles**: the app loads `vendor/pico.conditional.min.css`, which styles only elements inside `.pico`; the shell's header, banner, toasts and
   dialogs carry that class, the Univer UI keeps its own look. Dialogs with `.pico` get a `z-index` above embedded editors.
 - **Dirty state**: `CommandExecuted` events of type mutation count as edits only within 3 seconds after user input (pointer, key, paste, cut,
@@ -979,7 +1088,9 @@ zeros, dates, all-text mode, saving with the same separator). Import/export fide
 
 ### Document editor (`apps/document`)
 
-Univer Docs 1.0 with the docs core and docs drawing presets (`vendor/esm/univer-docs`, decision D-020), in the same structure as the spreadsheet
+Univer Docs 1.0 with the docs core, docs drawing and docs hyperlink presets (`vendor/esm/univer-docs`, decision D-020; links are custom ranges
+of type HYPERLINK in the body, which the DOCX, ODT and HTML writers already handled; `@univerjs/ui/facade` adds `createMenu`/`createSubmenu`/
+`registerComponent` to the facade, which the docs presets alone do not), in the same structure as the spreadsheet
 (container outside Preact, conditional Pico, dirty rule, theme and language). DOCX import uses the direct reader of spike S-8
 (`shared/js/docx-import.js`, through `importDocx` of `shared/js/univer-docx.js`), export uses the `docx` library (`exportDocx`). DOCM and DOTX
 are opened and saved as new DOCX files. ODT (`shared/js/odt.js`, own code on fflate): the reader resolves automatic and common styles with
@@ -993,12 +1104,55 @@ text is a hyperlink to `#toc-<n>` (n = position among the headings, namedStyleTy
 links) or uses the cursor paragraph (`DocSelectionManagerService.getActiveTextRange()`), pastes the new paragraphs and shifts all indices of
 the body; the document is reloaded as a new unit. The DOCX export wraps headings in `Bookmark`s and the entries in `InternalHyperlink`s, the
 ODT export writes `text:bookmark` and `#toc-n` links. The DOCX reader turns `footnoteReference`/`endnoteReference` into superscript labels and
-appends the note bodies at the end (as the ODT reader does). Plain text: lines become paragraphs (`fromText`); saving as text writes the data stream with paragraph
-marks as line breaks and without embedded objects (`toText`). Printing and HTML (`shared/js/doc-html.js`, `toHtml`): the Univer data becomes
+appends the note bodies at the end (as the ODT reader does).
+
+Insert → Date & time (`ribbonSubmenu` in `main.js`, the same shape as the header & footer menu) writes the formatted date with
+`getTextRange(start, end).setText()` at the active text range of the body and moves the cursor behind it; `Intl` formats with the browser's
+locale when its language is the app's language, else with `en-US`/`de-DE`. Symbols and emoji are Univer's pickers (`doc.menu.insert-symbol`,
+`doc.menu.insert-emoji`).
+
+Page setup: the app's dialog replaces Univer's (in px, without orientation): a `BeforeCommandExecute` handler cancels
+`docs.operation.open-page-setting` and opens it; it applies Univer's undoable `docs.command.page-setup` (`documentFlavor` 1 pages / 2 no pages,
+`pageOrient` 0/1, `pageSize` with the sides swapped for landscape, margins; px = cm × 96 / 2.54). The DOCX writer passes landscape pages to the
+docx library with the portrait size and `PageOrientation.LANDSCAPE` (it swaps the sides itself), the ODT writer adds `style:print-orientation`.
+
+Headers, footers and page numbers: Univer's Header & Footer tab (page number and date fields, first/odd-even pages, distances) is opened by
+`doc.command.open-header-footer-panel` with `editArea: 'HEADER' | 'FOOTER'` (Insert → Header & footer, merged into `ribbon.insert.others`
+like the spreadsheet's menus); its groups of two rows are cut off by the single-row ribbon, so `style.css` lets that toolbar grow while the
+tab is shown (`:has([data-u-command="doc.command.close-header-footer"])`). A header made there is referenced by the body's last section break
+(`defaultHeaderId` … on `body.sectionBreaks`), not by `documentStyle`: `sectionConfig(data)` (`doc-toc.js`) merges both for the DOCX, ODT and
+HTML writers. Fields are custom ranges of type FIELD (1) around `U+001F result U+001E` with `properties { fieldType, instruction,
+cachedResult, sourceKind }`; Univer draws the number of each page in their place. The DOCX reader turns `PAGE`/`NUMPAGES` of complex
+fields (`fldChar` begin/separate/end, nested ones on a stack) and of `fldSimple` into such ranges (`closeField`; a field without a result
+gets "1"), other fields keep their result; the writer emits `PageNumber.CURRENT`/`TOTAL_PAGES`. ODT: `text:page-number`/`text:page-count`
+both ways. Plain text: lines become paragraphs (`fromText`); saving as text writes the data stream with paragraph
+marks as line breaks and without embedded objects (`toText`). Markdown (`shared/js/doc-markdown.js`, `toMarkdown`): CommonMark with GitHub's
+pipe tables, strikethrough and task lists – headings by named style (bold of the heading style left out), `**`/`*`/`~~` around the trimmed text of a
+stretch of equal formatting, links (`#toc-` links as text), lists numbered per list id, check lists (`CHECK_LIST`, `CHECK_LIST_CHECKED`), tables
+with the first row as header (spans as empty cells, cell paragraphs joined by `<br>`), drawings as `data:` images, field results; characters
+that would start Markdown syntax are escaped. Opened `.md` files stay plain text (format `txt`), so saving them writes their source unchanged.
+Comments: Univer's thread comments (`@univerjs/preset-docs-thread-comment`, Apache-2.0) keep the commented text as a body decoration
+(`customDecorations: { id, type: 0, startIndex, endIndex }`, end inclusive) and the thread in the resource `DOC_UNIVER_THREAD_COMMENT_PLUGIN`
+(`{ default_doc: [{ id = threadId = decoration id, ref, dT "YYYY/MM/DD HH:mm", personId, authorName, text (a small body), resolved, children }] }`).
+`shared/js/doc-comments.js` reads them (`threadsOf`, ordered by position) and builds them from a file's comments (`buildThreads`: replies to
+their root, a comment without range on the next character). DOCX: the reader notes `commentRangeStart`/`End`/`commentReference` of the main
+body (`commentMark`), reads `comments.xml` (author, date, paragraphs) and `commentsExtended.xml` (`w15:paraIdParent` of the last paragraph's
+`w14:paraId`, `w15:done`); the writer gives each comment and reply a Word comment (`comments`, `parentId`, `resolved` of the docx library,
+which writes `commentsExtended.xml`) and puts the range marks of all of them around the commented runs (runs are split at the comment
+boundaries; the reference follows the end). ODT: `office:annotation` (`dc:creator`, `dc:date`, `text:p`) with `office:name` before the text
+and `office:annotation-end` after it; replies follow the end with `loext:parent-name`, a resolved thread has `loext:resolved="true"` (as
+LibreOffice writes them). The author of new comments is the setting `suite.author` (asked by the app before the first comment, field in the
+shell's settings, event `suite-author`); it is set as Univer's current user (`UserManagerService`, an SVG avatar with the initials – images
+are restricted to `data:`), and the authors of a loaded document are added as users. Test: `tests/apps/test_document_comments.py` (also
+with LibreOffice, when installed).
+Printing and HTML (`shared/js/doc-html.js`, `toHtml`): the Univer data becomes
 a self-contained page (named styles → `h1`–`h5`/title/subtitle, paragraph and run styles as inline CSS, links, nested `ul`/`ol` from
 `bullet.nestingLevel`, tables with `colgroup` widths, spans and shading, drawings as `img`, page breaks as `break-before:page`, headings
-with `id="toc-<n>"` for the table of contents links); `@page` takes the page size and margins of `documentStyle`, and with `print` the
-default header and footer are `position: fixed` in the margin boxes so they repeat on every page. The 🖨 button (`Ctrl+P`) loads it into a
+with `id="toc-<n>"` for the table of contents links); `@page` takes the page size and margins of `documentStyle`. With `print`, the
+default header and footer repeat on every page: with `pageCounters` (Chromium) as the text of `@page` margin boxes (`@top-left|center|right`
+by the alignment of the first paragraph, `@bottom-…`; table cells separated by spaces, pictures left out), where page fields become
+`counter(page)` / `counter(pages)` – Chromium cuts off fixed elements in the page margins; otherwise (Firefox) as `position: fixed` elements
+in the margins, with empty page fields. The 🖨 button (`Ctrl+P`) loads it into a
 hidden `srcdoc` frame and calls its `print()` (CSP `frame-src 'self' about:`); saving as `.html` writes the same page without `print`. Spelling panel (`apps/document/src/js/spelling.js`, `F7`) on the suite's spell checker (see *Spell checking*):
 `spell.errors` of the body's data stream, grouped by word with their offsets; the language, personal and ignored words are those of
 the header selector. Selecting and replacing use the facade (`FDocument.setSelection`, `getTextRange(start, end).setText`, from the
@@ -1023,6 +1177,56 @@ rotate (with snapping guides).
   the `p:cNvPr` elements in the order the elements were added. The show groups the animations the same way: elements of later groups are
   hidden, a step plays the next group with the Web Animations API (`opacity`, `translate`, `scale`); transitions animate the new (and for
   *push* the old) slide view; *advance after* is a timer that any navigation restarts.
+- **Spelling panel**: the document editor's panel (`apps/document/src/js/spelling.js`, imported as `app/spelling`) on a stream of all slide
+  texts and notes (`spellIndex`: segments per run, runs of a paragraph joined directly, paragraph marks between); a replacement that spans
+  runs goes into the first run.
+- **Layouts, media, cropping**: `layoutElements(kind)` builds the text boxes (`placeholder.type` title, subTitle, body) of six layouts in
+  PowerPoint's places. Media elements `{ type: 'media', media: { src (data URL), kind: 'video' | 'audio', poster } }` render as `<video>`/`<audio>`
+  (`slide-render.js`; `pointer-events: none` while editing, `controls` with `ctx.play` in the show); inserting a video takes its size and first
+  frame (poster) from a video element; the CSP allows `media-src data: blob:`. PPTX: read from a picture with `a:videoFile`/`a:audioFile`
+  (`r:link`) or `p14:media` (`r:embed`), written with PptxGenJS's `addMedia` (with the poster as cover). ODP: `draw:plugin` with the file in
+  `Media/`. Cropping: `image.crop = { l, t, r, b }` (fractions cut off); the picture is drawn at its full size inside the clipped box,
+  `setCrop` keeps scale and place of the visible part; PPTX `a:srcRect` (thousandths of a percent) in and – added after PptxGenJS (`addCrops`)
+  – out; for ODP `bakeCrops` draws the visible part into a new picture. Test: `tests/apps/test_presentation_media.py`.
+- **OpenDocument presentations** (`shared/js/odp.js`, `readOdp`/`writeOdp`, fflate): the reader resolves style chains (`style:parent-style-name`
+  up to the family's default style) for graphic, presentation, paragraph and text styles – including `draw:text-style-name` and the
+  `presentation` styles of LibreOffice's placeholders –, reads the page size from the first master's page layout, positions and sizes in any
+  unit, `draw:transform` (`rotate(-θ) translate(corner)` about the top-left corner → clockwise degrees about the centre), custom shapes
+  (`draw:type`, also LibreOffice's `ooxml-<preset>`; a rectangle with text and neither fill nor line is a text box), frames with text box,
+  picture (also an object's replacement picture) or table, `draw:g` as group ids, lists (`text:list` nesting = level; bullet or number
+  from the list style), fields (`text:page-number`, `text:date`), notes (`presentation:notes`, frame of class `notes`) and
+  `presentation:visibility`. The writer creates automatic styles per distinct property set, one list style per kind and level stack,
+  `draw:custom-shape` with `draw:enhanced-geometry draw:type`, and notes as LibreOffice writes them (a page thumbnail and a notes frame
+  with a presentation style on the layout layer – without them LibreOffice turns the notes into an ordinary text box). The format follows
+  the file name (`deckBytes`). Test: `tests/apps/test_presentation_odp.py` (also with LibreOffice).
+- **Lists**: paragraphs carry `bullet` (`{ char }` or `{ auto: 'arabicPeriod' … }`) and `level` (0–8; ↔ `a:buChar`/`a:buAutoNum` and
+  `lvl`). While a text is edited, `renderText` keeps each paragraph's `level`, `bullet` and `align` as `data-*` attributes on its `<p>`
+  (browsers copy them to the paragraph Enter splits off, so the list continues), `refreshLists` brings markers, numbers (per level) and
+  indents up to date after every input without touching the text nodes (the caret stays), and `readText` takes the attributes – before,
+  a paragraph took the properties of the paragraph at the same index. `listCommand` (`main.js`) works on the `<p>`s the selection touches
+  (loose text from Firefox's "select all" is wrapped first, `wrapLoose`), or on all paragraphs of the selected elements. Moveable lives in the stage
+  area (`new Moveable(stageWrap, { dragContainer: stageWrap })`): with its drag events on the window, its touch handling cancelled later taps elsewhere (the panel's buttons
+  did nothing on phones after a selected element was tapped). Test: `tests/apps/test_presentation_lists.py`.
+- **Several elements and groups**: `state.selected` is the element the panel shows, `state.multi` the elements chosen with Shift/Ctrl+click,
+  the marquee (`marquee`, in slide coordinates) or `Ctrl+A`; `selectionIds()` adds the members of their groups. A group is a shared
+  `el.group` id – the elements stay in the flat list, neighbours in the stacking order (`groupSelection` moves them next to the topmost one).
+  Several elements get one Moveable with all targets (`dragGroup`, `resizeGroup`; no rotation); its drag area covers their frame, so a click
+  there (`clickGroup`) finds the element under the pointer with `elementsFromPoint`. Align and distribute work on units (a group is one unit,
+  `unitsOf`): to the units' bounding box, or to the slide for a single unit; distribute keeps the outer units and spaces the rest equally.
+  PPTX: the reader gives the members of a top-level `p:grpSp` one group id (nested groups belong to the outer one; positions are mapped to
+  the slide as before); PptxGenJS has no groups, so `addGroups` (`pptx-export.js`) wraps neighbouring shapes of a group in `<p:grpSp>` with
+  `chOff/chExt` equal to `off/ext` (the members' bounding box) after the other post-processing – shape ids stay, so animations keep their
+  targets. Test: `tests/apps/test_presentation_arrange.py`.
+- **Hidden slides and show tools**: `slide.hidden` ↔ `<p:sld show="0">` (added to the PptxGenJS output); the show's navigation skips hidden
+  slides (`visibleFrom`). Pen strokes are kept per slide index in slide coordinates (`ink`, only for the show) and drawn on a canvas over the
+  presenter; the laser pointer is a positioned dot; black and white screens are an overlay (in the presenter view the audience window's
+  stage is hidden). The overlays are re-appended whenever the slide view is replaced.
+- **Fields and header & footer**: runs of `a:fld` with `type="slidenum"` or `datetime…` get `field: 'slidenum' | 'datetime'` (and `fieldType`);
+  `renderSlide(slide, deck, { number, locale })` shows the slide's number or today's date in a non-editable span (`data-field`), which
+  `readText` keeps as a field. PptxGenJS has no fields in text, so the writer puts a marker (`U+2063 n U+2063`) into the run and replaces the
+  run with `<a:fld type=…>` in the slide XML afterwards (the run properties must not match beyond their `</a:rPr>`). The header & footer
+  dialog adds, updates or removes text elements with `placeholder.type` `dt`, `ftr`, `sldNum` (PowerPoint's default places), keeping the
+  place and the first run's look of existing ones.
 
 - The stage and the thumbnails are rendered imperatively into containers outside Preact; the panels are Preact. Pico is loaded in its
   conditional build so that slide content (tables, text) is not restyled; toolbar, panel and dialogs carry `.pico` (in the media query the toolbar

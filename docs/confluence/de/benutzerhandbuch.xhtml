@@ -383,6 +383,33 @@ oder ein <strong>Archiv</strong>.</p>
 <li>Die Auswahl lässt sich in den Einstellungen abschalten (<code>F1</code>, <strong>⚙ Einstellungen</strong>): Öffnen und Speichern unter gehen dann
   direkt zum Dateisystem.</li>
 </ul>
+<h3>Alle geöffneten Dateien als Archiv</h3>
+<p><code>F1</code> → <strong>📦 Geöffnete Dateien</strong> → <strong>Archiv aus den geöffneten Dateien erstellen…</strong> listet die Dateien auf, die in der Anwendung geöffnet sind – in der
+Übersicht die Dateien aller ihrer Tabs, jeweils in einem Ordner mit dem Namen der Anwendung (<code>texteditor/notizen.txt</code>) –, mit
+ihrer Größe; Dateien mit ungespeicherten Änderungen sind markiert. Entfernen Sie die Häkchen bei dem, was Sie nicht brauchen,
+und wählen Sie <strong>Archiv erstellen</strong>: Das ZIP-Archiv öffnet sich im <ac:link><ri:page ri:content-title="Archivmanager" /><ac:plain-text-link-body><![CDATA[Archivmanager]]></ac:plain-text-link-body></ac:link> (in der Übersicht als
+neuer Tab), wo Sie es speichern, Dateien hinzufügen oder einzelne Dateien herausnehmen. Das Archiv enthält den aktuellen
+Inhalt samt ungespeicherten Änderungen im Format, in dem die Anwendung speichern würde (Dokumente als <code>.docx</code>,
+Präsentationen als <code>.pptx</code>, Diagramme als <code>.drawio</code> usw.). Die Befehlspalette (<code>Strg+Umschalt+P</code>) bietet denselben Befehl
+für alle Dateien auf einmal an. Die geöffneten Dateien bleiben unverändert; das Archiv ist eine Kopie.</p>
+<h3>Arbeitsbereiche: anderswo weiterarbeiten</h3>
+<p>Ein Arbeitsbereich (<code>.suite.zip</code>) nimmt alles, woran Sie arbeiten, auf einen anderen Rechner oder Browser mit: <code>F1</code> →
+<strong>🗂 Arbeitsbereich</strong> → <strong>Arbeitsbereich speichern…</strong> listet die geöffneten Dateien auf (mit Größe, ungespeicherte Änderungen
+markiert) und was zusätzlich hinein kann:</p>
+<ul>
+<li><strong>Einstellungen</strong> dieser Anwendung und die allgemeinen (in der Übersicht: aller Anwendungen).</li>
+<li><strong>Verbindungen und Passwörter</strong> (🔑) – nur, wenn Sie sie ankreuzen. Zugangsdaten werden <strong>nie unverschlüsselt geschrieben</strong>:
+  Sie brauchen ein Passwort, und die Einstellungen liegen dann als KeePass-Datenbank (<code>settings.kdbx</code>) im Arbeitsbereich. Mit
+  einem Passwort werden auch reine Einstellungen verschlüsselt.</li>
+</ul>
+<p><strong>Arbeitsbereich öffnen…</strong> zeigt, was der Arbeitsbereich enthält. In der <strong>Übersicht</strong> öffnet sich jede Anwendung wieder in
+einem eigenen Tab, in der gespeicherten Reihenfolge, mit dem gespeicherten Tab im Vordergrund. Eine einzelne Anwendung öffnet nur
+ihre eigenen Dateien und nennt die Zahl der übrigen (öffnen Sie den Arbeitsbereich dafür in der Übersicht). Kreuzen Sie
+<strong>Einstellungen übernehmen</strong> an, um sie zu übernehmen (mit dem KeePass-Passwort, falls vorhanden); sie wirken nach dem
+nächsten Start, Verbindungen kommen sofort hinzu (speichern Sie die Verbindungsdatei, um sie zu behalten).</p>
+<p>Die Dateien öffnen sich als <strong>Kopien</strong>: Speichern fragt nach dem Ort. Der Arbeitsbereich ist ein gewöhnliches ZIP-Archiv – der
+<ac:link><ri:page ri:content-title="Archivmanager" /><ac:plain-text-link-body><![CDATA[Archivmanager]]></ac:plain-text-link-body></ac:link> zeigt ihn, mit einem Ordner je Anwendung und <code>workspace.json</code>, das Anwendung, Tab und
+Reihenfolge jeder Datei nennt. Ein Beispiel liegt in <code>examples.zip</code> (<code>examples/de/overview/buero.suite.zip</code>).</p>
 <h2>Anwendungsdaten: Einstellungen, Verbindungen und Passwörter</h2>
 <p>Manche Anwendungen speichern Einstellungen, Verbindungen oder Passwörter, zum Beispiel die Serververbindungen des
 SSH-Clients. Diese Daten liegen in einer Datei, die <strong>Sie</strong> wählen, niemals im Browser. Eine Datei kann die Daten
@@ -418,14 +445,41 @@ oder Schlüsseldatei lassen sich die Daten nicht wiederherstellen.</p></ac:rich-
 <h3>Einstellungen mitnehmen</h3>
 <p>Vorlieben wie das Design, die Sprache, die Schriftgröße des Texteditors oder die Diagrammbibliotheken speichert der Browser.
 Um sie auf einen anderen Rechner oder in einen anderen Browser mitzunehmen, öffnen Sie den Info-Dialog (<code>F1</code> oder <strong>?</strong>),
-klappen <strong>⚙ Einstellungen</strong> auf und wählen <strong>Exportieren…</strong>: Das speichert <code>suite-settings.json</code>. <strong>Importieren…</strong> liest eine
-solche Datei in jeder Anwendung ein und bietet an, die Anwendung neu zu laden, damit die Einstellungen wirken.</p>
+klappen <strong>⚙ Einstellungen</strong> auf und wählen <strong>Exportieren…</strong>. Kreuzen Sie an, was enthalten sein soll:</p>
+<ul>
+<li><strong>Allgemein</strong> – Design, Sprache, Rechtschreibung, Symbole und die übrigen Einstellungen, die alle Anwendungen teilen;</li>
+<li>die Einstellungen <strong>dieser Anwendung</strong> – in der Übersicht: <strong>jeder Anwendung</strong>, die Einstellungen hat;</li>
+<li>in den Anwendungen mit Verbindungen (Datenbank-Werkzeug, SSH, FTP, Mail, HTTP, Web-Inspektor): <strong>Verbindungen und Passwörter</strong> der geöffneten
+  Verbindungsdatei sowie <strong>Relay-Adresse und Anmeldung</strong>, mit 🔑 als Zugangsdaten gekennzeichnet;</li>
+<li><strong>Importierte Schriften</strong> (siehe <em>Schriften</em>), wenn es welche gibt.</li>
+</ul>
+<p>Dann wählen Sie das Format: eine <strong>KeePass-Datenbank</strong> (<code>suite-settings.kdbx</code>, mit einem zweimal eingegebenen Passwort verschlüsselt; KeePass, KeePassXC
+und die KeePass-Anwendung der Suite können sie öffnen) oder eine <strong>JSON-Datei</strong> (<code>suite-settings.json</code>, unverschlüsselt). Sind Zugangsdaten angekreuzt und
+ist das Format JSON, warnt ein Hinweis, dass jeder mit der Datei sie lesen kann: Bestätigen Sie ihn, wählen Sie KeePass, oder lassen Sie sie weg.</p>
+<p><strong>Importieren…</strong> liest eine solche Datei in jeder Anwendung – bei einer KeePass-Datenbank fragt es zuerst nach dem Passwort – und listet auf, was sie für
+diese Anwendung enthält (in der Übersicht: für alle); wählen Sie ab, was Sie nicht möchten. Einstellungen wirken nach dem Neuladen, das die Anwendung
+anbietet; importierte Verbindungen kommen in die geöffnete Verbindungsdatei (speichern Sie sie, um sie zu behalten).</p>
 <p>Die Verbindungsdateien der Anwendungen mit Verbindungen (Datenbank-Werkzeug, SSH, FTP, Mail, HTTP) enthalten diese
 Einstellungen ebenfalls – als JSON-Datei wie als KeePass-Datenbank. Öffnen Sie eine Verbindungsdatei, deren Einstellungen
 von den aktuellen abweichen, bietet eine Leiste <strong>Einstellungen übernehmen</strong> an. Eine KeePass-Datenbank kann so die
 Verbindungen, Passwörter und Einstellungen der ganzen Suite enthalten.</p>
 <p>Chrome und Edge teilen die Einstellungen aller aus Dateien geöffneten Anwendungen; Firefox hält sie je Anwendungsdatei getrennt.
 Dort exportieren und importieren Sie in jeder Anwendung, deren Einstellungen Sie mitnehmen möchten.</p>
+<h3>Schriften</h3>
+<p>Die Suite bringt freie Schriften mit, damit Dokumente auf jedem System gleich aussehen – auch ohne Internet und auf Geräten mit
+wenigen installierten Schriften: <strong>Arimo</strong>, <strong>Tinos</strong> und <strong>Cousine</strong> (auch unter den Namen <strong>Liberation Sans</strong>, <strong>Liberation Serif</strong> und
+<strong>Liberation Mono</strong>, die dieselben Schriften sind), <strong>Carlito</strong>, <strong>Caladea</strong>, <strong>Gelasio</strong>, <strong>Inter</strong>, <strong>Open Sans</strong>, <strong>Roboto</strong>, <strong>Lato</strong>,
+<strong>Montserrat</strong>, <strong>Source Serif 4</strong>, <strong>Merriweather</strong>, <strong>JetBrains Mono</strong>, <strong>Fira Code</strong> und <strong>Source Code Pro</strong> (normal, fett, kursiv und
+fett kursiv; lateinische Schrift mit den europäischen Akzenten). Sie stehen in den Schriftmenüs der Textverarbeitung, der
+Tabellenkalkulation, der Präsentation und des Textwerkzeugs der Bildbearbeitung; der Texteditor und das SSH-Terminal bieten die
+nichtproportionalen an (Schriftmenü in der Werkzeugleiste). Office-Dateien mit <strong>Calibri</strong>, <strong>Cambria</strong>, <strong>Arial</strong>, <strong>Helvetica</strong>,
+<strong>Times New Roman</strong> oder <strong>Courier New</strong> werden – wo diese nicht installiert sind – mit den metrisch gleichen Schriften Carlito, Caladea,
+Arimo, Tinos und Cousine gezeigt, sodass Zeilen und Seiten wie im Original umbrechen. Alle Schriften stehen unter der SIL Open Font
+License (siehe die Lizenzen im Info-Dialog).</p>
+<p><strong>Weitere Schriften:</strong> <code>F1</code> → <strong>⚙ Einstellungen</strong> → <strong>Schriften</strong> → <strong>Schriften importieren…</strong> fügt TTF-, OTF-, WOFF- oder WOFF2-Dateien
+hinzu – aus dem Dateisystem oder aus einem Archiv. Importierte Schriften bleiben im Browser und stehen in allen Anwendungen zur Verfügung
+(bereits geöffnete nach ihrem nächsten Start); <strong>×</strong> entfernt eine. Sie sind Teil des Einstellungsexports und der Arbeitsbereiche
+(<em>Importierte Schriften</em>) und ziehen so mit Ihren Einstellungen um.</p>
 <h2>Netzwerkfunktionen und das Relay</h2>
 <p>Browser können sich nicht direkt mit Mail-, SSH-, SFTP-, FTP- oder Datenbankservern verbinden. Die Anwendungen,
 die solche Verbindungen brauchen, verwenden das <strong>Relay</strong>: ein kleines Programm, das Sie auf Ihrem Computer starten.

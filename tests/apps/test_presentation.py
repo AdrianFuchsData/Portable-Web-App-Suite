@@ -343,3 +343,142 @@ def test_open_web_slides(app_page, tmp_path):
     white = page.evaluate("PR.state.deck.slides[0].elements[0].text.paragraphs[0].runs[0].color")
     assert white == "#FFFFFF"  # light text on the dark background
     assert page.errors == []
+
+
+FIELDS = "() => [...document.querySelectorAll('[data-testid=thumb]')].map((t) => [...t.querySelectorAll('[data-field]')].map((s) => [s.dataset.field, s.textContent]))"
+
+
+def test_header_footer_and_slide_numbers(app_page, tmp_path):
+    page = ready(app_page)
+    page.click("[data-testid=add-slide]")
+    page.click("[data-testid=add-slide]")
+    expect(page.locator("[data-testid=thumb]")).to_have_count(3)
+    page.click("[data-testid=header-footer]")
+    page.check("[data-testid=hf-date]")  # (automatically updated by default)
+    page.check("[data-testid=hf-number]")
+    page.check("[data-testid=hf-footer]")
+    page.fill("[data-testid=hf-footer-text]", "Quarterly review")
+    page.check("[data-testid=hf-skipTitle]")
+    page.click("[data-testid=hf-apply-all]")
+    page.wait_for_function("() => document.querySelectorAll('[data-testid=thumb] [data-field]').length === 4")
+    today = page.evaluate("new Date().toLocaleDateString('en-US')")
+    assert page.evaluate(FIELDS) == [[], [["datetime", today], ["slidenum", "2"]], [["datetime", today], ["slidenum", "3"]]]
+    assert "Quarterly review" in page.locator("[data-testid=thumb]").nth(2).inner_text()
+    # the numbers follow the order of the slides
+    page.evaluate("PR.state.current = 2; PR.render()")
+    page.click("[data-testid=slide-up]")
+    page.wait_for_function("() => document.querySelector('[data-testid=thumb]:nth-child(2) [data-field=slidenum]')?.textContent === '2'")
+    assert page.evaluate(FIELDS)[1] == [["datetime", today], ["slidenum", "2"]]
+    # the dialog shows the settings of the current slide; undo
+    page.click("[data-testid=header-footer]")
+    expect(page.locator("[data-testid=hf-number]")).to_be_checked()
+    expect(page.locator("[data-testid=hf-date-auto]")).to_be_checked()
+    expect(page.locator("[data-testid=hf-footer-text]")).to_have_value("Quarterly review")
+    page.uncheck("[data-testid=hf-footer]")
+    page.click("[data-testid=hf-apply]")
+    expect(page.locator("[data-testid=thumb]").nth(1)).not_to_contain_text("Quarterly review")
+    page.click("[data-testid=undo]")
+    expect(page.locator("[data-testid=thumb]").nth(1)).to_contain_text("Quarterly review")
+
+    # PPTX: the slide number and the date are fields; opened again they stay fields
+    prs, _ = save(page, tmp_path)
+    xml = prs.slides[2].shapes._spTree.xml
+    assert re.search(r'<a:fld [^>]*type="slidenum"[^>]*>.*?<a:t>3</a:t>\s*</a:fld>', xml, re.S)
+    assert re.search(r'<a:fld [^>]*type="datetime1"', xml)
+    assert [sh.text_frame.text for sh in prs.slides[0].shapes if sh.has_text_frame and sh.text_frame.text in ("1", today)] == []
+    path = tmp_path / "numbered.pptx"
+    prs.save(path)
+    page2 = ready(app_page)
+    open_deck(page2, path)
+    assert page2.evaluate(FIELDS)[2] == [["datetime", today], ["slidenum", "3"]]
+    assert page.errors == [] and page2.errors == []
+
+
+def test_hidden_slides_and_show_tools(app_page, tmp_path):
+    page = ready(app_page)
+    page.click("[data-testid=add-slide]")
+    page.click("[data-testid=add-slide]")
+    expect(page.locator("[data-testid=thumb]")).to_have_count(3)
+    page.locator("[data-testid=thumb]").nth(1).click()
+    page.check("[data-testid=slide-hidden]")
+    expect(page.locator("[data-testid=thumb]").nth(1)).to_have_class(re.compile("hidden-slide"))
+    presenter = page.locator("[data-testid=presenter]")
+    # the show from the start skips the hidden slide
+    page.locator("[data-testid=thumb]").nth(0).click()
+    page.keyboard.press("F5")
+    expect(presenter).to_have_attribute("data-index", "0")
+    page.keyboard.press("ArrowRight")
+    expect(presenter).to_have_attribute("data-index", "2")
+    page.keyboard.press("ArrowLeft")
+    expect(presenter).to_have_attribute("data-index", "0")
+    page.keyboard.press("End")
+    expect(presenter).to_have_attribute("data-index", "2")
+
+    # pen: Ctrl+P, drawing does not change the slide; E erases
+    page.keyboard.press("Control+p")
+    expect(presenter).to_have_attribute("data-tool", "pen")
+    box = presenter.bounding_box()
+    page.mouse.move(box["width"] * 0.3, box["height"] * 0.4)
+    page.mouse.down()
+    page.mouse.move(box["width"] * 0.5, box["height"] * 0.5, steps=6)
+    page.mouse.up()
+    expect(presenter).to_have_attribute("data-index", "2")
+    strokes = page.evaluate("PR.ink.get(2)")
+    assert len(strokes) == 1 and len(strokes[0]) >= 3
+    page.keyboard.press("e")
+    assert page.evaluate("PR.ink.has(2)") is False
+    # laser pointer (the button in the tools), black screen; Escape leaves the tool first, then the show
+    page.mouse.move(box["width"] * 0.5, box["height"] * 0.4)
+    page.click("[data-testid=show-laser]")
+    expect(presenter).to_have_attribute("data-tool", "laser")
+    expect(page.locator("[data-testid=show-laser]")).to_have_attribute("aria-pressed", "true")
+    page.keyboard.press("b")
+    expect(presenter).to_have_attribute("data-blank", "black")
+    expect(page.locator("[data-testid=show-blank]")).to_be_visible()
+    page.keyboard.press("b")
+    expect(presenter).to_have_attribute("data-blank", "")
+    page.keyboard.press("Escape")
+    expect(presenter).to_have_attribute("data-tool", "")
+    page.keyboard.press("Escape")
+    expect(presenter).to_be_hidden()
+
+    # the hidden slide is saved as hidden (show="0") and read again
+    prs, _ = save(page, tmp_path)
+    assert prs.slides[1]._element.get("show") == "0" and prs.slides[0]._element.get("show") is None
+    path = tmp_path / "hidden.pptx"
+    prs.save(path)
+    page2 = ready(app_page)
+    open_deck(page2, path)
+    assert page2.evaluate("PR.state.deck.slides.map((s) => !!s.hidden)") == [False, True, False]
+    assert page.errors == [] and page2.errors == []
+
+
+def test_spelling_panel(app_page):
+    page = ready(app_page)
+    page.click("[data-testid=add-slide]")
+    page.evaluate("""() => { const d = PR.state.deck;
+      const box = (runs) => ({ id: 'sp' + Math.random(), type: 'text', name: 'Text', x: 50, y: 50, w: 600, h: 100, rot: 0, geometry: 'rect', fill: null, line: null,
+        text: { anchor: 't', insets: [9.6, 4.8, 9.6, 4.8], paragraphs: [{ align: 'l', level: 0, bullet: null, runs }] } });
+      const run = (text, bold = false) => ({ text, size: 18, bold, italic: false, underline: false, strike: false, color: '#000000', font: 'Calibri' });
+      d.slides[0].elements = [box([run('The wrold is big')])];
+      d.slides[1].elements = [box([run('Hello wr', true), run('old and teext')])]; // (a word formatted in parts)
+      d.slides[1].notes = 'Say wrold twice: wrold.';
+      PR.state.current = 0; PR.render(); }""")
+    page.keyboard.press("F7")
+    expect(page.locator("[data-testid=spell-word]")).to_have_text(["wrold ×4", "teext"], timeout=20000)
+    # a word: its slide and element
+    page.click("[data-testid=spell-word] >> text=teext")
+    page.wait_for_function("() => PR.state.current === 1")  # (the occurrences are looked up asynchronously)
+    expect(page.locator("[data-testid=thumb]").nth(1)).to_have_class(re.compile("active"))
+    # a suggestion replaces every occurrence (also across runs and in the notes); one undo step
+    page.click("[data-testid=spell-word] >> text=wrold")
+    page.click("[data-testid=spell-suggestion] >> text=world")
+    expect(page.locator("[data-testid=spell-word]")).to_have_text(["teext"])
+    texts = page.evaluate("PR.state.deck.slides.map((s) => s.elements.map((e) => e.text.paragraphs[0].runs.map((r) => r.text).join('|')).join())")
+    assert texts == ["The world is big", "Hello world| and teext"]
+    assert page.evaluate("PR.state.deck.slides[1].notes") == "Say world twice: world."
+    expect(page.locator("[data-testid=file-name]")).to_contain_text("•")
+    page.keyboard.press("Escape")
+    page.click("[data-testid=undo]")
+    assert page.evaluate("PR.state.deck.slides[1].notes") == "Say wrold twice: wrold."
+    assert page.errors == []

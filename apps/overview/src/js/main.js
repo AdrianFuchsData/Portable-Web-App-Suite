@@ -95,6 +95,21 @@
   const available = (id) => !!embedded[id];
   const cache = new Map(); // id -> Promise<string>
 
+  /**
+   * The bundled fonts (vendor/fonts) are in the overview once: build.py empties the font block of every embedded app, and it is filled
+   * again from the overview's own copy – all fonts, or the monospaced ones (one rule per line) for an app with fonts-mono.css.
+   */
+  const ownFonts = [...document.querySelectorAll('style')].map((x) => x.textContent).find((text) => text.trimStart().startsWith('/* suite-fonts */')) || '';
+  const MONO = new Set(['Cousine', 'JetBrains Mono', 'Fira Code', 'Source Code Pro']);
+  function withFonts(text) {
+    if (!ownFonts) return text;
+    return text.replace(/<style>\n\/\* suite-fonts(-mono)? \*\/\n<\/style>/, (m, mono) => {
+      const rules = ownFonts.trim().split('\n').slice(1);
+      const chosen = mono ? rules.filter((r) => MONO.has((/font-family:"([^"]+)"/.exec(r) || [])[1])) : rules;
+      return `<style>\n/* suite-fonts${mono || ''} */\n${chosen.join('\n')}\n</style>`;
+    });
+  }
+
   /** HTML of an embedded app (gzip + base64, decoded on first use). */
   function appHtml(id) {
     if (!cache.has(id)) {
@@ -102,7 +117,7 @@
         const binary = atob(embedded[id].textContent.trim());
         const packed = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i++) packed[i] = binary.charCodeAt(i);
-        return new Response(new Blob([packed]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+        return withFonts(await new Response(new Blob([packed]).stream().pipeThrough(new DecompressionStream('gzip'))).text());
       })());
     }
     return cache.get(id);
@@ -345,6 +360,46 @@
 
   Suite.shell.mount({ id: APP, title: 'app.title', version: '%%BUILD_VERSION%%', toolbar: () => html`<${Toolbar} />`, main: () => html`<${Main} />` });
   Suite.files.dropZone(document.body, (picked) => { if (picked.length) openLocal(picked[0]).catch(fail); });
+
+  // "Create an archive from the open files" (about dialog): the open files of the applications in the tabs, in a folder per application
+  // (the frames have this page's origin; applications in windows of their own are not asked)
+  Suite.openFiles.register(async () => {
+    const out = [];
+    for (const [index, tab] of state.tabs.entries()) {
+      const w = tab.frame && tab.frame.contentWindow;
+      const files = w && w.Suite && w.Suite.openFiles ? await w.Suite.openFiles.list() : [];
+      // (tab, file and active: for the workspace)
+      for (const f of files) out.push({ ...f, name: `${tab.app}/${f.name}`, app: tab.app, file: f.name, tab: index, active: state.active === tab.id });
+    }
+    return out;
+  });
+  Suite.openFiles.setOpener(async (name, make) => { const bytes = await make(); await openTab('archive', { name, fileType: 'application/zip', bytes: bytes.buffer }); });
+
+  // workspace (shared/js/shell.js): a tab per saved tab with its files, in the saved order; the active one is shown at the end
+  Suite.preferences.setHosted(() => state.tabs.map((tab) => tab.frame && tab.frame.contentWindow));
+  Suite.workspace.setHost({
+    async restore(files, activeTab) {
+      const groups = new Map();
+      for (const f of files) {
+        if (!available(f.app)) continue;
+        const key = `${f.tab}|${f.app}`;
+        if (!groups.has(key)) groups.set(key, { app: f.app, tab: f.tab, files: [] });
+        groups.get(key).files.push(f);
+      }
+      let opened = 0, show = null;
+      for (const g of groups.values()) {
+        const tab = await new Promise((resolve) => {
+          const timer = setTimeout(() => resolve(null), 60000);
+          openTab(g.app, g.files.map((f) => ({ name: f.name, fileType: '', bytes: f.bytes.slice().buffer })), (t) => { clearTimeout(timer); resolve(t); });
+        });
+        if (!tab) continue;
+        opened += g.files.length;
+        if (g.tab === activeTab) show = tab;
+      }
+      if (show) { activate(show.id); render(); }
+      return opened;
+    },
+  });
 
   // for tests
   window.OV = Object.assign(window.OV || {}, { state, openTab, openWindow, appHtml, embedded });

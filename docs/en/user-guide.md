@@ -290,6 +290,36 @@ When you close an application with unsaved changes, the browser asks whether you
 - The choice can be switched off in the settings (`F1`, **⚙ Settings**): Open and Save as then go straight to the file
   system.
 
+### All open files as an archive
+
+`F1` → **📦 Open files** → **Create an archive from the open files…** lists the files that are open in the application – in the overview the
+files of all its tabs, each in a folder named after its application (`texteditor/notes.txt`) – with their sizes; files with
+unsaved changes are marked. Untick what you do not need and choose **Create archive**: the ZIP archive opens in the
+[archive manager](apps/archive.md) (in the overview as a new tab), where you save it, add files or take single files out.
+The archive contains the current content, including unsaved changes, in the format the application would save
+(documents as `.docx`, presentations as `.pptx`, diagrams as `.drawio` and so on). The command palette (`Ctrl+Shift+P`)
+offers the same command for all files at once. The open files stay as they are; the archive is a copy.
+
+### Workspaces: continue elsewhere
+
+A workspace (`.suite.zip`) takes everything you are working on to another computer or browser: `F1` → **🗂 Workspace** →
+**Save workspace…** lists the open files (with their sizes, unsaved changes marked) and what can be included besides:
+
+- **Settings** of this application and the general ones (in the overview: of all applications).
+- **Connections and passwords** (🔑) – only when you tick them. Credentials are **never written unencrypted**: they need a
+  password, and the settings are then stored as a KeePass database (`settings.kdbx`) inside the workspace. With a password the
+  settings alone are encrypted as well.
+
+**Open workspace…** shows what the workspace contains. In the **overview** every application opens again in its own tab, in
+the saved order, with the saved tab in front. A single application opens only its own files and names how many belong to
+others (open the workspace in the overview for those). Tick **Apply the settings** to take them over (with the KeePass
+password, if there is one); they take effect after the next start, connections are added at once (save the connection file to
+keep them).
+
+The files open as **copies**: Save asks where to save them. The workspace is an ordinary ZIP archive – the
+[archive manager](apps/archive.md) shows it, with a folder per application and `workspace.json`, which names the application,
+tab and order of each file. An example is in `examples.zip` (`examples/en/overview/office.suite.zip`).
+
 ## Application data: settings, connections and passwords
 
 Some applications store settings, connections or passwords, for example server connections of the SSH client.
@@ -315,8 +345,22 @@ KeePassXC, KeePass 2, KeePassDX or Strongbox.
 
 Preferences such as the theme, the language, the text editor's font size or the diagram libraries are kept in the
 browser. To take them to another computer or browser, open the about dialog (`F1` or **?**), expand **⚙ Settings** and
-choose **Export…**: this saves `suite-settings.json`. **Import…** in any application reads such a file and offers to
-reload the application, so that the settings take effect.
+choose **Export…**. Tick what to include:
+
+- **General** – theme, language, spelling, symbols and the other settings all applications share;
+- the settings of **this application** – in the overview: of **every application** that has settings;
+- in the applications with connections (database tool, SSH, FTP, mail, HTTP, web inspector): **Connections and passwords** of the
+  open connection file and the **relay address and sign-in**, marked 🔑 as credentials;
+- **Imported fonts** (see *Fonts*), when there are any.
+
+Then choose the format: a **KeePass database** (`suite-settings.kdbx`, encrypted with a password you enter twice; KeePass,
+KeePassXC and the suite's KeePass application can open it) or a **JSON file** (`suite-settings.json`, not encrypted). If
+credentials are ticked and the format is JSON, a warning says that anyone with the file can read them: confirm it, choose
+KeePass, or leave them out.
+
+**Import…** in any application reads such a file – for a KeePass database it first asks for the password – and lists what it
+contains for this application (in the overview: for all); untick what you do not want. Settings take effect after a reload,
+which the application offers; imported connections are added to the open connection file (save it to keep them).
 
 The connection files of the applications with connections (database tool, SSH, FTP, mail, HTTP) also carry these
 preferences – the JSON file and the KeePass database alike. When you open a connection file whose preferences differ
@@ -325,6 +369,22 @@ preferences of the whole suite.
 
 Chrome and Edge share the preferences of all applications opened from files; Firefox keeps them per application file.
 There, export and import in each application whose settings you want to move.
+
+### Fonts
+
+The suite brings free fonts along, so that documents look the same on every system – also without internet and on devices
+that have few fonts installed: **Arimo**, **Tinos** and **Cousine** (also under the names **Liberation Sans**, **Liberation Serif** and
+**Liberation Mono**, which are the same fonts), **Carlito**, **Caladea**, **Gelasio**, **Inter**, **Open Sans**, **Roboto**, **Lato**,
+**Montserrat**, **Source Serif 4**, **Merriweather**, **JetBrains Mono**, **Fira Code** and **Source Code Pro** (regular, bold, italic and
+bold italic; Latin script with the European accents). They appear in the font menus of the document editor, the spreadsheet, the
+presentation editor and the image editor's text tool; the text editor and the SSH terminal offer the monospaced ones (font menu in the
+toolbar). Office files that use **Calibri**, **Cambria**, **Arial**, **Helvetica**, **Times New Roman** or **Courier New** are shown – where
+these are not installed – with the metric-compatible fonts Carlito, Caladea, Arimo, Tinos and Cousine, so lines and pages break as in
+the original. All fonts are under the SIL Open Font License (see the licences in the about dialog).
+
+**More fonts:** `F1` → **⚙ Settings** → **Fonts** → **Import fonts…** adds TTF, OTF, WOFF or WOFF2 files – from the file system or from
+an archive. Imported fonts are kept in the browser and available in all applications (those already open after their next start);
+**×** removes one. They are included in the settings export and in workspaces (*Imported fonts*), so they move with your settings.
 
 ## Network functions and the relay
 

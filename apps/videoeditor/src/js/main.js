@@ -938,6 +938,10 @@ document.addEventListener('keydown', (e) => {
 
 Suite.bridge.receive((picked) => (/\.json$/i.test(picked.file.name) ? loadProject(picked) : importFiles([picked.file])), { app: 'videoeditor' }); // files opened from other apps ("Open with…")
 
+// the open file(s) for "Create an archive from the open files" (about dialog)
+// (the project only: its media files are not part of it)
+Suite.openFiles.register(() => (state.dirty || state.name ? [{ name: state.name || 'project.json', bytes: new TextEncoder().encode(`${JSON.stringify(projectJson(), null, 1)}\n`), dirty: state.dirty }] : []));
+
 // for tests
 window.VE = { state, tl, ex, seek, play, stop, commit, compose: (g, time) => compose(g, time) };
 document.body.dataset.ready = 'true';

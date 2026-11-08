@@ -151,6 +151,22 @@
     "version": "1.0.4",
     "license": "Apache-2.0"
   },
+  "@univerjs/docs-hyper-link": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/docs-hyper-link-ui": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/docs-thread-comment": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/docs-thread-comment-ui": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
   "@univerjs/docs-ui": {
     "version": "1.0.4",
     "license": "Apache-2.0"
@@ -187,6 +203,14 @@
     "version": "1.0.4",
     "license": "Apache-2.0"
   },
+  "@univerjs/preset-docs-hyper-link": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/preset-docs-thread-comment": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
   "@univerjs/presets": {
     "version": "1.0.4",
     "license": "Apache-2.0"
@@ -200,6 +224,14 @@
     "license": "Apache-2.0"
   },
   "@univerjs/themes": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/thread-comment": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/thread-comment-ui": {
     "version": "1.0.4",
     "license": "Apache-2.0"
   },

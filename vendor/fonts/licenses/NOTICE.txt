@@ -1,0 +1,3 @@
+The fonts are from the Fontsource packages listed in lock.json (SIL Open Font License 1.1, see the licence files).
+Liberation Sans, Liberation Serif and Liberation Mono are names given to the unmodified files of Arimo, Tinos and Cousine,
+from which Liberation 2.x is built (same glyphs and metrics).

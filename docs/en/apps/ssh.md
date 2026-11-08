@@ -31,7 +31,8 @@ Every connection opens a tab with a terminal (xterm-compatible, colours, mouse, 
 yellow connecting, red closed. **Reconnect** opens a closed session again; × closes a tab.
 
 - Select text to copy it with ⧉ (or the browser's copy shortcut); 📋 pastes the clipboard into the session.
-- **Font size** changes the size of all terminals.
+- **Font size** changes the size of all terminals, **Font** their font (the system's monospaced font, a bundled one such as JetBrains
+  Mono or Fira Code, or an imported font; remembered).
 - **⏺** records the session from now on; a second click (**⏹**, showing the recorded size) stops and saves the log as a text file
   (without colour codes). **⤓** saves what the terminal currently holds (including the scrollback of up to 5000 lines).
 - On touch screens a key bar offers Esc, Tab, Ctrl (applies to the next key, e.g. Ctrl then C), the arrow keys and a few characters that are

@@ -18,7 +18,7 @@ Univer Docs.</p>
 <td>Word (<code>.docx</code>)</td>
 <td>yes</td>
 <td>yes</td>
-<td>page size and margins, styles, headings, text formatting, lists, tables, images, hyperlinks, headers and footers</td>
+<td>page size and margins, styles, headings, text formatting, lists, tables, images, hyperlinks, headers and footers with page numbers</td>
 </tr>
 <tr>
 <td>OpenDocument (<code>.odt</code>, LibreOffice Writer)</td>
@@ -36,7 +36,13 @@ Univer Docs.</p>
 <td>Text (<code>.txt</code>, <code>.md</code>)</td>
 <td>yes</td>
 <td>yes (<code>.txt</code>)</td>
-<td>only the text; formatting, tables and images are lost</td>
+<td>only the text; formatting, tables and images are lost; a Markdown file opens as its text and is saved unchanged</td>
+</tr>
+<tr>
+<td>Markdown (<code>.md</code>)</td>
+<td>as text</td>
+<td>yes</td>
+<td>headings, bold, italic, strikethrough, links, bullet, numbered and check lists, tables and images (embedded); no colours, fonts, alignment, page layout, headers and footers</td>
 </tr>
 <tr>
 <td>Web page (<code>.html</code>)</td>
@@ -60,7 +66,8 @@ Univer Docs.</p>
 </ul>
 <h3>Printing and PDF</h3>
 <p><strong>🖨</strong> (<code>Ctrl+P</code>) prints the document with its page size and margins; choose <em>Save as PDF</em> (Chrome, Edge, Android) or <em>Print to file</em>
-(Firefox) as the printer to get a PDF. The header and footer of the document repeat on every page. The page breaks are made by the
+(Firefox) as the printer to get a PDF. The header and footer of the document repeat on every page: in Chrome and Edge as text (pictures in
+them are left out) with the right page numbers, in Firefox with empty page numbers (Firefox cannot number pages there). The page breaks are made by the
 browser, so they can differ from the editor's pages; inserted page breaks are kept. Links stay clickable in the PDF, including the
 entries of a table of contents.</p>
 <p>Documents from Word and LibreOffice are converted when they are opened; very complex layouts (text boxes, columns, tracked changes,
@@ -69,7 +76,7 @@ A "word" of more than 20,000 characters without a space (such as pasted base64 d
 every 1,000 characters so that it can be shown; they are saved with the document.</p>
 <h2>Editing</h2>
 <p>The ribbon has the tabs <strong>Start</strong> (clipboard, bold/italic/underline/strike, sub- and superscript, paragraph style, size, font, colours,
-alignment, lists, checklists) and <strong>Insert</strong> (tables, images, page breaks, headers and footers). The usual shortcuts work: <code>Ctrl+B/I/U</code>,
+alignment, lists, checklists) and <strong>Insert</strong> (tables, images, links, horizontal line, emoji, symbols, header and footer, date and time). The usual shortcuts work: <code>Ctrl+B/I/U</code>,
 <code>Ctrl+Z/Y</code>, <code>Ctrl+C/X/V</code>, <code>Ctrl+F</code> to find. The status bar shows the word count and the zoom.</p>
 <p><strong>📐 Diagram</strong> in the toolbar opens an empty diagram in the diagram editor (a new window or tab); its first <strong>Save</strong> inserts
 the diagram as a picture at the cursor, later saves update it. When a diagram picture is selected (a click on it), <strong>📐 Edit
@@ -78,11 +85,24 @@ diagram</strong> opens it in the diagram editor again. An updated picture keeps 
 file; Word shows the picture.</p>
 <p>The language of the editing component follows the suite's language switch, and it follows the dark theme too.</p>
 <p>Undo and redo are the first two buttons of the editor toolbar (also <code>Ctrl+Z</code> and <code>Ctrl+Y</code>).</p>
+<h3>Links</h3>
+<p>Select a text and press <code>Ctrl+K</code> (or <strong>Insert → 🔗</strong>, or 🔗 in the small toolbar above the selection) and enter the address:
+<code>https://…</code>, <code>mailto:…</code> or an e-mail address (it becomes a <code>mailto:</code> link); an address without a scheme gets <code>https://</code>. Pointing at (or tapping)
+a linked text shows the address with buttons to copy, edit or remove the link; <code>Ctrl+K</code> on a linked text changes it as well. Links
+are saved in Word, OpenDocument and HTML files and stay clickable in a PDF printed from the editor.</p>
 <h3>Table of contents and footnotes</h3>
 <p><strong>📑 Contents</strong> inserts a table of contents at the paragraph of the cursor: the headings (paragraph styles <em>Heading 1</em> to <em>Heading 5</em>),
 indented by level. After changing headings, click it again to update the table in place. In saved Word and OpenDocument files the
 entries are links to the headings (Ctrl+click in Word, click in LibreOffice); the table has no page numbers (the editor does not know
 them) – Word and LibreOffice can add a real index with page numbers if needed.</p>
+<h3>Comments</h3>
+<p>Select text and press <code>Ctrl+Alt+M</code> (or the comment button of the small toolbar above a selection) to comment on it; the first time, the
+editor asks for your name, which stands with your comments (change it in the settings: <code>F1</code> → <strong>⚙ Settings</strong> → <em>Your name</em>). The
+commented text is marked; <strong>💬 Comments</strong> shows the comment panel: every comment with its replies, where you answer, edit or delete your
+own comments, mark a thread as resolved (✓) and filter by resolved or open threads. Clicking a comment selects its text.</p>
+<p>Comments are kept in Word files (<code>word/comments.xml</code>; replies and the <em>resolved</em> state as Word 2013 and later writes them) and in
+OpenDocument files (<code>office:annotation</code>, with LibreOffice's replies and <em>resolved</em> state); comments of a Word or LibreOffice file show
+their authors. Web pages, Markdown, text files and printouts leave the comments out.</p>
 <h3>Spelling</h3>
 <p><strong>ABC✓</strong> (<code>F7</code>) opens the spelling panel beside the document (below it on a phone). It lists the unknown words of the document text
 (headers and footers are not checked); words with digits, words in capitals (abbreviations), web and mail addresses are skipped.</p>
@@ -99,8 +119,38 @@ one. The dictionary, the added words and the ignored words are the same as in th
 applications (see <em>Spelling</em> in the user guide); the panel works whether that selector is on or off, because the page of this
 editor is drawn as an image and cannot show underlines.</p>
 <p><strong>Footnotes and endnotes</strong> of Word and LibreOffice files are shown with their number in superscript; their texts are placed at the end
-of the document after a line, because the editor has no footnote area. Page number fields in headers and footers show the number that
-was stored in the file.</p>
+of the document after a line, because the editor has no footnote area.</p>
+<h3>Symbols, emoji, date and time</h3>
+<p><strong>Insert → Ω</strong> opens a picker of symbols (mathematics, Greek letters and common symbols), <strong>Insert → ☺</strong> one of emoji with a
+search; a click inserts the character at the cursor. The suite's symbol picker (see the user guide) works here as well.</p>
+<p><strong>Insert → Date &amp; time</strong> inserts today's date or the current time as text at the cursor: <em>Date</em> and <em>Date (long)</em> in the format of
+your region (e.g. 31/01/2026 and 31 January 2026, or 31.01.2026 and 31. Januar 2026), <em>Date (ISO)</em> as 2026-01-31, <em>Time</em>, or
+<em>Date and time</em>. It is ordinary text and does not change later; in headers and footers, the Header &amp; Footer tab inserts a date
+that can be updated.</p>
+<h3>Page setup</h3>
+<p>The page setup button on the <strong>Start</strong> tab (at the right end, on a phone in the ⋮ menu) sets:</p>
+<ul>
+<li><strong>Layout</strong>: <strong>Pages</strong> like in Word, or <strong>No pages</strong> – continuous text without page edges (as text files open).</li>
+<li><strong>Paper size</strong> (A3, A4, A5, Letter, Legal or a custom width and height) and <strong>Orientation</strong> (portrait or landscape).</li>
+<li><strong>Margins</strong> at the top, bottom, left and right, in centimetres.</li>
+</ul>
+<p><strong>Apply</strong> changes the document (undo with <code>Ctrl+Z</code>). Page size, orientation and margins are kept in Word and OpenDocument files and
+are used for printing.</p>
+<h3>Headers, footers and page numbers</h3>
+<p>Headers and footers need a document with pages (one from Word or LibreOffice, or after choosing <em>Pages</em> in the page setup). <strong>Insert → Header &amp; footer</strong>
+→ <strong>Edit header</strong> or <strong>Edit footer</strong> (or a double-click into the top or bottom margin of a page) opens it for editing and shows the tab
+<strong>Header &amp; Footer</strong>:</p>
+<ul>
+<li><strong>Page number</strong> → <em>Current page</em> or <em>Total pages</em> inserts the number at the cursor, e.g. "Page 3 of 12"; each page shows its own
+  number. <strong>Date &amp; time</strong> inserts the date or time. <em>Refresh fields</em> updates them.</li>
+<li><strong>Go to header</strong> / <strong>Go to footer</strong> switch between them; <strong>Different first page</strong> and <strong>Different odd and even pages</strong> give these pages
+  their own header and footer; the distances of header and footer from the page edge are set at the right.</li>
+<li><strong>×</strong> (or <code>Esc</code>, or a double-click into the text) returns to the text.</li>
+</ul>
+<p>On a phone, the buttons that do not fit are in the tab's ⋮ menu.</p>
+<p>Page numbers are kept as page number fields in Word (<code>PAGE</code>, <code>NUMPAGES</code>) and OpenDocument files (<code>text:page-number</code>, <code>text:page-count</code>),
+so Word and LibreOffice number the pages too; page number fields of opened files work the same way. Other fields of Word and LibreOffice
+files keep the text they showed.</p>
 <h2>Keyboard shortcuts</h2>
 <p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
 <h3>Files</h3>
@@ -132,6 +182,10 @@ was stored in the file.</p>
 <td><code>F7</code></td>
 <td>Spelling panel</td>
 </tr>
+<tr>
+<td><code>Ctrl+Alt+M</code></td>
+<td>Comment on the selected text</td>
+</tr>
 </tbody>
 </table>
 <h3>Editing</h3>
@@ -162,6 +216,10 @@ was stored in the file.</p>
 <tr>
 <td><code>Ctrl+A</code></td>
 <td>Select all</td>
+</tr>
+<tr>
+<td><code>Ctrl+K</code></td>
+<td>Insert or edit a link</td>
 </tr>
 <tr>
 <td><code>/</code></td>

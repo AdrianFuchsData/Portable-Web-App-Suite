@@ -673,6 +673,9 @@ window.addEventListener("resize", () => { if (state.doc && ["auto", "page-fit", 
 
 Suite.bridge.receive((picked) => openPicked(picked), { app: 'pdfviewer' }); // files opened from other apps ("Open with…")
 
+// the open file(s) for "Create an archive from the open files" (about dialog)
+Suite.openFiles.register(async () => (state.doc ? [{ name: state.name || 'document.pdf', bytes: await documentBytes(), dirty: !!state.dirty }] : []));
+
 // for tests
 window.PV_SIG = { verifySignatures };
 window.PV = { state, viewer, eventBus, openBytes, save, goto, setEditMode, find, pageAction, pages, documentBytes };

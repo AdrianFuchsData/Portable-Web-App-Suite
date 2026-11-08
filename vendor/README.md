@@ -12,8 +12,8 @@ version per package, rewrites imports to bare specifiers and writes an import ma
 | Manifest | Output | Content |
 |---|---|---|
 | `codemirror.esm.json` | `esm/codemirror/` | CodeMirror 6 with languages, the One Dark theme and `@codemirror/merge` (comparing two texts) |
-| `univer-sheets.esm.json` | `esm/univer-sheets/` | Univer Sheets 1.0 (presets, sheets core, conditional formatting, data validation and drawing presets – pictures –, German/English locales) with React 18 and RxJS; hyphenation dictionaries other than German/English excluded |
-| `univer-docs.esm.json` | `esm/univer-docs/` | Univer Docs 1.0 (presets, docs core and docs drawing presets, German/English locales and hyphenation dictionaries) with React 18 and RxJS |
+| `univer-sheets.esm.json` | `esm/univer-sheets/` | Univer Sheets 1.0 (presets, sheets core, conditional formatting, data validation, drawing – pictures –, sort, filter, hyperlink, find-replace and note presets, German/English locales; a `patch` of the link box keeps `mailto:` and other non-`//` addresses and makes `mailto:` – not `mailto://` – of e-mail addresses) with React 18 and RxJS; hyphenation dictionaries other than German/English excluded |
+| `univer-docs.esm.json` | `esm/univer-docs/` | Univer Docs 1.0 (presets, docs core, docs drawing and docs hyperlink presets, `@univerjs/ui` for its facade, German/English locales and hyphenation dictionaries; the same `patch` of the link box as for Univer Sheets) with React 18 and RxJS |
 | `docx.esm.json` | `esm/docx/` | docx 9 (DOCX writer) |
 | `univer-slides.esm.json` | `esm/univer-slides/` | Univer Slides 1.0 with the plugins it needs (only for the S-7 evaluation) |
 | `slides.esm.json` | `esm/slides/` | Moveable 0.53 (move/resize/rotate) for the presentation editor |

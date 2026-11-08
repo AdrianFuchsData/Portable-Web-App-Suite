@@ -1,0 +1,2 @@
+/* @univerjs/sheets-hyper-link-ui@1.0.4/facade (jsDelivr +esm) */
+import{SheetsHyperLinkParserService as n}from"@univerjs/sheets-hyper-link";import{SheetsHyperLinkResolverService as s}from"@univerjs/sheets-hyper-link-ui";import{FWorkbook as e}from"@univerjs/sheets/facade";var c=class extends e{navigateToSheetHyperlink(r){const i=this._injector.get(n),o=this._injector.get(s),t=i.parseHyperLink(r);o.navigate(t)}};e.extend(c);

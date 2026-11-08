@@ -45,11 +45,61 @@
   const MIME = { png: 'image/png', jpeg: 'image/jpeg', jpg: 'image/jpeg', gif: 'image/gif', bmp: 'image/bmp', svg: 'image/svg+xml', webp: 'image/webp' };
   const DV_RESOURCE = 'SHEET_DATA_VALIDATION_PLUGIN';
   const FILTER_RESOURCE = 'SHEET_FILTER_PLUGIN';
+  const NOTE_RESOURCE = 'SHEET_NOTE_PLUGIN'; // { sheetId: { row: { col: { note, width, height, show, id, row, col } } } }
+  const NOTE_SIZE = { width: 160, height: 72 }; // px, Univer's size of a new note
   const DV_ERROR_STYLE = { information: 0, stop: 1, warning: 2 }; // Univer DataValidationErrorStyle
   const DV_ERROR_NAMES = { 0: 'information', 1: 'stop', 2: 'warning' };
   const CF_VALUE_TYPES = { min: 'min', max: 'max', num: 'num', percent: 'percent', percentile: 'percentile', formula: 'formula' };
   const TEXT_OPERATORS = { containsText: 'containsText', notContains: 'notContainsText', beginsWith: 'beginsWith', endsWith: 'endsWith' };
   const uid = () => Math.random().toString(36).slice(2, 10);
+  const HYPERLINK = 0; // Univer CustomRangeType.HYPERLINK
+
+  // ---- hyperlinks ------------------------------------------------------------------------------------
+  // Univer keeps a link as a custom range of the cell's rich text (cell.p); links to a place in the workbook are
+  // "#gid=<sheet id>&range=A1" (or "#rangeid=<defined name id>"). Excel keeps one link per cell: an address, or a location "Sheet!A1".
+
+  const quoteSheet = (name) => (/^[A-Za-z_][A-Za-z0-9_.]*$/.test(name) ? name : "'" + name.replace(/'/g, "''") + "'");
+
+  /** Excel link target -> Univer URL (sheetIds: sheet name -> Univer sheet id). */
+  function univerLink(target, sheetIds) {
+    const m = /^#?(?:'((?:[^']|'')+)'|([^!]+))!\$?([A-Z]+)\$?(\d+)(?::\$?([A-Z]+)\$?(\d+))?$/i.exec(target || '');
+    if (!m) return target;
+    const name = m[1] !== undefined ? m[1].replace(/''/g, "'") : m[2];
+    const id = sheetIds[name];
+    if (!id) return target;
+    return `#gid=${id}&range=${(m[3] + m[4] + (m[5] ? ':' + m[5] + m[6] : '')).toUpperCase()}`;
+  }
+
+  /**
+   * Univer URL -> { target } (an address) or { location } (a place in the workbook), or null for a place that no longer exists
+   * (sheetNames: Univer sheet id -> sheet name; names: defined name id -> { formulaOrRefString }).
+   */
+  function excelLink(url, sheetNames, names = {}) {
+    const sheet = /^#gid=([^&]+)(?:&range=([A-Z0-9:$]+))?$/i.exec(url || '');
+    if (sheet) return sheetNames[sheet[1]] ? { location: quoteSheet(sheetNames[sheet[1]]) + '!' + (sheet[2] || 'A1').replace(/\$/g, '') } : null;
+    const name = /^#rangeid=(.+)$/.exec(url || '');
+    if (name) { const ref = names[name[1]] && String(names[name[1]].formulaOrRefString || '').replace(/^=/, '').replace(/\$/g, ''); return ref && ref.includes('!') ? { location: ref } : null; }
+    return { target: url };
+  }
+
+  /** Rich text of a cell that shows `text` as a link to `url`. */
+  function linkParagraph(text, url, tooltip) {
+    return {
+      id: 'd',
+      body: {
+        dataStream: text + '\r\n',
+        textRuns: [],
+        paragraphs: [{ startIndex: text.length }],
+        customRanges: text.length ? [{ startIndex: 0, endIndex: text.length - 1, rangeType: HYPERLINK, rangeId: uid(), properties: { url, ...(tooltip ? { tooltip } : {}) } }] : [],
+      },
+      documentStyle: {},
+    };
+  }
+
+  /** Plain text of a cell's rich text (without the closing paragraph and section marks). */
+  const paragraphText = (p) => String((p && p.body && p.body.dataStream) || '').replace(/\r?\n$/, '').replace(/[\r\n]+$/, '').replace(/\r/g, '\n');
+  /** The first link of a cell's rich text, or null. */
+  const firstLink = (p) => (p && p.body && (p.body.customRanges || []).find((r) => r.rangeType === HYPERLINK && r.properties && r.properties.url)) || null;
 
   // ---- helpers ---------------------------------------------------------------------------------
 
@@ -242,7 +292,7 @@
   // ---- import ----------------------------------------------------------------------------------
 
   /** Convert a loaded ExcelJS workbook to Univer workbook data (IWorkbookData). */
-  function fromExcelJS(workbook, name = 'Workbook', { filters = {} } = {}) {
+  function fromExcelJS(workbook, name = 'Workbook', { filters = {}, links = {}, notes: notesByName = null, charts = {} } = {}) {
     const theme = themeColors(workbook);
     const styles = {};
     const styleIds = new Map();
@@ -262,6 +312,8 @@
     const cfRules = {};
     const dvRules = {};
     const filterModels = {};
+    const notes = {};
+    const sheetIds = Object.fromEntries(workbook.worksheets.map((ws, index) => [ws.name, 'sheet' + (index + 1)]));
     workbook.worksheets.forEach((ws, index) => {
       const id = 'sheet' + (index + 1);
       const cellData = {};
@@ -270,7 +322,10 @@
       const shared = {}; // master address -> formula id
       let formulaIds = 0;
       ws.eachRow({ includeEmpty: true }, (row, r) => {
-        if (row.height || row.hidden) rowData[r - 1] = { ...(row.height ? { h: Math.round((row.height * 96) / 72) } : {}), ...(row.hidden ? { hd: 1 } : {}) };
+        if (row.height || row.hidden || row.outlineLevel) {
+          rowData[r - 1] = { ...(row.height ? { h: Math.round((row.height * 96) / 72) } : {}), ...(row.hidden ? { hd: 1 } : {}),
+            ...(row.outlineLevel ? { custom: { outline: row.outlineLevel } } : {}) }; // (groups: the spreadsheet's outline.js)
+        }
         row.eachCell({ includeEmpty: true }, (cell, c) => {
           const data = {};
           const s = styleId(cell.style);
@@ -287,7 +342,10 @@
             case T.Date: data.v = dateToSerial(v); data.t = CellValueType.NUMBER; break;
             case T.Boolean: data.v = v ? 1 : 0; data.t = CellValueType.BOOLEAN; break;
             case T.RichText: data.v = v.richText.map((run) => run.text).join(''); data.t = CellValueType.STRING; break;
-            case T.Hyperlink: data.v = typeof v.text === 'string' ? v.text : (v.text && v.text.richText ? v.text.richText.map((x) => x.text).join('') : v.hyperlink); data.t = CellValueType.STRING; break;
+            case T.Hyperlink: // (the link itself is read from the sheet's XML: links)
+              data.v = typeof v.text === 'string' ? v.text : (v.text && v.text.richText ? v.text.richText.map((x) => x.text).join('') : v.hyperlink);
+              data.t = CellValueType.STRING;
+              break;
             case T.Error: data.v = v.error; data.t = CellValueType.STRING; break;
             case T.Formula: {
               if (v.sharedFormula) { // follower of a shared formula
@@ -309,8 +367,30 @@
               if (v !== null && v !== undefined) { data.v = String(v); data.t = CellValueType.STRING; }
           }
           if (Object.keys(data).length) (cellData[r - 1] = cellData[r - 1] || {})[c - 1] = data;
+          if (cell.note && !notesByName) { // Excel's notes (legacy comments), when they were not read from the XML: text only
+            const text = typeof cell.note === 'string' ? cell.note : ((cell.note && cell.note.texts) || []).map((x) => x.text || '').join('');
+            if (text) (((notes[id] = notes[id] || {})[r - 1] = notes[id][r - 1] || {})[c - 1] = { note: text, ...NOTE_SIZE, show: false, id: uid(), row: r - 1, col: c - 1 });
+          }
         });
       });
+      for (const { ref, text } of (notesByName && notesByName[ws.name]) || []) {
+        const { startRow: row, startColumn: col } = parseRange(ref.replace(/\$/g, ''));
+        ((notes[id] = notes[id] || {})[row] = notes[id][row] || {})[col] = { note: text, ...NOTE_SIZE, show: false, id: uid(), row, col };
+      }
+      for (const link of links[ws.name] || []) {
+        const url = link.location ? (link.target ? link.target + '#' + link.location : univerLink(link.location, sheetIds)) : link.target;
+        if (!url) continue;
+        const r = parseRange(link.ref);
+        for (let row = r.startRow; row <= r.endRow; row++) {
+          for (let column = r.startColumn; column <= r.endColumn; column++) {
+            const cell = ((cellData[row] = cellData[row] || {})[column] = (cellData[row] || {})[column] || {});
+            if (cell.f) continue; // (a formula keeps its own value; Univer links text only)
+            const text = cell.v === undefined || cell.v === null || cell.v === '' ? (link.display || link.location || link.target) : String(cell.v);
+            if (cell.v === undefined || cell.v === null || cell.v === '') { cell.v = text; cell.t = CellValueType.STRING; }
+            cell.p = linkParagraph(text, url, link.tooltip);
+          }
+        }
+      }
       // a master cell may come after a follower in reading order: make sure every master has its id
       for (const [address, si] of Object.entries(shared)) {
         const { startRow, startColumn } = parseRange(address);
@@ -321,6 +401,7 @@
         const entry = {};
         if (col.width) entry.w = Math.round(col.width * 7 + 5);
         if (col.hidden) entry.hd = 1;
+        if (col.outlineLevel) entry.custom = { outline: col.outlineLevel };
         if (Object.keys(entry).length) columnData[c] = entry;
       });
       const view = (ws.views && ws.views[0]) || {};
@@ -351,10 +432,12 @@
       sheetOrder.push(id);
     });
     const images = importImages(workbook, sheets, sheetOrder);
+    importCharts(charts, sheets, sheetOrder, images);
     const resources = [];
     if (Object.values(cfRules).some((x) => x.length)) resources.push({ name: CF_RESOURCE, data: JSON.stringify(cfRules) });
     if (Object.values(dvRules).some((x) => x.length)) resources.push({ name: DV_RESOURCE, data: JSON.stringify(dvRules) });
     if (Object.keys(filterModels).length) resources.push({ name: FILTER_RESOURCE, data: JSON.stringify(filterModels) });
+    if (Object.keys(notes).length) resources.push({ name: NOTE_RESOURCE, data: JSON.stringify(notes) });
     const data = { id: 'workbook-' + Math.random().toString(36).slice(2), name, appVersion: '1.0.0', locale: 'enUS', styles, sheetOrder, sheets, resources };
     // pictures are inserted by the app after loading (Univer places them): { sheetId: [{ source, column, columnOffset, row, rowOffset, width, height }] }
     if (Object.keys(images).length) Object.defineProperty(data, 'images', { value: images, enumerable: false });
@@ -699,6 +782,101 @@
     return writeZip(zip);
   }
 
+  // ---- hyperlinks in the sheet XML ------------------------------------------------------------------------------
+  // ExcelJS drops links to a place in the workbook (<hyperlink location="…"/> without a relationship) and writes every link as
+  // an external relationship; links are therefore read from and written into the sheet parts directly.
+
+  const xmlDecode = (v) => String(v).replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+  const attr = (tag, name) => { const m = new RegExp(`\\s${name}="([^"]*)"`).exec(tag); return m ? xmlDecode(m[1]) : undefined; };
+  const relsPath = (path) => path.replace(/([^/]+)$/, '_rels/$1.rels');
+
+  /** { sheet name: [{ ref, target, location, tooltip, display }] } of an XLSX file. */
+  async function readHyperlinks(buffer) {
+    const zip = readZip(buffer);
+    const out = {};
+    if (!zip) return out;
+    const text = async (name) => { const e = zip.entries.find((x) => x.name === name); return e ? new TextDecoder().decode(await zipPart(zip, e)) : ''; };
+    for (const { name, path } of await sheetParts(zip)) {
+      const xml = await text(path);
+      const block = /<hyperlinks>([\s\S]*?)<\/hyperlinks>/.exec(xml);
+      if (!block) continue;
+      const rels = {};
+      for (const m of (await text(relsPath(path))).matchAll(/<Relationship\b[^>]*>/g)) rels[attr(m[0], 'Id')] = attr(m[0], 'Target');
+      const list = [];
+      for (const m of block[1].matchAll(/<hyperlink\b[^>]*>/g)) {
+        const ref = attr(m[0], 'ref'), id = attr(m[0], 'r:id');
+        if (ref) list.push({ ref, target: id ? rels[id] : undefined, location: attr(m[0], 'location'), tooltip: attr(m[0], 'tooltip'), display: attr(m[0], 'display') });
+      }
+      if (list.length) out[name] = list;
+    }
+    return out;
+  }
+
+  /**
+   * { sheet name: [{ ref, text }] }: the notes (legacy comments) of an XLSX file, read from the comments part of each sheet. ExcelJS
+   * reads only formatted runs (<r>), so plain notes come out empty, and it drops the notes of cells that have no <c> element.
+   */
+  async function readNotes(buffer) {
+    const zip = readZip(buffer);
+    const out = {};
+    if (!zip) return out;
+    const text = async (name) => { const e = zip.entries.find((x) => x.name === name); return e ? new TextDecoder().decode(await zipPart(zip, e)) : ''; };
+    for (const { name, path } of await sheetParts(zip)) {
+      const rel = [...(await text(relsPath(path))).matchAll(/<Relationship\b[^>]*>/g)].map((m) => m[0]).find((r) => /\/relationships\/comments"/.test(r));
+      const target = rel && attr(rel, 'Target');
+      if (!target) continue;
+      const part = target.startsWith('/') ? target.slice(1) : new URL(target, 'http://x/' + path).pathname.slice(1);
+      const list = [];
+      for (const m of (await text(part)).matchAll(/<comment\b([^>]*)>([\s\S]*?)<\/comment>/g)) {
+        const ref = attr(m[1], 'ref');
+        const body = [...m[2].matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>|<t\b[^>]*\/>/g)].map((t) => xmlDecode(t[1] || '')).join('');
+        if (ref && body) list.push({ ref, text: body.replace(/\r\n?/g, '\n') });
+      }
+      if (list.length) out[name] = list;
+    }
+    return out;
+  }
+
+  // elements that follow <hyperlinks> in a worksheet (CT_Worksheet)
+  const AFTER_HYPERLINKS = ['printOptions', 'pageMargins', 'pageSetup', 'headerFooter', 'rowBreaks', 'colBreaks', 'customProperties', 'cellWatches',
+    'ignoredErrors', 'smartTags', 'drawing', 'legacyDrawing', 'legacyDrawingHF', 'picture', 'oleObjects', 'controls', 'webPublishItems', 'tableParts', 'extLst'];
+  const REL_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+
+  /** Write the links ({ sheet name: [{ ref, target | location, tooltip }] }) into the sheet parts (and external targets into their relationships). */
+  async function writeHyperlinks(buffer, bySheetName) {
+    const zip = readZip(buffer);
+    if (!zip) return buffer;
+    for (const { name, path } of await sheetParts(zip)) {
+      const links = bySheetName[name];
+      const e = links && zip.entries.find((x) => x.name === path);
+      if (!e) continue;
+      let xml = new TextDecoder().decode(await zipPart(zip, e)).replace(/<hyperlinks>[\s\S]*?<\/hyperlinks>|<hyperlinks\s*\/>/, '');
+      const relsName = relsPath(path);
+      let relsEntry = zip.entries.find((x) => x.name === relsName);
+      let rels = relsEntry ? new TextDecoder().decode(await zipPart(zip, relsEntry))
+        : `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>`;
+      const used = new Set([...rels.matchAll(/\bId="([^"]+)"/g)].map((m) => m[1]));
+      let next = 1;
+      const items = links.map((link) => {
+        const tip = link.tooltip ? ` tooltip="${xmlEscape(link.tooltip)}"` : '';
+        if (link.location) return `<hyperlink ref="${link.ref}" location="${xmlEscape(link.location)}" display="${xmlEscape(link.location)}"${tip}/>`;
+        while (used.has('rIdLink' + next)) next++;
+        const id = 'rIdLink' + next;
+        used.add(id);
+        rels = rels.replace('</Relationships>', `<Relationship Id="${id}" Type="${REL_NS}/hyperlink" Target="${xmlEscape(link.target)}" TargetMode="External"/></Relationships>`);
+        return `<hyperlink ref="${link.ref}" r:id="${id}"${tip}/>`;
+      });
+      const block = `<hyperlinks>${items.join('')}</hyperlinks>`;
+      const follower = AFTER_HYPERLINKS.map((tag) => xml.search(new RegExp(`<${tag}[\\s/>]`))).filter((i) => i >= 0).sort((a, b) => a - b)[0];
+      xml = follower !== undefined ? xml.slice(0, follower) + block + xml.slice(follower) : xml.replace('</worksheet>', block + '</worksheet>');
+      if (!/<worksheet\b[^>]*\sxmlns:r=/.test(xml)) xml = xml.replace(/<worksheet\b/, `<worksheet xmlns:r="${REL_NS}"`);
+      e.replacement = new TextEncoder().encode(xml);
+      if (!relsEntry) { relsEntry = { name: relsName }; zip.entries.push(relsEntry); }
+      relsEntry.replacement = new TextEncoder().encode(rels);
+    }
+    return writeZip(zip);
+  }
+
   // ---- pictures ------------------------------------------------------------------------------------------------
 
   const columnWidthPx = (sheet, c) => ((sheet.columnData || {})[c] && sheet.columnData[c].w) || sheet.defaultColumnWidth || DEFAULT_COLUMN_WIDTH;
@@ -740,6 +918,87 @@
       }
     });
     return out;
+  }
+
+  // ---- charts ------------------------------------------------------------------------------------------------------
+  // ExcelJS drops charts. They are read from the drawing parts of the sheets (DrawingML chart parts with their cached values) and
+  // become pictures with the chart's data (shared/js/charts.js), which the suite can edit; they are saved as such pictures.
+
+  /** { sheet name: [{ xml, from: { col, colOff, row, rowOff }, to | ext }] } of an XLSX file. */
+  async function readCharts(buffer) {
+    const zip = readZip(buffer);
+    const out = {};
+    if (!zip || !(window.Suite && Suite.charts)) return out;
+    const text = async (name) => { const e = zip.entries.find((x) => x.name === name); return e ? new TextDecoder().decode(await zipPart(zip, e)) : ''; };
+    const resolve = (base, target) => {
+      if (target.startsWith('/')) return target.slice(1);
+      const parts = base.split('/').slice(0, -1);
+      for (const seg of target.split('/')) { if (seg === '..') parts.pop(); else if (seg !== '.') parts.push(seg); }
+      return parts.join('/');
+    };
+    const relsOf = async (path) => {
+      const map = {};
+      for (const m of (await text(relsPath(path))).matchAll(/<Relationship\b[^>]*>/g)) {
+        const id = attr(m[0], 'Id'), target = attr(m[0], 'Target'), type = attr(m[0], 'Type') || '';
+        if (id && target) map[id] = { target: resolve(path, target), type };
+      }
+      return map;
+    };
+    const kid = (el, name) => (el ? [...el.children].find((x) => x.localName === name) : null);
+    const n = (el, name) => Number((kid(el, name) || {}).textContent || 0);
+    for (const { name, path } of await sheetParts(zip)) {
+      const drawing = Object.values(await relsOf(path)).find((r) => r.type.endsWith('/drawing'));
+      if (!drawing) continue;
+      const doc = new DOMParser().parseFromString(await text(drawing.target), 'application/xml');
+      const rels = await relsOf(drawing.target);
+      for (const anchor of [...doc.documentElement.children].filter((x) => /Anchor$/.test(x.localName))) {
+        const ref = [...anchor.getElementsByTagName('*')].find((x) => x.localName === 'chart' && /chart$/.test(x.namespaceURI || ''));
+        const rid = ref && (ref.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id') || ref.getAttribute('r:id'));
+        const part = rid && rels[rid];
+        if (!part) continue;
+        const pos = (el) => (el ? { col: n(el, 'col'), colOff: n(el, 'colOff'), row: n(el, 'row'), rowOff: n(el, 'rowOff') } : null);
+        const ext = kid(anchor, 'ext');
+        (out[name] = out[name] || []).push({
+          xml: await text(part.target), from: pos(kid(anchor, 'from')), to: pos(kid(anchor, 'to')),
+          ext: ext ? { cx: Number(ext.getAttribute('cx')), cy: Number(ext.getAttribute('cy')) } : null,
+        });
+      }
+    }
+    return out;
+  }
+
+  /** The values of a reference like 'Sheet 1'!$B$2:$B$5 (row by row) from the imported sheets. */
+  function cellsOf(formula, sheets, sheetOrder) {
+    const m = /^(?:'((?:[^']|'')+)'|([^!]+))!\$?([A-Z]+)\$?(\d+)(?::\$?([A-Z]+)\$?(\d+))?$/.exec(String(formula).trim());
+    if (!m) return [];
+    const name = m[1] ? m[1].replace(/''/g, "'") : m[2];
+    const sheet = sheets[sheetOrder.find((id) => sheets[id].name === name)];
+    if (!sheet) return [];
+    const col = (s) => [...s].reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0) - 1;
+    const [c0, r0] = [col(m[3]), Number(m[4]) - 1], [c1, r1] = m[5] ? [col(m[5]), Number(m[6]) - 1] : [c0, r0];
+    const out = [];
+    for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) { const cell = (sheet.cellData[r] || {})[c]; out.push(cell ? cell.v ?? null : null); }
+    return out;
+  }
+
+  /** The charts read by readCharts as pictures with their data, next to the other pictures of the sheets. */
+  function importCharts(charts, sheets, sheetOrder, images) {
+    for (const id of sheetOrder) {
+      const sheet = sheets[id];
+      for (const ch of charts[sheet.name] || []) {
+        const model = Suite.charts.fromChartXml(ch.xml, { resolve: (formula) => cellsOf(formula, sheets, sheetOrder) });
+        if (!model || !ch.from) continue;
+        let width = ch.ext ? ch.ext.cx / EMU_PER_PX : 0, height = ch.ext ? ch.ext.cy / EMU_PER_PX : 0;
+        if (!width && ch.to) {
+          width = (ch.to.colOff - ch.from.colOff) / EMU_PER_PX;
+          for (let c = ch.from.col; c < ch.to.col; c++) width += columnWidthPx(sheet, c);
+          height = (ch.to.rowOff - ch.from.rowOff) / EMU_PER_PX;
+          for (let r = ch.from.row; r < ch.to.row; r++) height += rowHeightPx(sheet, r);
+        }
+        width = Math.max(80, Math.round(width || 480)); height = Math.max(60, Math.round(height || 288));
+        (images[id] = images[id] || []).push({ source: Suite.charts.toPng(model, width, height), column: ch.from.col, columnOffset: ch.from.colOff / EMU_PER_PX, row: ch.from.row, rowOffset: ch.from.rowOff / EMU_PER_PX, width, height });
+      }
+    }
   }
 
   /** Pictures of a sheet (Univer drawing resource) into an ExcelJS worksheet: anchored at the cell, with the offset and size. */
@@ -837,11 +1096,40 @@
     const zip = readZip(buffer);
     if (!zip) return buffer;
     let changed = false;
+    // ExcelJS reads comments (notes) only from parts named xl/comments<n>.xml and their shapes only from xl/drawings/vmlDrawing<n>.vml;
+    // openpyxl writes xl/comments/comment1.xml and xl/drawings/commentsDrawing1.vml: such parts are renamed
+    const taken = new Set(zip.entries.map((e) => e.name));
+    const KINDS = [['comments', /^xl\/comments\d+\.xml$/, (n) => `xl/comments${n}.xml`, (n) => `../comments${n}.xml`],
+      ['vmlDrawing', /^xl\/drawings\/vmlDrawing\d+\.vml$/, (n) => `xl/drawings/vmlDrawing${n}.vml`, (n) => `../drawings/vmlDrawing${n}.vml`]];
+    for (const e of zip.entries) {
+      if (!/^xl\/worksheets\/_rels\/[^/]+\.rels$/.test(e.name)) continue;
+      const raw = await zipPart(zip, e);
+      if (!raw) continue;
+      let xml = new TextDecoder().decode(raw);
+      for (const [type, expected, nameOf, targetOf] of KINDS) {
+        for (const m of [...xml.matchAll(new RegExp(`<Relationship\\b[^>]*/relationships/${type}"[^>]*>`, 'g'))]) {
+          const target = /\bTarget="([^"]+)"/.exec(m[0]);
+          if (!target) continue;
+          const path = target[1].startsWith('/') ? target[1].slice(1) : new URL(target[1], 'http://x/xl/worksheets/').pathname.slice(1);
+          const part = zip.entries.find((x) => x.name === path);
+          if (!part || expected.test(path)) continue;
+          let n = 1;
+          while (taken.has(nameOf(n))) n++;
+          taken.add(nameOf(n));
+          part.replacement = await zipPart(zip, part);
+          if (!part.replacement) continue;
+          part.name = nameOf(n);
+          xml = xml.replace(m[0], m[0].replace(target[0], `Target="${targetOf(n)}"`));
+          e.replacement = new TextEncoder().encode(xml);
+          changed = true;
+        }
+      }
+    }
     const DRAWING_NS = 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing';
     for (const e of zip.entries) {
       const rels = /\.rels$/.test(e.name), drawing = /^xl\/drawings\/[^/]+\.xml$/.test(e.name);
       if (!rels && !drawing) continue;
-      const raw = await zipPart(zip, e);
+      const raw = e.replacement || await zipPart(zip, e);
       if (!raw) continue;
       const xml = new TextDecoder().decode(raw);
       let fixed = xml;
@@ -862,7 +1150,10 @@
     const workbook = new ExcelJS.Workbook();
     const normalized = await normalizeRelationships(buffer);
     await workbook.xlsx.load(normalized);
-    return fromExcelJS(workbook, name, { filters: await readAutoFilters(normalized).catch(() => ({})) });
+    return fromExcelJS(workbook, name, {
+      filters: await readAutoFilters(normalized).catch(() => ({})), links: await readHyperlinks(normalized).catch(() => ({})), notes: await readNotes(normalized).catch(() => null),
+      charts: await readCharts(normalized).catch((e) => { console.warn(e); return {}; }),
+    });
   }
 
   /** Convert any format SheetJS can read to XLSX (values, formulas, merges, column widths). */
@@ -912,6 +1203,7 @@
     const dvRules = resource(data, DV_RESOURCE);
     const drawings = resource(data, DRAWING_RESOURCE);
     const filters = resource(data, FILTER_RESOURCE);
+    const notes = resource(data, NOTE_RESOURCE);
     for (const id of data.sheetOrder) {
       const sheet = data.sheets[id];
       const freeze = sheet.freeze && (sheet.freeze.xSplit > 0 || sheet.freeze.ySplit > 0) ? sheet.freeze : null;
@@ -927,11 +1219,15 @@
         const column = ws.getColumn(Number(c) + 1);
         if (col.w) column.width = Math.max(0, (col.w - 5) / 7);
         if (col.hd) column.hidden = true;
+        if (col.custom && col.custom.outline) column.outlineLevel = Math.min(7, col.custom.outline);
       }
       for (const [r, row] of Object.entries(sheet.rowData || {})) {
         const excelRow = ws.getRow(Number(r) + 1);
         if (row.h && row.h !== sheet.defaultRowHeight) excelRow.height = (row.h * 72) / 96;
         if (row.hd) excelRow.hidden = true;
+        if (row.custom && row.custom.outline) excelRow.outlineLevel = Math.min(7, row.custom.outline);
+        // ExcelJS writes a row only with cells or a height: hidden or grouped empty rows get their height
+        if ((row.hd || (row.custom && row.custom.outline)) && !excelRow.height) excelRow.height = ((row.h || sheet.defaultRowHeight || DEFAULT_ROW_HEIGHT) * 72) / 96;
       }
       const cells = sheet.cellData || {};
       const masters = {}; // formula id -> {row, column, formula}
@@ -954,11 +1250,20 @@
             : isBool ? (cell.v === true || cell.v === 1 || cell.v === '1' || String(cell.v).toUpperCase() === 'TRUE')
               : cell.t === CellValueType.NUMBER && typeof cell.v !== 'number' && cell.v !== '' && !Number.isNaN(Number(cell.v)) ? Number(cell.v)
                 : cell.v;
+          const link = !formula && firstLink(cell.p);
+          // rich text (e.g. after inserting a link) is what the cell shows; its plain text is written
+          const text = !formula && cell.p && cell.p.body ? paragraphText(cell.p) : null;
           if (formula) excelCell.value = { formula: formula.replace(/^=/, ''), result: value };
+          else if (link) excelCell.value = text || String(value ?? ''); // (the link is added to the sheet's XML: exportXlsx)
+          else if (text !== null && text !== '' && typeof value !== 'number' && typeof value !== 'boolean') excelCell.value = text;
           else if (value !== undefined && value !== '') excelCell.value = value;
           const s = cellStyle(cell, styles);
           if (s) excelCell.style = toExcelStyle(s);
+          if (link && !(s && s.cl)) excelCell.font = { ...(excelCell.font || {}), color: { argb: 'FF0563C1' }, underline: true }; // (Excel's "Hyperlink" look)
         }
+      }
+      for (const [r, row] of Object.entries(notes[id] || {})) {
+        for (const [c, note] of Object.entries(row || {})) if (note && note.note) ws.getCell(Number(r) + 1, Number(c) + 1).note = String(note.note);
       }
       for (const m of sheet.mergeData || []) ws.mergeCells(m.startRow + 1, m.startColumn + 1, m.endRow + 1, m.endColumn + 1);
       exportConditionalFormats(ws, cfRules[id]);
@@ -973,12 +1278,35 @@
     return workbook;
   }
 
+  /** { sheet name: [{ ref, target | location, tooltip }] } of the cells with links (the first link of each cell). */
+  function cellLinks(data) {
+    const sheetNames = Object.fromEntries(data.sheetOrder.map((id) => [id, data.sheets[id].name]));
+    const names = resource(data, 'SHEET_DEFINED_NAME_PLUGIN');
+    const out = {};
+    for (const id of data.sheetOrder) {
+      const list = [];
+      for (const [r, row] of Object.entries(data.sheets[id].cellData || {})) {
+        for (const [c, cell] of Object.entries(row || {})) {
+          const link = cell && !cell.f && !cell.si && firstLink(cell.p);
+          if (!link) continue;
+          const where = excelLink(link.properties.url, sheetNames, names);
+          if (where) list.push({ ref: columnName(Number(c)) + (Number(r) + 1), ...where, tooltip: link.properties.tooltip || undefined });
+        }
+      }
+      if (list.length) out[data.sheets[id].name] = list;
+    }
+    return out;
+  }
+
   async function exportXlsx(data) {
-    const buffer = await toExcelJS(data).xlsx.writeBuffer();
+    let buffer = await toExcelJS(data).xlsx.writeBuffer();
     const filters = resource(data, FILTER_RESOURCE);
     const bySheetName = {};
     for (const [id, model] of Object.entries(filters)) if (data.sheets[id] && model && model.ref) bySheetName[data.sheets[id].name] = model;
-    return new Uint8Array(Object.keys(bySheetName).length ? await writeAutoFilters(buffer, bySheetName) : buffer);
+    if (Object.keys(bySheetName).length) buffer = await writeAutoFilters(buffer, bySheetName);
+    const links = cellLinks(data);
+    if (Object.keys(links).length) buffer = await writeHyperlinks(buffer, links);
+    return new Uint8Array(buffer);
   }
 
   /** Export to 'xlsx', 'ods' or 'csv' (CSV: first sheet). Resolves to a Uint8Array. */
@@ -989,5 +1317,5 @@
     return new Uint8Array(convertWithSheetJS(xlsx, format));
   }
 
-  Suite.univerXlsx = { importXlsx, importRows, importFile, exportXlsx, exportFile, fromExcelJS, toExcelJS, shiftFormula };
+  Suite.univerXlsx = { importXlsx, importRows, importFile, exportXlsx, exportFile, fromExcelJS, toExcelJS, shiftFormula, normalizeRelationships };
 })(window.Suite = window.Suite || {});

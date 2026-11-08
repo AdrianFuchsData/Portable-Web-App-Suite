@@ -36,8 +36,9 @@ unsaved changes, the editor asks first. With the keyboard, move to a tab with `T
 
 With several cursors, everything you type, delete or paste happens at every cursor. `Esc` returns to one cursor.
 
-The buttons ↩ (word wrap), · (show spaces and tabs), A− and A+ (font size) change the view; the editor remembers
-these settings.
+The buttons ↩ (word wrap), · (show spaces and tabs), A− and A+ (font size) and the font menu (the system's monospaced font, or one of
+the bundled ones – Cousine/Liberation Mono, JetBrains Mono, Fira Code, Source Code Pro – and imported fonts, see the user guide's
+*Fonts*) change the view; the editor remembers these settings.
 
 Every document has its own undo history: ↶ and ↷ in the toolbar, or `Ctrl+Z` and `Ctrl+Y` / `Ctrl+Shift+Z`.
 

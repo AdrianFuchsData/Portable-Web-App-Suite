@@ -4,15 +4,22 @@
 images and tables on slides, and presenting in full screen. Files are PowerPoint presentations (<code>.pptx</code>).</p>
 <h2>Files</h2>
 <ul>
-<li><strong>Open</strong> (<code>Ctrl+O</code>) opens a <code>.pptx</code> file (also templates <code>.potx</code> and slide shows <code>.ppsx</code>, which are saved as a new <code>.pptx</code>); you can also drop
-  the file onto the window. <strong>New</strong> starts an empty presentation.</li>
-<li><strong>Save</strong> (<code>Ctrl+S</code>) writes the <code>.pptx</code> file: directly into the file in Chrome/Edge on the desktop, as a download in Firefox and on Android
-  (replace the original file with it). <strong>Save as</strong> (<code>Ctrl+Shift+S</code>) asks for a new name.</li>
+<li><strong>Open</strong> (<code>Ctrl+O</code>) opens a PowerPoint file <code>.pptx</code> (also templates <code>.potx</code> and slide shows <code>.ppsx</code>, which are saved as a new <code>.pptx</code>) or an
+  OpenDocument presentation <code>.odp</code> of LibreOffice Impress (also templates <code>.otp</code>); you can also drop the file onto the window. <strong>New</strong> starts an
+  empty presentation.</li>
+<li><strong>Save</strong> (<code>Ctrl+S</code>) writes the file in its format: directly into the file in Chrome/Edge on the desktop, as a download in Firefox and on
+  Android (replace the original file with it). <strong>Save as</strong> (<code>Ctrl+Shift+S</code>) asks for a new name and the format – PowerPoint (<code>.pptx</code>) or
+  OpenDocument (<code>.odp</code>).</li>
 <li><strong>Print / PDF</strong> prints every slide on its own page; choose "Save as PDF" in the print dialog to get a PDF.</li>
 </ul>
 <p>Slides from PowerPoint keep their texts, fonts, colours, positions, shapes, pictures and tables, including the formatting inherited from the
 slide layouts and masters, the speaker notes, slide transitions and entrance animations. Other animation effects, charts, SmartArt and videos are
 not supported. Keep the original file until you have checked the result.</p>
+<p>OpenDocument presentations keep slides with their size, background and hidden state, texts with their formatting and lists, text boxes,
+shapes (rectangle, rounded rectangle, ellipse, triangles, diamond, parallelogram, trapezoid, pentagon, hexagon, arrows, star, line), pictures
+(also the picture LibreOffice stores for a chart or another embedded object), tables, groups, rotation and speaker notes, in both directions;
+the master's own shapes and background appear (locked) on its slides. Transitions, animations, gradients and free-form shapes are not
+read or written.</p>
 <p><strong>Web slides</strong> (reveal.js presentations of the <em>Web slides</em> app, <code>.html</code>, or reveal.js Markdown, <code>.md</code>) can be opened as well: their blocks are
 laid out from top to bottom on PowerPoint slides (headings, texts, lists, code, quotes, images, tables), sub-slides follow their main slide,
 speaker notes, background colours, transitions and fragments (as entrance animations) are taken over, and text on dark backgrounds becomes
@@ -22,6 +29,9 @@ white. Saving then creates a <code>.pptx</code> file next to the original. In th
 <p>The thumbnails on the left show all slides: click one to edit it, drag it to another position to reorder. <strong>+ New slide</strong> adds an empty slide
 after the current one. Without a selected element, the panel on the right sets the <strong>background</strong> of the slide and the <strong>slide size</strong> (16:9 or
 4:3), and duplicates, deletes or moves the slide (↑ ↓). <code>Page Up</code> and <code>Page Down</code> switch slides.</p>
+<p>The menu <strong>▤</strong> next to <em>New slide</em> adds a slide with a <strong>layout</strong>: <em>Title slide</em> (title and subtitle), <em>Title and content</em> (title and a
+bulleted text), <em>Two contents</em>, <em>Section header</em>, <em>Title only</em> or <em>Blank</em>. Its boxes sit where PowerPoint's built-in layouts put them; replace
+their texts (double-click, <code>Ctrl+A</code>, type).</p>
 <h2>Elements</h2>
 <ul>
 <li><strong>Text box</strong>, <strong>Shape</strong> (rectangle, rounded rectangle, ellipse, triangle, diamond, hexagon, arrow, star, line), <strong>Image</strong> (from a file) and
@@ -40,10 +50,69 @@ after the current one. Without a selected element, the panel on the right sets t
   italic, underline, font and colour apply to the selected words.</li>
 <li><code>Ctrl+C</code>, <code>Ctrl+X</code>, <code>Ctrl+V</code> copy, cut and paste elements, <code>Ctrl+D</code> duplicates, <code>Delete</code> removes, <code>Ctrl+Z</code>/<code>Ctrl+Y</code> undo and redo.</li>
 </ul>
+<h3>Video, audio and cropped pictures</h3>
+<p><strong>🎬 Video/audio</strong> puts a video (<code>.mp4</code>, <code>.webm</code>, <code>.ogv</code>, <code>.mov</code>) or a sound (<code>.mp3</code>, <code>.m4a</code>, <code>.wav</code>, <code>.ogg</code>, <code>.flac</code>) on the slide. A video
+shows its first frame (also in PowerPoint), a sound a speaker symbol; in the show both have play controls. They are saved in PowerPoint and
+OpenDocument files and read from them (PowerPoint's videos and sounds of the file itself; linked files are not). Which formats play depends on
+the browser – MP4 (H.264) for example not in every Chromium build; the file stays in the presentation anyway.</p>
+<p><strong>Crop (%)</strong> in the panel of a selected picture cuts off parts of it on the left, top, right and bottom; the picture keeps its scale, and
+<strong>No cropping</strong> shows all of it again. PowerPoint files keep the cropping (and PowerPoint's cropped pictures come with theirs); OpenDocument
+files get the cropped part as the picture.</p>
+<h3>Charts</h3>
+<p><strong>📊 Chart</strong> opens the chart dialog with example data: choose the type (column, bar, line, area, pie, doughnut, scatter), title, legend,
+stacked and values on the chart, and enter the categories, series and values; <strong>OK</strong> puts the chart on the slide. A double-click on it
+(or <strong>📊 Edit chart</strong> in the panel) opens the dialog again. The chart is a picture that carries its data: PowerPoint shows the picture,
+and the suite edits it again. Charts of PowerPoint files are shown as such pictures with the data of the file and saved as pictures.</p>
+<h3>Lists</h3>
+<p>The list buttons of the panel make <strong>bulleted</strong> (•≡) and <strong>numbered</strong> (1.≡) lists and change the <strong>list level</strong> (⇠ ⇢). While a text is
+being edited they apply to the paragraphs of the selection (or the paragraph of the cursor); otherwise to all paragraphs of the selected
+elements. A second click on the same kind of list ends it. While editing, <code>Tab</code> and <code>Shift+Tab</code> change the level, <code>Enter</code> continues the
+list, and <code>Enter</code> on an empty list paragraph moves it up a level or ends the list. Each level is numbered on its own. Lists are kept in
+PowerPoint files (also those made in PowerPoint, with their bullet characters and numbering styles).</p>
+<h3>Several elements: align, distribute, group</h3>
+<ul>
+<li><strong>Select several elements:</strong> <code>Shift</code>+click (or <code>Ctrl</code>+click) adds an element to the selection or removes it; dragging on an empty part of
+  the slide draws a frame and selects the elements inside it; <code>Ctrl+A</code> selects all. They are then moved and resized together (drag anywhere
+  inside their frame, or with the arrow keys), and copied, duplicated, deleted, brought to the front or sent to the back together; fill, line
+  and text formats of the panel apply to all of them. A click inside the frame selects only the element under the pointer.</li>
+<li>The buttons at the top of the panel <strong>align</strong> the selected elements to each other – left, centre, right, top, middle, bottom – or, when only
+  one element or one group is selected, to the slide. <strong>Distribute</strong> (three or more) gives them equal gaps horizontally or vertically; the outer
+  ones stay where they are.</li>
+<li><strong>Group</strong> (<code>Ctrl+G</code>) joins the selected elements: a click selects the whole group, and it is moved, aligned and arranged as one.
+  <strong>Ungroup</strong> (<code>Ctrl+Shift+G</code>) separates them again. Groups are kept in PowerPoint files (also groups made in PowerPoint; a group inside a
+  group becomes part of the outer one).</li>
+</ul>
+<h2>Spelling</h2>
+<p>With a language chosen in the <strong>ABC</strong> selector of the header, unknown words are underlined in the text being edited and in the speaker
+notes (right-click for suggestions, see <em>Spelling</em> in the user guide). <strong>ABC✓</strong> (<code>F7</code>) opens the spelling panel, which checks all slides
+at once – text boxes, shapes, tables and the speaker notes: a click on a word goes to its slide and selects the element (click again: the
+next occurrence), a suggestion replaces <strong>all</strong> occurrences (one undo step; a word formatted in parts takes the format of its first
+part), <strong>Ignore</strong> and <strong>Add to dictionary</strong> work as in the document editor, and dictionaries are loaded and chosen there as well.</p>
+<h2>Header &amp; footer, slide numbers</h2>
+<p><strong># Header &amp; footer</strong> in the toolbar puts the date, a footer text and the slide number at the bottom of the slides:</p>
+<ul>
+<li><strong>Date</strong>: <em>Update automatically</em> shows today's date (in the language of the application) whenever the presentation is shown or
+  opened; <em>Fixed</em> shows the text you type.</li>
+<li><strong>Slide number</strong>: the number of each slide; it follows when slides are moved, added or deleted.</li>
+<li><strong>Footer</strong>: a text, e.g. the title of the talk.</li>
+<li><strong>Not on the title slide</strong>: leaves the first slide without them.</li>
+</ul>
+<p><strong>Apply to all slides</strong> or <strong>Apply to this slide</strong>. The dialog shows the settings of the current slide; unticking an entry removes it
+from the slides it is applied to. The three are ordinary text boxes at the bottom (date left, footer centred, number right): they can be
+moved and formatted, and applying again keeps their place and look. Slide numbers and automatic dates are saved as fields in the PPTX
+file, so PowerPoint numbers the slides too; those of PowerPoint files work the same way.</p>
 <h2>Presenting</h2>
 <p><strong>▶ Present</strong> (or <code>F5</code> from the first slide, <code>Shift+F5</code> from the current slide) shows the presentation in full screen. Next slide: click,
 <code>→</code>, <code>↓</code>, <code>Page Down</code>, <code>Space</code>, <code>Enter</code>, or swipe left on touch screens; previous slide: <code>←</code>, <code>↑</code>, <code>Page Up</code>, <code>Backspace</code> or swipe right. <code>Home</code> and
 <code>End</code> jump to the first and last slide, <code>Escape</code> ends the presentation.</p>
+<p><strong>Hidden slides</strong>: <em>Hide in the show</em> in the panel of a slide (no element selected) leaves it out of the show; its thumbnail is pale and
+its number crossed out. Starting the show from a hidden slide (<code>Shift+F5</code>) shows it, as in PowerPoint. Hidden slides are kept in
+PPTX files.</p>
+<p><strong>During the show</strong>, moving the mouse shows the tools at the bottom left (on touch screens they are always there): ◀ ▶, <strong>✎ pen</strong>
+(<code>Ctrl+P</code>) – draw on the slide with the mouse, a pen or a finger; <strong>● laser pointer</strong> (<code>Ctrl+L</code>) – a red dot follows the pointer;
+<strong>⌫</strong> (<code>E</code>) erases the drawing of the slide; <strong>■ black screen</strong> (<code>B</code> or <code>.</code>; <code>W</code> or <code>,</code> gives a white one) – the same key, a click or any
+other key returns; <strong>✕</strong> ends the show. A click on the active tool, <code>Ctrl+A</code> or <code>Esc</code> switches the pen or laser pointer off; while one is
+on, clicks do not change the slide. The drawings stay on their slides until the show ends; they are not saved.</p>
 <p><strong>Transitions</strong>: with no element selected, <em>Transition</em> in the panel sets how the slide appears: fade, push, wipe, cover or
 zoom, the direction (push, wipe, cover), the duration and, optionally, <em>Next slide after</em> a number of seconds (otherwise the next
 slide comes on click). <strong>Apply to all slides</strong> copies the transition to every slide.</p>
@@ -81,6 +150,10 @@ the time since the start (⏸ pauses, ⟲ restarts it), the clock and the slide 
 <td><code>Ctrl+Shift+S</code></td>
 <td>Save as</td>
 </tr>
+<tr>
+<td><code>F7</code></td>
+<td>Spelling panel</td>
+</tr>
 </tbody>
 </table>
 <h3>Editing</h3>
@@ -109,12 +182,28 @@ the time since the start (⏸ pauses, ⟲ restarts it), the clock and the slide 
 <td>Duplicate the element</td>
 </tr>
 <tr>
+<td><code>Shift</code>+click / <code>Ctrl</code>+click</td>
+<td>Add to or remove from the selection</td>
+</tr>
+<tr>
+<td><code>Ctrl+A</code></td>
+<td>Select all elements of the slide</td>
+</tr>
+<tr>
+<td><code>Ctrl+G</code> / <code>Ctrl+Shift+G</code></td>
+<td>Group / ungroup</td>
+</tr>
+<tr>
 <td><code>Delete</code> / <code>Backspace</code></td>
 <td>Delete the element</td>
 </tr>
 <tr>
 <td><code>Enter</code> / <code>F2</code></td>
 <td>Edit the text</td>
+</tr>
+<tr>
+<td><code>Tab</code> / <code>Shift+Tab</code></td>
+<td>While editing: list level down / up</td>
 </tr>
 <tr>
 <td><code>←</code> / <code>→</code> / <code>↑</code> / <code>↓</code></td>
@@ -161,7 +250,19 @@ the time since the start (⏸ pauses, ⟲ restarts it), the clock and the slide 
 </tr>
 <tr>
 <td><code>Esc</code></td>
-<td>End the show</td>
+<td>End the show (with the pen or laser pointer on: switch it off)</td>
+</tr>
+<tr>
+<td><code>Ctrl+P</code> / <code>Ctrl+L</code> / <code>Ctrl+A</code></td>
+<td>Pen / laser pointer / back to the arrow</td>
+</tr>
+<tr>
+<td><code>E</code></td>
+<td>Erase the drawing of the slide</td>
+</tr>
+<tr>
+<td><code>B</code> / <code>W</code></td>
+<td>Black / white screen (again: back)</td>
 </tr>
 </tbody>
 </table>

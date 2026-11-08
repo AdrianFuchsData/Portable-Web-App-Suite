@@ -15,6 +15,8 @@ const color = (c) => (c && c.rgb ? c.rgb : null);
 const ALIGN = { 1: "left", 2: "center", 3: "right", 4: "justify" };
 const TAGS = { 2: "h1", 3: "p", 4: "h1", 5: "h2", 6: "h3", 7: "h4", 8: "h5" };
 
+import { sectionConfig } from "app/doc-toc";
+
 function runCss(ts) {
   if (!ts) return "";
   const css = [];
@@ -46,7 +48,7 @@ function paragraphCss(p) {
   return css.join(";");
 }
 
-function bodyHtml(body, data, anchors = false) {
+function bodyHtml(body, data, anchors = false, { fields = "text" } = {}) {
   const stream = body.dataStream || "";
   const runs = body.textRuns || [];
   const paragraphsByEnd = new Map((body.paragraphs || []).map((p) => [p.startIndex, p]));
@@ -55,6 +57,8 @@ function bodyHtml(body, data, anchors = false) {
   const tables = data.tableSource || {};
   const drawings = data.drawings || {};
   const tsAt = (i) => { const r = runs.find((x) => i >= x.st && i < x.ed); return r ? r.ts : null; };
+  // fields (Univer FIELD ranges): their current text, or nothing (page numbers of a printed page that cannot count pages)
+  const fieldsAt = new Map((body.customRanges || []).filter((r) => r.rangeType === 1).map((r) => [r.startIndex, r]));
 
   const inline = (start, end) => {
     let out = "";
@@ -62,6 +66,15 @@ function bodyHtml(body, data, anchors = false) {
     while (i < end) {
       const ch = stream[i];
       if (ch === C.PAGE_BREAK) { i += 1; continue; }
+      const field = fieldsAt.get(i);
+      if (field) {
+        const blank = fields === "blank" && /^(PAGE|NUMPAGES)$/.test((field.properties || {}).fieldType);
+        const text = blank ? "" : esc(stream.slice(i + 1, field.endIndex).replace(SKIP, ""));
+        const css = runCss(tsAt(i + 1) || tsAt(i));
+        out += css && text ? `<span style="${css}">${text}</span>` : text;
+        i = field.endIndex + 1;
+        continue;
+      }
       if (ch === C.CUSTOM_BLOCK) {
         const d = drawings[blocksAt.get(i)];
         if (d && d.source) {
@@ -74,7 +87,7 @@ function bodyHtml(body, data, anchors = false) {
       const ts = tsAt(i);
       const link = links.find((l) => i >= l.startIndex && i <= l.endIndex);
       let j = i;
-      while (j < end && stream[j] !== C.PAGE_BREAK && stream[j] !== C.CUSTOM_BLOCK && tsAt(j) === ts && links.find((l) => j >= l.startIndex && j <= l.endIndex) === link) j += 1;
+      while (j < end && stream[j] !== C.PAGE_BREAK && stream[j] !== C.CUSTOM_BLOCK && !fieldsAt.has(j) && tsAt(j) === ts && links.find((l) => j >= l.startIndex && j <= l.endIndex) === link) j += 1;
       let text = esc(stream.slice(i, j).replace(SKIP, "")).replace(/\t/g, "&emsp;").replace(/ {2}/g, " &nbsp;");
       const css = runCss(ts);
       if (css && text) text = `<span style="${css}">${text}</span>`;
@@ -151,15 +164,63 @@ function bodyHtml(body, data, anchors = false) {
   return blocks(0, stream.length);
 }
 
-export function toHtml(data, { title = "Document", print = false } = {}) {
-  const ds = data.documentStyle || {};
+/**
+ * A header or footer as the content of a page margin box ({ position, content }): Chromium prints these on every page (it cuts off
+ * fixed elements in the page margins), and counter(page) and counter(pages) give the numbers of the printed page. Only the text is
+ * kept: pictures are left out, table cells are separated by spaces. Null for an empty header or footer.
+ */
+function marginBox(body, top) {
+  const stream = body.dataStream || "";
+  const fields = (body.customRanges || []).filter((r) => r.rangeType === 1 && /^(PAGE|NUMPAGES)$/.test((r.properties || {}).fieldType));
+  const quote = (t) => `"${t.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+  const inTable = (i) => stream.lastIndexOf(C.TABLE_START, i) > stream.lastIndexOf(C.TABLE_END, i);
+  const lines = [];
+  let line = [], text = "";
+  for (let i = 0; i < stream.length; i++) {
+    const field = fields.find((f) => f.startIndex === i);
+    if (field) {
+      if (text) line.push(quote(text));
+      text = "";
+      line.push(field.properties.fieldType === "PAGE" ? "counter(page)" : "counter(pages)");
+      i = field.endIndex;
+    } else if (stream[i] === C.PARAGRAPH || stream[i] === C.ROW_END) {
+      if (text) line.push(quote(text));
+      text = "";
+      if (stream[i] === C.ROW_END || !inTable(i)) { lines.push(line); line = []; } // (the paragraphs of a table row stay on one line)
+    } else if (stream[i] === C.CELL_END) text += "   ";
+    else if (stream[i] === "\t") text += "    ";
+    else if (!/[\x00-\x1f]/.test(stream[i])) text += stream[i];
+  }
+  while (lines.length && !lines[lines.length - 1].length) lines.pop();
+  if (!lines.length) return null;
+  const first = (body.paragraphs || [])[0];
+  const align = { 2: "center", 3: "right" }[first && first.paragraphStyle && first.paragraphStyle.horizontalAlign] || "left";
+  return { position: `${top ? "top" : "bottom"}-${align}`, content: lines.map((l) => (l.length ? l.join(" ") : '""')).join(' "\\A" ') };
+}
+
+/**
+ * The document as an HTML page. print: for the print dialog (the header and footer repeat on every page); pageCounters: the browser
+ * prints page margin boxes (Chromium), so headers and footers are printed there as text, with the numbers of the pages – otherwise
+ * they are fixed elements in the page margins (Firefox), whose page fields are left empty, since they cannot know their page.
+ */
+export function toHtml(data, { title = "Document", print = false, pageCounters = false } = {}) {
+  const ds = sectionConfig(data);
   const page = ds.pageSize || { width: 793.7, height: 1122.5 };
   const m = (v, d) => `${((v ?? d) * 0.75).toFixed(1)}pt`; // px -> pt
-  const part = (store, id) => (id && store && store[id] && store[id].body ? bodyHtml(store[id].body, data) : "");
-  const header = part(data.headers, ds.defaultHeaderId), footer = part(data.footers, ds.defaultFooterId);
+  const bodyOf = (store, id) => (id && store && store[id] && store[id].body) || null;
+  const boxes = [];
+  const part = (store, id, top) => {
+    const b = bodyOf(store, id);
+    if (!b) return "";
+    const box = print && pageCounters ? marginBox(b, top) : null;
+    if (box) { boxes.push(box); return ""; }
+    return bodyHtml(b, data, false, { fields: print ? "blank" : "text" });
+  };
+  const header = part(data.headers, ds.defaultHeaderId, true), footer = part(data.footers, ds.defaultFooterId, false);
+  const marginBoxes = boxes.map((b) => `@${b.position} { content: ${b.content}; white-space: pre; font-family: Calibri, Carlito, "Liberation Sans", Arial, sans-serif; font-size: 9pt; color: #333; }`).join(" ");
   const body = bodyHtml(data.body || { dataStream: "" }, data, true);
   return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>
-@page { size: ${m(page.width)} ${m(page.height)}; margin: ${m(ds.marginTop, 75.6)} ${m(ds.marginRight, 75.6)} ${m(ds.marginBottom, 75.6)} ${m(ds.marginLeft, 75.6)}; }
+@page { size: ${m(page.width)} ${m(page.height)}; margin: ${m(ds.marginTop, 75.6)} ${m(ds.marginRight, 75.6)} ${m(ds.marginBottom, 75.6)} ${m(ds.marginLeft, 75.6)}; ${marginBoxes} }
 body { font-family: Calibri, Carlito, "Liberation Sans", Arial, sans-serif; font-size: 11pt; line-height: 1.15; color: #000; margin: ${print ? "0" : `2rem auto; max-width: ${m(page.width - (ds.marginLeft ?? 75.6) - (ds.marginRight ?? 75.6))}`}; }
 p, h1, h2, h3, h4, h5 { margin: 0 0 6pt; }
 h1 { font-size: 16pt; } h2 { font-size: 14pt; } h3 { font-size: 13pt; } h4, h5 { font-size: 12pt; }

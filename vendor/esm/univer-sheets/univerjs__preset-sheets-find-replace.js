@@ -1,0 +1,2 @@
+/* @univerjs/preset-sheets-find-replace@1.0.4 (jsDelivr +esm) */
+import{UniverFindReplacePlugin as r}from"@univerjs/find-replace";export*from"@univerjs/find-replace";import{UniverSheetsFindReplacePlugin as i}from"@univerjs/sheets-find-replace";export*from"@univerjs/sheets-find-replace";import"@univerjs/sheets-find-replace/facade";function n(o={}){return{plugins:[[r],[i]].filter(e=>!!e)}}export{n as UniverSheetsFindReplacePreset};

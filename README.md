@@ -5,7 +5,7 @@ is a single HTML file that works offline from `file://`, without installation an
 thin clients with only a browser, and on Windows, Linux and Android. The data is held in the browser's memory, so the suite is
 made for small to medium files, not for big data.
 
-> Status: version 1.2.0 (see the file `VERSION` and the [release notes](docs/release-notes/)). All applications of the suite exist in a first version, each with tests and user and
+> Status: version 1.3.0 (see the file `VERSION` and the [release notes](docs/release-notes/)). All applications of the suite exist in a first version, each with tests and user and
 > technical documentation: text editor, hex editor, archive manager, media player, audio editor, video editor,
 > image editor, diagram editor, KeePass, spreadsheet, document and presentation editors, web slides (reveal.js), PDF viewer, calendar,
 > mail client, database tool, SSH and FTP/SFTP clients, HTTP analyzer, web inspector, barcode reader and generator and

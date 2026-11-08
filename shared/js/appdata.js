@@ -19,6 +19,7 @@
 
   Suite.i18n.register({
     en: {
+      'appdata.srcConnections': 'Connections and passwords: {0}', 'appdata.srcRelay': 'Relay address and sign-in',
       'appdata.label': 'Connections', 'appdata.notSaved': 'not saved', 'appdata.open': 'Open…', 'appdata.new': 'Save as…', 'appdata.save': 'Save',
       'appdata.password': 'Password', 'appdata.keyFile': 'Key file (optional)', 'appdata.unlock': 'Open', 'appdata.cancel': 'Cancel',
       'appdata.createTitle': 'Save connections', 'appdata.kind': 'Format', 'appdata.kdbx': 'KeePass database (encrypted, recommended)',
@@ -30,6 +31,7 @@
       'appdata.relayUser': 'User name', 'appdata.relayPassword': 'Password', 'appdata.allowInsecure': 'Allow an unencrypted connection (http) to another computer – trusted networks only',
     },
     de: {
+      'appdata.srcConnections': 'Verbindungen und Passwörter: {0}', 'appdata.srcRelay': 'Relay-Adresse und Anmeldung',
       'appdata.label': 'Verbindungen', 'appdata.notSaved': 'nicht gespeichert', 'appdata.open': 'Öffnen…', 'appdata.new': 'Speichern unter…', 'appdata.save': 'Speichern',
       'appdata.password': 'Passwort', 'appdata.keyFile': 'Schlüsseldatei (optional)', 'appdata.unlock': 'Öffnen', 'appdata.cancel': 'Abbrechen',
       'appdata.createTitle': 'Verbindungen speichern', 'appdata.kind': 'Format', 'appdata.kdbx': 'KeePass-Datenbank (verschlüsselt, empfohlen)',
@@ -222,6 +224,28 @@
     }
 
     const fail = (e) => { console.warn(e); Suite.shell.toast(Suite.i18n.describe(e), 'error'); };
+    // the settings export of the about dialog (shell.js) can include the connections and the relay sign-in (credentials)
+    if (Suite.preferences && Suite.preferences.register) {
+      const copy = (v) => JSON.parse(JSON.stringify(v));
+      Suite.preferences.register({
+        id: `connections-${appName}`, app: appName, sensitive: true, label: () => t('appdata.srcConnections', Suite.t(`prefs.group.${appName}`)),
+        available: () => data.ready && data.connections().length > 0,
+        write(store) {
+          const a = store.app(appName);
+          for (const c of data.connections()) a.saveConnection(copy(c));
+          if (Object.keys(data.settings).length) a.settings = copy(data.settings);
+        },
+        count: (store) => (store.apps().includes(appName) ? store.app(appName).connections().length : 0),
+        read(store) { const list = store.app(appName).connections(); for (const c of list) data.saveConnection(copy(c)); return list.length; },
+      });
+      Suite.preferences.register({
+        id: 'relay', app: 'relay', sensitive: true, label: () => t('appdata.srcRelay'),
+        available: () => data.ready && data.relayConfigured(),
+        write(store) { const s = store.app('suite'); s.settings = { ...(s.settings || {}), relay: copy(data.relay) }; },
+        count: (store) => { const r = store.apps().includes('suite') && (store.app('suite').settings || {}).relay; return r && r.url ? 1 : 0; },
+        read(store) { data.relay = copy(store.app('suite').settings.relay); return 1; },
+      });
+    }
     return data;
   }
 

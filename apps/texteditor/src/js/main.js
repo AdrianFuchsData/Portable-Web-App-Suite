@@ -31,7 +31,7 @@ Suite.i18n.register({
     "app.title": "Text editor",
     "te.new": "New", "te.open": "Open", "te.save": "Save", "te.saveAs": "Save as", "te.recent": "Recent",
     "te.undo": "Undo", "te.redo": "Redo", "te.find": "Find / replace", "te.goto": "Go to line", "te.wrap": "Word wrap", "te.whitespace": "Show whitespace",
-    "te.zoomIn": "Larger font", "te.zoomOut": "Smaller font", "te.close": "Close", "te.untitled": "Untitled-{0}",
+    "te.zoomIn": "Larger font", "te.zoomOut": "Smaller font", "te.font": "Font", "te.systemFont": "System font", "te.close": "Close", "te.untitled": "Untitled-{0}",
     "te.closeUnsaved": "“{0}” has unsaved changes. Close it anyway?", "te.closeAnyway": "Close without saving",
     "te.line": "Ln {0}, Col {1}", "te.selected": "{0} selected", "te.cursors": "{0} cursors",
     "te.language": "Language", "te.encoding": "Encoding", "te.eol": "Line endings", "te.bom": "with BOM",
@@ -68,7 +68,7 @@ Suite.i18n.register({
     "app.title": "Texteditor",
     "te.new": "Neu", "te.open": "Öffnen", "te.save": "Speichern", "te.saveAs": "Speichern unter", "te.recent": "Zuletzt",
     "te.undo": "Rückgängig", "te.redo": "Wiederholen", "te.find": "Suchen / Ersetzen", "te.goto": "Gehe zu Zeile", "te.wrap": "Zeilenumbruch", "te.whitespace": "Leerzeichen anzeigen",
-    "te.zoomIn": "Größere Schrift", "te.zoomOut": "Kleinere Schrift", "te.close": "Schließen", "te.untitled": "Unbenannt-{0}",
+    "te.zoomIn": "Größere Schrift", "te.zoomOut": "Kleinere Schrift", "te.font": "Schrift", "te.systemFont": "Systemschrift", "te.close": "Schließen", "te.untitled": "Unbenannt-{0}",
     "te.closeUnsaved": "„{0}“ hat ungespeicherte Änderungen. Trotzdem schließen?", "te.closeAnyway": "Schließen ohne Speichern",
     "te.line": "Z {0}, Sp {1}", "te.selected": "{0} ausgewählt", "te.cursors": "{0} Cursor",
     "te.language": "Sprache", "te.encoding": "Kodierung", "te.eol": "Zeilenenden", "te.bom": "mit BOM",
@@ -174,7 +174,7 @@ const settingExtensions = () => ({
   wrap: prefs.wrap ? EditorView.lineWrapping : [],
   theme: darkMode() ? oneDark : [],
   whitespace: prefs.whitespace ? highlightWhitespace() : [],
-  font: EditorView.theme({ "&": { fontSize: `${prefs.fontSize}px` }, ".cm-content, .cm-gutters": { fontFamily: "ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" } }),
+  font: EditorView.theme({ "&": { fontSize: `${prefs.fontSize}px` }, ".cm-content, .cm-gutters": { fontFamily: `${prefs.font ? `"${prefs.font}", ` : ""}ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace` } }),
 });
 
 function createState(text, languageId, indent = prefs.indent) {
@@ -228,6 +228,8 @@ function onUpdate(update) {
 }
 
 /** Bring the settings (wrap, theme, font, whitespace) of the shown state up to date. */
+if (Suite.fonts) Suite.fonts.onChange(() => { applySettings(); Suite.shell.refresh(); }); // (imported fonts)
+
 function applySettings() {
   if (!view) return;
   const s = settingExtensions();
@@ -500,6 +502,9 @@ function Toolbar() {
     <button class=${prefs.whitespace ? "" : "secondary outline"} data-testid="whitespace" title=${t("te.whitespace")} aria-pressed=${prefs.whitespace} onClick=${() => setPref("whitespace", !prefs.whitespace)}>·</button>
     <button class="secondary outline" data-testid="zoom-out" title=${t("te.zoomOut")} onClick=${() => setPref("fontSize", Math.max(8, prefs.fontSize - 1))}>A−</button>
     <button class="secondary outline" data-testid="zoom-in" title=${t("te.zoomIn")} onClick=${() => setPref("fontSize", Math.min(40, prefs.fontSize + 1))}>A+</button>
+    ${Suite.fonts && Suite.fonts.families("monospace").length ? html`<select class="te-font" data-testid="font" title=${t("te.font")} aria-label=${t("te.font")} onChange=${(e) => setPref("font", e.target.value)}>
+      <option value="" selected=${!prefs.font}>${t("te.systemFont")}</option>
+      ${[...new Set([...(prefs.font ? [prefs.font] : []), ...Suite.fonts.families("monospace").map((f) => f.name)])].map((f) => html`<option value=${f} selected=${prefs.font === f}>${f}</option>`)}</select>` : null}
   </nav>`;
 }
 
@@ -807,6 +812,10 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applySetti
 loadRecent();
 
 Suite.bridge.receive((picked) => openPicked([picked]), { app: 'texteditor' }); // files opened from other apps ("Open with…")
+
+// the open files for "Create an archive from the open files" (about dialog): the current text in each document's encoding
+Suite.openFiles.register(() => docs.filter((d) => !(d.isNew && !d.state.doc.length))
+  .map((d) => ({ name: d.name, bytes: ENC.encode(d.state.doc.toString(), { encoding: d.encoding, bom: d.bom, eol: d.eol }), dirty: isDirty(d) })));
 
 // for tests
 // recovery copies of unsaved documents (shared/js/autosave.js); file handles are kept, so saving goes to the file again

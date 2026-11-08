@@ -1,0 +1,122 @@
+[
+ {
+  "name": "Arimo",
+  "category": "sans-serif",
+  "aliases": [
+   "Liberation Sans"
+  ],
+  "package": "@fontsource/arimo",
+  "version": "5.3.0"
+ },
+ {
+  "name": "Tinos",
+  "category": "serif",
+  "aliases": [
+   "Liberation Serif"
+  ],
+  "package": "@fontsource/tinos",
+  "version": "5.3.0"
+ },
+ {
+  "name": "Cousine",
+  "category": "monospace",
+  "aliases": [
+   "Liberation Mono"
+  ],
+  "package": "@fontsource/cousine",
+  "version": "5.3.0"
+ },
+ {
+  "name": "Carlito",
+  "category": "sans-serif",
+  "aliases": [],
+  "package": "@fontsource/carlito",
+  "version": "5.3.0"
+ },
+ {
+  "name": "Caladea",
+  "category": "serif",
+  "aliases": [],
+  "package": "@fontsource/caladea",
+  "version": "5.3.0"
+ },
+ {
+  "name": "Gelasio",
+  "category": "serif",
+  "aliases": [],
+  "package": "@fontsource/gelasio",
+  "version": "5.3.0"
+ },
+ {
+  "name": "Inter",
+  "category": "sans-serif",
+  "aliases": [],
+  "package": "@fontsource/inter",
+  "version": "5.3.0"
+ },
+ {
+  "name": "Open Sans",
+  "category": "sans-serif",
+  "aliases": [],
+  "package": "@fontsource/open-sans",
+  "version": "5.3.0"
+ },
+ {
+  "name": "Roboto",
+  "category": "sans-serif",
+  "aliases": [],
+  "package": "@fontsource/roboto",
+  "version": "5.3.0"
+ },
+ {
+  "name": "Lato",
+  "category": "sans-serif",
+  "aliases": [],
+  "package": "@fontsource/lato",
+  "version": "5.3.0"
+ },
+ {
+  "name": "Montserrat",
+  "category": "sans-serif",
+  "aliases": [],
+  "package": "@fontsource/montserrat",
+  "version": "5.3.0"
+ },
+ {
+  "name": "Source Serif 4",
+  "category": "serif",
+  "aliases": [
+   "Source Serif"
+  ],
+  "package": "@fontsource/source-serif-4",
+  "version": "5.3.1"
+ },
+ {
+  "name": "Merriweather",
+  "category": "serif",
+  "aliases": [],
+  "package": "@fontsource/merriweather",
+  "version": "5.3.0"
+ },
+ {
+  "name": "JetBrains Mono",
+  "category": "monospace",
+  "aliases": [],
+  "package": "@fontsource/jetbrains-mono",
+  "version": "5.3.0"
+ },
+ {
+  "name": "Fira Code",
+  "category": "monospace",
+  "aliases": [],
+  "package": "@fontsource/fira-code",
+  "version": "5.3.0"
+ },
+ {
+  "name": "Source Code Pro",
+  "category": "monospace",
+  "aliases": [],
+  "package": "@fontsource/source-code-pro",
+  "version": "5.3.1"
+ }
+]

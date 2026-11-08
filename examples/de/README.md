@@ -120,3 +120,7 @@ und SSH das vom Relay bereitgestellte Notebook (`relay.py --serve`).
 - `bericht.sh` – Shell-Skript: ein Bericht aus CSV-Daten (Terminal: sh bericht.sh)
 - `sicherung.sh` – Shell-Skript: einen Ordner sichern (sh sicherung.sh ORDNER)
 - `example-data.zip` – Daten für das Archiv-Notebook (im Archivmanager öffnen)
+
+## overview
+
+- `buero.suite.zip` – Arbeitsbereich mit Text, Dokument, Tabelle und Diagramm (F1 → Arbeitsbereich → Arbeitsbereich öffnen…, in der Übersicht)

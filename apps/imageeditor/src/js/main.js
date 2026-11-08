@@ -1013,13 +1013,16 @@ function Dialog() {
   } else if (d.kind === 'text') {
     body = html`<label>${t('ie.text')}<textarea rows="3" data-testid="dlg-text" autofocus onInput=${(e) => { d.text = e.target.value; }}>${d.text}</textarea></label>
       <div class="ie-row">
-        <label>${t('ie.font')}<select onChange=${(e) => { d.font = e.target.value; }}>${['sans-serif', 'serif', 'monospace', 'cursive', 'system-ui'].map((f) => html`<option value=${f} selected=${d.font === f}>${f}</option>`)}</select></label>
+        <label>${t('ie.font')}<select data-testid="dlg-text-font" onChange=${(e) => { d.font = e.target.value; }}>${[...['sans-serif', 'serif', 'monospace', 'cursive', 'system-ui'].map((f) => [f, f]),
+          ...(Suite.fonts ? Suite.fonts.families().map((f) => [`"${f.name}"`, f.name]) : [])].map(([value, label]) => html`<option value=${value} selected=${d.font === value}>${label}</option>`)}</select></label>
         ${num('fontSize', 'ie.fontSize')}
       </div>
       <label><input type="checkbox" onChange=${(e) => { d.bold = e.target.checked; }} /> ${t('ie.bold')}</label>
       <label><input type="checkbox" onChange=${(e) => { d.italic = e.target.checked; }} /> ${t('ie.italic')}</label>`;
-    onOk = () => {
+    onOk = async () => {
       ed.opts.font = d.font; ed.opts.fontSize = d.fontSize;
+      // (a canvas draws with a font only once it is loaded)
+      try { await document.fonts.load(`${d.italic ? 'italic ' : ''}${d.bold ? 'bold ' : ''}${d.fontSize}px ${d.font}`, d.text || 'A'); } catch (e) { /* the browser's fallback */ }
       drawText(ed.doc, d.point, d.text, { color: ed.colors.primary, font: d.font, fontSize: d.fontSize, bold: d.bold, italic: d.italic, opacity: ed.opts.opacity });
       changed();
     };
@@ -1137,6 +1140,10 @@ Suite.files.recent(APP);
 selectTool('brush');
 
 Suite.bridge.receive((picked) => openPicked(picked), { app: 'imageeditor' }); // files opened from other apps ("Open with…")
+
+// the open file(s) for "Create an archive from the open files" (about dialog)
+Suite.openFiles.register(async () => (ed.doc && (ed.doc.dirty || ed.name !== `${t('ie.untitled')}.png`)
+  ? [{ name: ed.name, bytes: await encode(ed.doc, ed.format, { quality: 0.92 }), dirty: !!ed.doc.dirty }] : []));
 
 // for tests
 window.IE = { prefs, setPref, addGuide, ed, setDoc, openFile, encode, ImageDoc, save };

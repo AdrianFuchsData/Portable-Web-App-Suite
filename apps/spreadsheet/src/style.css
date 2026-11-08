@@ -17,3 +17,5 @@
 .ss-csv-preview table { margin: 0; font-size: .8rem; }
 .ss-csv-preview td { padding: .15rem .4rem; white-space: nowrap; border-right: 1px solid var(--pico-muted-border-color); }
 .ss-csv-preview td.num { text-align: right; }
+.ss-tool { max-width: min(36rem, 96vw); }
+.ss-tool-columns { display: grid; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); max-height: 40vh; overflow: auto; }

@@ -689,6 +689,11 @@ document.addEventListener('keydown', (e) => {
   if (undoKey && !state.dialog) { e.preventDefault(); undoStep(undoKey === 'redo'); }
 });
 
+// the open file(s) for "Create an archive from the open files" (about dialog)
+Suite.openFiles.register(() => (state.dirty || state.file ? [{
+  name: (state.file && state.file.name) || `${(state.collection.name || 'collection').replace(/[\\/:*?"<>|]/g, '_')}.postman_collection.json`,
+  bytes: new TextEncoder().encode(`${JSON.stringify(toPostman(state.collection), null, 2)}\n`), dirty: state.dirty }] : []));
+
 // for tests
 window.HTTP = { state, history, undoStep, data, select, get ws() { return ws; } };
 // collections opened from other apps or as an example (Help: Examples)

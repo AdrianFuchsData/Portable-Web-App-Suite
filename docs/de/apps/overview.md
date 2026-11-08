@@ -37,6 +37,14 @@ In der Übersicht gestartete Anwendungen öffnen Dateien aus anderen Anwendungen
 eine Datei auf einem SFTP-Server, einen E-Mail-Anhang) in einem neuen Tab. Speichern schreibt die Datei dorthin zurück,
 woher sie kam.
 
+## Arbeitsbereich und Archiv aller geöffneten Dateien
+
+`F1` → **🗂 Arbeitsbereich** speichert die Dateien aller Tabs – mit ungespeicherten Änderungen – und auf Wunsch die Einstellungen
+aller Anwendungen als eine `.suite.zip`; **Arbeitsbereich öffnen…** öffnet jede Anwendung wieder in einem eigenen Tab, in der
+gespeicherten Reihenfolge (siehe [Arbeitsbereiche](../benutzerhandbuch.md#arbeitsbereiche-anderswo-weiterarbeiten)).
+`F1` → **📦 Geöffnete Dateien** legt die Dateien aller Tabs in ein ZIP-Archiv (ein Ordner je Anwendung), das sich in einem neuen
+Tab des Archivmanagers öffnet. Probieren Sie `examples/de/overview/buero.suite.zip` aus `examples.zip`.
+
 ## Tastenkürzel
 
 Auf dem Mac verwenden Sie Cmd statt Strg. `F1` (oder `?`) zeigt diese Liste in der Anwendung.

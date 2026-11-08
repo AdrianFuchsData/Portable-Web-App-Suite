@@ -185,9 +185,20 @@ GitHub-Release (<code>gh release create … --notes-file</code>): was sich seit 
   der Hilfedialog der Shell führt sie in der Sprache der Oberfläche auf und öffnet eine mit <code>Suite.bridge.openLocal(file)</code>, das sie an den Handler
   übergibt, den die Anwendung mit <code>Suite.bridge.receive</code> angemeldet hat (als schreibgeschützte Kopie). <code>tests/apps/test_examples.py</code> öffnet jedes
   eingebaute Beispiel auf Englisch und Deutsch und führt die Offline-Notebooks aus.</li>
-<li>Emoji- und Symboldaten: <code>tools/build_symbols.py</code> nach dem Einbinden von <code>vendor/symbols.esm.json</code> (das Ergebnis ist eingecheckt).
+<li>
+<p>Emoji- und Symboldaten: <code>tools/build_symbols.py</code> nach dem Einbinden von <code>vendor/symbols.esm.json</code> (das Ergebnis ist eingecheckt).
   Neben den Unicode-Gruppen schreibt es die Gruppe <code>spaces</code> (Tabulator, geschützte, schmale, Halbgeviert-, Geviert- und breitenlose Leerzeichen,
-  weiches Trennzeichen), die <code>symbols.js</code> mit Beschriftungen zeigt (<code>VISIBLE</code>).</li>
+  weiches Trennzeichen), die <code>symbols.js</code> mit Beschriftungen zeigt (<code>VISIBLE</code>).</p>
+</li>
+<li>
+<p>Schriften: <code>tools/vendor_fonts.py</code> schreibt <code>vendor/fonts/</code> aus den Fontsource-Paketen (jsDelivr; alle OFL-1.1, Versionen in <code>lock.json</code>,
+  Lizenztexte in <code>licenses/</code>): <code>fonts.css</code> (<code>@font-face</code>-Regeln mit den WOFF2-Daten als <code>data:</code>-URLs – 400/700, normal/kursiv, Teilmengen latin
+  und latin-ext mit ihrem <code>unicode-range</code>, eine Regel je Zeile), <code>fonts-mono.css</code> (die nichtproportionalen Familien) und <code>fonts.json</code> (Familien,
+  Kategorien, Aliasnamen). Die erste Zeile des CSS ist eine Markierung (<code>/* suite-fonts */</code>, <code>/* suite-fonts-mono */</code>): <code>build.py</code> leert diese
+  Blöcke in den Anwendungen, die es in die Übersicht packt (<code>FONTS_BLOCK_RE</code>), und <code>appHtml</code> der Übersicht setzt ihre eigene Kopie wieder ein (die
+  nichtproportionalen Regeln nach Familie), sodass die Übersicht die Schriften einmal enthält. Der Info-Dialog listet jede Familie mit ihrer Lizenz
+  (<code>components</code>).</p>
+</li>
 </ul>
 <h2>Gemeinsame Module</h2>
 <p>Die gemeinsamen Module der ersten Tabelle sind klassische Skripte, die das globale Objekt <code>Suite</code> erweitern; die zweite Tabelle nennt
@@ -328,8 +339,8 @@ ES-Module, die Anwendungen über ihre Import-Maps importieren.</p>
 <td>Rechtschreibprüfung: Hunspell-Dienst, Markierungen und Menü in Textfeldern und contenteditable-Elementen, Auswahlfeld in der Kopfzeile; CodeMirror-Erweiterung (siehe <em>Rechtschreibprüfung</em>)</td>
 </tr>
 <tr>
-<td><code>odt.js</code>, <code>doc-toc.js</code>, <code>doc-html.js</code></td>
-<td>Textverarbeitung: OpenDocument-Text, Inhaltsverzeichnis, HTML-Darstellung zum Drucken und Speichern</td>
+<td><code>odt.js</code>, <code>doc-toc.js</code>, <code>doc-html.js</code>, <code>doc-comments.js</code></td>
+<td>Textverarbeitung: OpenDocument-Text, Inhaltsverzeichnis, HTML-Darstellung zum Drucken und Speichern, Kommentare</td>
 </tr>
 <tr>
 <td><code>deck-convert.js</code></td>
@@ -371,6 +382,36 @@ nach der Sprache des Dokuments, das Notebook nach dem Zelltyp. Die Textverarbeit
 <code>tests/apps/test_spelling.py</code> (deutsche Komposita und Vorschläge im Texteditor, eigene Wörter, Code-Modus, Textarea-Spiegel und
 contenteditable in der E-Mail mit Menü, Ignorieren und Umschalt, die zwischen Apps geteilte Einstellung, eine <code>.oxt</code> in ISO-8859-1 aus der
 Kopfzeile, das Menü am Smartphone), Rechtschreibung in Zellen in <code>test_notebook.py</code>, der Bereich in <code>test_document.py</code>.</p>
+<h3>Schriften</h3>
+<p><code>shared/js/fonts.js</code> (jede Anwendung, nach <code>shell.js</code>): <code>Suite.fonts.families(category)</code> listet die mitgelieferten Familien, deren Regeln in der Seite
+sind (Textverarbeitung, Tabellenkalkulation, Präsentation, Bildbearbeitung und die Übersicht binden <code>fonts.css</code> ein; Texteditor und SSH
+<code>fonts-mono.css</code>), und die importierten. Aliasnamen werden mit der FontFace-API aus den mitgelieferten Regeln angelegt, sodass die Daten einmal in der
+Datei sind: Liberation Sans/Serif/Mono → Arimo/Tinos/Cousine (Liberation 2 ist aus ihnen gebaut) und – mit <code>local()</code> zuerst, damit ein installiertes
+Original gewinnt – Calibri → Carlito, Cambria → Caladea, Arial und Helvetica → Arimo, Times New Roman → Tinos, Courier New → Cousine. Importierte
+Schriften (TTF/OTF/TTC/WOFF/WOFF2) liegen in IndexedDB (<code>suite-fonts</code>, gemeinsam für die Anwendungen eines Browserprofils) mit Familie, Stärke und Stil
+aus den Tabellen <code>name</code> (16/1, 17/2) und <code>OS/2</code> (<code>usWeightClass</code>, <code>fsSelection</code>; WOFF-Tabellen mit <code>DecompressionStream</code> entpackt; WOFF2 – Brotli –
+über den Dateinamen), werden durch Laden geprüft und bei jedem Start mit <code>FontFace</code> hinzugefügt; ein <code>storage</code>-Ereignis (<code>suite.fonts.changed</code>)
+benachrichtigt die anderen offenen Anwendungen. Die Quelle <code>fonts</code> von <code>Suite.preferences</code> schreibt sie als Base64 in <code>apps.suite.settings.fonts</code>
+einer Einstellungsdatei (auch KeePass und Arbeitsbereiche; nicht vertrauliche Quellen sind im Arbeitsbereich-Dialog vorausgewählt). <code>cssFor(names)</code>
+liefert die Regeln einiger Familien für Druck-Frames (<code>srcdoc</code>-Frames sehen die Schriften der Seite nicht). Textverarbeitung und Tabellenkalkulation
+nehmen die Familien in das Schriftmenü von Univer auf (<code>IFontService.addFont</code>); die Bildbearbeitung wartet auf <code>document.fonts.load</code>, bevor sie Text
+auf die Zeichenfläche schreibt. Anwendungen ohne mitgelieferte Schriften erhielten <code>font-src data:</code> in ihrer CSP für importierte Schriften. Eine Frage
+von <code>Suite.shell.confirm</code> steht nun nach dem Info-Dialog und damit vor ihm. Test: <code>tests/apps/test_fonts.py</code>.</p>
+<h3>Diagramme</h3>
+<p><code>shared/js/charts.js</code> (Tabellenkalkulation, Präsentation): Die Diagramme von Univer gehören zu Univer Pro, daher hat die Suite eigene. Das Modell
+<code>{ type, title, categories, series: [{ name, values, color }], legend, stacked, labels, source }</code> (<code>normalize</code>) wird auf ein Canvas gezeichnet (<code>draw</code>:
+Werteachse mit „runder“ Skala, Gitterlinien, gruppierte oder gestapelte Säulen und Balken – Balken von unten nach oben wie in Office –, Linien mit
+Punkten, Flächen, Kreis und Ring mit Prozenten, Punkte auf numerischer x-Achse; Legende rechts oder unten; das mitgelieferte Carlito, früh geladen, wie
+Calibri in Office). <code>toPng</code> zeichnet in doppelter Größe mit <code>canvas.toDataURL</code> (synchron, damit Importer es nutzen können) und ergänzt einen <code>tEXt</code>-Chunk
+<code>suite-chart</code> mit dem Modell (Base64 von UTF-8-JSON); <code>modelOf</code> liest es zurück (je Quelle zwischengespeichert). <code>fromRows</code> macht ein Modell aus
+Zellwerten (Text in erster Zeile/Spalte = Namen), <code>fromChartXml</code> aus einem DrawingML-Diagrammteil (<code>barChart</code> mit <code>barDir</code>/<code>grouping</code>, <code>line</code>, <code>area</code>,
+<code>pie</code>, <code>doughnut</code>, <code>scatter</code>, auch 3-D; Reihennamen, Kategorien und Werte aus <code>strCache</code>/<code>numCache</code> oder – XLSX ohne Zwischenspeicher, etwa von openpyxl
+– über ein <code>resolve(formula)</code> aus den Zellen der Arbeitsmappe; <code>srgbClr</code>-Füllungen, Titel, Legendenposition). Der Dialog (<code>edit</code>) ist ein Preact-Formular
+mit Live-Vorschau und Datenraster. Die Tabellenkalkulation fügt ein Diagramm als Bild über dem Raster neben der markierten Tabelle ein (<code>insertChart</code>, mit
+<code>source</code> = Blatt und Bereich für <em>Aus den Zellen aktualisieren</em>) und ersetzt beim Bearbeiten die Quelle des Bildes; der XLSX-Leser
+(<code>readCharts</code>/<code>importCharts</code> in <code>univer-xlsx.js</code>) folgt den Beziehungen Blatt → Zeichnung → Diagramm und setzt die Diagramme wie Bilder. Die Präsentation
+fügt sie als Bildelemente ein; <code>pptx-import.js</code> macht aus <code>graphicFrame</code>s mit Diagramm solche Elemente (<code>readChart</code>). Office-Dateien erhalten die
+Diagramme als Bilder (noch keine eigenen Diagrammteile). Test: <code>tests/apps/test_charts.py</code>.</p>
 <h3>Emoji und Symbole</h3>
 <p><code>shared/js/symbols.js</code> (ein klassisches Skript nach <code>shell.js</code> in jeder Anwendung außer der Übersicht) ergänzt alle Textfelder
 um Emoji und Symbole. Die Daten, <code>vendor/esm/symbols/symbols.json</code>, erzeugt <code>tools/build_symbols.py</code> aus den eingebundenen
@@ -573,10 +614,32 @@ es danach; <code>newSize()</code> behält den Maßstab eines aktualisierten Bild
 <p>Die App <code>suite</code> enthält, was alle Apps teilen: <code>settings.relay</code> und <code>settings.preferences</code>, die localStorage-Einträge der Suite
 (Schlüssel <code>suite.*</code> und <code>&lt;app&gt;.prefs</code>, ohne <code>suite.mediaplayer.resume</code>) als Zeichenketten. <code>Suite.preferences</code> (Ende von
 <code>shared/js/shell.js</code>) sammelt und übernimmt sie; der Info-Dialog exportiert sie als JSON-Datei in diesem Format
-(<code>suite-settings.json</code>, nur <code>apps.suite.settings.preferences</code>) und importiert denselben Teil aus jeder JSON-Anwendungsdatendatei,
-danach fragt er, ob neu geladen werden soll. <code>Suite.appdata</code> schreibt die aktuellen Einstellungen in jede gespeicherte
+(<code>suite-settings.json</code>, nur <code>apps.suite.settings.preferences</code>) oder als KeePass-Speicher von <code>shared/js/settings.js</code> (<code>suite-settings.kdbx</code>,
+dieselben Daten als Anhang des Eintrags „Settings“; jede Anwendung lädt dafür kdbxweb, Argon2 von hash-wasm – CSP <code>'wasm-unsafe-eval'</code> –, <code>kdbx.js</code> und
+<code>settings.js</code>) und importiert denselben Teil aus jeder Anwendungsdatendatei (JSON oder KeePass mit Passwort), danach fragt er, ob neu geladen werden
+soll. Export und Import listen auf, was enthalten ist: Einstellungsgruppen (<code>groupOf</code>: Schlüssel <code>suite.&lt;app&gt;…</code> und <code>&lt;app&gt;.prefs</code> gehören zu dieser
+Anwendung, der Rest zu „Allgemein“; eine Anwendung bietet ihre Gruppe und die allgemeine an, die Übersicht alle) und die Quellen, die Anwendungen mit
+<code>Suite.preferences.register({ id, label, sensitive, available, write, count, read })</code> anmelden – <code>appdata.js</code> meldet die Verbindungen seiner Anwendung und die
+Relay-Einstellungen als vertrauliche Quellen an (ein JSON-Export mit einer davon braucht eine Bestätigung). Die importierten Einstellungen stehen vor dem Neuladen auch in <code>sessionStorage</code> und werden am Anfang von <code>i18n.js</code> erneut geschrieben, falls die
+neu geladene Seite ohne die letzten localStorage-Schreibvorgänge startet. <code>Suite.appdata</code> schreibt die aktuellen Einstellungen in jede gespeicherte
 Verbindungsdatei und zeigt beim Öffnen einer Datei mit abweichenden Einstellungen eine Leiste zum Übernehmen. Test:
-<code>tests/apps/test_preferences.py</code>.</p>
+<code>tests/apps/test_preferences.py</code>. <code>Suite.openFiles</code> (ebenfalls in <code>shell.js</code>) erstellt das Archiv der geöffneten Dateien: Anwendungen melden mit
+<code>Suite.openFiles.register(async () =&gt; [{ name, bytes, dirty }])</code> einen Lieferanten an (der aktuelle Inhalt im Format, in dem sie
+speichern; am Ende des <code>main.js</code> jeder Anwendung), <code>list()</code> sammelt sie (die Übersicht fragt die Shell im Frame jedes Tabs und legt
+die Dateien in einen Ordner je Anwendung) und macht Namen eindeutig, <code>zip(files)</code> schreibt ein ZIP (Deflate über
+<code>CompressionStream('deflate-raw')</code>, wenn es kleiner wird, CRC-32, UTF-8-Namen) und <code>createArchive(files)</code> öffnet es über
+<code>Suite.bridge.openIn</code> im Archivmanager – die Übersicht setzt mit <code>setOpener</code> stattdessen einen Archiv-Tab –, oder lädt es herunter,
+wenn das nicht geht. Test: <code>tests/apps/test_open_files.py</code>. <code>Suite.workspace</code> (Ende von <code>shell.js</code>) speichert und öffnet Arbeitsbereiche (<code>*.suite.zip</code>, geschrieben mit
+<code>Suite.openFiles.zip</code>): <code>workspace.json</code> (<code>format: "portable-web-app-suite-workspace"</code>, <code>version: 1</code>, <code>created</code>, <code>app</code>,
+<code>files: [{ path, app, name, tab }]</code>, <code>activeTab</code>, <code>settings</code>), die Dateien unter <code>&lt;app&gt;/&lt;name&gt;</code> und wahlweise <code>settings.json</code> oder –
+mit Passwort, immer wenn eine vertrauliche Quelle enthalten ist – <code>settings.kdbx</code> (<code>Suite.preferences.settingsBytes</code>). <code>unzip()</code>
+liest gespeicherte und mit Deflate gepackte Einträge (<code>DecompressionStream</code>). <code>restore()</code> öffnet zuerst die Einstellungen (ein
+falsches Passwort scheitert, bevor etwas geöffnet wird), dann die Dateien – eine Anwendung über <code>Suite.bridge.openLocal</code> (Kopien,
+nur die eigenen), die Übersicht über den mit <code>setHost({ restore(files, activeTab) })</code> angemeldeten Host: ein Tab je gespeichertem
+Tab (<code>openTab</code> mit den Dateien, wartet auf <code>ready</code> jedes Tabs) –, übernimmt die Einstellungen dieser Seite (<code>groupsOf</code>) und liest
+die Quellen (in der Übersicht auch die ihrer Tabs: <code>Suite.preferences.setHosted</code>/<code>allSources</code>). Der Lieferant der geöffneten
+Dateien der Übersicht ergänzt dafür <code>tab</code>, <code>file</code> und <code>active</code>. Den Beispiel-Arbeitsbereich erzeugt <code>workspace()</code> in
+<code>tools/make_examples.py</code>. Test: <code>tests/apps/test_workspace.py</code>.</p>
 <h2>Anwendungen</h2>
 <h3>Texteditor (<code>apps/texteditor</code>)</h3>
 <table>
@@ -1237,6 +1300,47 @@ und der verborgene Name <code>_xlnm._FilterDatabase</code> wird wie bei Excel in
 die Excel im Filterbereich ausgeblendet hat, werden zu <code>cachedFilteredOut</code> statt zu von Hand ausgeblendeten Zeilen; beim Speichern werden sie als
 ausgeblendete Zeilen geschrieben. Farb-, dynamische und Top-10-Filter werden nicht erhalten. Die ZIP-Hilfen (<code>readZip</code>, <code>zipPart</code>, <code>writeZip</code>) teilt
 sich der Code mit der Korrektur der Beziehungen von openpyxl-Dateien.</p>
+<p><strong>Daten → Bereinigen</strong> ist eigener Code der Anwendung (<code>apps/spreadsheet/src/js/tools.js</code>, Dialoge in <code>main.js</code>): <em>Duplikate entfernen</em> vergleicht
+die gewählten Spalten (<code>SSTools.duplicates</code>: Text getrimmt und in Kleinbuchstaben) und schreibt den Bereich mit <code>FRange.setValues</code> neu (Zelldaten mit
+Formaten, die behaltenen Zeilen rücken nach oben, der Rest wird geleert), ein Rückgängig-Schritt; eine einzelne Zelle steht für ihren aktuellen Bereich
+(wächst, solange eine benachbarte Zeile oder Spalte Inhalt hat). <em>Text in Spalten</em> verwendet den CSV-Parser und die Werterkennung des Imports
+(<code>SSCSV.parse</code>/<code>convert</code>) statt <code>sheet.command.split-text-to-columns</code> von Univer, das keinen Dialog hat, Zahlen als Text belässt und Anführungszeichen
+ignoriert; Datumswerte werden zu Seriennummern mit Datumsformat (Univer hält sie dann als formatierte Werte vom Typ Zahl, die der XLSX-Export als Datum
+schreibt). Die Menüs der eigenen Funktionen fügt <code>menu.js</code> ein (<code>SSMenu.submenu</code>).</p>
+<p><strong>Drucken / PDF</strong> (<code>apps/spreadsheet/src/js/print.js</code>, Dialog in <code>main.js</code>): <code>SSPrint.html(parts, options)</code> erzeugt die gedruckten Zellen aus dem
+Snapshot der Arbeitsmappe – Spaltenbreiten (<code>&lt;colgroup&gt;</code>, <code>table-layout: fixed</code>), Zeilenhöhen, Formate (Schrift, Farben, Ausrichtung – Zahlen rechts –,
+Umbruch, Rahmen aus den Rahmenstilen von Univer), verbundene Zellen auf die gedruckten Zeilen und Spalten beschnitten, ausgeblendete Zeilen und Spalten
+ausgelassen – mit den Anzeigewerten von <code>FRange.getDisplayValues</code> (Zahlenformate angewandt). Die wiederholten Zeilen sind ein <code>&lt;thead&gt;</code>, das Browser auf
+jeder Seite wiederholen; <em>an Breite/Seite anpassen</em> setzt CSS-<code>zoom</code> auf die Tabelle, berechnet aus der bedruckbaren Größe des Papiers (<code>@page</code>-Größe und
+12 mm Rand). <code>usedRange</code> findet die Zellen mit Inhalt, Hintergrund oder Rahmen. <code>main.js</code> druckt das HTML aus einem versteckten Frame (<code>print()</code>;
+„Als PDF speichern“ im Druckdialog erzeugt das PDF) und merkt Papier, Ausrichtung, Größe und Gitternetzlinien in <code>suite.spreadsheet.print</code>. Test:
+<code>tests/apps/test_spreadsheet_print.py</code>.</p>
+<p>Zeilen- und Spaltengruppen sind eigener Code der Anwendung (<code>apps/spreadsheet/src/js/outline.js</code>): Die Gliederung von Univer gehört zu Univer
+Pro (<code>@univerjs-pro/sheets-outline</code>). Die Ebene steht in den benutzerdefinierten Daten einer Zeile oder Spalte (<code>rowData[r].custom.outline</code>,
+<code>columnData[c].custom.outline</code>) und wird mit den rückgängig machbaren Befehlen <code>sheet.command.set-row-data</code> / <code>set-col-data</code> geschrieben; Univer
+verschiebt Zeilen- und Spaltendaten mit eingefügten, gelöschten und verschobenen Zeilen und Spalten. Das Ausblenden einer Gruppe verwendet
+<code>hideRows</code>/<code>hideColumns</code>. Die Köpfe werden mit <code>customizeRowHeader</code>/<code>customizeColumnHeader</code> beschriftet (<code>rowsCfg</code>/<code>columnsCfg</code>: <code>│</code> je Ebene, ⊟/⊞ an
+der Zusammenfassungszeile oder -spalte; der Zeilenkopf wird je nach Tiefe verbreitert) und nach Mutationen und Blattwechseln aktualisiert. Das Menü
+wird von <code>SSMenu.submenu</code> in der Form von Univers eigenen Menüs in <code>ribbon.data.organization</code> eingefügt, weil <code>createSubmenu</code> der Fassade die Einträge in Gruppenknoten
+legt, die das Dropdown der Multifunktionsleiste nicht anzeigt; seine Befehle werden unter den IDs der Einträge registriert, die das Dropdown ausführt.
+<code>univer-xlsx.js</code> liest <code>outlineLevel</code> von Zeilen und Spalten aus ExcelJS und schreibt sie zurück; Zeilen, die nur ausgeblendet oder gruppiert sind,
+erhalten ihre Höhe, weil ExcelJS eine Zeile nur mit Zellen oder Höhe schreibt.</p>
+<p>Notizen kommen aus <code>@univerjs/preset-sheets-note</code> (1.0.4, Apache-2.0); das Modell ist die Ressource <code>SHEET_NOTE_PLUGIN</code> (<code>{ sheetId: { row: { col:
+{ note, width, height, show, id, row, col } } } }</code>). ExcelJS liest bei Legacy-Kommentaren nur formatierte Läufe, verwirft die Kommentare von Zellen ohne
+<code>&lt;c&gt;</code>-Element und scheitert an den Teilnamen von openpyxl; daher liest <code>univer-xlsx.js</code> die Notizen selbst (<code>readNotes</code>: der Kommentarteil jedes Blatts,
+alle <code>&lt;t&gt;</code>-Texte), und <code>normalizeRelationships</code> benennt Kommentar- und VML-Teile in die Namen um, die ExcelJS erwartet (<code>xl/comments&lt;n&gt;.xml</code>,
+<code>xl/drawings/vmlDrawing&lt;n&gt;.vml</code>). Notizen werden mit ExcelJS geschrieben (<code>cell.note</code>), als Text, in der Standardgröße, ausgeblendet.</p>
+<p>Suchen und Ersetzen ist <code>@univerjs/preset-sheets-find-replace</code> (1.0.4, Apache-2.0); es arbeitet auf den Zellen und braucht keine Unterstützung im Dateiformat.</p>
+<p>Hyperlinks kommen aus <code>@univerjs/preset-sheets-hyper-link</code> (1.0.4, Apache-2.0). Univer hält einen Link im Rich Text der Zelle (<code>cell.p</code>) als
+Custom Range vom Typ HYPERLINK (<code>{ startIndex, endIndex, rangeType: 0, rangeId, properties: { url, tooltip } }</code>); die Zelle zeigt den Text von <code>p</code>,
+nicht <code>v</code>. Orte in der Mappe sind URLs <code>#gid=&lt;Blatt-ID&gt;&amp;range=A1</code> und <code>#rangeid=&lt;ID des definierten Namens&gt;</code>. ExcelJS verwirft Links, die eine
+<code>location</code>, aber keine Beziehung haben, und schreibt jeden Link als externe Beziehung; daher behandelt <code>univer-xlsx.js</code> <code>&lt;hyperlinks&gt;</code> selbst, wie die
+Filter: <code>readHyperlinks</code> liest <code>ref</code>, <code>r:id</code> (Ziel aus den <code>_rels</code> des Blatts), <code>location</code>, <code>tooltip</code> und <code>display</code>; <code>fromExcelJS</code> macht daraus
+<code>cell.p</code> (Orte <code>Blatt!A1</code> werden zu <code>#gid=…</code>, Bereiche aus mehreren Zellen zu einem Link auf jeder Zelle). Beim Export behalten Zellen ihren Text (den
+reinen Text von <code>p</code>), <code>cellLinks</code> sammelt den ersten Link jeder Zelle, und <code>writeHyperlinks</code> fügt <code>&lt;hyperlinks&gt;</code> vor den Elementen ein, die in
+<code>CT_Worksheet</code> darauf folgen (<code>pageMargins</code>, …), mit <code>TargetMode="External"</code>-Beziehungen <code>rIdLink&lt;n&gt;</code> für Adressen und <code>location</code> (mit <code>display</code>)
+für Orte in der Mappe; Links auf definierte Namen werden zu deren Bereich. Verlinkte Zellen ohne eigene Schriftfarbe erhalten das Linkaussehen von
+Excel (<code>0563C1</code>, unterstrichen).</p>
 <ul>
 <li><strong>Styles</strong>: Die Anwendung lädt <code>vendor/pico.conditional.min.css</code>, das nur Elemente innerhalb von <code>.pico</code> gestaltet; Kopfzeile, Banner, Hinweise und
   Dialoge der Shell tragen diese Klasse, die Univer-Oberfläche behält ihr eigenes Aussehen. Dialoge mit <code>.pico</code> erhalten einen <code>z-index</code> über
@@ -1268,7 +1372,9 @@ sich der Code mit der Korrektur der Beziehungen von openpyxl-Dateien.</p>
 XLS, XLSM, Verwerfen von Änderungen, Sprache und Design, Smartphone-Layout, CSV-Importdialog (Windows-1252, Strichpunkte, Dezimalkomma,
 Zeilenumbrüche in Anführungszeichen, führende Nullen, Datumswerte, alles als Text, Speichern mit demselben Trennzeichen). Genauigkeit von Import/Export: <code>tests/prototypes/test_s6_office_io.py</code>.</p>
 <h3>Textverarbeitung (<code>apps/document</code>)</h3>
-<p>Univer Docs 1.0 mit den Presets Docs Core und Docs Drawing (<code>vendor/esm/univer-docs</code>, Entscheidung D-020), im selben Aufbau wie die
+<p>Univer Docs 1.0 mit den Presets Docs Core, Docs Drawing und Docs Hyperlink (<code>vendor/esm/univer-docs</code>, Entscheidung D-020; Links sind Custom Ranges
+vom Typ HYPERLINK im Body, die die DOCX-, ODT- und HTML-Schreiber schon behandelten; <code>@univerjs/ui/facade</code> ergänzt die Fassade um <code>createMenu</code>/
+<code>createSubmenu</code>/<code>registerComponent</code>, die die Docs-Presets allein nicht haben), im selben Aufbau wie die
 Tabellenkalkulation (Container außerhalb von Preact, bedingtes Pico, Geändert-Regel, Design und Sprache). Der DOCX-Import verwendet den direkten
 Leser aus Spike S-8 (<code>shared/js/docx-import.js</code>, über <code>importDocx</code> von <code>shared/js/univer-docx.js</code>), der Export die Bibliothek <code>docx</code> (<code>exportDocx</code>).
 DOCM und DOTX werden geöffnet und als neue DOCX-Dateien gespeichert. ODT (<code>shared/js/odt.js</code>, eigener Code auf fflate): der Leser löst automatische
@@ -1284,13 +1390,51 @@ Schreibmarke (<code>DocSelectionManagerService.getActiveTextRange()</code>), fü
 wird als neue Einheit neu geladen. Der DOCX-Export umschließt Überschriften mit <code>Bookmark</code> und die Einträge mit <code>InternalHyperlink</code>, der ODT-Export
 schreibt <code>text:bookmark</code> und <code>#toc-n</code>-Links. Der DOCX-Leser macht aus <code>footnoteReference</code>/<code>endnoteReference</code> hochgestellte Nummern und hängt die
 Notentexte am Ende an (wie der ODT-Leser). Reiner Text: Zeilen werden Absätze (<code>fromText</code>); beim Speichern als Text
-wird der Datenstrom mit Absatzmarken als Zeilenumbrüchen und ohne eingebettete Objekte geschrieben (<code>toText</code>). Drucken und HTML (<code>shared/js/doc-html.js</code>, <code>toHtml</code>): die Univer-Daten werden eine
+wird der Datenstrom mit Absatzmarken als Zeilenumbrüchen und ohne eingebettete Objekte geschrieben (<code>toText</code>). Markdown (<code>shared/js/doc-markdown.js</code>,
+<code>toMarkdown</code>): CommonMark mit den Pipe-Tabellen, dem Durchstreichen und den Aufgabenlisten von GitHub – Überschriften nach Formatvorlage (ohne das
+Fett der Überschriftenvorlage), <code>**</code>/<code>*</code>/<code>~~</code> um den getrimmten Text eines gleich formatierten Abschnitts, Links (<code>#toc-</code>-Links als Text), Listen je
+Listen-ID nummeriert, Checklisten (<code>CHECK_LIST</code>, <code>CHECK_LIST_CHECKED</code>), Tabellen mit der ersten Zeile als Kopf (Verbindungen als leere Zellen,
+Zellabsätze mit <code>&lt;br&gt;</code> verbunden), Zeichnungen als <code>data:</code>-Bilder, Feldergebnisse; Zeichen, die Markdown-Syntax beginnen würden, werden maskiert.
+Geöffnete <code>.md</code>-Dateien bleiben reiner Text (Format <code>txt</code>), sodass Speichern ihren Quelltext unverändert schreibt. Drucken und HTML
+(<code>shared/js/doc-html.js</code>, <code>toHtml</code>): die Univer-Daten werden eine
 eigenständige Seite (benannte Formate → <code>h1</code>–<code>h5</code>/Titel/Untertitel, Absatz- und Zeichenformate als Inline-CSS, Links, verschachtelte
 <code>ul</code>/<code>ol</code> aus <code>bullet.nestingLevel</code>, Tabellen mit <code>colgroup</code>-Breiten, Verbindungen und Schattierung, Zeichnungen als <code>img</code>, Seitenumbrüche
 als <code>break-before:page</code>, Überschriften mit <code>id="toc-&lt;n&gt;"</code> für die Links des Inhaltsverzeichnisses); <code>@page</code> übernimmt Seitengröße und Ränder
-aus <code>documentStyle</code>, und mit <code>print</code> stehen Standard-Kopf- und -Fußzeile mit <code>position: fixed</code> in den Randbereichen, sodass sie sich auf jeder
-Seite wiederholen. Die Schaltfläche 🖨 (<code>Strg+P</code>) lädt sie in einen versteckten <code>srcdoc</code>-Frame und ruft dessen <code>print()</code> auf (CSP
-<code>frame-src 'self' about:</code>); Speichern als <code>.html</code> schreibt dieselbe Seite ohne <code>print</code>. Rechtschreibbereich (<code>apps/document/src/js/spelling.js</code>, <code>F7</code>) auf der Rechtschreibprüfung der Suite (siehe
+aus <code>documentStyle</code>. Mit <code>print</code> wiederholen sich Standard-Kopf- und -Fußzeile auf jeder Seite: mit <code>pageCounters</code> (Chromium) als Text von
+<code>@page</code>-Randfeldern (<code>@top-left|center|right</code> nach der Ausrichtung des ersten Absatzes, <code>@bottom-…</code>; Tabellenzellen durch Leerzeichen getrennt,
+Bilder entfallen), in denen Seitenfelder zu <code>counter(page)</code> / <code>counter(pages)</code> werden – Chromium schneidet feste Elemente in den Seitenrändern ab;
+sonst (Firefox) als Elemente mit <code>position: fixed</code> in den Rändern, mit leeren Seitenfeldern. Die Schaltfläche 🖨 (<code>Strg+P</code>) lädt sie in einen versteckten <code>srcdoc</code>-Frame und ruft dessen <code>print()</code> auf (CSP
+<code>frame-src 'self' about:</code>); Speichern als <code>.html</code> schreibt dieselbe Seite ohne <code>print</code>. Einfügen → Datum &amp; Uhrzeit (<code>ribbonSubmenu</code> in <code>main.js</code>, gleich aufgebaut wie das Kopf- und Fußzeilenmenü) schreibt das formatierte Datum mit
+<code>getTextRange(start, end).setText()</code> an den aktiven Textbereich des Body und setzt die Schreibmarke dahinter; <code>Intl</code> formatiert mit dem Gebietsschema
+des Browsers, wenn dessen Sprache die der Anwendung ist, sonst mit <code>en-US</code>/<code>de-DE</code>. Symbole und Emoji sind die Auswahlen von Univer
+(<code>doc.menu.insert-symbol</code>, <code>doc.menu.insert-emoji</code>). Seite einrichten: Der Dialog der Anwendung ersetzt den von Univer (in px, ohne Ausrichtung): Ein <code>BeforeCommandExecute</code>-Handler bricht
+<code>docs.operation.open-page-setting</code> ab und öffnet ihn; er verwendet den rückgängig machbaren Befehl <code>docs.command.page-setup</code> von Univer (<code>documentFlavor</code>
+1 Seiten / 2 keine Seiten, <code>pageOrient</code> 0/1, <code>pageSize</code> mit vertauschten Seiten für Querformat, Ränder; px = cm × 96 / 2,54). Der DOCX-Schreiber
+übergibt Querformatseiten der docx-Bibliothek mit der Hochformatgröße und <code>PageOrientation.LANDSCAPE</code> (sie vertauscht die Seiten selbst), der
+ODT-Schreiber ergänzt <code>style:print-orientation</code>. Kopf- und Fußzeilen, Seitenzahlen: Den Reiter Kopf- und Fußzeile von Univer (Seitenzahl- und Datumsfelder, erste/gerade-ungerade Seiten,
+Abstände) öffnet <code>doc.command.open-header-footer-panel</code> mit <code>editArea: 'HEADER' | 'FOOTER'</code> (Einfügen → Kopf- &amp; Fußzeile, wie die Menüs der
+Tabellenkalkulation in <code>ribbon.insert.others</code> eingefügt); seine zweizeiligen Gruppen schneidet die einzeilige Multifunktionsleiste ab, daher lässt
+<code>style.css</code> diese Leiste wachsen, solange der Reiter angezeigt wird (<code>:has([data-u-command="doc.command.close-header-footer"])</code>). Eine dort angelegte
+Kopfzeile verweist der letzte Abschnittsumbruch des Body (<code>defaultHeaderId</code> … in <code>body.sectionBreaks</code>), nicht <code>documentStyle</code>: <code>sectionConfig(data)</code>
+(<code>doc-toc.js</code>) führt beides für die DOCX-, ODT- und HTML-Schreiber zusammen. Felder sind Custom Ranges vom Typ FIELD (1) um <code>U+001F Ergebnis U+001E</code>
+mit <code>properties { fieldType, instruction, cachedResult, sourceKind }</code>; Univer zeichnet an ihrer Stelle die Nummer jeder Seite. Der DOCX-Leser macht
+<code>PAGE</code>/<code>NUMPAGES</code> komplexer Felder (<code>fldChar</code> begin/separate/end, verschachtelte auf einem Stapel) und von <code>fldSimple</code> zu solchen Bereichen
+(<code>closeField</code>; ein Feld ohne Ergebnis erhält „1“), andere Felder behalten ihr Ergebnis; der Schreiber erzeugt <code>PageNumber.CURRENT</code>/<code>TOTAL_PAGES</code>.
+ODT: <code>text:page-number</code>/<code>text:page-count</code> in beide Richtungen.
+Kommentare: Die Thread-Kommentare von Univer (<code>@univerjs/preset-docs-thread-comment</code>, Apache-2.0) halten den kommentierten Text als Dekoration des
+Body (<code>customDecorations: { id, type: 0, startIndex, endIndex }</code>, Ende einschließlich) und den Verlauf in der Ressource
+<code>DOC_UNIVER_THREAD_COMMENT_PLUGIN</code> (<code>{ default_doc: [{ id = threadId = Id der Dekoration, ref, dT "JJJJ/MM/TT HH:mm", personId, authorName, text
+(ein kleiner Body), resolved, children }] }</code>). <code>shared/js/doc-comments.js</code> liest sie (<code>threadsOf</code>, nach Position geordnet) und baut sie aus den
+Kommentaren einer Datei (<code>buildThreads</code>: Antworten zu ihrem Ursprung, ein Kommentar ohne Bereich auf dem nächsten Zeichen). DOCX: Der Leser merkt sich
+<code>commentRangeStart</code>/<code>End</code>/<code>commentReference</code> des Haupttexts (<code>commentMark</code>), liest <code>comments.xml</code> (Autor, Datum, Absätze) und <code>commentsExtended.xml</code>
+(<code>w15:paraIdParent</code> zur <code>w14:paraId</code> des letzten Absatzes, <code>w15:done</code>); der Schreiber macht aus jedem Kommentar und jeder Antwort einen Word-Kommentar
+(<code>comments</code>, <code>parentId</code>, <code>resolved</code> der docx-Bibliothek, die <code>commentsExtended.xml</code> schreibt) und setzt die Bereichsmarken aller um die kommentierten
+Runs (Runs werden an den Kommentargrenzen geteilt; der Verweis folgt dem Ende). ODT: <code>office:annotation</code> (<code>dc:creator</code>, <code>dc:date</code>, <code>text:p</code>) mit
+<code>office:name</code> vor dem Text und <code>office:annotation-end</code> danach; Antworten folgen dem Ende mit <code>loext:parent-name</code>, ein gelöster Verlauf hat
+<code>loext:resolved="true"</code> (wie LibreOffice sie schreibt). Autor neuer Kommentare ist die Einstellung <code>suite.author</code> (von der Anwendung vor dem ersten
+Kommentar erfragt, Feld in den Einstellungen der Shell, Ereignis <code>suite-author</code>); sie wird als aktueller Benutzer von Univer gesetzt
+(<code>UserManagerService</code>, ein SVG-Avatar mit den Initialen – Bilder sind auf <code>data:</code> beschränkt), und die Autoren eines geladenen Dokuments werden als
+Benutzer ergänzt. Test: <code>tests/apps/test_document_comments.py</code> (auch mit LibreOffice, wenn installiert). Rechtschreibbereich (<code>apps/document/src/js/spelling.js</code>, <code>F7</code>) auf der Rechtschreibprüfung der Suite (siehe
 <em>Rechtschreibprüfung</em>): <code>spell.errors</code> des Datenstroms des Body, nach Wort gruppiert mit ihren Positionen; Sprache, eigene und ignorierte
 Wörter sind die des Auswahlfelds in der Kopfzeile. Markieren und Ersetzen verwenden die Fassade (<code>FDocument.setSelection</code>,
 <code>getTextRange(start, end).setText</code>, vom letzten Vorkommen rückwärts); die Positionen werden vor jeder Aktion neu berechnet, da sich der
@@ -1305,15 +1449,68 @@ Eingabeverarbeitung von Univer Docs von Playwright getippte Umlaute; die Eingabe
 Master, fflate), <code>shared/js/slide-render.js</code> (Darstellung als DOM/SVG, Text als bearbeitbares HTML), <code>shared/js/pptx-export.js</code> (PptxGenJS) und
 Moveable zum Verschieben, Skalieren und Drehen (mit Hilfslinien).</p>
 <ul>
-<li>
-<p><strong>Übergänge und Animationen</strong> (<code>slide.transition = { type, dir, duration, advanceAfter }</code>, <code>slide.animations = [{ id, effect, start }]</code>):
+<li><strong>Übergänge und Animationen</strong> (<code>slide.transition = { type, dir, duration, advanceAfter }</code>, <code>slide.animations = [{ id, effect, start }]</code>):
   der Leser nimmt das erste <code>p:transition</code> (PowerPoint ab 2010 schreibt es in <code>mc:AlternateContent</code> mit <code>p14:dur</code>; sonst <code>spd</code>, <code>advTm</code>) und die
   Eingangs-<code>p:cTn</code> von <code>p:timing</code> (presetClass <code>entr</code>, presetID 1/10/2/53 → Erscheinen/Einblenden/Hineinfliegen/Zoom, nodeType → Klick/mit/nach)
   und ordnet <code>spTgt spid</code> über die mitgelesenen <code>p:cNvPr</code>-IDs den Elementen zu. PptxGenJS schreibt beides nicht, daher entpackt <code>pptx-export.js</code>
   seine Ausgabe und fügt <code>p:transition</code> und eine Hauptsequenz (<code>p:timing</code>, eine Klickgruppe je „bei Klick“) nach <code>p:clrMapOvr</code> ein; die Form-IDs
   stammen aus den <code>p:cNvPr</code>-Elementen in der Reihenfolge, in der die Elemente hinzugefügt wurden. Die Vorführung gruppiert die Animationen genauso:
   Elemente späterer Gruppen sind verborgen, ein Schritt spielt die nächste Gruppe mit der Web Animations API (<code>opacity</code>, <code>translate</code>, <code>scale</code>);
-  Übergänge animieren die neue (bei <em>Schieben</em> auch die alte) Folienansicht; <em>nächste Folie nach</em> ist ein Timer, den jedes Blättern neu startet.</p>
+  Übergänge animieren die neue (bei <em>Schieben</em> auch die alte) Folienansicht; <em>nächste Folie nach</em> ist ein Timer, den jedes Blättern neu startet.</li>
+<li><strong>Rechtschreibbereich</strong>: der Bereich des Dokument-Editors (<code>apps/document/src/js/spelling.js</code>, als <code>app/spelling</code> importiert) auf einem Strom aller
+  Folientexte und Notizen (<code>spellIndex</code>: Abschnitte je Lauf, Läufe eines Absatzes direkt aneinander, Absatzmarken dazwischen); eine Ersetzung über mehrere
+  Läufe kommt in den ersten Lauf.</li>
+<li><strong>Layouts, Medien, Zuschneiden</strong>: <code>layoutElements(kind)</code> baut die Textfelder (<code>placeholder.type</code> title, subTitle, body) von sechs Layouts an den
+  Stellen von PowerPoint. Medienelemente <code>{ type: 'media', media: { src (Data-URL), kind: 'video' | 'audio', poster } }</code> werden als <code>&lt;video&gt;</code>/<code>&lt;audio&gt;</code>
+  dargestellt (<code>slide-render.js</code>; beim Bearbeiten <code>pointer-events: none</code>, in der Vorführung <code>controls</code> mit <code>ctx.play</code>); beim Einfügen eines Videos kommen
+  Größe und erstes Bild (Poster) aus einem Video-Element; die CSP erlaubt <code>media-src data: blob:</code>. PPTX: gelesen aus einem Bild mit
+  <code>a:videoFile</code>/<code>a:audioFile</code> (<code>r:link</code>) oder <code>p14:media</code> (<code>r:embed</code>), geschrieben mit <code>addMedia</code> von PptxGenJS (mit dem Poster als Titelbild). ODP:
+  <code>draw:plugin</code> mit der Datei in <code>Media/</code>. Zuschneiden: <code>image.crop = { l, t, r, b }</code> (abgeschnittene Anteile); das Bild wird in voller Größe im
+  beschnittenen Rahmen gezeichnet, <code>setCrop</code> hält Maßstab und Stelle des sichtbaren Teils; PPTX <code>a:srcRect</code> (Tausendstel Prozent) hinein und – nach
+  PptxGenJS ergänzt (<code>addCrops</code>) – hinaus; für ODP zeichnet <code>bakeCrops</code> den sichtbaren Teil in ein neues Bild. Test: <code>tests/apps/test_presentation_media.py</code>.</li>
+<li><strong>OpenDocument-Präsentationen</strong> (<code>shared/js/odp.js</code>, <code>readOdp</code>/<code>writeOdp</code>, fflate): Der Leser löst Stilketten auf (<code>style:parent-style-name</code> bis
+  zum Standardstil der Familie) für Grafik-, Präsentations-, Absatz- und Textstile – einschließlich <code>draw:text-style-name</code> und der
+  <code>presentation</code>-Stile der Platzhalter von LibreOffice –, liest die Seitengröße aus dem Seitenlayout des ersten Masters, Positionen und Größen in jeder
+  Einheit, <code>draw:transform</code> (<code>rotate(-θ) translate(Ecke)</code> um die linke obere Ecke → Grad im Uhrzeigersinn um die Mitte), benutzerdefinierte Formen
+  (<code>draw:type</code>, auch <code>ooxml-&lt;Vorlage&gt;</code> von LibreOffice; ein Rechteck mit Text ohne Füllung und Linie ist ein Textfeld), Rahmen mit Textfeld, Bild (auch
+  das Ersatzbild eines Objekts) oder Tabelle, <code>draw:g</code> als Gruppen-Ids, Listen (Verschachtelung von <code>text:list</code> = Ebene; Aufzählungszeichen oder Nummer
+  aus der Listenvorlage), Felder (<code>text:page-number</code>, <code>text:date</code>), Notizen (<code>presentation:notes</code>, Rahmen der Klasse <code>notes</code>) und
+  <code>presentation:visibility</code>. Der Schreiber legt automatische Stile je Eigenschaftssatz an, eine Listenvorlage je Art und Ebenenstapel,
+  <code>draw:custom-shape</code> mit <code>draw:enhanced-geometry draw:type</code> und Notizen so, wie LibreOffice sie schreibt (ein Folienbild und ein Notizenrahmen mit
+  Präsentationsstil auf der Layout-Ebene – ohne sie macht LibreOffice aus den Notizen ein gewöhnliches Textfeld). Das Format folgt dem Dateinamen
+  (<code>deckBytes</code>). Test: <code>tests/apps/test_presentation_odp.py</code> (auch mit LibreOffice).</li>
+<li><strong>Listen</strong>: Absätze haben <code>bullet</code> (<code>{ char }</code> oder <code>{ auto: 'arabicPeriod' … }</code>) und <code>level</code> (0–8; ↔ <code>a:buChar</code>/<code>a:buAutoNum</code> und <code>lvl</code>).
+  Während ein Text bearbeitet wird, hält <code>renderText</code> <code>level</code>, <code>bullet</code> und <code>align</code> jedes Absatzes als <code>data-*</code>-Attribute an seinem <code>&lt;p&gt;</code> (Browser
+  kopieren sie in den Absatz, den Eingabe abtrennt, so läuft die Liste weiter), <code>refreshLists</code> bringt Zeichen, Nummern (je Ebene) und Einzüge nach
+  jeder Eingabe auf den Stand, ohne die Textknoten anzufassen (die Schreibmarke bleibt), und <code>readText</code> übernimmt die Attribute – vorher erhielt
+  ein Absatz die Eigenschaften des Absatzes an derselben Stelle. <code>listCommand</code> (<code>main.js</code>) wirkt auf die <code>&lt;p&gt;</code>, die die Markierung berührt (lose
+  Text von „Alles markieren“ in Firefox wird vorher eingepackt, <code>wrapLoose</code>), oder auf alle Absätze der markierten Elemente. Moveable liegt im Folienbereich
+  (<code>new Moveable(stageWrap, { dragContainer: stageWrap })</code>): Mit seinen Zieh-Ereignissen am Fenster brach seine Touch-Behandlung spätere Antipp-Vorgänge anderswo ab (die
+  Schaltflächen des Bereichs reagierten am Smartphone nicht, nachdem ein markiertes Element angetippt worden war). Test:
+  <code>tests/apps/test_presentation_lists.py</code>.</li>
+<li><strong>Mehrere Elemente und Gruppen</strong>: <code>state.selected</code> ist das Element, das der Bereich rechts zeigt, <code>state.multi</code> die mit Umschalt/Strg+Klick, dem
+  Auswahlrahmen (<code>marquee</code>, in Folienkoordinaten) oder <code>Strg+A</code> gewählten Elemente; <code>selectionIds()</code> ergänzt die Mitglieder ihrer Gruppen. Eine
+  Gruppe ist eine gemeinsame Id <code>el.group</code> – die Elemente bleiben in der flachen Liste, benachbart in der Stapelreihenfolge (<code>groupSelection</code>
+  rückt sie zum obersten). Mehrere Elemente erhalten ein Moveable mit allen Zielen (<code>dragGroup</code>, <code>resizeGroup</code>; ohne Drehen); seine Zugfläche
+  deckt ihren Rahmen ab, daher sucht ein Klick dort (<code>clickGroup</code>) das Element unter dem Zeiger mit <code>elementsFromPoint</code>. Ausrichten und Verteilen
+  arbeiten mit Einheiten (eine Gruppe ist eine Einheit, <code>unitsOf</code>): am umgebenden Rechteck der Einheiten, bei einer Einheit an der Folie; Verteilen
+  lässt die äußeren Einheiten stehen und verteilt den Rest gleichmäßig. PPTX: Der Leser gibt den Mitgliedern eines <code>p:grpSp</code> der obersten Ebene
+  eine Gruppen-Id (verschachtelte Gruppen gehören zur äußeren; Positionen werden wie bisher auf die Folie umgerechnet); PptxGenJS kennt keine
+  Gruppen, daher legt <code>addGroups</code> (<code>pptx-export.js</code>) nach der übrigen Nachbearbeitung benachbarte Formen einer Gruppe in ein <code>&lt;p:grpSp&gt;</code> mit
+  <code>chOff/chExt</code> gleich <code>off/ext</code> (das umgebende Rechteck der Mitglieder) – die Form-Ids bleiben, Animationen behalten ihre Ziele. Test:
+  <code>tests/apps/test_presentation_arrange.py</code>.</li>
+<li><strong>Ausgeblendete Folien und Werkzeuge der Vorführung</strong>: <code>slide.hidden</code> ↔ <code>&lt;p:sld show="0"&gt;</code> (in die Ausgabe von PptxGenJS eingefügt); das Blättern
+  in der Vorführung überspringt ausgeblendete Folien (<code>visibleFrom</code>). Stiftstriche werden je Folienindex in Folienkoordinaten gehalten (<code>ink</code>, nur für die
+  Vorführung) und auf ein Canvas über der Vorführung gezeichnet; der Laserpointer ist ein positionierter Punkt; schwarzer und weißer Bildschirm sind eine
+  Überlagerung (in der Referentenansicht wird die Bühne des Publikumsfensters verborgen). Die Überlagerungen werden angefügt, wann immer die Folienansicht
+  ersetzt wird.</li>
+<li>
+<p><strong>Felder und Kopf- &amp; Fußzeile</strong>: Läufe von <code>a:fld</code> mit <code>type="slidenum"</code> oder <code>datetime…</code> erhalten <code>field: 'slidenum' | 'datetime'</code> (und <code>fieldType</code>);
+  <code>renderSlide(slide, deck, { number, locale })</code> zeigt die Nummer der Folie oder das heutige Datum in einem nicht bearbeitbaren Span (<code>data-field</code>), den
+  <code>readText</code> als Feld behält. PptxGenJS kennt keine Felder im Text, daher setzt der Schreiber eine Markierung (<code>U+2063 n U+2063</code>) in den Lauf und ersetzt
+  den Lauf danach im Folien-XML durch <code>&lt;a:fld type=…&gt;</code> (die Laufeigenschaften dürfen nicht über ihr <code>&lt;/a:rPr&gt;</code> hinaus passen). Der Dialog Kopf- &amp; Fußzeile
+  fügt Textelemente mit <code>placeholder.type</code> <code>dt</code>, <code>ftr</code>, <code>sldNum</code> hinzu (an den Standardplätzen von PowerPoint), aktualisiert oder entfernt sie und behält
+  Platz und Aussehen des ersten Laufs vorhandener.</p>
 </li>
 <li>
 <p>Bühne und Miniaturansichten werden imperativ in Container außerhalb von Preact gezeichnet; die Bereiche sind Preact. Pico wird in der bedingten

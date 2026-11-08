@@ -34,6 +34,14 @@ a tab. In Chrome and Edge, saving in that application writes directly to the fil
 Applications started in the overview open files from other applications (for example a file in an archive, a file on
 an SFTP server, an e-mail attachment) in a new tab. Saving there writes the file back to the application it came from.
 
+## Workspace and archive of all open files
+
+`F1` → **🗂 Workspace** saves the files of all tabs – with unsaved changes – and, if you like, the settings of all applications
+as one `.suite.zip`; **Open workspace…** opens every application again in its own tab, in the saved order (see
+[Workspaces](../user-guide.md#workspaces-continue-elsewhere)). `F1` → **📦 Open files** puts the files of all tabs into a ZIP
+archive (a folder per application) that opens in a new archive manager tab. Try `examples/en/overview/office.suite.zip` from
+`examples.zip`.
+
 ## Keyboard shortcuts
 
 On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the application.

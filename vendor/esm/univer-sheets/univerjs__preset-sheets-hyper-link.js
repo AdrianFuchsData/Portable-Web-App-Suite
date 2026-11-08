@@ -1,0 +1,2 @@
+/* @univerjs/preset-sheets-hyper-link@1.0.4 (jsDelivr +esm) */
+import{UniverSheetsHyperLinkPlugin as t}from"@univerjs/sheets-hyper-link";export*from"@univerjs/sheets-hyper-link";import{UniverSheetsHyperLinkUIPlugin as n}from"@univerjs/sheets-hyper-link-ui";export*from"@univerjs/sheets-hyper-link-ui";import"@univerjs/sheets-hyper-link/facade";import"@univerjs/sheets-hyper-link-ui/facade";function o(r={}){const{urlHandler:e}=r;return{plugins:[t,[n,{urlHandler:e}]].filter(i=>!!i)}}export{o as UniverSheetsHyperLinkPreset};

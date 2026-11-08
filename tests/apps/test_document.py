@@ -1,5 +1,7 @@
 """Document editor (apps/document) on Univer Docs. DOCX fidelity is tested in tests/prototypes/test_s8_docx_reader.py."""
 import io
+import shutil
+import re
 
 from docx import Document
 from playwright.sync_api import expect
@@ -291,7 +293,10 @@ def test_print_and_html_export(app_page, tmp_path):
     assert '<h1 id="toc-1"' in printed and '<a href="#toc-1">Bericht</a>' in printed
     assert 'font-weight:bold;font-size:12pt">fett</span>' in printed and '<a href="https://example.org/">' in printed
     assert "<ol><li>" in printed and 'colspan="2"' in printed and "<img src=\"data:image/" in printed
-    assert 'class="doc-header"' in printed and "Kopfzeile" in printed
+    if page.context.browser.browser_type.name == "chromium":  # (the header in a page margin box, as text)
+        assert re.search(r'@top-\w+ \{ content: "[^"]*Kopfzeile', printed)
+    else:
+        assert 'class="doc-header"' in printed and "Kopfzeile" in printed
     # saved as a web page
     page.click("[data-testid=save-as]")
     page.select_option("[data-testid=save-as-format]", "html")
@@ -347,7 +352,19 @@ def test_spelling(app_page, tmp_path):
     page.click("[data-testid=spell-ignore]")
     expect(page.locator("[data-testid=spell-word]")).to_have_text(["viele", "Grüsse"])
     # still there after a reload; .aff and .dic files work as well
-    page.reload()
+    # (a second page instead of page.reload(): Chromium sometimes starts a new page with the storage of before the latest writes, so it
+    # is opened again until the storage has arrived – the test is about the app reading its settings, not about Chromium's timing)
+    first = page
+    for _ in range(20):
+        first.wait_for_timeout(500)
+        page = first.context.new_page()
+        page.errors = []
+        page.on("pageerror", lambda e, p=page: p.errors.append(str(e)))
+        page.goto(first.url)
+        if page.evaluate("localStorage.getItem('suite.spell.language')") == "de_TEST":
+            break
+        page.close()
+    first.close()
     page.wait_for_selector("[data-testid=document] canvas", timeout=60000)
     page.keyboard.press("F7")
     expect(page.locator("[data-testid=spell-language] option")).to_have_count(3)  # English, German, de_TEST
@@ -382,4 +399,235 @@ def test_very_long_words(app_page, tmp_path):
     page.wait_for_function("() => __toasts.some((m) => String(m).includes('invisible break points'))", timeout=30000)
     text = page.evaluate("DOC.doc.save().body.dataStream")
     assert text.replace("\u200b", "").startswith("start " + "A" * 150000 + " end\rnext line") and text.count("\u200b") == 149
+    assert page.errors == []
+
+
+LINKS = "() => DOC.doc.save().body.customRanges.filter((r) => r.rangeType === 0).map((r) => [r.startIndex, r.endIndex, r.properties.url])"
+SELECT = "([a, b]) => DOC.univerAPI._injector.get(DOC.selection).replaceDocRanges([{ startOffset: a, endOffset: b }])"
+
+
+def test_hyperlinks(app_page, tmp_path):
+    import zipfile
+    page = ready(app_page)
+    page.evaluate("DOC.load(DOC.fromText('Visit the suite website today.'), 'links.docx')")
+    page.wait_for_timeout(500)
+    click_text(page)
+    # select "suite website", Ctrl+K: the link box asks for the address
+    page.evaluate(SELECT, [10, 23])
+    page.keyboard.press("Control+k")
+    page.keyboard.type("https://suite.example.org/")
+    page.get_by_role("button", name="Confirm").click()
+    page.wait_for_timeout(300)
+    assert page.evaluate(LINKS) == [[10, 22, "https://suite.example.org/"]]
+    expect(page.locator("[data-testid=file-name]")).to_contain_text("•")
+    # Insert → link works the same way
+    page.evaluate(SELECT, [24, 29])
+    page.get_by_text("Insert", exact=True).first.click()
+    page.locator("[data-u-command='doc.operation.show-hyper-link-edit-popup']:visible").first.click()
+    page.keyboard.type("mailto:info@example.com")
+    page.get_by_role("button", name="Confirm").click()
+    page.wait_for_timeout(300)
+    assert page.evaluate(LINKS) == [[10, 22, "https://suite.example.org/"], [24, 28, "mailto:info@example.com"]]
+
+    with page.expect_download() as d:
+        page.click("[data-testid=save]")
+    saved = tmp_path / "links.docx"
+    d.value.save_as(saved)
+    with zipfile.ZipFile(saved) as z:
+        document = z.read("word/document.xml").decode()
+        rels = z.read("word/_rels/document.xml.rels").decode()
+    assert "https://suite.example.org/" in rels and "mailto:info@example.com" in rels
+    links = [Document(saved).part.rels[h.split('r:id="')[1].split('"')[0]].target_ref for h in document.split("<w:hyperlink")[1:]]
+    assert links == ["https://suite.example.org/", "mailto:info@example.com"]
+    assert [p.text for p in Document(saved).paragraphs][0] == "Visit the suite website today."
+
+    # opened again, the link can be changed: Ctrl+K on the linked text shows its address
+    open_file(page, saved)
+    assert page.evaluate(LINKS)[0] == [10, 22, "https://suite.example.org/"]
+    click_text(page)
+    page.evaluate(SELECT, [10, 23])
+    page.keyboard.press("Control+k")
+    field = page.locator("input:visible").last
+    expect(field).to_have_value("https://suite.example.org/")
+    field.fill("https://example.org/new")
+    page.get_by_role("button", name="Confirm").click()
+    page.wait_for_timeout(300)
+    assert page.evaluate(LINKS)[0][2] == "https://example.org/new"
+    assert page.errors == []
+
+
+def ribbon_button(page, command):
+    """A ribbon button; on a phone the last buttons of a tab are in its ⋮ menu."""
+    button = page.locator(f"[data-u-command='{command}']:visible")
+    if not button.count():
+        page.locator("[data-u-comp=ribbon-toolbar] .univerjs-icon-more-vertical-icon:visible").first.click()
+    return button.first
+
+
+FIELDS = "(kind) => Object.values(DOC.doc.save()[kind] || {}).flatMap((h) => (h.body.customRanges || []).filter((r) => r.rangeType === 1).map((r) => r.properties.fieldType))"
+
+
+def test_headers_footers_and_page_numbers(app_page, tmp_path):
+    import subprocess
+    import zipfile
+    page = ready(app_page)
+    open_file(page, office_samples.make_paged_docx(tmp_path / "pages.docx"))
+    # Word's PAGE (complex field) and NUMPAGES (simple field) become page fields of the footer
+    footer = page.evaluate("Object.values(DOC.doc.save().footers)[0].body")
+    assert footer["dataStream"] == "Page \x1f1\x1e of \x1f3\x1e\r\n"
+    assert page.evaluate(FIELDS, "footers") == ["PAGE", "NUMPAGES"]
+
+    # Insert → Header & footer → Edit header; the Header & Footer tab inserts the current page
+    click_text(page)
+    page.get_by_text("Insert", exact=True).first.click()
+    ribbon_button(page, "doc-hf-menu").click()
+    page.locator("[role=menu]").get_by_text("Edit header", exact=True).click()
+    page.wait_for_timeout(500)
+    page.keyboard.press("End")
+    page.keyboard.type(" - page ")
+    ribbon_button(page, "doc.command.insert-header-footer-field").click()
+    page.locator("[role=menu]").get_by_text("Current page", exact=True).click()
+    page.wait_for_timeout(300)
+    assert page.evaluate(FIELDS, "headers") == ["PAGE"]
+    expect(page.locator("[data-testid=file-name]")).to_contain_text("•")
+
+    # Word: PAGE and NUMPAGES fields
+    with page.expect_download() as d:
+        page.click("[data-testid=save]")
+    saved = tmp_path / "saved.docx"
+    d.value.save_as(saved)
+    with zipfile.ZipFile(saved) as z:
+        parts = {n: z.read(n).decode() for n in z.namelist() if re.match(r"word/(header|footer)\d+\.xml", n)}
+    header = next(x for n, x in parts.items() if "header" in n)
+    footer_xml = next(x for n, x in parts.items() if "footer" in n)
+    assert Document(saved).sections[0].header.paragraphs[0].text == "Report header - page " and ">PAGE<" in header
+    assert ">PAGE<" in footer_xml and ">NUMPAGES<" in footer_xml
+    # OpenDocument: text:page-number / text:page-count
+    page.click("[data-testid=save-as]")
+    page.select_option("[data-testid=save-as-format]", "odt")
+    with page.expect_download() as d:
+        page.click("[data-testid=save-as-ok]")
+    with zipfile.ZipFile(d.value.path()) as z:
+        styles = z.read("styles.xml").decode()
+    assert "<text:page-number" in styles and "<text:page-count" in styles
+
+    # printing: in Chromium the header and footer are page margin boxes that number the pages
+    if page.context.browser.browser_type.name == "chromium":
+        html = page.evaluate("import('app/doc-html').then((m) => m.toHtml(DOC.doc.save(), { print: true, pageCounters: true }))")
+        assert '@bottom-center { content: "Page " counter(page) " of " counter(pages)' in html
+        assert re.search(r'@top-left \{ content: "Report header - page " counter\(page\)', html)
+        pdf_page = page.context.new_page()
+        pdf_page.set_content(html)
+        pdf = tmp_path / "printed.pdf"
+        pdf_page.pdf(path=str(pdf))
+        if shutil.which("pdftotext"):
+            text = subprocess.run(["pdftotext", "-layout", str(pdf), "-"], capture_output=True, text=True).stdout
+            assert "Page 2 of " in text and "Report header - page 2" in text
+    assert page.errors == []
+
+
+STYLE = "() => { const s = DOC.doc.save().documentStyle; return { flavor: s.documentFlavor, orient: s.pageOrient, w: Math.round(s.pageSize.width), h: Math.round(s.pageSize.height), top: Math.round(s.marginTop), left: Math.round(s.marginLeft) }; }"
+
+
+def test_page_setup(app_page, tmp_path):
+    import zipfile
+    page = ready(app_page)
+    open_file(page, office_samples.make_docx(tmp_path / "report.docx"))
+    # Univer's page setup button (Start tab) opens the dialog with the document's settings in centimetres
+    page.get_by_text("Start", exact=True).first.click()
+    ribbon_button(page, "docs.operation.open-page-setting").click()
+    expect(page.locator("[data-testid=page-setup-dialog]")).to_be_visible()
+    expect(page.locator("[data-testid=ps-paper]")).to_have_value("Letter")
+    expect(page.locator("[data-testid=ps-top]")).to_have_value("2.54")
+    page.select_option("[data-testid=ps-paper]", "A4")
+    page.select_option("[data-testid=ps-orientation]", "landscape")
+    for side in ("top", "bottom", "left", "right"):
+        page.fill(f"[data-testid=ps-{side}]", "2")
+    page.click("[data-testid=ps-ok]")
+    page.wait_for_timeout(500)
+    assert page.evaluate(STYLE) == {"flavor": 1, "orient": 1, "w": 1123, "h": 794, "top": 76, "left": 76}
+    expect(page.locator("[data-testid=file-name]")).to_contain_text("•")
+    # undo, redo
+    page.evaluate("DOC.univerAPI.executeCommand('univer.command.undo')")
+    page.wait_for_timeout(300)
+    assert page.evaluate(STYLE)["w"] == 816
+    page.evaluate("DOC.univerAPI.executeCommand('univer.command.redo')")
+    page.wait_for_timeout(300)
+    assert page.evaluate(STYLE)["w"] == 1123
+
+    with page.expect_download() as d:
+        page.click("[data-testid=save]")
+    saved = tmp_path / "saved.docx"
+    d.value.save_as(saved)
+    section = Document(saved).sections[0]
+    assert str(section.orientation).startswith("LANDSCAPE") and round(section.page_width.cm, 1) == 29.7 and round(section.page_height.cm, 1) == 21.0
+    assert round(section.left_margin.cm, 2) == 2.0 and round(section.top_margin.cm, 2) == 2.0
+    page.click("[data-testid=save-as]")
+    page.select_option("[data-testid=save-as-format]", "odt")
+    with page.expect_download() as d:
+        page.click("[data-testid=save-as-ok]")
+    with zipfile.ZipFile(d.value.path()) as z:
+        styles = z.read("styles.xml").decode()
+    assert 'style:print-orientation="landscape"' in styles and 'fo:page-width="29.700cm"' in styles
+
+    # a text without pages gets pages
+    page.evaluate("DOC.load(DOC.fromText('Plain text'), 'plain.txt')")
+    page.wait_for_timeout(500)
+    page.evaluate("DOC.openPageSetup()")
+    expect(page.locator("[data-testid=ps-pages]")).to_have_value("pageless")
+    page.select_option("[data-testid=ps-pages]", "pages")
+    expect(page.locator("[data-testid=ps-paper]")).to_have_value("A4")
+    page.click("[data-testid=ps-ok]")
+    page.wait_for_timeout(500)
+    assert page.evaluate(STYLE) == {"flavor": 1, "orient": 0, "w": 794, "h": 1123, "top": 94, "left": 94}
+    assert page.errors == []
+
+
+def test_date_time_and_symbols(app_page):
+    page = ready(app_page)
+    page.evaluate("DOC.load(DOC.fromText('Date: .'), 'd.docx')")
+    page.wait_for_timeout(500)
+    click_text(page)
+    page.evaluate(SELECT, [6, 6])
+    # Insert → Date & time
+    page.get_by_text("Insert", exact=True).first.click()
+    ribbon_button(page, "doc-date-menu").click()
+    page.locator("[role=menu]").get_by_text("Date (ISO, 2026-01-31)", exact=True).click()
+    page.wait_for_timeout(300)
+    today = page.evaluate("(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })()")
+    assert text(page) == f"Date: {today}.\n"
+    expect(page.locator("[data-testid=file-name]")).to_contain_text("•")
+    page.keyboard.type(" x")  # the cursor is after the date
+    page.wait_for_timeout(300)
+    assert text(page) == f"Date: {today} x.\n"
+    # Univer's symbol picker (Insert → Ω)
+    ribbon_button(page, "doc.menu.insert-symbol").click()
+    page.get_by_text("±", exact=True).first.click()
+    page.wait_for_timeout(300)
+    assert "±" in text(page)
+    assert page.errors == []
+
+
+def test_save_as_markdown(app_page, tmp_path):
+    page = ready(app_page)
+    open_file(page, office_samples.make_docx(tmp_path / "report.docx"))
+    page.click("[data-testid=save-as]")
+    page.select_option("[data-testid=save-as-format]", "md")
+    expect(page.locator("[data-testid=save-as-dialog]")).to_contain_text("Markdown keeps headings")
+    with page.expect_download() as d:
+        page.click("[data-testid=save-as-ok]")
+    assert d.value.suggested_filename == "report.md"
+    md = open(d.value.path(), encoding="utf-8").read()
+    assert md.startswith("# Projektbericht\n\nNormal text with **bold**, *italic*, underlined and red.\n\n## Liste\n\n")
+    assert "- Erster Punkt\n- Zweiter Punkt\n- Dritter Punkt\n1. Schritt eins\n2. Schritt zwei" in md
+    assert "| Name | Menge | Preis |\n| --- | --- | --- |\n| Äpfel | 3 | 1,50 |" in md
+    # links and check lists; text that would be Markdown syntax is escaped
+    page.evaluate("""() => { const data = DOC.fromText('Visit the site\\n1. not a list *not bold*\\ndone\\nopen');
+      data.body.customRanges = [{ startIndex: 10, endIndex: 13, rangeId: 'l1', rangeType: 0, properties: { url: 'https://example.org/a b' } }];
+      data.body.paragraphs[2].bullet = { listType: 'CHECK_LIST_CHECKED', listId: 'c', nestingLevel: 0 };
+      data.body.paragraphs[3].bullet = { listType: 'CHECK_LIST', listId: 'c', nestingLevel: 0 };
+      DOC.load(data, 'links.docx'); }""")
+    page.wait_for_timeout(500)
+    md = page.evaluate("import('app/doc-markdown').then((m) => m.toMarkdown(DOC.doc.save()))")
+    assert md == "Visit the [site](https://example.org/a%20b)\n\n1\\. not a list \\*not bold\\*\n\n- [x] done\n- [ ] open\n", md
     assert page.errors == []

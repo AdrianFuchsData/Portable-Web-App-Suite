@@ -1760,6 +1760,12 @@ document.addEventListener('keydown', (e) => {
 
 Suite.bridge.receive((picked) => addFiles([picked], true), { app: 'audioeditor' }); // files opened from other apps ("Open with…")
 
+// the open file(s) for "Create an archive from the open files" (about dialog)
+// (as an audio project: tracks, clips, labels)
+Suite.openFiles.register(() => (state.tracks.length ? [{
+  name: isProjectName(state.name || '') ? state.name : `${(state.name || 'audio').replace(/\.[^.]+$/, '')}${project.EXTENSION}`,
+  bytes: project.encode({ rate: state.rate, tracks: state.tracks, labels: state.labels }), dirty: state.dirty }] : []));
+
 // for tests
 window.AE = { fx: fx2, state, dsp, clips, beats, labelText, play, stop, fmtTime, parseTime, trackAudio, get time() { return currentTime(); } };
 document.body.dataset.ready = 'true';

@@ -649,6 +649,11 @@ document.addEventListener('keydown', (e) => {
 
 Suite.bridge.receive((picked) => openPicked(picked), { app: 'dbtool' }); // files opened from other apps ("Open with…")
 
+// the open file(s) for "Create an archive from the open files" (about dialog)
+// (SQLite databases; server connections have no file)
+Suite.openFiles.register(() => state.sessions.filter((s) => s.driver.kind === 'sqlite')
+  .map((s) => ({ name: s.fileName || (/\.(sqlite3?|db)$/i.test(s.name) ? s.name : `${s.name}.sqlite`), bytes: s.driver.export(), dirty: !!s.dirty })));
+
 // for tests
 window.DB = { erDiagram, state, undoStep, editor, execute, setEditorText, session, data, explainCurrent, get history() { return history; } };
 document.body.dataset.ready = 'true';

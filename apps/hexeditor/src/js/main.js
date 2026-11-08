@@ -623,6 +623,10 @@
 
   Suite.bridge.receive((picked) => openPicked([picked]), { app: 'hexeditor' }); // files opened from other apps ("Open with…")
 
+  // the open files for "Create an archive from the open files" (about dialog)
+  Suite.openFiles.register(() => docs.map((_, i) => docAt(i)).filter((d) => !(d.isNew && d.buffer.length === 0))
+    .map((d) => ({ name: d.name, bytes: d.buffer.bytes(), dirty: isDirty(d) })));
+
   // for tests
   HE.app = { state, docs, get active() { return active; }, activate, closeDoc, newFile, load, openPicked, save, saveAs, undo, redo, moveTo, find, gotoOffset, bytesPerRow, setByteValue, setCompare, nextDiff, showChecksums };
   document.body.dataset.ready = 'true';

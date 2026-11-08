@@ -3,14 +3,14 @@
  *
  * Produces the deck model (units: px at 96 dpi, font sizes in pt):
  *   deck    = { width, height, slides: [slide] }
- *   slide   = { id, background: '#RRGGBB' | null, elements: [element], notes?, transition?, animations? }
+ *   slide   = { id, background: '#RRGGBB' | null, elements: [element], notes?, transition?, animations?, hidden? }
  *   transition = { type: 'fade'|'push'|'wipe'|'cover'|'zoom', dir: 'l'|'r'|'u'|'d', duration (s), advanceAfter (s, optional) }
  *   animations = [{ id (element), effect: 'appear'|'fade'|'fly'|'zoom', start: 'click'|'with'|'after' }] in playing order
  *   element = { id, type: 'text'|'shape'|'image'|'table', name, x, y, w, h, rot, flipH, flipV,
  *               geometry, fill, line: {color, width} | null, text, image: {src}, table, placeholder }
  *   text    = { anchor: 't'|'ctr'|'b', insets: [l, t, r, b], paragraphs: [paragraph] }
  *   paragraph = { align: 'l'|'ctr'|'r'|'just', level, bullet: null | {char} | {auto}, runs: [run] }
- *   run     = { text, bold, italic, underline, strike, size, color, font }
+ *   run     = { text, bold, italic, underline, strike, size, color, font, field?: 'slidenum'|'datetime', fieldType? }
  *   table   = { columns: [width], rows: [{ height, cells: [{ text, fill }] }] }
  *
  * Placeholder positions and text styles are inherited along slide -> layout -> master (and the
@@ -25,7 +25,8 @@ const NS = {
   p: "http://schemas.openxmlformats.org/presentationml/2006/main",
   r: "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
 };
-const MIME = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif", svg: "image/svg+xml", bmp: "image/bmp", webp: "image/webp", emf: "image/emf", wmf: "image/wmf" };
+const MIME = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif", svg: "image/svg+xml", bmp: "image/bmp", webp: "image/webp", emf: "image/emf", wmf: "image/wmf",
+  mp4: "video/mp4", m4v: "video/mp4", mov: "video/quicktime", webm: "video/webm", ogv: "video/ogg", mp3: "audio/mpeg", m4a: "audio/mp4", wav: "audio/wav", ogg: "audio/ogg", oga: "audio/ogg", opus: "audio/ogg", flac: "audio/flac" };
 
 // ---- small XML helpers ----------------------------------------------------------------------------
 
@@ -44,7 +45,7 @@ function path(el, ...names) {
 }
 const num = (v, d = 0) => (v === null || v === undefined || v === "" ? d : Number(v));
 const attr = (el, name) => (el ? el.getAttribute(name) : null);
-const rId = (el) => el && (el.getAttributeNS(NS.r, "embed") || el.getAttributeNS(NS.r, "id") || el.getAttribute("r:embed") || el.getAttribute("r:id"));
+const rId = (el) => el && (el.getAttributeNS(NS.r, "embed") || el.getAttributeNS(NS.r, "id") || el.getAttributeNS(NS.r, "link") || el.getAttribute("r:embed") || el.getAttribute("r:id") || el.getAttribute("r:link"));
 
 function resolvePath(base, target) {
   if (target.startsWith("/")) return target.slice(1);
@@ -274,6 +275,10 @@ function readText(txBody, chain, ctx) {
         const run = runProps(kid(r, "a:rPr"), ctx, { ...base });
         run.text = (kid(r, "a:t") || {}).textContent || "";
         run.size = Math.round(run.size * scale * 10) / 10;
+        // fields: the slide number and dates are shown as they are when the slide is rendered (type kept for the export)
+        const type = r.localName === "fld" ? attr(r, "type") || "" : "";
+        if (type === "slidenum") run.field = "slidenum";
+        else if (/^datetime/.test(type)) { run.field = "datetime"; run.fieldType = type; }
         para.runs.push(run);
       } else if (r.localName === "br") {
         para.runs.push({ ...base, size: Math.round(base.size * scale * 10) / 10, text: "\n" });
@@ -340,7 +345,12 @@ function readShapes(tree, ctx, groups = []) {
     const name = node.localName;
     if (name === "grpSp") {
       const g = xfrmOf(node);
-      if (g) out.push(...readShapes(node, ctx, [g, ...groups]));
+      if (!g) continue;
+      const members = readShapes(node, ctx, [g, ...groups]);
+      // a group of the slide: its members share a group id (nested groups belong to the outermost one); a group of a layout
+      // (locked elements) stays loose
+      if (!groups.length && members.length > 1 && !members.some((m) => m.locked)) { const id = `group${++counter}`; for (const m of members) m.group = id; }
+      out.push(...members);
     } else if (name === "sp" || name === "cxnSp") {
       const el = readShape(node, ctx, groups);
       if (el) out.push(withSpid(el, node, ctx));
@@ -348,7 +358,7 @@ function readShapes(tree, ctx, groups = []) {
       const el = readPicture(node, ctx, groups);
       if (el) out.push(withSpid(el, node, ctx));
     } else if (name === "graphicFrame") {
-      const el = readTable(node, ctx, groups);
+      const el = readTable(node, ctx, groups) || readChart(node, ctx, groups);
       if (el) out.push(withSpid(el, node, ctx));
     } else if (name === "AlternateContent") {
       const fallback = [...node.children].find((c) => c.localName === "Fallback");
@@ -458,10 +468,47 @@ function readPicture(pic, ctx, groups) {
   const rel = blip && ctx.rels[rId(blip)];
   const src = rel && !rel.external ? ctx.pkg.dataUrl(rel.target) : null;
   if (!src) return null;
+  // video and audio: a picture (the poster) with a media relationship (a:videoFile/a:audioFile r:link, PowerPoint 2010's p14:media r:embed)
+  const nvPr = path(pic, "p:nvPicPr", "p:nvPr");
+  const mediaRef = nvPr && ([...nvPr.getElementsByTagName("*")].find((x) => x.localName === "media" && x.namespaceURI !== NS.a)
+    || [...nvPr.children].find((x) => x.localName === "videoFile" || x.localName === "audioFile"));
+  const mediaRel = mediaRef && ctx.rels[rId(mediaRef)];
+  const mediaSrc = mediaRel && !mediaRel.external ? ctx.pkg.dataUrl(mediaRel.target) : null;
+  if (mediaSrc && /^data:(video|audio)\//.test(mediaSrc)) {
+    return {
+      id: newId(), type: "media", name: attr(path(pic, "p:nvPicPr", "p:cNvPr"), "name") || "",
+      x: t.x / EMU_PER_PX, y: t.y / EMU_PER_PX, w: t.cx / EMU_PER_PX, h: t.cy / EMU_PER_PX, rot: t.rot,
+      media: { src: mediaSrc, kind: mediaSrc.startsWith("data:video") ? "video" : "audio", poster: src }, line: null,
+    };
+  }
+  // cropping: a:srcRect l/t/r/b in thousandths of a percent of the picture
+  const srcRect = path(pic, "p:blipFill", "a:srcRect");
+  const crop = srcRect ? Object.fromEntries(["l", "t", "r", "b"].map((k) => [k, Math.max(0, Number(attr(srcRect, k) || 0) / 100000)])) : null;
   return {
     id: newId(), type: "image", name: attr(path(pic, "p:nvPicPr", "p:cNvPr"), "name") || "",
     x: t.x / EMU_PER_PX, y: t.y / EMU_PER_PX, w: t.cx / EMU_PER_PX, h: t.cy / EMU_PER_PX,
-    rot: t.rot, flipH: t.flipH, flipV: t.flipV, image: { src }, line: lineOf(kid(pic, "p:spPr"), null, ctx),
+    rot: t.rot, flipH: t.flipH, flipV: t.flipV, image: { src, ...(crop && (crop.l || crop.t || crop.r || crop.b) ? { crop } : {}) }, line: lineOf(kid(pic, "p:spPr"), null, ctx),
+  };
+}
+
+/**
+ * A chart (DrawingML chart part, its cached values): a picture with the chart's data, drawn by shared/js/charts.js (only where the
+ * page has it – the presentation editor); saved as that picture.
+ */
+function readChart(frame, ctx, groups) {
+  const charts = typeof window !== "undefined" && window.Suite && window.Suite.charts;
+  const ref = frame.getElementsByTagNameNS("http://schemas.openxmlformats.org/drawingml/2006/chart", "chart")[0];
+  let t = xfrmOf(frame);
+  if (!charts || !ref || !t) return null;
+  const rel = ctx.rels[rId(ref)];
+  const bytes = rel && !rel.external && ctx.pkg.files[rel.target];
+  const model = bytes && charts.fromChartXml(strFromU8(bytes));
+  if (!model) return null;
+  t = mapTransform(t, groups);
+  const w = t.cx / EMU_PER_PX, h = t.cy / EMU_PER_PX;
+  return {
+    id: newId(), type: "image", name: attr(path(frame, "p:nvGraphicFramePr", "p:cNvPr"), "name") || "Chart",
+    x: t.x / EMU_PER_PX, y: t.y / EMU_PER_PX, w, h, rot: 0, image: { src: charts.toPng(model, w, h) }, line: null,
   };
 }
 
@@ -562,6 +609,7 @@ export function importPptx(buffer) {
     deck.slides.push({
       id: `slide${deck.slides.length + 1}`, background: background || null, elements: [...decorations.map((d) => ({ ...d, locked: true })), ...elements],
       ...(notes ? { notes } : {}), ...(transition ? { transition } : {}), ...(animations.length ? { animations } : {}),
+      ...(attr(slideDoc.documentElement, "show") === "0" ? { hidden: true } : {}), // hidden in the show
     });
   }
   return deck;

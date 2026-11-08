@@ -447,3 +447,83 @@ def test_audio_round_trip(app_page, tmp_path):
     with wave.open(str(saved)) as w, wave.open(str(src)) as orig:
         assert w.getnframes() == orig.getnframes()
     assert page.errors == []
+
+
+def test_spreadsheet_links_in_libreoffice(app_page, tmp_path):
+    """Links saved by the app are links in LibreOffice: to a web address and to a cell of another sheet."""
+    page = app_page("spreadsheet", init_script=NO_PICKERS)
+    open_dialog(page, seed(tmp_path, corpus.xlsx(), "seed.xlsx"))
+    expect(page.locator("[data-testid=file-name]")).to_contain_text("seed.xlsx", timeout=30000)
+    page.wait_for_timeout(1000)
+    page.evaluate("""async () => { const wb = SS.workbook, ws = wb.getSheetByName('Data'), other = wb.getSheets().find((s) => s !== ws) || wb.insertSheet('More');
+      ws.getRange('F1').setValue('x'); await ws.getRange('F1').setHyperLink('https://example.org/report', 'Report');
+      ws.getRange('F2').setValue('x'); await ws.getRange('F2').setHyperLink('#gid=' + other.getSheetId() + '&range=B2', 'Other'); }""")
+    page.wait_for_timeout(300)
+    saved = save_as(page, "xlsx", tmp_path)
+    well_formed_xml_parts(saved)
+    ods = soffice_convert(saved, "ods", tmp_path)
+    with zipfile.ZipFile(ods) as z:
+        content = z.read("content.xml").decode()
+    links = dict(re.findall(r'<text:a\b[^>]*xlink:href="([^"]*)"[^>]*>([^<]*)</text:a>', content))
+    assert links.get("https://example.org/report") == "Report", links
+    assert any(href.startswith("#") and href.endswith("B2") and text == "Other" for href, text in links.items()), links
+    assert page.errors == []
+
+
+def test_spreadsheet_groups_in_libreoffice(app_page, tmp_path):
+    """Row and column groups saved by the app are groups (outlines) in LibreOffice."""
+    page = app_page("spreadsheet", init_script=NO_PICKERS)
+    open_dialog(page, seed(tmp_path, corpus.xlsx(), "seed.xlsx"))
+    expect(page.locator("[data-testid=file-name]")).to_contain_text("seed.xlsx", timeout=30000)
+    page.wait_for_timeout(1000)
+    page.evaluate("SS.workbook.setActiveSheet(SS.workbook.getSheetByName('Data')); SS.workbook.getActiveSheet().getRange('A2:A4').activate()")
+    page.evaluate("SS.outline.regroup('rows', 1)")
+    page.evaluate("SS.workbook.getActiveSheet().getRange('B1:C1').activate()")
+    page.evaluate("SS.outline.regroup('columns', 1)")
+    page.wait_for_timeout(300)
+    saved = save_as(page, "xlsx", tmp_path)
+    well_formed_xml_parts(saved)
+    ods = soffice_convert(saved, "ods", tmp_path)
+    with zipfile.ZipFile(ods) as z:
+        content = z.read("content.xml").decode()
+    assert "<table:table-row-group" in content, "LibreOffice shows no row group"
+    assert "<table:table-column-group" in content, "LibreOffice shows no column group"
+    assert page.errors == []
+
+
+def test_spreadsheet_notes_in_libreoffice(app_page, tmp_path):
+    """Notes saved by the app are comments in LibreOffice, also on empty cells."""
+    page = app_page("spreadsheet", init_script=NO_PICKERS)
+    open_dialog(page, seed(tmp_path, corpus.xlsx(), "seed.xlsx"))
+    expect(page.locator("[data-testid=file-name]")).to_contain_text("seed.xlsx", timeout=30000)
+    page.wait_for_timeout(1000)
+    page.evaluate("""() => { const ws = SS.workbook.getSheetByName('Data'); SS.workbook.setActiveSheet(ws);
+      ws.getRange('A1').createOrUpdateNote({ note: 'First note', width: 160, height: 72, show: false });
+      ws.getRange('H20').createOrUpdateNote({ note: 'On an empty cell', width: 160, height: 72, show: false }); }""")
+    page.wait_for_timeout(300)
+    saved = save_as(page, "xlsx", tmp_path)
+    well_formed_xml_parts(saved)
+    ods = soffice_convert(saved, "ods", tmp_path)
+    with zipfile.ZipFile(ods) as z:
+        content = z.read("content.xml").decode()
+    annotations = re.findall(r"<office:annotation\b.*?</office:annotation>", content, re.S)
+    texts = ["".join(re.findall(r">([^<]+)<", a)) for a in annotations]
+    assert any("First note" in t for t in texts) and any("On an empty cell" in t for t in texts), texts
+    assert page.errors == []
+
+
+def test_document_page_numbers_in_libreoffice(app_page, tmp_path):
+    """Page number fields saved by the document editor are page numbers in LibreOffice (DOCX and ODT)."""
+    from helpers import office_samples
+    page = app_page("document", init_script=NO_PICKERS)
+    open_dialog(page, office_samples.make_paged_docx(tmp_path / "pages.docx"))
+    expect(page.locator("[data-testid=file-name]")).to_contain_text("pages.docx", timeout=30000)
+    page.wait_for_timeout(1000)
+    for fmt in ("docx", "odt"):
+        saved = save_as(page, fmt, tmp_path)
+        pdf = soffice_convert(saved, "pdf", tmp_path)
+        text = run("pdftotext", "-layout", str(pdf), "-").stdout if shutil.which("pdftotext") else ""
+        if text:
+            assert re.search(r"Page 2 of [2-9]", text), (fmt, text[:500])
+            assert "Report header" in text
+    assert page.errors == []

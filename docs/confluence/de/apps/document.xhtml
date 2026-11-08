@@ -18,7 +18,7 @@ Bearbeitungskomponente ist Univer Docs.</p>
 <td>Word (<code>.docx</code>)</td>
 <td>ja</td>
 <td>ja</td>
-<td>Seitengröße und Ränder, Formatvorlagen, Überschriften, Textformatierung, Listen, Tabellen, Bilder, Hyperlinks, Kopf- und Fußzeilen</td>
+<td>Seitengröße und Ränder, Formatvorlagen, Überschriften, Textformatierung, Listen, Tabellen, Bilder, Hyperlinks, Kopf- und Fußzeilen mit Seitenzahlen</td>
 </tr>
 <tr>
 <td>OpenDocument (<code>.odt</code>, LibreOffice Writer)</td>
@@ -36,7 +36,13 @@ Bearbeitungskomponente ist Univer Docs.</p>
 <td>Text (<code>.txt</code>, <code>.md</code>)</td>
 <td>ja</td>
 <td>ja (<code>.txt</code>)</td>
-<td>nur der Text; Formatierung, Tabellen und Bilder gehen verloren</td>
+<td>nur der Text; Formatierung, Tabellen und Bilder gehen verloren; eine Markdown-Datei öffnet sich als ihr Text und wird unverändert gespeichert</td>
+</tr>
+<tr>
+<td>Markdown (<code>.md</code>)</td>
+<td>als Text</td>
+<td>ja</td>
+<td>Überschriften, fett, kursiv, durchgestrichen, Links, Aufzählungen, nummerierte Listen und Checklisten, Tabellen und Bilder (eingebettet); keine Farben, Schriften, Ausrichtung, Seitenlayout, Kopf- und Fußzeilen</td>
 </tr>
 <tr>
 <td>Webseite (<code>.html</code>)</td>
@@ -60,7 +66,8 @@ Bearbeitungskomponente ist Univer Docs.</p>
 </ul>
 <h3>Drucken und PDF</h3>
 <p><strong>🖨</strong> (<code>Strg+P</code>) druckt das Dokument mit seiner Seitengröße und seinen Rändern; wählen Sie <em>Als PDF speichern</em> (Chrome, Edge, Android) oder
-<em>In Datei drucken</em> (Firefox) als Drucker, um ein PDF zu erhalten. Kopf- und Fußzeile des Dokuments wiederholen sich auf jeder Seite. Die
+<em>In Datei drucken</em> (Firefox) als Drucker, um ein PDF zu erhalten. Kopf- und Fußzeile des Dokuments wiederholen sich auf jeder Seite: in Chrome und
+Edge als Text (Bilder darin entfallen) mit den richtigen Seitenzahlen, in Firefox mit leeren Seitenzahlen (Firefox kann dort keine Seiten zählen). Die
 Seitenumbrüche setzt der Browser, sie können also von den Seiten im Editor abweichen; eingefügte Seitenumbrüche bleiben erhalten. Links sind
 im PDF anklickbar, auch die Einträge eines Inhaltsverzeichnisses.</p>
 <p>Dokumente aus Word und LibreOffice werden beim Öffnen umgewandelt; sehr komplexe Layouts (Textfelder, Spalten, Änderungsverfolgung, Kommentare)
@@ -69,7 +76,7 @@ Ein „Wort“ mit mehr als 20.000 Zeichen ohne Leerzeichen (etwa eingefügte Ba
 Umbruchstelle (U+200B), damit es angezeigt werden kann; sie wird mit dem Dokument gespeichert.</p>
 <h2>Bearbeiten</h2>
 <p>Das Menüband hat die Reiter <strong>Start</strong> (Zwischenablage, fett/kursiv/unterstrichen/durchgestrichen, Hoch- und Tiefstellung, Absatzformat, Größe,
-Schrift, Farben, Ausrichtung, Listen, Checklisten) und <strong>Einfügen</strong> (Tabellen, Bilder, Seitenumbrüche, Kopf- und Fußzeilen). Die üblichen
+Schrift, Farben, Ausrichtung, Listen, Checklisten) und <strong>Einfügen</strong> (Tabellen, Bilder, Links, horizontale Linie, Emoji, Symbole, Kopf- und Fußzeile, Datum und Uhrzeit). Die üblichen
 Tastenkombinationen funktionieren: <code>Strg+B/I/U</code>, <code>Strg+Z/Y</code>, <code>Strg+C/X/V</code>, <code>Strg+F</code> zum Suchen. Die Statusleiste zeigt die Wortanzahl und den Zoom.</p>
 <p><strong>📐 Diagramm</strong> in der Werkzeugleiste öffnet ein leeres Diagramm im Diagramm-Editor (ein neues Fenster oder ein neuer Tab); das erste
 <strong>Speichern</strong> dort fügt das Diagramm als Bild an der Schreibmarke ein, spätere Speichervorgänge aktualisieren es. Ist ein Diagrammbild
@@ -78,12 +85,27 @@ Maßstab (höchstens die Textbreite); <code>Strg+Z</code> macht es rückgängig.
 daher in der <code>.docx</code>-Datei bearbeitbar; Word zeigt das Bild.</p>
 <p>Die Sprache der Bearbeitungskomponente folgt der Sprachumschaltung der Suite, ebenso das dunkle Design.</p>
 <p>Rückgängig und Wiederholen sind die ersten beiden Schaltflächen der Editor-Werkzeugleiste (auch <code>Strg+Z</code> und <code>Strg+Y</code>).</p>
+<h3>Links</h3>
+<p>Markieren Sie einen Text, drücken Sie <code>Strg+K</code> (oder <strong>Einfügen → 🔗</strong>, oder 🔗 in der kleinen Werkzeugleiste über der Markierung) und geben
+Sie die Adresse ein: <code>https://…</code>, <code>mailto:…</code> oder eine E-Mail-Adresse (sie wird zu einem <code>mailto:</code>-Link); eine Adresse ohne Schema erhält
+<code>https://</code>. Zeigen auf (oder Tippen auf) einen verlinkten Text zeigt die Adresse mit Schaltflächen zum Kopieren, Bearbeiten und Entfernen des Links; auch <code>Strg+K</code>
+auf einem verlinkten Text ändert ihn. Links werden in Word-, OpenDocument- und HTML-Dateien gespeichert und bleiben in einem aus dem Editor
+gedruckten PDF anklickbar.</p>
 <h3>Inhaltsverzeichnis und Fußnoten</h3>
 <p><strong>📑 Inhalt</strong> fügt am Absatz der Schreibmarke ein Inhaltsverzeichnis ein: die Überschriften (Absatzformate <em>Überschrift 1</em> bis
 <em>Überschrift 5</em>), nach Ebene eingerückt. Nach Änderungen an den Überschriften genügt ein erneuter Klick, um das Verzeichnis an seiner Stelle zu
 aktualisieren. In gespeicherten Word- und OpenDocument-Dateien sind die Einträge Links zu den Überschriften (Strg+Klick in Word, Klick in
 LibreOffice); Seitenzahlen enthält das Verzeichnis nicht (der Editor kennt sie nicht) – Word und LibreOffice können bei Bedarf ein echtes
 Verzeichnis mit Seitenzahlen einfügen.</p>
+<h3>Kommentare</h3>
+<p>Markieren Sie Text und drücken Sie <code>Strg+Alt+M</code> (oder die Kommentar-Schaltfläche der kleinen Leiste über einer Markierung), um ihn zu
+kommentieren; beim ersten Mal fragt die Textverarbeitung nach Ihrem Namen, der bei Ihren Kommentaren steht (ändern in den Einstellungen:
+<code>F1</code> → <strong>⚙ Einstellungen</strong> → <em>Ihr Name</em>). Der kommentierte Text wird markiert; <strong>💬 Kommentare</strong> zeigt den Kommentarbereich: jeden Kommentar
+mit seinen Antworten, wo Sie antworten, Ihre eigenen Kommentare bearbeiten oder löschen, einen Verlauf als gelöst markieren (✓) und nach
+gelösten oder offenen Verläufen filtern. Ein Klick auf einen Kommentar markiert seinen Text.</p>
+<p>Kommentare bleiben in Word-Dateien (<code>word/comments.xml</code>; Antworten und der Zustand <em>gelöst</em>, wie Word ab 2013 sie schreibt) und in
+OpenDocument-Dateien erhalten (<code>office:annotation</code>, mit den Antworten und dem Zustand <em>gelöst</em> von LibreOffice); Kommentare einer Word- oder
+LibreOffice-Datei zeigen ihre Autoren. Webseiten, Markdown, Textdateien und Ausdrucke lassen die Kommentare weg.</p>
 <h3>Rechtschreibung</h3>
 <p><strong>ABC✓</strong> (<code>F7</code>) öffnet die Rechtschreibprüfung neben dem Dokument (am Smartphone darunter). Sie listet die unbekannten Wörter des
 Dokumenttexts (Kopf- und Fußzeilen werden nicht geprüft); Wörter mit Ziffern, Wörter in Großbuchstaben (Abkürzungen), Web- und
@@ -102,7 +124,37 @@ gewählte. Wörterbuch, hinzugefügte und ignorierte Wörter sind dieselben wie 
 Anwendungen (siehe <em>Rechtschreibung</em> im Benutzerhandbuch); der Bereich funktioniert unabhängig davon, ob dieses Auswahlfeld ein- oder
 ausgeschaltet ist, weil die Seite dieses Editors als Bild gezeichnet wird und keine Unterstreichungen zeigen kann.</p>
 <p><strong>Fuß- und Endnoten</strong> aus Word- und LibreOffice-Dateien erscheinen mit ihrer hochgestellten Nummer; ihre Texte stehen nach einer Linie am Ende
-des Dokuments, weil der Editor keinen Fußnotenbereich hat. Seitenzahlfelder in Kopf- und Fußzeilen zeigen die in der Datei gespeicherte Zahl.</p>
+des Dokuments, weil der Editor keinen Fußnotenbereich hat.</p>
+<h3>Symbole, Emoji, Datum und Uhrzeit</h3>
+<p><strong>Einfügen → Ω</strong> öffnet eine Auswahl von Symbolen (Mathematik, griechische Buchstaben und gebräuchliche Symbole), <strong>Einfügen → ☺</strong> eine von Emoji mit
+Suche; ein Klick fügt das Zeichen an der Schreibmarke ein. Die Symbolauswahl der Suite (siehe Benutzerhandbuch) funktioniert hier ebenfalls.</p>
+<p><strong>Einfügen → Datum &amp; Uhrzeit</strong> fügt das heutige Datum oder die aktuelle Uhrzeit als Text an der Schreibmarke ein: <em>Datum</em> und <em>Datum (lang)</em> im Format
+Ihrer Region (z. B. 31.01.2026 und 31. Januar 2026), <em>Datum (ISO)</em> als 2026-01-31, <em>Uhrzeit</em> oder <em>Datum und Uhrzeit</em>. Das ist gewöhnlicher Text und
+ändert sich später nicht; in Kopf- und Fußzeilen fügt der Reiter Kopf- und Fußzeile ein Datum ein, das sich aktualisieren lässt.</p>
+<h3>Seite einrichten</h3>
+<p>Die Schaltfläche „Seite einrichten“ im Reiter <strong>Start</strong> (ganz rechts, auf einem Smartphone im ⋮-Menü) legt fest:</p>
+<ul>
+<li><strong>Darstellung</strong>: <strong>Seiten</strong> wie in Word oder <strong>Keine Seiten</strong> – fortlaufender Text ohne Seitenränder (so öffnen sich Textdateien).</li>
+<li><strong>Papierformat</strong> (A3, A4, A5, Letter, Legal oder eine eigene Breite und Höhe) und <strong>Ausrichtung</strong> (Hoch- oder Querformat).</li>
+<li><strong>Ränder</strong> oben, unten, links und rechts, in Zentimetern.</li>
+</ul>
+<p><strong>Übernehmen</strong> ändert das Dokument (rückgängig mit <code>Strg+Z</code>). Seitengröße, Ausrichtung und Ränder bleiben in Word- und OpenDocument-Dateien
+erhalten und gelten beim Drucken.</p>
+<h3>Kopf- und Fußzeilen, Seitenzahlen</h3>
+<p>Kopf- und Fußzeilen brauchen ein Dokument mit Seiten (aus Word oder LibreOffice, oder nachdem in „Seite einrichten“ <em>Seiten</em> gewählt wurde). <strong>Einfügen →
+Kopf- &amp; Fußzeile</strong> → <strong>Kopfzeile bearbeiten</strong> oder <strong>Fußzeile bearbeiten</strong> (oder ein Doppelklick in den oberen oder unteren Rand einer Seite) öffnet sie
+zum Bearbeiten und zeigt den Reiter <strong>Kopf- und Fußzeile</strong>:</p>
+<ul>
+<li><strong>Seitenzahl</strong> → <em>Aktuelle Seite</em> oder <em>Gesamtseitenzahl</em> fügt die Zahl an der Schreibmarke ein, z. B. „Seite 3 von 12“; jede Seite zeigt ihre eigene
+  Zahl. <strong>Datum und Uhrzeit</strong> fügt Datum oder Uhrzeit ein. <em>Felder aktualisieren</em> aktualisiert sie.</li>
+<li><strong>Zur Kopfzeile</strong> / <strong>Zur Fußzeile</strong> wechseln zwischen beiden; <strong>Andere erste Seite</strong> und <strong>Unterschiedliche ungerade und gerade Seiten</strong> geben diesen Seiten
+  eigene Kopf- und Fußzeilen; die Abstände von Kopf- und Fußzeile zum Seitenrand stehen rechts.</li>
+<li><strong>×</strong> (oder <code>Esc</code>, oder ein Doppelklick in den Text) führt zurück in den Text.</li>
+</ul>
+<p>Auf einem Smartphone stehen die Schaltflächen, die keinen Platz haben, im ⋮-Menü des Reiters.</p>
+<p>Seitenzahlen bleiben als Seitenzahlfelder in Word- (<code>PAGE</code>, <code>NUMPAGES</code>) und OpenDocument-Dateien (<code>text:page-number</code>, <code>text:page-count</code>) erhalten, sodass
+auch Word und LibreOffice die Seiten nummerieren; Seitenzahlfelder geöffneter Dateien funktionieren genauso. Andere Felder aus Word- und
+LibreOffice-Dateien behalten den Text, den sie zeigten.</p>
 <h2>Tastenkürzel</h2>
 <p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
 <h3>Dateien</h3>
@@ -134,6 +186,10 @@ des Dokuments, weil der Editor keinen Fußnotenbereich hat. Seitenzahlfelder in 
 <td><code>F7</code></td>
 <td>Rechtschreibprüfung</td>
 </tr>
+<tr>
+<td><code>Strg+Alt+M</code></td>
+<td>Markierten Text kommentieren</td>
+</tr>
 </tbody>
 </table>
 <h3>Bearbeiten</h3>
@@ -164,6 +220,10 @@ des Dokuments, weil der Editor keinen Fußnotenbereich hat. Seitenzahlfelder in 
 <tr>
 <td><code>Strg+A</code></td>
 <td>Alles auswählen</td>
+</tr>
+<tr>
+<td><code>Strg+K</code></td>
+<td>Link einfügen oder bearbeiten</td>
 </tr>
 <tr>
 <td><code>/</code></td>

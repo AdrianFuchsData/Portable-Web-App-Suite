@@ -28,3 +28,11 @@
   .doc-layout.spell-open .doc-univer { right: 0; bottom: 45%; }
   .doc-spell { top: auto; left: 0; width: auto; height: 45%; border-left: 0; border-top: 1px solid var(--pico-muted-border-color, #ccc); }
 }
+/* Univer's Header & Footer tab has groups of two rows, which its single-row ("classic") ribbon cuts off: the toolbar may grow while that
+   tab is shown, and the wrappers of these groups (also in the tab's ⋮ menu on a phone) take their height */
+.univer-h-10:has(> [data-u-comp=ribbon-toolbar] [data-u-command="doc.command.insert-header-footer-field"]) { height: auto; padding-top: .25rem; padding-bottom: .25rem; }
+[data-u-comp=ribbon-toolbar]:has([data-u-command="doc.command.insert-header-footer-field"]) { height: auto; overflow: visible; }
+[data-u-comp=ribbon-toolbar]:has([data-u-command="doc.command.insert-header-footer-field"]) > * { height: auto; }
+.univer-h-6:has([data-u-command*="header-footer"]) { height: auto; }
+.doc-page-setup { max-width: min(30rem, 96vw); }
+.doc-ps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0 .8rem; }

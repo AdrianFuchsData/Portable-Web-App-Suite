@@ -372,6 +372,31 @@ As with <em>Open with…</em>, the diagram editor must be in the same folder, or
 <li>The choice can be switched off in the settings (<code>F1</code>, <strong>⚙ Settings</strong>): Open and Save as then go straight to the file
   system.</li>
 </ul>
+<h3>All open files as an archive</h3>
+<p><code>F1</code> → <strong>📦 Open files</strong> → <strong>Create an archive from the open files…</strong> lists the files that are open in the application – in the overview the
+files of all its tabs, each in a folder named after its application (<code>texteditor/notes.txt</code>) – with their sizes; files with
+unsaved changes are marked. Untick what you do not need and choose <strong>Create archive</strong>: the ZIP archive opens in the
+<ac:link><ri:page ri:content-title="Archive manager" /><ac:plain-text-link-body><![CDATA[archive manager]]></ac:plain-text-link-body></ac:link> (in the overview as a new tab), where you save it, add files or take single files out.
+The archive contains the current content, including unsaved changes, in the format the application would save
+(documents as <code>.docx</code>, presentations as <code>.pptx</code>, diagrams as <code>.drawio</code> and so on). The command palette (<code>Ctrl+Shift+P</code>)
+offers the same command for all files at once. The open files stay as they are; the archive is a copy.</p>
+<h3>Workspaces: continue elsewhere</h3>
+<p>A workspace (<code>.suite.zip</code>) takes everything you are working on to another computer or browser: <code>F1</code> → <strong>🗂 Workspace</strong> →
+<strong>Save workspace…</strong> lists the open files (with their sizes, unsaved changes marked) and what can be included besides:</p>
+<ul>
+<li><strong>Settings</strong> of this application and the general ones (in the overview: of all applications).</li>
+<li><strong>Connections and passwords</strong> (🔑) – only when you tick them. Credentials are <strong>never written unencrypted</strong>: they need a
+  password, and the settings are then stored as a KeePass database (<code>settings.kdbx</code>) inside the workspace. With a password the
+  settings alone are encrypted as well.</li>
+</ul>
+<p><strong>Open workspace…</strong> shows what the workspace contains. In the <strong>overview</strong> every application opens again in its own tab, in
+the saved order, with the saved tab in front. A single application opens only its own files and names how many belong to
+others (open the workspace in the overview for those). Tick <strong>Apply the settings</strong> to take them over (with the KeePass
+password, if there is one); they take effect after the next start, connections are added at once (save the connection file to
+keep them).</p>
+<p>The files open as <strong>copies</strong>: Save asks where to save them. The workspace is an ordinary ZIP archive – the
+<ac:link><ri:page ri:content-title="Archive manager" /><ac:plain-text-link-body><![CDATA[archive manager]]></ac:plain-text-link-body></ac:link> shows it, with a folder per application and <code>workspace.json</code>, which names the application,
+tab and order of each file. An example is in <code>examples.zip</code> (<code>examples/en/overview/office.suite.zip</code>).</p>
 <h2>Application data: settings, connections and passwords</h2>
 <p>Some applications store settings, connections or passwords, for example server connections of the SSH client.
 This data is kept in a file that <strong>you</strong> choose, never in the browser. One file can hold the data of several
@@ -407,14 +432,40 @@ file, the data cannot be recovered.</p></ac:rich-text-body></ac:structured-macro
 <h3>Moving your settings</h3>
 <p>Preferences such as the theme, the language, the text editor's font size or the diagram libraries are kept in the
 browser. To take them to another computer or browser, open the about dialog (<code>F1</code> or <strong>?</strong>), expand <strong>⚙ Settings</strong> and
-choose <strong>Export…</strong>: this saves <code>suite-settings.json</code>. <strong>Import…</strong> in any application reads such a file and offers to
-reload the application, so that the settings take effect.</p>
+choose <strong>Export…</strong>. Tick what to include:</p>
+<ul>
+<li><strong>General</strong> – theme, language, spelling, symbols and the other settings all applications share;</li>
+<li>the settings of <strong>this application</strong> – in the overview: of <strong>every application</strong> that has settings;</li>
+<li>in the applications with connections (database tool, SSH, FTP, mail, HTTP, web inspector): <strong>Connections and passwords</strong> of the
+  open connection file and the <strong>relay address and sign-in</strong>, marked 🔑 as credentials;</li>
+<li><strong>Imported fonts</strong> (see <em>Fonts</em>), when there are any.</li>
+</ul>
+<p>Then choose the format: a <strong>KeePass database</strong> (<code>suite-settings.kdbx</code>, encrypted with a password you enter twice; KeePass,
+KeePassXC and the suite's KeePass application can open it) or a <strong>JSON file</strong> (<code>suite-settings.json</code>, not encrypted). If
+credentials are ticked and the format is JSON, a warning says that anyone with the file can read them: confirm it, choose
+KeePass, or leave them out.</p>
+<p><strong>Import…</strong> in any application reads such a file – for a KeePass database it first asks for the password – and lists what it
+contains for this application (in the overview: for all); untick what you do not want. Settings take effect after a reload,
+which the application offers; imported connections are added to the open connection file (save it to keep them).</p>
 <p>The connection files of the applications with connections (database tool, SSH, FTP, mail, HTTP) also carry these
 preferences – the JSON file and the KeePass database alike. When you open a connection file whose preferences differ
 from the current ones, a bar offers <strong>Apply settings</strong>. One KeePass database can so hold the connections, passwords and
 preferences of the whole suite.</p>
 <p>Chrome and Edge share the preferences of all applications opened from files; Firefox keeps them per application file.
 There, export and import in each application whose settings you want to move.</p>
+<h3>Fonts</h3>
+<p>The suite brings free fonts along, so that documents look the same on every system – also without internet and on devices
+that have few fonts installed: <strong>Arimo</strong>, <strong>Tinos</strong> and <strong>Cousine</strong> (also under the names <strong>Liberation Sans</strong>, <strong>Liberation Serif</strong> and
+<strong>Liberation Mono</strong>, which are the same fonts), <strong>Carlito</strong>, <strong>Caladea</strong>, <strong>Gelasio</strong>, <strong>Inter</strong>, <strong>Open Sans</strong>, <strong>Roboto</strong>, <strong>Lato</strong>,
+<strong>Montserrat</strong>, <strong>Source Serif 4</strong>, <strong>Merriweather</strong>, <strong>JetBrains Mono</strong>, <strong>Fira Code</strong> and <strong>Source Code Pro</strong> (regular, bold, italic and
+bold italic; Latin script with the European accents). They appear in the font menus of the document editor, the spreadsheet, the
+presentation editor and the image editor's text tool; the text editor and the SSH terminal offer the monospaced ones (font menu in the
+toolbar). Office files that use <strong>Calibri</strong>, <strong>Cambria</strong>, <strong>Arial</strong>, <strong>Helvetica</strong>, <strong>Times New Roman</strong> or <strong>Courier New</strong> are shown – where
+these are not installed – with the metric-compatible fonts Carlito, Caladea, Arimo, Tinos and Cousine, so lines and pages break as in
+the original. All fonts are under the SIL Open Font License (see the licences in the about dialog).</p>
+<p><strong>More fonts:</strong> <code>F1</code> → <strong>⚙ Settings</strong> → <strong>Fonts</strong> → <strong>Import fonts…</strong> adds TTF, OTF, WOFF or WOFF2 files – from the file system or from
+an archive. Imported fonts are kept in the browser and available in all applications (those already open after their next start);
+<strong>×</strong> removes one. They are included in the settings export and in workspaces (<em>Imported fonts</em>), so they move with your settings.</p>
 <h2>Network functions and the relay</h2>
 <p>Browsers cannot connect directly to mail, SSH, SFTP, FTP or database servers. The applications that need
 such connections use the <strong>relay</strong>: a small program that you start on your computer. The relay is optional;

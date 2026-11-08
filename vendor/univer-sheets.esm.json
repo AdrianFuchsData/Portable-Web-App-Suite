@@ -10,7 +10,10 @@
     "rxjs": "7.8.2",
     "@univerjs/preset-sheets-drawing": "1.0.4",
     "@univerjs/preset-sheets-sort": "1.0.4",
-    "@univerjs/preset-sheets-filter": "1.0.4"
+    "@univerjs/preset-sheets-filter": "1.0.4",
+    "@univerjs/preset-sheets-hyper-link": "1.0.4",
+    "@univerjs/preset-sheets-find-replace": "1.0.4",
+    "@univerjs/preset-sheets-note": "1.0.4"
   },
   "modules": [
     "@univerjs/preset-sheets-core/locales/en-US",
@@ -25,7 +28,13 @@
     "@univerjs/preset-sheets-sort/locales/en-US",
     "@univerjs/preset-sheets-sort/locales/de-DE",
     "@univerjs/preset-sheets-filter/locales/en-US",
-    "@univerjs/preset-sheets-filter/locales/de-DE"
+    "@univerjs/preset-sheets-filter/locales/de-DE",
+    "@univerjs/preset-sheets-hyper-link/locales/en-US",
+    "@univerjs/preset-sheets-hyper-link/locales/de-DE",
+    "@univerjs/preset-sheets-find-replace/locales/en-US",
+    "@univerjs/preset-sheets-find-replace/locales/de-DE",
+    "@univerjs/preset-sheets-note/locales/en-US",
+    "@univerjs/preset-sheets-note/locales/de-DE"
   ],
   "assets": {
     "@univerjs/preset-sheets-core": [
@@ -45,6 +54,15 @@
     ],
     "@univerjs/preset-sheets-filter": [
       "lib/index.css"
+    ],
+    "@univerjs/preset-sheets-hyper-link": [
+      "lib/index.css"
+    ],
+    "@univerjs/preset-sheets-find-replace": [
+      "lib/index.css"
+    ],
+    "@univerjs/preset-sheets-note": [
+      "lib/index.css"
     ]
   },
   "exclude": [
@@ -60,5 +78,17 @@
       "regex": "^.*/lib/es/(.+)-[A-Za-z0-9_-]{8}\\.js$",
       "pascal": true
     }
+  },
+  "patches": {
+    "@univerjs/sheets-hyper-link-ui": [
+      [
+        "function ur(i){return/^[a-zA-Z]+:\\/\\//.test(i)}",
+        "function ur(i){return/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(i)}"
+      ],
+      [
+        "`mailto://${i}`",
+        "`mailto:${i}`"
+      ]
+    ]
   }
 }

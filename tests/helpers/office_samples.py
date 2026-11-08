@@ -337,3 +337,24 @@ def make_pdf(path, pages=3, password=None):
         writer.encrypt(password, algorithm="AES-256")
         writer.write(path)
     return path
+
+
+def make_paged_docx(path, paragraphs=60):
+    """A DOCX of several pages with a header and a centred footer "Page <PAGE> of <NUMPAGES>" (a complex and a simple field)."""
+    from docx import Document
+    from docx.oxml import parse_xml
+    from docx.oxml.ns import nsdecls
+    d = Document()
+    for i in range(paragraphs):
+        d.add_paragraph(f"Paragraph {i + 1} " + "text " * 30)
+    p = d.sections[0].footer.paragraphs[0]
+    p.alignment = 1  # centred
+    p.add_run("Page ")
+    for xml in ('<w:r {0}><w:fldChar w:fldCharType="begin"/></w:r>', '<w:r {0}><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>',
+                '<w:r {0}><w:fldChar w:fldCharType="separate"/></w:r>', '<w:r {0}><w:t>1</w:t></w:r>', '<w:r {0}><w:fldChar w:fldCharType="end"/></w:r>'):
+        p._p.append(parse_xml(xml.format(nsdecls("w"))))
+    p.add_run(" of ")
+    p._p.append(parse_xml(f'<w:fldSimple {nsdecls("w")} w:instr=" NUMPAGES  \\* MERGEFORMAT "><w:r><w:t>3</w:t></w:r></w:fldSimple>'))
+    d.sections[0].header.paragraphs[0].text = "Report header"
+    d.save(path)
+    return path

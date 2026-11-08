@@ -31,7 +31,8 @@ Jede Verbindung öffnet einen Reiter mit einem Terminal (xterm-kompatibel, Farbe
 grün verbunden, gelb verbinde, rot geschlossen. **Neu verbinden** öffnet eine geschlossene Sitzung erneut; × schließt einen Reiter.
 
 - Markierten Text kopiert ⧉ (oder die Kopier-Tastenkombination des Browsers); 📋 fügt die Zwischenablage in die Sitzung ein.
-- **Schriftgröße** ändert die Größe aller Terminals.
+- **Schriftgröße** ändert die Größe aller Terminals, **Schrift** ihre Schrift (die nichtproportionale Schrift des Systems, eine mitgelieferte wie
+  JetBrains Mono oder Fira Code oder eine importierte; wird gemerkt).
 - **⏺** zeichnet die Sitzung ab jetzt auf; ein zweiter Klick (**⏹**, mit der aufgezeichneten Größe) beendet die Aufzeichnung und speichert das
   Protokoll als Textdatei (ohne Farbcodes). **⤓** speichert, was das Terminal gerade enthält (samt Verlauf von bis zu 5000 Zeilen).
 - Auf Touch-Geräten bietet eine Tastenleiste Esc, Tab, Strg (gilt für die nächste Taste, z. B. Strg und dann C), die Pfeiltasten und einige

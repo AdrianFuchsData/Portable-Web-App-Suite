@@ -171,6 +171,10 @@
     "version": "1.0.4",
     "license": "Apache-2.0"
   },
+  "@univerjs/find-replace": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
   "@univerjs/icons": {
     "version": "1.43.1",
     "license": "MIT"
@@ -196,6 +200,18 @@
     "license": "Apache-2.0"
   },
   "@univerjs/preset-sheets-filter": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/preset-sheets-find-replace": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/preset-sheets-hyper-link": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/preset-sheets-note": {
     "version": "1.0.4",
     "license": "Apache-2.0"
   },
@@ -251,11 +267,31 @@
     "version": "1.0.4",
     "license": "Apache-2.0"
   },
+  "@univerjs/sheets-find-replace": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
   "@univerjs/sheets-formula": {
     "version": "1.0.4",
     "license": "Apache-2.0"
   },
   "@univerjs/sheets-formula-ui": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/sheets-hyper-link": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/sheets-hyper-link-ui": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/sheets-note": {
+    "version": "1.0.4",
+    "license": "Apache-2.0"
+  },
+  "@univerjs/sheets-note-ui": {
     "version": "1.0.4",
     "license": "Apache-2.0"
   },

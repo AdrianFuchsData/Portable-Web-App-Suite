@@ -18,6 +18,11 @@ const VALIGN = { t: "top", ctr: "middle", b: "bottom" };
 const ALIGN = { l: "left", ctr: "center", r: "right", just: "justify", dist: "justify" };
 const AUTONUM = { arabicPeriod: "arabicPeriod", arabicParenR: "arabicParenR", alphaLcPeriod: "alphaLcPeriod", alphaUcPeriod: "alphaUcPeriod", romanLcPeriod: "romanLcPeriod", romanUcPeriod: "romanUcPeriod" };
 
+// fields (slide number, date) are written as a marker text and turned into <a:fld> in the slide XML afterwards (PptxGenJS has
+// a slide number placeholder, but no fields inside text)
+const FIELD_MARK = "\u2063";
+let fields = []; // [{ type, text }] of the presentation being written; the marker carries the index
+
 /** Text model -> PptxGenJS text run array. */
 function textRuns(text) {
   const runs = [];
@@ -36,6 +41,11 @@ function textRuns(text) {
         underline: run.underline ? { style: "sng" } : undefined, color: hex(run.color), fontFace: run.font,
       };
       if (ri === items.length - 1 && !last) options.breakLine = true;
+      if (run.field) {
+        fields.push({ type: run.field === "slidenum" ? "slidenum" : run.fieldType || "datetime1", text: run.text || "" });
+        runs.push({ text: `${FIELD_MARK}${fields.length - 1}${FIELD_MARK}`, options });
+        return;
+      }
       runs.push({ text: run.text === "\n" ? "" : run.text, options: run.text === "\n" ? { ...options, breakLine: true } : options });
     });
   });
@@ -55,6 +65,7 @@ function shapeStyle(el) {
 
 /** Deck model -> PPTX (Uint8Array). */
 export async function exportPptx(deck, title = "Presentation") {
+  fields = [];
   const pptx = new PptxGenJS();
   pptx.defineLayout({ name: "DECK", width: inch(deck.width), height: inch(deck.height) });
   pptx.layout = "DECK";
@@ -67,7 +78,12 @@ export async function exportPptx(deck, title = "Presentation") {
     if (slide.background) s.background = { color: hex(slide.background) };
     if (slide.notes) s.addNotes(slide.notes);
     for (const el of slide.elements) {
-      if (el.type === "image") {
+      if (el.type === "media" && el.media && /^data:(video|audio)\/[^;]+;base64,/.test(el.media.src)) {
+        ids.push(el.id);
+        const mime = el.media.src.slice(5, el.media.src.indexOf(";"));
+        const extn = { "audio/mpeg": "mp3", "audio/mp4": "m4a", "audio/ogg": "ogg", "audio/wav": "wav", "audio/x-wav": "wav", "video/quicktime": "mov", "video/ogg": "ogv" }[mime] || mime.split("/")[1];
+        s.addMedia({ type: el.media.kind === "audio" ? "audio" : "video", data: el.media.src.slice(5), extn, ...(el.media.poster ? { cover: el.media.poster } : {}), ...boxOptions(el) });
+      } else if (el.type === "image") {
         ids.push(el.id);
         s.addImage({ data: el.image.src, ...boxOptions(el) });
       } else if (el.type === "table") {
@@ -90,8 +106,128 @@ export async function exportPptx(deck, title = "Presentation") {
       }
     }
   }
-  const bytes = await pptx.write({ outputType: "uint8array" });
-  return deck.slides.some((s) => s.transition || (s.animations && s.animations.length)) ? addMotion(bytes, deck, exported) : bytes;
+  let bytes = await pptx.write({ outputType: "uint8array" });
+  if (fields.length) bytes = addFields(bytes, deck);
+  if (deck.slides.some((s) => s.hidden)) bytes = hideSlides(bytes, deck);
+  if (deck.slides.some((s) => s.transition || (s.animations && s.animations.length))) bytes = addMotion(bytes, deck, exported);
+  if (deck.slides.some((s) => s.elements.some((e) => e.image && e.image.crop))) bytes = addCrops(bytes, deck, exported);
+  return deck.slides.some((s) => s.elements.some((e) => e.group)) ? addGroups(bytes, deck, exported) : bytes;
+}
+
+const EMU_PER_PX = 9525;
+
+/** Cropped pictures: <a:srcRect l t r b> (thousandths of a percent) after the picture's a:blip – PptxGenJS stretches the whole picture. */
+function addCrops(bytes, deck, exported) {
+  const files = unzipSync(bytes);
+  deck.slides.forEach((slide, i) => {
+    const name = `ppt/slides/slide${i + 1}.xml`;
+    if (!files[name] || !slide.elements.some((e) => e.image && e.image.crop)) return;
+    const source = strFromU8(files[name]);
+    const doc = new DOMParser().parseFromString(source, "application/xml");
+    const tree = doc.getElementsByTagNameNS(P_NS, "spTree")[0];
+    const shapes = tree ? [...tree.children].filter((c) => ["sp", "pic", "graphicFrame", "cxnSp"].includes(c.localName)) : [];
+    if (shapes.length !== exported[i].length) return;
+    exported[i].forEach((id, k) => {
+      const el = slide.elements.find((e) => e.id === id);
+      const crop = el && el.image && el.image.crop;
+      const blip = crop && shapes[k].getElementsByTagNameNS(A_NS, "blip")[0];
+      if (!blip) return;
+      const rect = doc.createElementNS(A_NS, "a:srcRect");
+      for (const side of ["l", "t", "r", "b"]) if (crop[side]) rect.setAttribute(side, String(Math.round(crop[side] * 100000)));
+      blip.parentNode.insertBefore(rect, blip.nextSibling);
+    });
+    const declaration = /^<\?xml[^>]*\?>\s*/.exec(source);
+    files[name] = strToU8((declaration ? declaration[0] : "") + new XMLSerializer().serializeToString(doc).replace(/^<\?xml[^>]*\?>\s*/, ""));
+  });
+  return zipSync(files);
+}
+const P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main";
+const A_NS = "http://schemas.openxmlformats.org/drawingml/2006/main";
+
+/**
+ * Groups (elements with the same el.group): PptxGenJS has none, so neighbouring shapes of a group are wrapped in <p:grpSp> afterwards
+ * (the app keeps the members of a group together in the stacking order). The group's frame is the members' bounding box, in the
+ * same coordinates for the children (chOff/chExt = off/ext). Shape ids stay, so animations keep their targets.
+ */
+function addGroups(bytes, deck, exported) {
+  const files = unzipSync(bytes);
+  deck.slides.forEach((slide, i) => {
+    const name = `ppt/slides/slide${i + 1}.xml`;
+    if (!files[name] || !slide.elements.some((e) => e.group)) return;
+    const source = strFromU8(files[name]);
+    const doc = new DOMParser().parseFromString(source, "application/xml");
+    const tree = doc.getElementsByTagNameNS(P_NS, "spTree")[0];
+    if (!tree) return;
+    const shapes = [...tree.children].filter((c) => ["sp", "pic", "graphicFrame", "cxnSp"].includes(c.localName));
+    const ids = exported[i];
+    if (shapes.length !== ids.length) return; // (not the expected shapes: left as they are)
+    const els = ids.map((id) => slide.elements.find((e) => e.id === id));
+    let next = Math.max(0, ...[...doc.getElementsByTagNameNS(P_NS, "cNvPr")].map((n) => Number(n.getAttribute("id")) || 0)) + 1;
+    const make = (parent, local, ns = P_NS, attrs = {}) => {
+      const node = doc.createElementNS(ns, `${ns === P_NS ? "p" : "a"}:${local}`);
+      for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, String(v));
+      parent.append(node);
+      return node;
+    };
+    for (let k = 0; k < shapes.length;) {
+      const group = els[k] && els[k].group;
+      let j = k;
+      while (group && j + 1 < shapes.length && els[j + 1] && els[j + 1].group === group) j += 1;
+      if (j > k) {
+        const members = els.slice(k, j + 1);
+        const x = Math.min(...members.map((e) => e.x)), y = Math.min(...members.map((e) => e.y));
+        const w = Math.max(...members.map((e) => e.x + e.w)) - x, h = Math.max(...members.map((e) => e.y + e.h)) - y;
+        const [ox, oy, cx, cy] = [x, y, w, h].map((v) => Math.round(v * EMU_PER_PX));
+        const grp = doc.createElementNS(P_NS, "p:grpSp");
+        const nv = make(grp, "nvGrpSpPr");
+        make(nv, "cNvPr", P_NS, { id: next, name: `Group ${next}` });
+        next += 1;
+        make(nv, "cNvGrpSpPr");
+        make(nv, "nvPr");
+        const xfrm = make(make(grp, "grpSpPr"), "xfrm", A_NS);
+        make(xfrm, "off", A_NS, { x: ox, y: oy });
+        make(xfrm, "ext", A_NS, { cx, cy });
+        make(xfrm, "chOff", A_NS, { x: ox, y: oy });
+        make(xfrm, "chExt", A_NS, { cx, cy });
+        tree.insertBefore(grp, shapes[k]);
+        for (const node of shapes.slice(k, j + 1)) grp.append(node);
+      }
+      k = j + 1;
+    }
+    const declaration = /^<\?xml[^>]*\?>\s*/.exec(source);
+    files[name] = strToU8((declaration ? declaration[0] : "") + new XMLSerializer().serializeToString(doc).replace(/^<\?xml[^>]*\?>\s*/, ""));
+  });
+  return zipSync(files);
+}
+
+/** Hidden slides (skipped in the show): <p:sld show="0">. */
+function hideSlides(bytes, deck) {
+  const files = unzipSync(bytes);
+  deck.slides.forEach((slide, i) => {
+    const name = `ppt/slides/slide${i + 1}.xml`;
+    if (slide.hidden && files[name]) files[name] = strToU8(strFromU8(files[name]).replace(/<p:sld\b(?![^>]*\bshow=)/, '<p:sld show="0"'));
+  });
+  return zipSync(files);
+}
+
+/** Marker runs -> <a:fld type="slidenum|datetime…"> with the field's text (the slide's number for slide numbers). */
+function addFields(bytes, deck) {
+  const files = unzipSync(bytes);
+  const guid = () => `{${"xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx".replace(/x/g, () => Math.floor(Math.random() * 16).toString(16).toUpperCase())}}`;
+  const esc = (v) => String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  deck.slides.forEach((slide, i) => {
+    const name = `ppt/slides/slide${i + 1}.xml`;
+    if (!files[name]) return;
+    const xml = strFromU8(files[name]);
+    // (the run properties may not reach beyond their own </a:rPr>, or a match could start in an earlier run)
+    const fixed = xml.replace(new RegExp(`<a:r>(<a:rPr\\b(?:[^>]*/>|[^>]*>(?:(?!</a:rPr>)[\\s\\S])*</a:rPr>))?<a:t>${FIELD_MARK}(\\d+)${FIELD_MARK}</a:t></a:r>`, "g"), (m, rPr, n) => {
+      const f = fields[Number(n)];
+      if (!f) return m;
+      return `<a:fld id="${guid()}" type="${f.type}">${rPr || ""}<a:t>${esc(f.type === "slidenum" ? i + 1 : f.text)}</a:t></a:fld>`;
+    });
+    if (fixed !== xml) files[name] = strToU8(fixed);
+  });
+  return zipSync(files);
 }
 
 // ---- transitions and animations ---------------------------------------------------------------------

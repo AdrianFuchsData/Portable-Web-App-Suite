@@ -700,6 +700,9 @@
 
   Suite.bridge.receive((picked) => { state.file = picked; state.error = ''; render(); }, { app: 'keepass' }); // files opened from other apps ("Open with…")
 
+  // the open file(s) for "Create an archive from the open files" (about dialog)
+  Suite.openFiles.register(async () => (state.db ? [{ name: state.name || 'database.kdbx', bytes: new Uint8Array(await state.db.save()), dirty: state.dirty }] : []));
+
   // for tests
   KP.app = { state, history, step, showDatabase, save, lock, resetAutoLock, AUTO_LOCK_MINUTES };
   document.body.dataset.ready = 'true';

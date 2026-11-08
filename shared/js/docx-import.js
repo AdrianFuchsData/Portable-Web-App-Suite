@@ -13,6 +13,7 @@
  */
 import { unzipSync, strFromU8 } from "fflate";
 import { buildDocTransform } from "@univerjs/docs";
+import { buildThreads, withThreads } from "app/doc-comments";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -210,11 +211,34 @@ function headingOf(chain, props) {
   return props.outline !== undefined && props.outline < 5 ? 4 + props.outline : undefined;
 }
 
+// ---- fields -------------------------------------------------------------------------------------------
+// Univer keeps a field as its current result between U+001F and U+001E, marked by a custom range of type FIELD (1). Only the
+// page fields are kept as fields (Univer updates them per page in headers and footers); other fields keep their result text.
+
+export const FIELD_START = "\u001f", FIELD_END = "\u001e";
+const FIELD_RANGE = 1;
+/** "PAGE" or "NUMPAGES" for an instruction such as " PAGE  \\* MERGEFORMAT ", otherwise null. */
+export function fieldKind(instr) {
+  const word = String(instr || "").trim().split(/\s+/)[0].toUpperCase();
+  return word === "PAGE" || word === "NUMPAGES" ? word : null;
+}
+/** Ends a field that started at `start` (its FIELD_START) and marks it; a field without a result (e.g. written by the docx library) gets "1". */
+export function closeField(out, start, kind, instr, sourceKind, ts) {
+  if (out.length === start + 1) out.text("1", ts); // (Univer shows the number of each page in its place)
+  out.text(FIELD_END, ts);
+  pushField(out, start, kind, instr, sourceKind);
+}
+function pushField(out, start, kind, instr, sourceKind) {
+  const result = out.body.dataStream.slice(start + 1, out.length - 1);
+  out.body.customRanges.push({ startIndex: start, endIndex: out.length - 1, rangeId: randomId("field"), rangeType: FIELD_RANGE, wholeEntity: false,
+    properties: { fieldType: kind, instruction: String(instr || kind).trim(), cachedResult: result, sourceKind } });
+}
+
 // ---- document builder -----------------------------------------------------------------------------
 
 export class Body {
   constructor() {
-    this.body = { dataStream: "", textRuns: [], paragraphs: [], sectionBreaks: [], tables: [], customBlocks: [], customRanges: [] };
+    this.body = { dataStream: "", textRuns: [], paragraphs: [], sectionBreaks: [], tables: [], customBlocks: [], customRanges: [], customDecorations: [] };
   }
 
   get length() { return this.body.dataStream.length; }
@@ -264,6 +288,8 @@ class DocxReader {
     this.drawingsOrder = [];
     this.warnings = new Set();
     this.notes = []; // { label, kind, id } in the order of their references
+    this.main = null; // the body of the document (comments are read there only)
+    this.commentMarks = {}; // comment id -> { start, end, ref } (positions in the main body)
   }
 
   /** Effective run style for a run in a paragraph with the given style. */
@@ -318,13 +344,14 @@ class DocxReader {
       else if (el.localName === "tbl") this.table(el, out, rels);
       else if (el.localName === "sdt") { const content = child(el, "sdtContent"); if (content) this.blocks(content, out, rels); }
       else if (el.localName === "customXml") this.blocks(el, out, rels);
+      else if (el.localName === "commentRangeStart" || el.localName === "commentRangeEnd") this.commentMark(el, out);
     }
   }
 
   paragraph(p, out, rels) {
     const pPr = child(p, "pPr");
     const { pStyleId, style, bullet, pageBreakBefore } = this.paragraphStyle(pPr);
-    const ctx = { out, rels, pStyleId, style, bullet, field: null };
+    const ctx = { out, rels, pStyleId, style, bullet, field: null, fields: [] };
     if (pageBreakBefore && out.length) out.text("\f");
     this.inlines(p, ctx);
     out.paragraph(style, bullet);
@@ -344,7 +371,18 @@ class DocxReader {
           break;
         }
         case "sdt": { const content = child(el, "sdtContent"); if (content) this.inlines(content, ctx); break; }
-        case "smartTag": case "customXml": case "ins": case "fldSimple": this.inlines(el, ctx); break;
+        case "fldSimple": {
+          // a simple field: PAGE and NUMPAGES become Univer fields (their result between the field marks), others their result
+          const kind = fieldKind(val(el, "instr"));
+          if (!kind) { this.inlines(el, ctx); break; }
+          const start = ctx.out.length;
+          ctx.out.text(FIELD_START);
+          this.inlines(el, ctx);
+          closeField(ctx.out, start, kind, val(el, "instr"), "simple");
+          break;
+        }
+        case "smartTag": case "customXml": case "ins": this.inlines(el, ctx); break;
+        case "commentRangeStart": case "commentRangeEnd": this.commentMark(el, ctx.out); break;
         default: break; // bookmarks, proofErr, del (deleted text), ...
       }
     }
@@ -357,13 +395,20 @@ class DocxReader {
       if (el.namespaceURI !== W && el.localName !== "AlternateContent") continue;
       switch (el.localName) {
         case "fldChar": {
+          // complex fields: begin – instrText – separate – result – end (may be nested); PAGE and NUMPAGES become Univer fields
           const type = val(el, "fldCharType");
-          if (type === "begin") ctx.field = "instr";
-          else if (type === "separate") ctx.field = "result";
-          else if (type === "end") ctx.field = null;
+          if (type === "begin") { ctx.fields.push({ instr: "", start: -1 }); ctx.field = "instr"; } else if (type === "separate") {
+            const f = ctx.fields[ctx.fields.length - 1];
+            if (f && fieldKind(f.instr)) { f.start = ctx.out.length; ctx.out.text(FIELD_START, ts); }
+            ctx.field = "result";
+          } else if (type === "end") {
+            const f = ctx.fields.pop();
+            if (f && f.start >= 0) closeField(ctx.out, f.start, fieldKind(f.instr), f.instr, "complex", ts);
+            ctx.field = ctx.fields.length ? "result" : null;
+          }
           break;
         }
-        case "instrText": break;
+        case "instrText": { const f = ctx.fields[ctx.fields.length - 1]; if (f && ctx.field === "instr") f.instr += el.textContent; break; }
         case "t": if (ctx.field !== "instr") ctx.out.text(el.textContent, ts); break;
         case "tab": ctx.out.text("\t", ts); break;
         case "noBreakHyphen": ctx.out.text("‑", ts); break;
@@ -374,6 +419,7 @@ class DocxReader {
           else { ctx.out.paragraph(ctx.style, ctx.bullet); this.warnings.add("line breaks are imported as paragraph breaks"); }
           break;
         case "drawing": this.drawing(el, ctx); break;
+        case "commentReference": this.commentMark(el, ctx.out); break;
         case "footnoteReference": case "endnoteReference": {
           const kind = el.localName === "footnoteReference" ? "footnotes" : "endnotes";
           const label = String(this.notes.filter((n) => n.kind === kind).length + 1) + (kind === "endnotes" ? "*" : "");
@@ -478,6 +524,44 @@ class DocxReader {
     };
   }
 
+  /** Where a comment starts and ends (w:commentRangeStart/End; w:commentReference when a comment has no range). */
+  commentMark(el, out) {
+    if (out !== this.main) return;
+    const mark = (this.commentMarks[val(el, "id")] = this.commentMarks[val(el, "id")] || {});
+    if (el.localName === "commentRangeStart") mark.start = out.length;
+    else if (el.localName === "commentRangeEnd") mark.end = out.length - 1;
+    else mark.ref = out.length;
+  }
+
+  /** The comments (word/comments.xml) with their replies and state (word/commentsExtended.xml) as Univer threads. */
+  comments(out) {
+    const name = this.pkg.part("comments");
+    const doc = name && this.pkg.xml(name);
+    if (!doc) return [];
+    const W14 = "http://schemas.microsoft.com/office/word/2010/wordml", W15 = "http://schemas.microsoft.com/office/word/2012/wordml";
+    const extName = this.pkg.part("commentsExtended");
+    const ext = extName && this.pkg.xml(extName);
+    const extended = new Map(ext ? [...ext.getElementsByTagNameNS(W15, "commentEx")].map((e) => [e.getAttributeNS(W15, "paraId"), { parent: e.getAttributeNS(W15, "paraIdParent"), done: e.getAttributeNS(W15, "done") === "1" }]) : []);
+    const list = [];
+    const byPara = new Map();
+    for (const c of children(doc.documentElement, "comment")) {
+      const id = val(c, "id");
+      const paras = children(c, "p");
+      const text = paras.map((p) => [...p.getElementsByTagNameNS(W, "*")].map((x) => (x.localName === "t" ? x.textContent : x.localName === "tab" ? "\t" : x.localName === "br" ? "\n" : "")).join("")).join("\n");
+      const paraId = paras.length ? paras[paras.length - 1].getAttributeNS(W14, "paraId") : null;
+      const info = (paraId && extended.get(paraId)) || {};
+      const mark = this.commentMarks[id] || {};
+      const entry = { key: id, start: mark.start ?? (mark.ref != null ? Math.max(0, mark.ref - 1) : null), end: mark.end ?? (mark.ref != null ? mark.ref - 1 : null),
+        author: val(c, "author") || "", date: val(c, "date") ? new Date(val(c, "date")) : null, text, resolved: !!info.done, parentPara: info.parent || null };
+      if (paraId) byPara.set(paraId, entry);
+      list.push(entry);
+    }
+    for (const e of list) if (e.parentPara && byPara.has(e.parentPara)) e.parentKey = byPara.get(e.parentPara).key;
+    const { threads, decorations } = buildThreads(list, { stream: out.body.dataStream, unitId: this.id });
+    out.body.customDecorations.push(...decorations);
+    return threads;
+  }
+
   /** Footnotes and endnotes after a separator line at the end of the document. */
   appendNotes(out) {
     if (!this.notes.length) return;
@@ -514,7 +598,9 @@ class DocxReader {
     const docName = "word/document.xml";
     const bodyEl = child(this.doc.documentElement, "body");
     const out = new Body();
+    this.main = out;
     this.blocks(bodyEl, out, this.pkg.rels(docName));
+    const threads = this.comments(out);
     this.appendNotes(out);
     out.section();
 
@@ -547,12 +633,12 @@ class DocxReader {
     }
     if (child(sectPr, "titlePg")) documentStyle.useFirstPageHeaderFooter = 1;
     return {
-      data: {
+      data: withThreads({
         id: this.id, title: "", body: out.body, documentStyle, tableSource: this.tableSource,
         drawings: this.drawings, drawingsOrder: this.drawingsOrder, headers, footers,
         // Univer's drawing plugin (@univerjs/docs-drawing) loads the images from this resource
         resources: [{ name: "DOC_DRAWING_PLUGIN", data: JSON.stringify({ data: this.drawings, order: this.drawingsOrder }) }],
-      },
+      }, threads),
       warnings: [...this.warnings],
     };
   }

@@ -7,6 +7,8 @@
     "app/doc-html": "../../../../shared/js/doc-html.js",
     "app/spell": "../../../../shared/js/spell.js",
     "app/spelling": "./spelling.js",
-    "app/spell-dom": "../../../../shared/js/spell-dom.js"
+    "app/spell-dom": "../../../../shared/js/spell-dom.js",
+    "app/doc-markdown": "../../../../shared/js/doc-markdown.js",
+    "app/doc-comments": "../../../../shared/js/doc-comments.js"
   }
 }

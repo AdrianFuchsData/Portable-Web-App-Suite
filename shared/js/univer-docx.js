@@ -14,10 +14,11 @@
 import { convertClipboardHtmlToDocumentData } from "@univerjs/docs-ui";
 import { readDocx } from "app/docx-import";
 import {
-  AlignmentType, Bookmark, Document, ExternalHyperlink, Footer, Header, HeadingLevel, ImageRun, InternalHyperlink, LineRuleType, Packer, PageBreak,
+  AlignmentType, Bookmark, CommentRangeEnd, CommentRangeStart, CommentReference, Document, ExternalHyperlink, Footer, Header, HeadingLevel, ImageRun, InternalHyperlink, LineRuleType, Packer, PageBreak, PageNumber, PageOrientation,
   Paragraph, ShadingType, Table, TableCell, TableRow, TextRun, WidthType,
 } from "docx";
-import { headings, isTocParagraph, TOC_PREFIX } from "app/doc-toc";
+import { headings, isTocParagraph, sectionConfig, TOC_PREFIX } from "app/doc-toc";
+import { authorOf, dateOf, initialsOf, textOf, threadsOf } from "app/doc-comments";
 
 // control characters of Univer's dataStream
 const C = {
@@ -103,12 +104,20 @@ function dataUrlBytes(url) {
 }
 
 /** Converts one Univer body (main text, header or footer) into docx paragraphs and tables. */
-function bodyBlocks(body, data, listInstance) {
+/**
+ * comments: [{ start, end, ids }] – the commented text of the main body (end inclusive) and the Word comment ids of its thread
+ * (the comment and its replies, all on the same text, as Word writes them).
+ */
+function bodyBlocks(body, data, listInstance, comments = []) {
   const stream = body.dataStream || "";
   const runs = body.textRuns || [];
   const paragraphsByEnd = new Map((body.paragraphs || []).map((p) => [p.startIndex, p]));
   const blocksAt = new Map((body.customBlocks || []).map((b) => [b.startIndex, b.blockId]));
   const links = (body.customRanges || []).filter((r) => r.rangeType === 0 && r.properties && r.properties.url);
+  // page fields (Univer FIELD ranges, see docx-import.js): written as Word's PAGE / NUMPAGES fields
+  const PAGE_FIELDS = { PAGE: PageNumber.CURRENT, NUMPAGES: PageNumber.TOTAL_PAGES };
+  const fieldsAt = new Map((body.customRanges || []).filter((r) => r.rangeType === 1 && r.properties && PAGE_FIELDS[r.properties.fieldType]).map((r) => [r.startIndex, r]));
+  const inField = (i) => [...fieldsAt.values()].some((f) => i > f.startIndex && i <= f.endIndex); // (the field's result, also in a following run)
   // table of contents: its entries link to bookmarks on the headings (see doc-toc.js)
   const anchors = new Map(headings(body).map((h) => [h.end, h.anchor]));
   const tables = data.tableSource || {};
@@ -125,8 +134,8 @@ function bodyBlocks(body, data, listInstance) {
       pos = Math.min(r.ed, end);
     }
     if (pos < end) out.push([pos, end, {}]);
-    // split at hyperlink boundaries so that a link can wrap exactly its runs
-    const cuts = links.flatMap((l) => [l.startIndex, l.endIndex + 1]);
+    // split at hyperlink and comment boundaries so that a link can wrap exactly its runs and comments start and end between runs
+    const cuts = [...links.flatMap((l) => [l.startIndex, l.endIndex + 1]), ...comments.flatMap((c) => [c.start, c.end + 1])];
     return out.flatMap(([s, e, ts]) => {
       const points = [s, ...cuts.filter((x) => x > s && x < e).sort((x, y) => x - y), e];
       return points.slice(0, -1).map((x, i) => [x, points[i + 1], ts]);
@@ -137,11 +146,16 @@ function bodyBlocks(body, data, listInstance) {
   function inline(start, end) {
     const children = [];
     for (const [s, e, ts] of runsOf(start, end)) {
-      let text = "";
-      const flush = () => { const clean = text.replace(SKIP, ""); if (clean) children.push({ index: s, node: new TextRun(runOptions(clean, ts)) }); text = ""; };
+      let text = "", from = s; // (from: where the text starts, for the order with fields, pictures and comment marks)
+      const flush = () => { const clean = text.replace(SKIP, ""); if (clean) children.push({ index: from, node: new TextRun(runOptions(clean, ts)) }); text = ""; };
       for (let i = s; i < e; i++) {
         const ch = stream[i];
-        if (ch === C.PAGE_BREAK) { flush(); children.push({ index: i, node: new PageBreak() }); } else if (ch === C.CUSTOM_BLOCK && blocksAt.has(i)) {
+        const field = fieldsAt.get(i);
+        if (field) {
+          flush();
+          children.push({ index: i, node: new TextRun({ ...runOptions("x", ts), text: undefined, children: [PAGE_FIELDS[field.properties.fieldType]] }) });
+        } else if (inField(i)) continue;
+        else if (ch === C.PAGE_BREAK) { flush(); children.push({ index: i, node: new PageBreak() }); } else if (ch === C.CUSTOM_BLOCK && blocksAt.has(i)) {
           flush();
           const d = drawings[blocksAt.get(i)];
           const img = d && dataUrlBytes(d.source);
@@ -149,14 +163,24 @@ function bodyBlocks(body, data, listInstance) {
             const size = (d.docTransform && d.docTransform.size) || {};
             children.push({ index: i, node: new ImageRun({ type: img.type, data: img.bytes, transformation: { width: size.width || (d.transform && d.transform.width) || 100, height: size.height || (d.transform && d.transform.height) || 100 } }) });
           }
-        } else text += ch;
+        } else { if (!text) from = i; text += ch; }
       }
       flush();
     }
+    // comment marks between the runs: the start before the first run of the text (also when the text starts with the paragraph
+    // mark before), the end and the reference after its last run
+    for (const c of comments) {
+      if (c.start >= start - 1 && c.start < end) for (const id of c.ids) children.push({ index: Math.max(c.start, start) - 0.5, marker: true, node: new CommentRangeStart(id) });
+      if (c.end >= start && c.end <= end) {
+        for (const id of c.ids) children.push({ index: c.end + 0.5, marker: true, node: new CommentRangeEnd(id) });
+        for (const id of c.ids) children.push({ index: c.end + 0.6, marker: true, node: new TextRun({ children: [new CommentReference(id)] }) });
+      }
+    }
+    children.sort((a, b) => a.index - b.index);
     // group runs that lie inside a hyperlink
     const out = [];
     for (const item of children) {
-      const link = links.find((l) => item.index >= l.startIndex && item.index <= l.endIndex);
+      const link = !item.marker && links.find((l) => item.index >= l.startIndex && item.index <= l.endIndex);
       if (link && item.node instanceof TextRun) {
         const last = out[out.length - 1];
         if (last && last.link === link) last.runs.push(item.node);
@@ -262,10 +286,14 @@ export async function exportDocx(data) {
     if (!listIds.has(id)) listIds.set(id, listIds.size + 1);
     return listIds.get(id);
   };
-  const ds = data.documentStyle || {};
+  const ds = sectionConfig(data);
   const twips = (v) => Math.round(v * TWIPS_PER_PX);
   const page = {};
-  if (ds.pageSize && ds.pageSize.width) page.size = { width: twips(ds.pageSize.width), height: twips(ds.pageSize.height) };
+  if (ds.pageSize && ds.pageSize.width) {
+    const { width, height } = ds.pageSize;
+    // landscape: the docx library swaps the sides itself when it writes w:orient="landscape"
+    page.size = width > height ? { width: twips(height), height: twips(width), orientation: PageOrientation.LANDSCAPE } : { width: twips(width), height: twips(height) };
+  }
   if (ds.marginTop !== undefined) {
     page.margin = { top: twips(ds.marginTop), bottom: twips(ds.marginBottom || 0), left: twips(ds.marginLeft || 0), right: twips(ds.marginRight || 0), header: twips(ds.marginHeader || 30), footer: twips(ds.marginFooter || 30) };
   }
@@ -280,8 +308,30 @@ export async function exportDocx(data) {
   if (part(data.footers, ds.defaultFooterId, Footer)) footers.default = part(data.footers, ds.defaultFooterId, Footer);
   if (part(data.footers, ds.firstPageFooterId, Footer)) footers.first = part(data.footers, ds.firstPageFooterId, Footer);
 
+  // comments: a Word comment per comment and reply (replies point to the comment, the state of the thread is kept as "done")
+  const threads = threadsOf(data);
+  const commentList = [];
+  const marks = threads.map((t) => {
+    const ids = [];
+    const add = (c, parentId) => {
+      const id = commentList.length;
+      ids.push(id);
+      const author = authorOf(c);
+      commentList.push({
+        id, author: author || "?", initials: initialsOf(author) || "?", date: dateOf(c.dT) || new Date(),
+        children: textOf(c.text).split("\n").map((line) => new Paragraph({ children: [new TextRun(line)] })),
+        ...(parentId !== undefined ? { parentId } : {}), ...(t.resolved ? { resolved: true } : {}),
+      });
+      return id;
+    };
+    const root = add(t);
+    for (const reply of t.children || []) add(reply, root);
+    return { start: t.start, end: t.end, ids };
+  });
+
   const doc = new Document({
     title: data.title || undefined,
+    ...(commentList.length ? { comments: { children: commentList } } : {}),
     numbering: {
       config: [{
         reference: "ordered",
@@ -294,7 +344,7 @@ export async function exportDocx(data) {
     sections: [{
       properties: { page, titlePage: !!ds.useFirstPageHeaderFooter },
       headers, footers,
-      children: bodyBlocks(data.body || { dataStream: "" }, data, listInstance),
+      children: bodyBlocks(data.body || { dataStream: "" }, data, listInstance, marks),
     }],
   });
   return new Uint8Array(await (await Packer.toBlob(doc)).arrayBuffer());

@@ -1,0 +1,2 @@
+/* @univerjs/docs-hyper-link-ui@1.0.4/locale/de-DE (jsDelivr +esm) */
+const e={"docs-hyper-link-ui":{edit:{confirm:"Best\xE4tigen",cancel:"Abbrechen",address:"Link",addressError:"URL ist ung\xFCltig!",label:"Bezeichnung",labelError:"Bitte die Bezeichnung des Links eingeben"},info:{copy:"Kopieren",edit:"Bearbeiten",cancel:"Link abbrechen",coped:"Link in die Zwischenablage kopiert"},menu:{tooltip:"Link hinzuf\xFCgen"}}};export{e as default};
