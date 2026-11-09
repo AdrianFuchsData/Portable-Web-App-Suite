@@ -216,14 +216,45 @@ export function decodeWav(bytes) {
 }
 
 /** WAV file of audio: bits 16 or 24 (PCM) or 32 (IEEE float). */
-export function encodeWav(a, bits = 16) {
+/** Tags in a WAV LIST/INFO chunk: title, artist, album, year, track, genre, comment. */
+export const WAV_TAGS = { title: 'INAM', artist: 'IART', album: 'IPRD', year: 'ICRD', track: 'ITRK', genre: 'IGNR', comment: 'ICMT' };
+
+function infoChunk(tags) {
+  const parts = [];
+  const enc = new TextEncoder();
+  for (const [key, id] of Object.entries(WAV_TAGS)) {
+    const value = tags && tags[key] != null ? String(tags[key]).trim() : '';
+    if (!value) continue;
+    const text = enc.encode(value);
+    const size = text.length + 1; // (zero-terminated)
+    const sub = new Uint8Array(8 + size + (size & 1));
+    sub.set([...id].map((c) => c.charCodeAt(0)));
+    new DataView(sub.buffer).setUint32(4, size, true);
+    sub.set(text, 8);
+    parts.push(sub);
+  }
+  if (!parts.length) return null;
+  const body = parts.reduce((n, x) => n + x.length, 0);
+  const out = new Uint8Array(12 + body);
+  out.set([76, 73, 83, 84]); // LIST
+  new DataView(out.buffer).setUint32(4, 4 + body, true);
+  out.set([73, 78, 70, 79], 8); // INFO
+  let o = 12;
+  for (const x of parts) { out.set(x, o); o += x.length; }
+  return out;
+}
+
+/** Encode as WAV (16/24-bit PCM or 32-bit float); tags (see WAV_TAGS) go into a LIST/INFO chunk after the samples. */
+export function encodeWav(a, bits = 16, tags = null) {
   const ch = a.channels.length, n = length(a);
   const bps = bits / 8, block = ch * bps, size = n * block;
-  const buf = new ArrayBuffer(44 + size);
+  const info = infoChunk(tags);
+  const pad = size & 1;
+  const buf = new ArrayBuffer(44 + size + pad + (info ? info.length : 0));
   const v = new DataView(buf);
   const u8 = new Uint8Array(buf);
   const str = (o, s) => { for (let i = 0; i < 4; i++) u8[o + i] = s.charCodeAt(i); };
-  str(0, 'RIFF'); v.setUint32(4, 36 + size, true); str(8, 'WAVE'); str(12, 'fmt ');
+  str(0, 'RIFF'); v.setUint32(4, buf.byteLength - 8, true); str(8, 'WAVE'); str(12, 'fmt ');
   v.setUint32(16, 16, true); v.setUint16(20, bits === 32 ? 3 : 1, true); v.setUint16(22, ch, true); v.setUint32(24, a.rate, true);
   v.setUint32(28, a.rate * block, true); v.setUint16(32, block, true); v.setUint16(34, bits, true); str(36, 'data'); v.setUint32(40, size, true);
   let p = 44;
@@ -236,7 +267,34 @@ export function encodeWav(a, bits = 16) {
       p += bps;
     }
   }
+  if (info) u8.set(info, 44 + size + pad);
   return u8;
+}
+
+/** The tags of a WAV file's LIST/INFO chunk ({ title, artist, … }), or null. */
+export function readWavTags(bytes) {
+  if (bytes.length < 12 || String.fromCharCode(...bytes.subarray(0, 4)) !== 'RIFF' || String.fromCharCode(...bytes.subarray(8, 12)) !== 'WAVE') return null;
+  const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const id = (o) => String.fromCharCode(...bytes.subarray(o, o + 4));
+  const names = Object.fromEntries(Object.entries(WAV_TAGS).map(([k, x]) => [x, k]));
+  let p = 12;
+  while (p + 8 <= bytes.length) {
+    const size = v.getUint32(p + 4, true);
+    if (id(p) === 'LIST' && p + 12 <= bytes.length && id(p + 8) === 'INFO') {
+      const out = {};
+      let q = p + 12;
+      const end = Math.min(bytes.length, p + 8 + size);
+      while (q + 8 <= end) {
+        const s = v.getUint32(q + 4, true);
+        const key = names[id(q)];
+        if (key) out[key] = new TextDecoder().decode(bytes.subarray(q + 8, Math.min(end, q + 8 + s))).replace(/\0[\s\S]*$/, '').trim();
+        q += 8 + s + (s & 1);
+      }
+      return Object.keys(out).length ? out : null;
+    }
+    p += 8 + size + (size & 1);
+  }
+  return null;
 }
 
 // ---- peaks for drawing -----------------------------------------------------------------------------------------------------

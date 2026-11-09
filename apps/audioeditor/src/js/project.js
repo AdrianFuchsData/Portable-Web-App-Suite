@@ -22,7 +22,7 @@ export function isProject(name, bytes) {
 }
 
 /** Encode { rate, tracks: [{ name, gain, pan, mute, solo, clips: [{ name, offset, audio, beats, cues }] }] }. */
-export function encode({ rate, tracks, labels = [] }) {
+export function encode({ rate, tracks, labels = [], tags = null }) {
   const files = {};
   const paths = new Map(); // audio object -> path
   const json = {
@@ -47,6 +47,7 @@ export function encode({ rate, tracks, labels = [] }) {
     })),
   };
   if (labels.length) json.labels = labels.map((l) => ({ start: l.start, end: l.end, text: l.text || '' }));
+  if (tags && Object.values(tags).some((x) => x)) json.tags = { ...tags };
   files['project.json'] = [strToU8(JSON.stringify(json, null, 1)), { level: 6 }];
   return zipSync(files);
 }
@@ -76,5 +77,6 @@ export function decode(bytes) {
         gain: +c.gain || 0, fadeIn: Math.max(0, Math.round(+c.fadeIn || 0)), fadeOut: Math.max(0, Math.round(+c.fadeOut || 0)) })),
     })),
     labels: (json.labels || []).filter((l) => Number.isFinite(+l.start)).map((l) => ({ start: +l.start, end: Math.max(+l.start, +l.end || +l.start), text: String(l.text || '') })),
+    tags: json.tags && typeof json.tags === 'object' ? Object.fromEntries(['title', 'artist', 'album', 'year', 'track', 'genre', 'comment'].filter((k) => json.tags[k] != null).map((k) => [k, String(json.tags[k])])) : null,
   };
 }

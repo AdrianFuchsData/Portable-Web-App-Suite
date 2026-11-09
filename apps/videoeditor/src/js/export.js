@@ -78,9 +78,10 @@ export async function mixAudio(project, sources, { rate = 48000, from = 0, to = 
     const gain = ctx.createGain();
     gain.connect(ctx.destination);
     const t0 = c.start - from, t1 = tl.end(c) - from;
-    gain.gain.setValueAtTime(c.fadeIn > 0 ? 0 : c.volume, Math.max(0, t0));
-    if (c.fadeIn > 0) gain.gain.linearRampToValueAtTime(c.volume, Math.max(0, t0 + c.fadeIn));
-    if (c.fadeOut > 0) { gain.gain.setValueAtTime(c.volume, Math.max(0, t1 - c.fadeOut)); gain.gain.linearRampToValueAtTime(0, Math.max(0, t1)); }
+    const fin = Math.max(c.fadeIn || 0, c.audioFadeIn || 0), fout = Math.max(c.fadeOut || 0, c.audioFadeOut || 0); // (cross-fades fade only the sound)
+    gain.gain.setValueAtTime(fin > 0 ? 0 : c.volume, Math.max(0, t0));
+    if (fin > 0) gain.gain.linearRampToValueAtTime(c.volume, Math.max(0, t0 + fin));
+    if (fout > 0) { gain.gain.setValueAtTime(c.volume, Math.max(0, t1 - fout)); gain.gain.linearRampToValueAtTime(0, Math.max(0, t1)); }
     if (tl.speedOf(c) !== 1 || c.reverse) {
       // the whole source range as one buffer: reversed if needed, played at the clip's speed (the pitch changes with it)
       const whole = await rangeBuffer(ctx, track, c.in, c.out, signal);
@@ -137,31 +138,17 @@ async function rangeBuffer(ctx, track, from, to, signal) {
 }
 
 /**
- * Render the project to a file. options: { format (key of FORMATS), quality, onProgress(fraction), signal, sources (Map),
- * images (Map source id -> ImageBitmap) }. Returns the file bytes.
+ * Draw frame after frame of the timeline into the 2D context g (project size): frame k0 + i at every next(). The video clips'
+ * frames come from sequential CanvasSink iterators (one per clip), opened when a clip first appears.
  */
-export async function render(project, { format = 'webm-vp9', quality = 'high', onProgress = () => {}, signal, sources, images }) {
-  const f = FORMATS[format];
-  const output = new mb.Output({ format: f.container === 'mp4' ? new mb.Mp4OutputFormat({ fastStart: 'in-memory' }) : new mb.WebMOutputFormat(), target: new mb.BufferTarget() });
+async function* composeFrames(project, g, { k0, frames, sources, images, signal }) {
   const { width, height, fps } = project;
-  const canvas = new OffscreenCanvas(width, height);
-  const g = canvas.getContext('2d');
-  const video = new mb.CanvasSource(canvas, { codec: f.video, bitrate: QUALITIES[quality] || mb.QUALITY_HIGH });
-  output.addVideoTrack(video, { frameRate: fps });
-  const total = tl.duration(project);
-  const audioBuffer = await mixAudio(project, sources, { signal });
-  let audio = null;
-  if (audioBuffer) { audio = new mb.AudioBufferSource({ codec: f.audio, bitrate: mb.QUALITY_HIGH }); output.addAudioTrack(audio); }
-  await output.start();
-  const abort = async () => { await output.cancel(); throw new DOMException('cancelled', 'AbortError'); };
+  const iterators = new Map(); // clip id -> { iterator, last }
+  const videoTracks = project.tracks.filter((tr) => tr.kind === 'video' && !tr.hidden).reverse(); // bottom first
   try {
-    if (audio) await audio.add(audioBuffer);
-    const frames = Math.max(1, Math.round(total * fps));
-    const iterators = new Map(); // clip id -> { iterator, size }
-    const videoTracks = project.tracks.filter((tr) => tr.kind === 'video' && !tr.hidden).reverse(); // bottom first
     for (let i = 0; i < frames; i++) {
-      if (signal && signal.aborted) await abort();
-      const t = i / fps;
+      if (signal && signal.aborted) throw new DOMException('cancelled', 'AbortError');
+      const t = (k0 + i) / fps;
       g.globalAlpha = 1;
       g.fillStyle = project.background || '#000';
       g.fillRect(0, 0, width, height);
@@ -174,7 +161,7 @@ export async function render(project, { format = 'webm-vp9', quality = 'high', o
         let it = iterators.get(c.id);
         if (!it) {
           const vt = await inputOf(sources.get(c.source)).getPrimaryVideoTrack();
-          const first = Math.ceil(c.start * fps - 1e-6), last = Math.ceil(tl.end(c) * fps - 1e-6);
+          const first = Math.max(k0 + i, Math.ceil(c.start * fps - 1e-6)), last = Math.min(k0 + frames, Math.ceil(tl.end(c) * fps - 1e-6));
           const stamps = [];
           for (let k = first; k < last; k++) stamps.push(Math.max(c.in, Math.min(c.out - 1e-4, tl.sourceTime(c, k / fps))));
           it = { iterator: new mb.CanvasSink(vt, { poolSize: 2 }).canvasesAtTimestamps(stamps)[Symbol.asyncIterator](), last: null };
@@ -184,10 +171,86 @@ export async function render(project, { format = 'webm-vp9', quality = 'high', o
         if (!next.done && next.value) it.last = next.value.canvas;
         if (it.last) tl.drawClip(g, c, it.last, it.last.width, it.last.height, project, t);
       }
-      await video.add(t, 1 / fps);
+      yield i;
+    }
+  } finally {
+    for (const it of iterators.values()) if (it.iterator.return) await it.iterator.return();
+  }
+}
+
+/**
+ * The timeline (or [from, to)) as an animated GIF of `width` pixels (height in proportion) at `fps` frames per second (at most
+ * 600 frames); the palette comes from up to eight frames spread over the range.
+ */
+export async function renderGif(project, { width = 480, fps = 10, from = 0, to = null, dither = false, sources, images, signal, onProgress = () => {} }) {
+  const total = tl.duration(project);
+  const end = Math.min(total, to == null ? total : to), start = Math.max(0, Math.min(from, end));
+  const w = Math.max(16, Math.min(project.width, Math.round(width))), h = Math.max(16, Math.round((project.height * w) / project.width));
+  const step = project.fps / fps; // timeline frames per GIF frame
+  const k0 = Math.round(start * project.fps), all = Math.max(1, Math.round(end * project.fps) - k0);
+  const count = Math.min(600, Math.max(1, Math.floor(all / step)));
+  const full = new OffscreenCanvas(project.width, project.height);
+  const g = full.getContext('2d');
+  const small = new OffscreenCanvas(w, h);
+  const sg = small.getContext('2d', { willReadFrequently: true });
+  sg.imageSmoothingQuality = 'high';
+  const frames = [];
+  const source = composeFrames(project, g, { k0, frames: all, sources, images, signal });
+  let next = 0;
+  for (let i = 0; i < all && frames.length < count; i++) {
+    await source.next();
+    if (i < Math.round(next)) continue;
+    next += step;
+    sg.drawImage(full, 0, 0, w, h);
+    frames.push(sg.getImageData(0, 0, w, h).data);
+    onProgress((0.7 * frames.length) / count);
+  }
+  await source.return();
+  const { GifAnimation } = await import('app/gif');
+  const samples = [];
+  for (let k = 0; k < Math.min(8, frames.length); k++) samples.push(frames[Math.floor((k * frames.length) / Math.min(8, frames.length))]);
+  const gif = new GifAnimation(w, h, samples, { dither });
+  // delays in hundredths of a second, rounded so that the total stays right
+  let shown = 0;
+  frames.forEach((f, k) => {
+    const due = Math.round(((k + 1) * 100) / fps);
+    gif.add(f, Math.max(2, due - shown));
+    shown = due;
+    onProgress(0.7 + (0.3 * (k + 1)) / frames.length);
+  });
+  return gif.finish();
+}
+
+/**
+ * Render the project to a file. options: { format (key of FORMATS), quality, onProgress(fraction), signal, sources (Map),
+ * images (Map source id -> ImageBitmap) }. Returns the file bytes.
+ */
+export async function render(project, { format = 'webm-vp9', quality = 'high', onProgress = () => {}, signal, sources, images, from = 0, to = null }) {
+  const f = FORMATS[format];
+  const output = new mb.Output({ format: f.container === 'mp4' ? new mb.Mp4OutputFormat({ fastStart: 'in-memory' }) : new mb.WebMOutputFormat(), target: new mb.BufferTarget() });
+  const { width, height, fps } = project;
+  const canvas = new OffscreenCanvas(width, height);
+  const g = canvas.getContext('2d');
+  const video = new mb.CanvasSource(canvas, { codec: f.video, bitrate: QUALITIES[quality] || mb.QUALITY_HIGH });
+  output.addVideoTrack(video, { frameRate: fps });
+  const total = tl.duration(project);
+  const end = Math.min(total, to == null ? total : to), start = Math.max(0, Math.min(from, end));
+  const audioBuffer = await mixAudio(project, sources, { signal, from: start, to: end });
+  let audio = null;
+  if (audioBuffer) { audio = new mb.AudioBufferSource({ codec: f.audio, bitrate: mb.QUALITY_HIGH }); output.addAudioTrack(audio); }
+  await output.start();
+  const abort = async () => { await output.cancel(); throw new DOMException('cancelled', 'AbortError'); };
+  try {
+    if (audio) await audio.add(audioBuffer);
+    const k0 = Math.round(start * fps), frames = Math.max(1, Math.round(end * fps) - k0); // (a range: frames k0 … k0 + frames − 1)
+    const frameSource = composeFrames(project, g, { k0, frames, sources, images, signal });
+    for (let i = 0; i < frames; i++) {
+      if (signal && signal.aborted) await abort();
+      await frameSource.next();
+      await video.add(i / fps, 1 / fps);
       if (i % 5 === 0) onProgress(i / frames);
     }
-    for (const it of iterators.values()) if (it.iterator.return) await it.iterator.return();
+    await frameSource.return();
     await output.finalize();
     onProgress(1);
     return new Uint8Array(output.target.buffer);
@@ -195,4 +258,83 @@ export async function render(project, { format = 'webm-vp9', quality = 'high', o
     if (output.state !== 'canceled' && output.state !== 'finalized') await output.cancel().catch(() => {});
     throw e;
   }
+}
+
+// ---- audio only, single frames ------------------------------------------------------------------------------------------
+
+export const AUDIO_FORMATS = {
+  wav: { label: 'WAV (16 bit)', ext: 'wav', mime: 'audio/wav' },
+  'webm-opus': { label: 'WebM (Opus)', ext: 'webm', mime: 'audio/webm', container: 'webm', codec: 'opus' },
+  'm4a-aac': { label: 'M4A (AAC)', ext: 'm4a', mime: 'audio/mp4', container: 'mp4', codec: 'aac' },
+};
+
+/** Audio formats this browser can write (WAV always). */
+export async function availableAudioFormats() {
+  const out = ['wav'];
+  for (const [key, f] of Object.entries(AUDIO_FORMATS)) {
+    if (!f.codec) continue;
+    try { if (await mb.canEncodeAudio(f.codec)) out.push(key); } catch (e) { /* not available */ }
+  }
+  return out;
+}
+
+function wavBytes(buffer) {
+  const ch = buffer.numberOfChannels, n = buffer.length, size = n * ch * 2;
+  const out = new Uint8Array(44 + size);
+  const v = new DataView(out.buffer);
+  const str = (o, x) => { for (let i = 0; i < 4; i++) out[o + i] = x.charCodeAt(i); };
+  str(0, 'RIFF'); v.setUint32(4, 36 + size, true); str(8, 'WAVE'); str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, ch, true);
+  v.setUint32(24, buffer.sampleRate, true); v.setUint32(28, buffer.sampleRate * ch * 2, true); v.setUint16(32, ch * 2, true); v.setUint16(34, 16, true); str(36, 'data'); v.setUint32(40, size, true);
+  const data = Array.from({ length: ch }, (_, c) => buffer.getChannelData(c));
+  let p = 44;
+  for (let i = 0; i < n; i++) for (let c = 0; c < ch; c++) { v.setInt16(p, Math.round(Math.max(-1, Math.min(1, data[c][i])) * 32767), true); p += 2; }
+  return out;
+}
+
+/** Only the sound of the timeline (or of [from, to)) as WAV, Opus or AAC; null when nothing is audible. */
+export async function renderAudio(project, { format = 'wav', sources, signal, from = 0, to = null } = {}) {
+  const total = tl.duration(project);
+  const buffer = await mixAudio(project, sources, { signal, from, to: to == null ? total : Math.min(total, to) });
+  if (!buffer) return null;
+  const f = AUDIO_FORMATS[format];
+  if (!f.codec) return wavBytes(buffer);
+  const output = new mb.Output({ format: f.container === 'mp4' ? new mb.Mp4OutputFormat({ fastStart: 'in-memory' }) : new mb.WebMOutputFormat(), target: new mb.BufferTarget() });
+  const audio = new mb.AudioBufferSource({ codec: f.codec, bitrate: mb.QUALITY_HIGH });
+  output.addAudioTrack(audio);
+  await output.start();
+  await audio.add(buffer);
+  await output.finalize();
+  return new Uint8Array(output.target.buffer);
+}
+
+/** The frame of a video source at a source time, as a canvas of the video's size (for freeze frames). */
+export async function frameAt(source, time) {
+  const vt = await inputOf(source).getPrimaryVideoTrack();
+  const r = await new mb.CanvasSink(vt).getCanvas(time);
+  if (!r) return null;
+  const c = document.createElement('canvas');
+  c.width = r.canvas.width; c.height = r.canvas.height;
+  c.getContext('2d').drawImage(r.canvas, 0, 0);
+  return c;
+}
+
+/** The peak level (0–1) of the sound of a clip's source range (for normalising). */
+export async function peakOf(source, from, to) {
+  const track = await inputOf(source).getPrimaryAudioTrack();
+  if (!track) return 0;
+  let peak = 0;
+  for await (const { buffer } of new mb.AudioBufferSink(track).buffers(from, to)) {
+    for (let ch = 0; ch < buffer.numberOfChannels; ch++) { const d = buffer.getChannelData(ch); for (let i = 0; i < d.length; i++) { const v = Math.abs(d[i]); if (v > peak) peak = v; } }
+  }
+  return peak;
+}
+
+/** The sound of [from, to) of a source as a 16-bit WAV file (for editing it in the audio editor), or null without sound. */
+export async function sourceWav(source, from, to) {
+  const track = await inputOf(source).getPrimaryAudioTrack();
+  if (!track) return null;
+  const rate = track.sampleRate || 48000;
+  const ctx = new OfflineAudioContext(Math.max(1, track.numberOfChannels || 2), 1, rate);
+  const buffer = await rangeBuffer(ctx, track, from, to);
+  return buffer ? wavBytes(buffer) : null;
 }

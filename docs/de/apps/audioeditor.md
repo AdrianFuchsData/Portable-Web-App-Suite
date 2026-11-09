@@ -17,6 +17,11 @@ WAV, MP3, FLAC, Ogg Opus oder M4A.
 - **Exportieren** (`Strg+Umschalt+S`) wählt Dateiname, Format, Bitrate (komprimierte Formate), Kanäle (automatisch: Stereo,
   wenn eine Spur stereo oder im Panorama verschoben ist) und Bereich (alles oder nur die Auswahl). Der Export ändert nicht,
   in welche Datei **Speichern** schreibt.
+- **Tags** (im Export-Dialog): Titel, Interpret, Album, Jahr, Titelnummer, Genre und Kommentar werden in WAV-, MP3-, FLAC-, Ogg- und
+  M4A-Dateien geschrieben und im Projekt behalten. Die Tags der zuerst geöffneten Datei werden übernommen.
+- **In Dateien aufteilen**: *eine Datei je Marke* exportiert jeden beschrifteten Bereich (oder, bei Punktmarken, von jeder Marke bis
+  zur nächsten) als eigene Datei, *eine Datei je Clip* jeden Clip mit seiner Lautstärke und seinen Blenden; alle Dateien kommen in ein
+  ZIP, nummeriert und nach Marke oder Clip benannt, die auch Titel und Titelnummer werden.
 
 | Format | Hinweise |
 |---|---|
@@ -130,6 +135,23 @@ Tonhöhe), Tempo ändern (ändert die Länge, behält die Tonhöhe), Tiefpass un
 - **Rauschminderung**: senkt gleichmäßige Hintergrundgeräusche (Rauschen, Brummen, Lüfter) um den angegebenen Wert. Das Rauschen wird in den
   leisesten Teilen der Auswahl gemessen; wählen Sie also einige Pausen mit der Sprache oder Musik aus; eine höhere Rauschschwelle entfernt mehr,
   kann aber leise Klänge beeinträchtigen.
+- **Lautheit normalisieren (LUFS)**: macht jede Zielspur so laut wie das Ziel in LUFS – das Lautheitsmaß von Streamingdiensten und
+  Rundfunk (EBU R 128). Übliche Ziele: −14 LUFS (Streaming, Musik), −16 LUFS (Podcasts), −23 LUFS (Rundfunk). Die Spitze steigt nie
+  über die Grenze (dBFS); erlaubt diese das volle Ziel nicht, sagt eine Meldung das. **Lautheit messen** zeigt Lautheit und Spitze der
+  Auswahl (oder von allem) der Zielspuren zusammengemischt.
+- **Stille kürzen**: kürzt jede Pause, die leiser als die Schwelle und länger als die angegebene Zeit ist, auf die angegebene Länge –
+  für Sprachaufnahmen. Die Länge ändert sich.
+- **Noise-Gate**: senkt den Klang um die Absenkung, solange er unter der Schwelle liegt (Atmen, Raumgeräusche zwischen Wörtern);
+  Ansprechzeit, Halten und Abklingzeit lassen es weich öffnen und schließen.
+- **Parametrischer Equalizer**: bis zu acht Bänder – Glocke, Tiefen- und Höhen-Kuhschwanz, Tief- und Hochpass, Kerbfilter –, jedes mit
+  Frequenz, Verstärkung und Güte Q (Breite). Der Graph zeigt den entstehenden Frequenzgang; einen Punkt ziehen ändert Frequenz und
+  Verstärkung seines Bandes, das Mausrad die Güte des gewählten Bandes, oder Sie tippen die Werte in die Tabelle. Die Bänder werden fürs
+  nächste Mal gemerkt.
+- **Knackser entfernen**: findet Knackser und Knistern (etwa von Schallplatten oder digitalen Aussetzern) und glättet sie; eine
+  kleinere Empfindlichkeit findet mehr, der längste Knackser legt fest, wie lang eine Störung sein darf (längere bleiben als echte Klänge
+  stehen). Die Zahl der entfernten Knackser wird angezeigt.
+- **De-Esser**: zähmt scharfe „s“- und „sch“-Laute in Sprache und Gesang: Die Frequenzen über der angegebenen Frequenz werden um
+  höchstens die Absenkung leiser, solange sie lauter als die Schwelle sind; der Rest der Stimme bleibt unverändert.
 
 Effekte, die die Länge ändern oder
 umkehren, bearbeiten die Auswahl als ein Stück (die Clips darin werden zu einem Clip); ohne Auswahl wirken sie auf jeden Clip. **Erzeugen** fügt an der Einfügemarke einen Ton (Sinus, Rechteck, Sägezahn, Dreieck),
@@ -151,6 +173,20 @@ Brummen, Rauschen, Pfeiftöne oder Knackser. Die Einstellung wird in der Projekt
 Punkten ändert sich die Lautstärke gleichmäßig, vor dem ersten und nach dem letzten Punkt bleibt sie auf deren Wert. Ein erneuter
 Klick auf ⤴ kehrt zur normalen Bearbeitung zurück. Die Automation wirkt beim Abspielen, Speichern und Exportieren und bleibt in der
 Projektdatei erhalten.
+
+**Spuren → Automatisch absenken (Ducking)…** senkt die anderen Spuren (die ausgewählten, sonst alle), während eine Spur klingt – typisch
+Musik unter einer Sprecherstimme. Wählen Sie die Stimmspur, um wie viel abgesenkt wird (dB), die Schwelle, ab der die Stimme als sprechend
+gilt, wie lange vorher aus- und nachher eingeblendet wird und wie lang eine Pause sein darf, ohne dass die Musik zurückkommt. Das Ergebnis
+wird in den Lautstärkeverlauf der Musikspuren geschrieben (zu einem schon vorhandenen Verlauf addiert) und lässt sich daher mit ⤴ sehen und
+anpassen.
+
+## Analyse
+
+**Spuren → Frequenzanalyse…** zeigt, welche Frequenzen die Auswahl (oder alles) der Zielspuren enthält: ein Mittel über den ganzen
+Bereich, Frequenzen auf logarithmischer Achse, Pegel in dB (0 dB = ein Sinus mit voller Aussteuerung). Zeigen Sie auf den Graphen, um
+die Frequenz, die nächste Spitze mit ihrem Pegel und den Ton (etwa *A4 +3* Cent) abzulesen. Eine größere Fenstergröße trennt nahe
+Frequenzen besser, eine kleinere glättet. **Als CSV exportieren** speichert die Werte, etwa für eine Tabellenkalkulation. **Lautheit
+messen** zeigt die Lautheit in LUFS und die Spitze.
 
 ## Abspielen und Aufnehmen
 

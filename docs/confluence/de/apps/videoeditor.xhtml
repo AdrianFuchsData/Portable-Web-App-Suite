@@ -21,6 +21,11 @@ Spur an die gewünschte Zeit. Videos können auch auf eine Audiospur gezogen wer
 <li>Der Spurkopf hat 👁 (Videospur ausblenden), 🔊 (stumm) und × (Spur löschen); <strong>+V</strong> und <strong>+A</strong> fügen Spuren hinzu.</li>
 <li>Audioclips zeigen ihre Wellenform (mit der Lautstärke des Clips skaliert), Videoclips mit Ton eine kleinere am unteren Rand.
   So schneidet man leicht in Pausen oder richtet Clips an einem Takt aus. (Dateien über 400 MB erscheinen ohne Wellenform.)</li>
+<li><strong>Standbild</strong> (<code>F</code> oder ❄ in den Clip-Einstellungen eines Videos): Das Bild an der Abspielposition steht zwei Sekunden still – der Clip
+  wird dort geteilt, sein Rest rückt zwei Sekunden nach hinten, und ein Bild des Frames (in der Medienliste) füllt die Lücke; seine Dauer
+  ändern Sie wie bei jedem Clip.</li>
+<li><strong>Marken</strong> (<code>M</code>) markieren Stellen auf dem Zeitlineal, etwa die Schläge der Musik oder den Beginn einer Szene; <code>,</code> und <code>.</code> springen zur
+  vorigen und nächsten, Clips rasten an ihnen ein, ein Doppelklick benennt oder löscht eine. Sie werden im Projekt gespeichert.</li>
 <li><code>Strg+Z</code>/<code>Strg+Y</code> machen jede Änderung rückgängig bzw. wiederholen sie.</li>
 </ul>
 <h2>Eigenschaften</h2>
@@ -37,14 +42,36 @@ abspielen); der Export enthält Bild und Ton rückwärts.</p>
 <p><strong>Untertitel</strong>: Beim Import einer SRT- oder WebVTT-Datei (mit den Medien oder durch Ablegen) wird jeder Untertitel ein Titel auf einer Spur
 <em>Subtitles</em> ganz oben – am unteren Bildrand, weiß auf dunklem Band; sie lassen sich wie jeder Titel bearbeiten, verschieben und kürzen und werden
 in das exportierte Video eingebrannt. <strong>CC</strong> speichert die Titel dieser Spur (oder alle Titel) wieder als SRT-Datei.</p>
+<p><strong>Schlüsselbilder</strong> animieren X, Y, Größe, Deckkraft und Drehung: die Abspielposition an eine Stelle setzen, den Wert einstellen und ◆ neben
+dem Feld klicken – ein Schlüsselbild. An einer anderen Stelle einen anderen Wert eingeben: Sobald eine Eigenschaft ein Schlüsselbild hat, setzt
+die Eingabe ein neues an der Abspielposition. Dazwischen ändert sich der Wert gleichmäßig; vor dem ersten und nach dem letzten Schlüsselbild
+bleibt er. Die Felder zeigen immer den Wert an der Abspielposition, ◆ ist gefüllt, wo ein Schlüsselbild liegt (ein Klick entfernt es), und
+◆-Marken auf dem Clip zeigen, wo Schlüsselbilder liegen. Schlüsselbilder ersetzen die Bewegungseinstellungen (Ken Burns) derselben
+Eigenschaft, wirken auch bei Titeln und bleiben beim Teilen eines Clips richtig. <strong>Alle Schlüsselbilder entfernen</strong> macht den Clip wieder
+statisch.</p>
 <p><strong>Bild</strong> (für Videos und Bilder, unter den Clip-Einstellungen aufklappbar): Helligkeit, Kontrast und Sättigung (100 % = unverändert),
 Drehung in Grad, Abschneiden jedes Rands (in % des Bildes) und <strong>Bewegung</strong> (Ken Burns): Größe und X/Y-Versatz am Ende des Clips – das
 Bild zoomt und schwenkt gleichmäßig von seinen Werten am Anfang dorthin, etwa <em>Größe am Ende</em> 130 % für ein langsames Hineinzoomen in ein
 Foto. <strong>Bild zurücksetzen</strong> stellt alles zurück.</p>
+<p><strong>Effekte</strong> (im selben Abschnitt): Unschärfe, Graustufen, Sepia, Farbtonverschiebung und umgekehrte Farben. <strong>Greenscreen</strong> (Chroma-Key):
+<em>Eine Farbe ausstanzen</em> ankreuzen und die Farbe wählen (voreingestellt Grün) – sie wird durchsichtig, und der Clip auf der Spur darunter
+scheint durch (etwa eine Person vor grünem Tuch auf V2 über einem Hintergrund auf V1). <em>Toleranz</em> legt fest, wie ähnlich eine Farbe sein
+muss, um zu verschwinden, <em>weicher Rand</em> glättet die Kante, <em>Farbstich entfernen</em> nimmt den grünen (oder blauen) Schimmer von Haaren und
+Kanten.</p>
 <p><strong>Übergänge</strong>: <em>Einblenden als</em> und <em>Ausblenden als</em> legen fest, wie ein Bild während seiner Blende erscheint bzw. verschwindet:
 Überblendung (wird durchsichtig, Standard), Wischen oder Schieben in eine von vier Richtungen, Zoom oder Kreis. Was darunter liegt, scheint
 durch: Ein Clip auf V1 darunter ergibt einen Übergang zwischen zwei Bildern (legen Sie den nächsten Clip so auf V2, dass er das Ende des
 ersten überlappt, und blenden Sie ihn ein); ohne etwas darunter ist es schwarz.</p>
+<p><strong>Überblendung / Übergang zum nächsten Clip</strong> erledigt das für Sie: Länge und Bildübergang wählen und <em>Mit dem nächsten Clip</em> klicken – der
+nächste Clip wandert auf die Spur darüber (beim Ton: die nächste Audiospur) und blendet über den ersten ein, der um die Länge in das
+Material nach seinem Ende verlängert wird; der Ton wird übergeblendet. <em>Zwischen allen Clips der Spur</em> macht das für jedes Nachbarpaar
+(abwechselnd auf zwei Spuren). Sonst verschiebt sich nichts auf der Zeitleiste. Ein Videoclip braucht dafür Material nach seinem Ende
+(kürzen Sie ihn zuerst, wenn er dort endet, wo seine Datei endet); Bilder und Titel können es immer.</p>
+<p><strong>Im Audio-Editor bearbeiten</strong> (Ton eines Clips) öffnet den Ton des Clips im Audio-Editor (neuer Tab oder neues Fenster) zum Säubern,
+Schneiden oder für Effekte. <strong>Speichern</strong> dort bringt ihn als neue Datei in die Medienliste zurück: Ein Audioclip spielt dann den
+bearbeiteten Ton; bei einem Videoclip wird sein eigener Ton stummgeschaltet und der bearbeitete Ton an derselben Stelle auf eine Audiospur
+gelegt.</p>
+<p><strong>Normalisieren</strong> (Ton eines Clips) setzt die Lautstärke des Clips so, dass seine lauteste Stelle −1 dBFS erreicht (bis 400 %).</p>
 <h2>Vorschau</h2>
 <p>▶ (<code>Leertaste</code>) spielt ab der Abspielposition, ◀ ▶| (<code>←</code> <code>→</code>) gehen ein Bild weiter (<code>Umschalt</code>: eine Sekunde), ⏮ ⏭
 (<code>Pos1</code>/<code>Ende</code>) springen an den Anfang bzw. das Ende. <strong>📷</strong> speichert das aktuelle Bild als PNG.</p>
@@ -52,12 +79,19 @@ ersten überlappt, und blenden Sie ihn ein); ohne etwas darunter ist es schwarz.
 <p><strong>Exportieren</strong> berechnet die Zeitleiste mit dem Video-Encoder des Browsers (WebCodecs) als WebM (VP9 oder VP8, Ton Opus)
 oder MP4 (H.264 und AAC in Chrome und Edge, sonst VP9 und Opus), in der Auflösung und Bildrate des Projekts und der gewählten
 Qualität. Ein Fortschrittsbalken zeigt den Stand (lange Videos dauern eine Weile); der Export kann abgebrochen werden.</p>
+<p><em>Von</em> und <em>Bis</em> exportieren nur einen Teil der Zeitleiste (mit Marken bietet der Dialog die Bereiche dazwischen an). <em>Nur den Ton</em>
+exportiert die Tonmischung als WAV oder, wo der Browser sie kodieren kann, als Opus (WebM) oder AAC (M4A). <em>Animiertes GIF</em> erzeugt ein
+endlos laufendes GIF ohne Ton (Breite, Bilder pro Sekunde, wahlweise gerastert) – für kurze Ausschnitte: GIFs haben 256 Farben und
+werden schnell groß (höchstens 600 Bilder).</p>
 <p>Der Export braucht WebCodecs: Chrome, Edge und Firefox am Desktop haben es, <strong>Firefox für Android nicht</strong> (Schneiden geht,
 Exportieren nicht).</p>
 <h2>Projekte</h2>
 <p><strong>Projekt speichern</strong> (<code>Strg+S</code>) speichert Zeitleiste und Einstellungen als JSON-Datei. Die Mediendateien sind <strong>nicht</strong>
 enthalten: Bewahren Sie sie zusammen mit dem Projekt auf. Nach <strong>Projekt öffnen</strong> stehen die Medien als „fehlt“ in der Liste;
 importieren Sie sie erneut (Dateien mit gleichem Namen werden automatisch verknüpft) oder verwenden Sie <strong>Suchen…</strong> für jede.</p>
+<p><strong>Mit Medien speichern</strong> schreibt das Projekt und alle seine Mediendateien in ein ZIP – um ein Projekt auf einen anderen Computer mitzunehmen
+oder es in einem Stück aufzubewahren. <strong>Projekt öffnen</strong> öffnet ein solches ZIP mit allem verknüpft; <code>Strg+S</code> speichert danach wieder das
+ZIP. (Das ZIP enthält die Mediendateien unverändert und ist daher so groß wie sie zusammen.)</p>
 <h2>Tastenkürzel</h2>
 <p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
 <h3>Dateien</h3>
@@ -103,6 +137,18 @@ importieren Sie sie erneut (Dateien mit gleichem Namen werden automatisch verkn�
 <tr>
 <td><code>S</code></td>
 <td>An der Abspielposition teilen</td>
+</tr>
+<tr>
+<td><code>F</code></td>
+<td>Standbild an der Abspielposition</td>
+</tr>
+<tr>
+<td><code>M</code></td>
+<td>Marke an der Abspielposition</td>
+</tr>
+<tr>
+<td><code>,</code> / <code>.</code></td>
+<td>Vorige / nächste Marke</td>
 </tr>
 <tr>
 <td><code>Entf</code> / <code>Rücktaste</code></td>

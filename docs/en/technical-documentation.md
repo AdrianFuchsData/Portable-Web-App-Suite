@@ -663,12 +663,76 @@ ES modules: `doc.js` (document model and file formats, imports fflate), `tools.j
   clip with all of them. Combining (add, subtract, intersect, invert) works on `selectionMask()` and turns the result back
   into runs (`maskSelection`); the marching ants of a mask follow its pixel border (`selectionOutline`, cached per selection).
   The magic wand shares the region search of the fill tool (`regionMask`).
+  **Soft selections** are `alpha` (`{ x, y, w, h, alpha }`: one amount 0–255 per pixel of the bounds; `alphaSelection` makes one
+  from a mask, or a plain `mask` selection when no pixel is partly selected). Every change of pixels goes through
+  `doc.paintThrough(ctx, draw)`: hard selections clip as before; with an `alpha` selection the drawing happens unclipped and is
+  blended with a copy of the previous pixels by the mask on the GPU (`blendThrough`: `destination-in` / `destination-out` with
+  `maskCanvas()`, then `lighter`, which in premultiplied alpha is exactly `new · m + old · (1 − m)`). Pixel loops (convolution,
+  auto levels, levels/curves, fill) weight by `selectionMask()`; copy and the move tool cut with the mask canvas. Clipping and the
+  marching ants use the pixels selected at least 50 % (`hardSelection`, cached). `modifySelection` feathers (three box blurs ≈
+  Gaussian), grows and shrinks (Euclidean distance transform after Felzenszwalb–Huttenlocher, O(n), with a one-pixel smooth edge;
+  the image edge counts as unselected when shrinking) and borders (`min(grow, 1 − shrink)`); with soft selections, combining takes
+  the maximum / minimum of the amounts. The **quick mask** is a grey canvas (`doc.quickMask`, white = selected) that `doc.layer`
+  returns while it is on, so all tools, filters and the layer history work on it unchanged; switching it off turns
+  brightness × alpha into an `alpha` selection and drops its history steps. The view draws a red overlay (half opaque where nothing
+  is selected) computed from the mask, or from the stroke preview while painting.
+- **Brush tips** (`brushes.js`): the brush and the eraser place dabs every `spacing` % of the (pressure-scaled) size along the
+  path; a stroke keeps a Float32 alpha buffer of the image size into which dabs are combined by their maximum (GIMP's
+  non-incremental mode, so a soft tip stays soft however dense the dabs are) with bilinear sub-pixel placement; only the changed
+  rectangle is written into the stroke canvas (`putImageData`), which is composed as before. Generated tips follow GIMP's
+  generated brushes: the point is turned by the angle, y stretched by the aspect ratio, folded into one of `spikes` sectors and
+  measured as circle / square / diamond; hardness h gives `gauss(r^(1/(1−h)))` (GIMP's smooth step) with a one-pixel
+  antialiased edge. `.vbr` files (1.0 and 1.5) are such parameters; `.gbr` (versions 1–3, grey or RGBA → alpha) and images
+  (`(1 − luminance) · alpha`, scaled to at most 512 px) are masks, scaled and turned with bilinear sampling. Own tips are stored
+  in `localStorage` (`suite.imageeditor.brushes`, masks as version-2 `.gbr` in base64), so settings exports include them.
   Levels and curves build 256-entry lookup tables (levels: `outBlack + (outWhite − outBlack) · x^(1/γ)`; curves: monotone cubic
   Hermite interpolation after Fritsch–Carlson, so the curve never overshoots); the RGB table is applied first, then the channel's
   own (`channelLuts`). The preview is the layer with the tables applied, shown through `ed.preview` and recomputed once per frame;
-  these dialogs (and the adjustments) do not dim the image.
+  these dialogs (and the adjustments) do not dim the image. **Pixel adjustments** (`PIXEL_ADJUSTMENTS`: colour balance,
+  vibrance, threshold, posterize, unsharp mask, median, vignette) declare their parameters (sliders, choices, checkboxes; colour
+  balance keeps values per tone range) and change `ImageData` in place; `pixelAdjustCanvas` blends the result with the original
+  by `selectionMask()` and is shown through `ed.preview` 60 ms after the last change. Colour balance weights each range's shift by
+  the pixel's lightness (shadows `(1 − 2l)^1.5`, midtones `1 − |2l − 1|`, highlights `(2l − 1)^1.5`) and can restore the
+  luminance; vibrance scales the distance from grey by `1 + a · (1 − saturation)`; unsharp mask uses a canvas `blur()` copy;
+  median uses a sliding 256-bin histogram per channel and row (Huang), O(n · r); vignette is a smoothstep over the distance
+  from the centre in an ellipse of the image's proportions.
 - **Files**: decoding through `<img>`/Blob URL; encoding with `canvas.toBlob` (PNG, JPEG, WebP), an own 24-bit BMP writer and
-  OpenRaster (`mimetype` stored first, `stack.xml` top layer first, `data/*.png`, `mergedimage.png`, thumbnail). PSD with ag-psd
+  OpenRaster (`mimetype` stored first, `stack.xml` top layer first, `data/*.png`, `mergedimage.png`, thumbnail; a text layer
+  carries its text as JSON in `suite:text`, namespace `urn:portable-web-app-suite:openraster`, validated on reading – the PNG
+  stays the pixels until it is edited). **Text layers** are layers with `text` (`{ text, x, y, font, fontSize, bold, italic,
+  color, align }`) whose canvas `renderText` draws; `record('layer')` – called before every pixel change – drops `text` after
+  taking the snapshot (which keeps it, so undo restores the text layer); `setText` records without dropping. `transformAll`
+  shifts the text for canvas size and crop and drops it for the other transforms; the move tool keeps it when the whole layer
+  moves. **Rotate by angle** (`rotateBy`) draws every layer turned about the centre into the new canvas: `expand` grows it to
+  `W·|cos| + H·|sin|` × `W·|sin| + H·|cos|`, `crop` keeps the largest rectangle of the same aspect ratio inside the turned
+  image (scale `min(W / (W·|cos| + H·|sin|), H / (W·|sin| + H·|cos|))`); straighten turns the angle of the drawn line into the
+  rotation that makes it level (or upright beyond 45°). The crop tool keeps its rectangle in `ed.cropRect` until Enter / the
+  button crops. **Metadata** (`meta.js`): a small TIFF/EXIF reader (IFD0, Exif IFD, GPS IFD; bounded counts and depth) for
+  JPEG `APP1`, PNG `eXIf` and WebP `EXIF` chunks, plus detection of XMP, IPTC (`APP13`), comments and PNG text chunks.
+  `stripMetadata` copies the file without them – JPEG segments `APP1`–`APP15` (except ICC `APP2` and `Adobe` `APP14`) and
+  `COM`, PNG `eXIf`/`tEXt`/`zTXt`/`iTXt`/`tIME`, WebP `EXIF`/`XMP ` (VP8X flags and RIFF size updated) – leaving the
+  compressed image data untouched; an orientation other than 1 is written back as a minimal one-tag EXIF block. Browsers
+  disagree on EXIF orientation (Firefox reads only the first `APP1`, and not for canvases), so files with an orientation are
+  decoded from a copy without metadata and turned with the matching canvas transform (`decodeUpright`). **GIF** (`gif.js`):
+  median cut on a 15-bit histogram (the box with the largest range × √pixels is split at its median) to 256 colours (255 and
+  a transparent index when pixels have alpha < 128), nearest-colour mapping weighted 3:4:2 with optional Floyd–Steinberg
+  error diffusion, LZW with variable code sizes and a clear code at 4096. **ICO**: each chosen size is the image fitted into
+  a transparent square, stored as PNG (directory entries with 0 for 256). Export selection / layer encodes a temporary
+  one-layer document. **Free transform** (`transform.js`): on activation the selected pixels (through the mask canvas, so
+  soft selections lift partly) or the layer's content bounds are copied into a float canvas and removed from a base copy; the
+  transform `{ cx, cy, w, h, angle, fx, fy }` is drawn into `ed.preview` as base + float (translate, rotate, scale). Handles are
+  hit-tested in the box's own (unrotated) coordinates; scaling keeps the opposite handle fixed. Applying records the layer, takes
+  the preview and, with a selection, makes the transformed float's alpha the new selection; choosing another tool applies
+  (`leave`). **Layer masks**: `layer.mask` is a grey canvas of the image size (white shows, black hides, transparent counts as
+  white); while it is edited (`doc.editMask`), `doc.layer` returns a proxy whose `canvas` is the mask (`maskTarget`, id
+  `mask-<layer id>`), so tools, filters, the free transform and the layer history work on it unchanged. Compositing converts the
+  mask to alpha (`grey · a + 255 · (1 − a)`) and draws the layer through it with `destination-in`; the alpha version is cached per
+  mask canvas until `masksChanged()` (every change). Image transforms transform masks too; merging and applying bake them in.
+  PSD masks are read into an image-sized canvas (outside their rectangle: `defaultColor`) and written as full-size layer masks;
+  OpenRaster writes the masked result as the layer PNG plus `suite:pixels` and `suite:mask`. **Batch processing** (`batch.js`)
+  opens one file after the other as a document without undo history, applies the steps in a fixed order (resize to fit, rotate,
+  flip, auto levels, grayscale, sharpen, watermark), encodes it and collects the results with fflate (`level: 0`, the images are
+  compressed already); failures go to `errors.txt`. The steps are kept in `localStorage` (`suite.imageeditor.batch`). PSD with ag-psd
   (`vendor/esm/psd`, MIT, with pako; imported on first use): layers are read bottom-up with their offsets, groups flattened
   (hidden/opacity inherited), layer masks multiplied into the alpha (`defaultColor` outside the mask rectangle); blend mode
   names map to composite operations (`color dodge` ↔ `color-dodge`, `linear dodge` ↔ `lighter`). Writing stores every layer at
@@ -1348,7 +1412,21 @@ resamples to the project rate and scales offsets, beat phases and cues according
 equaliser and reverb as offline Web Audio graphs (`BiquadFilterNode` shelves/peak; `ConvolverNode` with a deterministic decaying
 noise impulse response), pitch shift = WSOLA time stretch by 1/r followed by resampling with `playbackRate` r, noise reduction =
 spectral gate (STFT 2048/512 with Hann windows, noise level per bin from the quietest 10 % of the frames that lie fully inside the
-range, gains smoothed over neighbouring bins and decaying over time, overlap-add with window normalisation).
+range, gains smoothed over neighbouring bins and decaying over time, overlap-add with window normalisation). Loudness follows
+ITU-R BS.1770-4: K-weighting with libebur128's biquad formulas for any sample rate, mean square per channel in 400 ms blocks
+every 100 ms (prefix sums), absolute gate −70 LUFS, relative gate −10 LU, channel weights 1; normalising measures each track's
+range and amplifies by the difference, reduced so that the sample peak stays below the ceiling. Truncate silence finds runs
+where every channel is below the threshold and removes their middle; the noise gate is a linked peak detector with hold and
+one-pole attack/release smoothing of the gain between 1 and the floor. The spectrum plot averages the power of half-overlapping
+Hann-windowed FFT frames (Welch) of the mono mix, scaled so that a full-scale sine is 0 dB (`(Σw / 2)²`); peaks are refined by
+parabolic interpolation of the dB values, notes are named from A4 = 440 Hz with the deviation in cents. Click removal compares the
+absolute second difference with 4 × sensitivity × the median of the surrounding 20 ms blocks; a run back to the calm level that
+is at most `width` ms long is replaced by a cubic Hermite curve between the neighbouring samples (with their slopes). The
+de-esser splits off the band above the frequency with an RBJ high-pass run forwards and backwards (zero phase, so
+`low = x − high` is exact), follows its peak level and subtracts `(1 − g) · high` with `g = max(floor, threshold / level)`. The
+parametric equaliser runs RBJ-cookbook biquads in series (the same coefficients draw the response curve, evaluated as
+`|B(e^jω)|² / |A(e^jω)|²`); auto duck finds the control track's passages above the threshold (RMS over 50 ms, gaps below the
+maximum pause joined) and writes ramps into the volume automation of the other tracks, summed in dB with their existing points.
 
 Clip volume and fades (`clips.envelopeAt`): gain in dB and equal-power fade curves (`sin` over the fade length) per clip, applied in
 `flatten()` (saving, export, effects that mix) and during playback as a `GainNode` with `setValueCurveAtTime` from the playback
@@ -1376,7 +1454,11 @@ libFLAC encoders are registered only where the browser has none). `encode()` fee
 (`f32-planar`) into an `AudioSampleSource` of an `Output` (`Mp3OutputFormat`, `FlacOutputFormat`, `OggOutputFormat` with
 Opus, `Mp4OutputFormat` with AAC) with a `BufferTarget`. MP3 is encoded at the project rate (at most 48 kHz), Opus at
 48 kHz, AAC at 44.1 or 48 kHz. The encoders run in workers created from Blob URLs; the CSP therefore allows
-`worker-src blob:` and `'wasm-unsafe-eval'`.
+`worker-src blob:` and `'wasm-unsafe-eval'`. Tags go through Mediabunny's `setMetadataTags` (ID3v2, Vorbis comments, iTunes
+atoms; the year as a `Date`, the track number as `trackNumber`) and are read from opened files with `Input.getMetadataTags`; WAV
+files carry them in a `LIST`/`INFO` chunk after the samples (`INAM`, `IART`, `IPRD`, `ICRD`, `ITRK`, `IGNR`, `ICMT`, read by
+`dsp.readWavTags`). A split export renders each part (label range, the span between point labels, or one clip through
+`clips.flatten` with its gain and fades) through the same mix and encoder and collects the files with fflate.
 
 Tests: `tests/apps/test_audioeditor.py` (WAV files generated and checked with `wave`/`struct`) — opening, deleting with
 undo/redo and bit-identical saving, mouse selection over tracks, copy/paste, resampled import, mute/pan and mixdown, all
@@ -1422,7 +1504,29 @@ Based on spike S-10: WebCodecs through Mediabunny (`vendor/esm/video`, MPL-2.0).
   (wipes, circle) or transform (slides, zoom) the drawing; exits are mirrored; only 'fade' changes the opacity, the sound
   always fades. Picture settings: a CSS `filter` (brightness, contrast, saturate) on the 2D context (also on the export's
   `OffscreenCanvas`), the crop as the source rectangle of `drawImage`, rotation around the picture's centre, and `motion(c, t)`
-  interpolating scale and offset over the clip (Ken Burns). Speed and reverse: a clip covers `(out - in) / speed` seconds of the
+  interpolating scale and offset over the clip (Ken Burns). Picture effects extend the CSS filter (`hue-rotate`, `grayscale`,
+  `sepia`, `invert`, `blur`). The chroma key draws the cropped source at its output size into an `OffscreenCanvas`, measures
+  each pixel's distance to the key colour in the Cb/Cr plane (independent of brightness), maps distances between `tolerance` and
+  `tolerance + softness` to alpha with a smoothstep and limits the key channel to the larger of the other two (spill).
+  Freeze frame reads the frame with Mediabunny's `CanvasSink.getCanvas(sourceTime)`, adds it as a PNG image source and edits
+  the timeline with `freezeFrame` (split, `insertGap` on the track, an image clip with the clip's picture settings). Markers live
+  in `project.markers` and join the snap points. A range export renders frames `round(from · fps)` … `round(to · fps)` with
+  timestamps from 0 and mixes the audio of the same range; sound only encodes the `OfflineAudioContext` mix as 16-bit WAV
+  or through an audio-only Mediabunny output. Cross-fades (`crossfade`, `transitionsOnTrack`) never move other clips: the
+  following clip goes to a free neighbouring track (created if needed) and fades in, the previous one is extended into its
+  source handle (`maxLength`), and `audioFadeIn`/`audioFadeOut` fade only the sound (`audioFade` in the preview, the gain ramps
+  of the export mix); on an A/B roll the upper clip of a later pair is extended and fades out instead. Normalising reads the
+  clip's source range with `AudioBufferSink` for its peak. The frame loop (`composeFrames`, an async generator with one
+  sequential `CanvasSink` iterator per clip) feeds both the video encoder and the GIF export, which scales every n-th frame to
+  the GIF size, takes one palette from up to eight frames across the range (`shared/js/gif.js` `GifAnimation`: global colour
+  table, NETSCAPE2.0 loop, per-frame delays rounded so that their sum stays right) and encodes the frames with LZW.
+  Keyframes: `clip.keys[prop]` lists `{ t, v }` (seconds from the clip start) for x, y, scale, opacity and rotation; `valueAt`
+  interpolates linearly and is used by `motion`, the opacity and the rotation of `drawClip` (so preview and export agree);
+  `subClip` (split, trim, overwrite) rebases the keys and adds keys with the interpolated values at the new edges. A project
+  ZIP holds `project.json` and `media/<source id>/<name>` (stored, fflate); opening one recreates the sources from these
+  entries through `loadSource`, so nothing has to be relinked. "Edit in audio editor" sends the clip's source range as a
+  16-bit WAV (`sourceWav`) with `Suite.bridge.openIn('audioeditor', { data, save })`; the `save` callback adds the returned WAV
+  as a new source and points the audio clip at it, or mutes the video clip and adds an audio clip on a free audio track. Speed and reverse: a clip covers `(out - in) / speed` seconds of the
   timeline; `sourceTime(c, t)` maps timeline to source time (backwards from `out` when `reverse`), and `subClip(c, a, b)` is
   used by overwrite edits, trimming and splitting, so the source range of every part stays correct. The export asks
   `CanvasSink.canvasesAtTimestamps` for the mapped times (descending for reversed clips) and plays the clip's audio as one

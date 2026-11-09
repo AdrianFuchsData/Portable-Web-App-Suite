@@ -692,12 +692,82 @@ ES-Module: `doc.js` (Dokumentmodell und Dateiformate, importiert fflate), `tools
   beschneiden. Kombinieren (hinzufügen, abziehen, Schnittmenge, umkehren) arbeitet auf `selectionMask()` und wandelt das Ergebnis
   wieder in Läufe um (`maskSelection`); die Ameisenlinie einer Maske folgt ihrem Pixelrand (`selectionOutline`, je Auswahl
   zwischengespeichert). Der Zauberstab nutzt die Bereichssuche des Füllwerkzeugs (`regionMask`).
+  **Weiche Auswahlen** sind `alpha` (`{ x, y, w, h, alpha }`: ein Anteil 0–255 je Pixel des Rechtecks; `alphaSelection` erzeugt
+  sie aus einer Maske, oder eine gewöhnliche `mask`-Auswahl, wenn kein Pixel teilweise ausgewählt ist). Jede Pixeländerung läuft über
+  `doc.paintThrough(ctx, draw)`: Harte Auswahlen beschneiden wie bisher; bei einer `alpha`-Auswahl wird unbeschnitten gezeichnet und
+  mit einer Kopie der vorherigen Pixel über die Maske auf der GPU gemischt (`blendThrough`: `destination-in` / `destination-out` mit
+  `maskCanvas()`, dann `lighter`, was mit vormultipliziertem Alpha genau `neu · m + alt · (1 − m)` ist). Pixelschleifen (Faltung,
+  Tonwertkorrektur, Tonwerte/Kurven, Füllen) gewichten mit `selectionMask()`; Kopieren und das Verschiebewerkzeug schneiden mit der
+  Maskenleinwand. Beschneiden und Ameisenlinie nutzen die mindestens zu 50 % ausgewählten Pixel (`hardSelection`, zwischengespeichert).
+  `modifySelection` blendet aus (drei Box-Blurs ≈ Gauß), vergrößert und verkleinert (euklidische Distanztransformation nach
+  Felzenszwalb–Huttenlocher, O(n), mit einem Pixel weichem Rand; beim Verkleinern zählt der Bildrand als nicht ausgewählt) und bildet
+  den Rand (`min(vergrößert, 1 − verkleinert)`); bei weichen Auswahlen nimmt das Kombinieren Maximum / Minimum der Anteile. Die **Schnellmaske** ist eine graue Leinwand
+  (`doc.quickMask`, weiß = ausgewählt), die `doc.layer` liefert, solange sie an ist; so wirken alle Werkzeuge, Filter und der
+  Ebenenverlauf unverändert auf sie. Beim Ausschalten wird Helligkeit × Alpha zu einer `alpha`-Auswahl, ihre Verlaufsschritte
+  entfallen. Die Ansicht zeichnet darüber eine rote Schicht (halb deckend, wo nichts ausgewählt ist), berechnet aus der Maske oder
+  beim Malen aus der Strichvorschau.
+- **Pinselspitzen** (`brushes.js`): Pinsel und Radierer setzen Abdrücke alle `spacing` % der (vom Druck skalierten) Größe entlang
+  des Wegs; ein Strich hat einen Float32-Alphapuffer in Bildgröße, in den Abdrücke mit ihrem Maximum eingehen (GIMPs nicht
+  inkrementeller Modus, eine weiche Spitze bleibt also weich, wie dicht die Abdrücke auch liegen), mit bilinearer Platzierung auf
+  Subpixel; nur das geänderte Rechteck wird in die Strichleinwand geschrieben (`putImageData`), die wie bisher zusammengesetzt
+  wird. Erzeugte Spitzen folgen GIMPs erzeugten Pinseln: Der Punkt wird um den Winkel gedreht, y um das Seitenverhältnis gestreckt,
+  in einen von `spikes` Sektoren gefaltet und als Kreis / Quadrat / Raute gemessen; Härte h ergibt `gauss(r^(1/(1−h)))` (GIMPs
+  weiche Stufe) mit einem Pixel geglättetem Rand. `.vbr`-Dateien (1.0 und 1.5) sind solche Parameter; `.gbr` (Versionen 1–3, grau
+  oder RGBA → Alpha) und Bilder (`(1 − Helligkeit) · Alpha`, auf höchstens 512 px verkleinert) sind Masken, bilinear skaliert und
+  gedreht. Eigene Spitzen liegen im `localStorage` (`suite.imageeditor.brushes`, Masken als `.gbr` Version 2 in Base64), daher
+  enthalten exportierte Einstellungen sie.
+  **Pixelkorrekturen** (`PIXEL_ADJUSTMENTS`: Farbbalance,
+  Dynamik, Schwellwert, Tontrennung, Unscharf maskieren, Median, Vignette) beschreiben ihre Parameter (Regler, Auswahl, Kontrollkästchen;
+  die Farbbalance hält Werte je Tonbereich) und ändern `ImageData` direkt; `pixelAdjustCanvas` mischt das Ergebnis über `selectionMask()`
+  mit dem Original und wird 60 ms nach der letzten Änderung über `ed.preview` gezeigt. Die Farbbalance gewichtet die Verschiebung jedes
+  Bereichs mit der Helligkeit des Pixels (Schatten `(1 − 2l)^1.5`, Mitteltöne `1 − |2l − 1|`, Lichter `(2l − 1)^1.5`) und kann die
+  Luminanz wiederherstellen; Dynamik skaliert den Abstand vom Grau mit `1 + a · (1 − Sättigung)`; Unscharf maskieren nutzt eine
+  `blur()`-Kopie der Leinwand; Median ein gleitendes Histogramm mit 256 Fächern je Kanal und Zeile (Huang), O(n · r); die Vignette ist
+  ein Smoothstep über den Abstand von der Mitte in einer Ellipse mit den Proportionen des Bildes.
   Tonwerte und Gradationskurven erzeugen Nachschlagetabellen mit 256 Einträgen (Tonwerte: `outBlack + (outWhite − outBlack) · x^(1/γ)`;
   Kurven: monotone kubische Hermite-Interpolation nach Fritsch–Carlson, die Kurve schießt also nie über); zuerst wirkt die RGB-Tabelle,
   dann die des Kanals (`channelLuts`). Die Vorschau ist die Ebene mit angewendeten Tabellen, gezeigt über `ed.preview` und einmal je
   Bild neu berechnet; diese Dialoge (und die Korrekturen) dunkeln das Bild nicht ab.
 - **Dateien**: Dekodieren über `<img>`/Blob-URL; Kodieren mit `canvas.toBlob` (PNG, JPEG, WebP), einem eigenen 24-Bit-BMP-Schreiber und
-  OpenRaster (`mimetype` unkomprimiert zuerst, `stack.xml` oberste Ebene zuerst, `data/*.png`, `mergedimage.png`, Vorschaubild). PSD mit
+  OpenRaster (`mimetype` unkomprimiert zuerst, `stack.xml` oberste Ebene zuerst, `data/*.png`, `mergedimage.png`, Vorschaubild;
+  eine Textebene trägt ihren Text als JSON in `suite:text`, Namensraum `urn:portable-web-app-suite:openraster`, beim Lesen geprüft –
+  das PNG bleibt bis zur Bearbeitung die Pixel). **Textebenen** sind Ebenen mit `text` (`{ text, x, y, font, fontSize, bold, italic,
+  color, align }`), deren Leinwand `renderText` zeichnet; `record('layer')` – vor jeder Pixeländerung aufgerufen – entfernt `text`
+  nach dem Schnappschuss (der es behält, Rückgängig stellt die Textebene also wieder her); `setText` zeichnet auf, ohne es zu
+  entfernen. `transformAll` verschiebt den Text bei Arbeitsfläche und Zuschneiden und entfernt ihn bei den anderen Transformationen;
+  das Verschiebewerkzeug behält ihn, wenn die ganze Ebene wandert. **Um Winkel drehen** (`rotateBy`) zeichnet jede Ebene um die
+  Mitte gedreht in die neue Leinwand: `expand` vergrößert sie auf `W·|cos| + H·|sin|` × `W·|sin| + H·|cos|`, `crop` behält das größte
+  Rechteck gleichen Seitenverhältnisses im gedrehten Bild (Faktor `min(W / (W·|cos| + H·|sin|), H / (W·|sin| + H·|cos|))`);
+  Ausrichten macht aus dem Winkel der gezogenen Linie die Drehung, die sie waagrecht (oder ab 45° senkrecht) stellt. Das
+  Zuschneidewerkzeug hält sein Rechteck in `ed.cropRect`, bis Eingabe / die Schaltfläche zuschneidet. **Metadaten** (`meta.js`): ein
+  kleiner TIFF/EXIF-Leser (IFD0, Exif-IFD, GPS-IFD; begrenzte Anzahl und Tiefe) für JPEG `APP1`, PNG `eXIf` und WebP-`EXIF`, dazu
+  Erkennung von XMP, IPTC (`APP13`), Kommentaren und PNG-Textblöcken. `stripMetadata` kopiert die Datei ohne sie – JPEG-Segmente
+  `APP1`–`APP15` (außer ICC-`APP2` und `Adobe`-`APP14`) und `COM`, PNG `eXIf`/`tEXt`/`zTXt`/`iTXt`/`tIME`, WebP `EXIF`/`XMP `
+  (VP8X-Flags und RIFF-Größe angepasst) – und lässt die komprimierten Bilddaten unberührt; eine Ausrichtung ungleich 1 wird als
+  minimaler EXIF-Block mit einem Eintrag zurückgeschrieben. Browser behandeln die EXIF-Ausrichtung verschieden (Firefox liest nur das
+  erste `APP1` und nicht für Leinwände), daher werden Dateien mit Ausrichtung aus einer Kopie ohne Metadaten dekodiert und mit der
+  passenden Leinwand-Transformation gedreht (`decodeUpright`). **GIF** (`gif.js`): Median-Cut auf einem 15-Bit-Histogramm (der
+  Quader mit größter Spannweite × √Pixel wird an seinem Median geteilt) auf 256 Farben (255 und ein transparenter Index, wenn Pixel
+  Alpha < 128 haben), Zuordnung zur nächsten Farbe mit Gewichten 3:4:2 und wahlweise Floyd–Steinberg-Fehlerverteilung, LZW mit
+  variabler Codelänge und Clear-Code bei 4096. **ICO**: Jede gewählte Größe ist das in ein transparentes Quadrat eingepasste Bild,
+  als PNG gespeichert (Verzeichniseinträge mit 0 für 256). Auswahl / Ebene exportieren kodiert ein vorübergehendes Dokument mit einer
+  Ebene. **Frei transformieren** (`transform.js`): Beim Aktivieren werden die ausgewählten Pixel (über die Maskenleinwand, weiche
+  Auswahlen heben also teilweise ab) oder der Inhaltsbereich der Ebene in eine schwebende Leinwand kopiert und aus einer Basiskopie
+  entfernt; die Transformation `{ cx, cy, w, h, angle, fx, fy }` wird als Basis + Schwebe (verschieben, drehen, skalieren) in
+  `ed.preview` gezeichnet. Griffe werden in den eigenen (ungedrehten) Koordinaten des Rahmens getroffen; Skalieren hält den
+  gegenüberliegenden Griff fest. Übernehmen zeichnet die Ebene auf, übernimmt die Vorschau und macht mit Auswahl das Alpha der
+  transformierten Schwebe zur neuen Auswahl; ein anderes Werkzeug zu wählen übernimmt (`leave`). **Ebenenmasken**: `layer.mask` ist
+  eine graue Leinwand in Bildgröße (weiß zeigt, schwarz verbirgt, durchsichtig zählt als weiß); während sie bearbeitet wird
+  (`doc.editMask`), liefert `doc.layer` einen Stellvertreter, dessen `canvas` die Maske ist (`maskTarget`, Kennung `mask-<Ebene>`),
+  sodass Werkzeuge, Filter, freies Transformieren und der Ebenenverlauf unverändert auf ihr wirken. Das Zusammensetzen wandelt die
+  Maske in Alpha (`grau · a + 255 · (1 − a)`) und zeichnet die Ebene mit `destination-in` hindurch; die Alpha-Fassung wird je
+  Maskenleinwand bis `masksChanged()` (jede Änderung) zwischengespeichert. Bildtransformationen transformieren Masken mit; Vereinen und
+  Anwenden backen sie ein. PSD-Masken werden in eine Leinwand in Bildgröße gelesen (außerhalb ihres Rechtecks: `defaultColor`) und
+  als Masken in voller Größe geschrieben; OpenRaster schreibt das maskierte Ergebnis als Ebenen-PNG und dazu `suite:pixels` und
+  `suite:mask`. Die **Stapelverarbeitung** (`batch.js`) öffnet eine Datei nach der anderen als Dokument ohne Rückgängig-Verlauf,
+  wendet die Schritte in fester Reihenfolge an (einpassen, drehen, spiegeln, Tonwerte automatisch, Graustufen, schärfen,
+  Wasserzeichen), kodiert und sammelt die Ergebnisse mit fflate (`level: 0`, die Bilder sind schon komprimiert); Fehler kommen in
+  `errors.txt`. Die Schritte liegen im `localStorage` (`suite.imageeditor.batch`). PSD mit
   ag-psd (`vendor/esm/psd`, MIT, mit pako; beim ersten Gebrauch importiert): Ebenen werden von unten nach oben mit ihrem Versatz gelesen,
   Gruppen aufgelöst (Ausblenden/Deckkraft vererbt), Ebenenmasken in den Alphakanal multipliziert (`defaultColor` außerhalb des
   Maskenrechtecks); die Namen der Ebenenmodi werden auf Composite-Operationen abgebildet (`color dodge` ↔ `color-dodge`, `linear dodge` ↔
@@ -1417,7 +1487,22 @@ Beschriftungen des Projekts stehen als `labels: [{start, end, text}]` in Sekunde
 Hall als Offline-Web-Audio-Graphen (`BiquadFilterNode` Kuhschwanz/Glocke; `ConvolverNode` mit deterministisch abklingender Rausch-Impulsantwort),
 Tonhöhenänderung = WSOLA-Zeitdehnung um 1/r und anschließende Umrechnung mit `playbackRate` r, Rauschminderung = spektrales Gate (STFT 2048/512
 mit Hann-Fenstern, Rauschpegel je Band aus den leisesten 10 % der vollständig im Bereich liegenden Frames, Verstärkungen über Nachbarbänder
-geglättet und zeitlich abklingend, Overlap-Add mit Fensternormierung).
+geglättet und zeitlich abklingend, Overlap-Add mit Fensternormierung). Die Lautheit folgt ITU-R BS.1770-4: K-Bewertung mit den
+Biquad-Formeln von libebur128 für jede Abtastrate, mittleres Quadrat je Kanal in 400-ms-Blöcken alle 100 ms (Präfixsummen), absolutes
+Gate −70 LUFS, relatives Gate −10 LU, Kanalgewichte 1; das Normalisieren misst den Bereich jeder Spur und verstärkt um die Differenz,
+so weit verringert, dass die Abtastspitze unter der Grenze bleibt. Stille kürzen findet Abschnitte, in denen jeder Kanal unter der
+Schwelle liegt, und entfernt ihre Mitte; das Noise-Gate ist ein gekoppelter Spitzendetektor mit Halten und einpoliger Glättung
+(Ansprech-/Abklingzeit) der Verstärkung zwischen 1 und der Untergrenze. Die Frequenzanalyse mittelt die Leistung halb überlappender,
+Hann-gefensterter FFT-Frames (Welch) der Mono-Mischung, so skaliert, dass ein voll ausgesteuerter Sinus 0 dB ergibt (`(Σw / 2)²`);
+Spitzen werden durch parabolische Interpolation der dB-Werte verfeinert, Töne ab A4 = 440 Hz mit der Abweichung in Cent benannt.
+Knackser entfernen vergleicht die absolute zweite Differenz mit 4 × Empfindlichkeit × dem Median der umliegenden 20-ms-Blöcke; ein
+Abschnitt bis zur Ruhe, der höchstens `width` ms lang ist, wird durch eine kubische Hermite-Kurve zwischen den Nachbarwerten (mit deren
+Steigungen) ersetzt. Der De-Esser trennt das Band über der Frequenz mit einem vorwärts und rückwärts laufenden RBJ-Hochpass ab
+(phasenfrei, `tief = x − hoch` ist also exakt), folgt dessen Spitzenpegel und zieht `(1 − g) · hoch` mit
+`g = max(Untergrenze, Schwelle / Pegel)` ab. Der parametrische Equalizer schaltet Biquads nach dem RBJ-Kochbuch hintereinander (dieselben
+Koeffizienten zeichnen den Frequenzgang, ausgewertet als `|B(e^jω)|² / |A(e^jω)|²`); das automatische Absenken findet die Abschnitte der
+Steuerspur über der Schwelle (RMS über 50 ms, Lücken unter der höchsten Pause verbunden) und schreibt Rampen in den Lautstärkeverlauf der
+anderen Spuren, in dB zu ihren vorhandenen Punkten addiert.
 
 Clip-Lautstärke und Blenden (`clips.envelopeAt`): Verstärkung in dB und Blendenkurven gleicher Leistung (`sin` über die Blendenlänge) je
 Clip, angewendet in `flatten()` (Speichern, Export, mischende Effekte) und beim Abspielen als `GainNode` mit `setValueCurveAtTime` von der
@@ -1445,7 +1530,11 @@ libFLAC-Encoder werden nur registriert, wo der Browser keinen hat). `encode()` s
 (`f32-planar`) in eine `AudioSampleSource` eines `Output` (`Mp3OutputFormat`, `FlacOutputFormat`, `OggOutputFormat` mit
 Opus, `Mp4OutputFormat` mit AAC) mit `BufferTarget`. MP3 wird in der Projektrate (höchstens 48 kHz) kodiert, Opus mit 48 kHz,
 AAC mit 44,1 oder 48 kHz. Die Encoder laufen in Workern aus Blob-URLs; die CSP erlaubt daher `worker-src blob:` und
-`'wasm-unsafe-eval'`.
+`'wasm-unsafe-eval'`. Tags laufen über Mediabunnys `setMetadataTags` (ID3v2, Vorbis-Kommentare, iTunes-Atome; das Jahr als `Date`, die
+Titelnummer als `trackNumber`) und werden aus geöffneten Dateien mit `Input.getMetadataTags` gelesen; WAV-Dateien tragen sie in einem
+`LIST`/`INFO`-Block nach den Abtastwerten (`INAM`, `IART`, `IPRD`, `ICRD`, `ITRK`, `IGNR`, `ICMT`, gelesen von `dsp.readWavTags`). Ein
+aufgeteilter Export berechnet jeden Teil (Markenbereich, Spanne zwischen Punktmarken oder ein Clip über `clips.flatten` mit Lautstärke
+und Blenden) durch dieselbe Mischung und denselben Encoder und sammelt die Dateien mit fflate.
 
 Tests: `tests/apps/test_audioeditor.py` (WAV-Dateien mit `wave`/`struct` erzeugt und geprüft) – Öffnen, Löschen mit
 Rückgängig/Wiederholen und bitgleiches Speichern, Mausauswahl über Spuren, Kopieren/Einfügen, Import mit Umrechnung, Stumm/
@@ -1492,7 +1581,29 @@ Auf Basis von Spike S-10: WebCodecs über Mediabunny (`vendor/esm/video`, MPL-2.
   (Wischen, Kreis) oder verschieben/skalieren (Schieben, Zoom) die Zeichnung abhängig vom Blendenfortschritt; Ausgänge sind gespiegelt; nur
   „fade“ ändert die Deckkraft, der Ton wird immer geblendet. Bildeinstellungen: ein CSS-`filter` (brightness, contrast, saturate) am 2D-Kontext
   (auch an der `OffscreenCanvas` des Exports), der Zuschnitt als Quellrechteck von `drawImage`, die Drehung um die Bildmitte und `motion(c, t)`,
-  das Größe und Versatz über den Clip interpoliert (Ken Burns). Geschwindigkeit und Rückwärts: ein Clip belegt `(out - in) / speed`
+  das Größe und Versatz über den Clip interpoliert (Ken Burns). Bildeffekte erweitern den CSS-Filter (`hue-rotate`, `grayscale`, `sepia`,
+  `invert`, `blur`). Der Chroma-Key zeichnet die zugeschnittene Quelle in ihrer Ausgabegröße in eine `OffscreenCanvas`, misst den Abstand
+  jedes Pixels zur Schlüsselfarbe in der Cb/Cr-Ebene (unabhängig von der Helligkeit), bildet Abstände zwischen `tolerance` und
+  `tolerance + softness` mit einem Smoothstep auf Alpha ab und begrenzt den Schlüsselkanal auf den größeren der beiden anderen (Spill).
+  Das Standbild liest den Frame mit Mediabunnys `CanvasSink.getCanvas(sourceTime)`, fügt ihn als PNG-Bildquelle hinzu und ändert die
+  Zeitleiste mit `freezeFrame` (teilen, `insertGap` auf der Spur, ein Bildclip mit den Bildeinstellungen des Clips). Marken liegen in
+  `project.markers` und zählen zu den Einrastpunkten. Ein Bereichsexport berechnet die Frames `round(from · fps)` … `round(to · fps)` mit
+  Zeitstempeln ab 0 und mischt den Ton desselben Bereichs; nur Ton kodiert die `OfflineAudioContext`-Mischung als 16-Bit-WAV oder über
+  eine Mediabunny-Ausgabe nur mit Ton. Überblendungen (`crossfade`, `transitionsOnTrack`) verschieben nie andere Clips: Der folgende Clip
+  kommt auf eine freie Nachbarspur (bei Bedarf neu angelegt) und blendet ein, der vorige wird in sein Quellmaterial verlängert
+  (`maxLength`), und `audioFadeIn`/`audioFadeOut` blenden nur den Ton (`audioFade` in der Vorschau, die Gain-Rampen der Exportmischung); bei
+  einer A/B-Rolle wird stattdessen der obere Clip eines späteren Paares verlängert und blendet aus. Normalisieren liest den Quellbereich des
+  Clips mit `AudioBufferSink` für seine Spitze. Die Frame-Schleife (`composeFrames`, ein asynchroner Generator mit einem fortlaufenden
+  `CanvasSink`-Iterator je Clip) speist den Video-Encoder und den GIF-Export, der jedes n-te Frame auf die GIF-Größe skaliert, eine Palette
+  aus bis zu acht Frames über den Bereich bildet (`shared/js/gif.js` `GifAnimation`: globale Farbtabelle, NETSCAPE2.0-Schleife, je Frame
+  Verzögerungen so gerundet, dass die Summe stimmt) und die Frames mit LZW kodiert. Schlüsselbilder: `clip.keys[prop]` listet `{ t, v }`
+  (Sekunden ab Clipbeginn) für x, y, scale, opacity und rotation; `valueAt` interpoliert linear und wird von `motion`, der Deckkraft und der
+  Drehung in `drawClip` genutzt (Vorschau und Export stimmen also überein); `subClip` (Teilen, Trimmen, Überschreiben) verschiebt die
+  Schlüssel und fügt an den neuen Rändern Schlüssel mit den interpolierten Werten hinzu. Ein Projekt-ZIP enthält `project.json` und
+  `media/<Quell-ID>/<Name>` (unkomprimiert, fflate); beim Öffnen entstehen die Quellen aus diesen Einträgen über `loadSource`, nichts muss
+  neu verknüpft werden. „Im Audio-Editor bearbeiten“ schickt den Quellbereich des Clips als 16-Bit-WAV (`sourceWav`) mit
+  `Suite.bridge.openIn('audioeditor', { data, save })`; der `save`-Rückruf fügt das zurückgegebene WAV als neue Quelle hinzu und lässt den
+  Audioclip darauf zeigen oder schaltet den Videoclip stumm und legt einen Audioclip auf eine freie Audiospur. Geschwindigkeit und Rückwärts: ein Clip belegt `(out - in) / speed`
   Sekunden der Zeitleiste; `sourceTime(c, t)` rechnet Zeitleisten- in Quellzeit um (rückwärts ab `out` bei `reverse`), und
   `subClip(c, a, b)` wird beim Überschreiben, Kürzen und Teilen verwendet, damit der Quellausschnitt jedes Teils stimmt. Der Export
   fordert von `CanvasSink.canvasesAtTimestamps` die umgerechneten Zeiten an (bei rückwärts laufenden Clips absteigend) und spielt den

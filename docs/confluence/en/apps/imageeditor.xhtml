@@ -23,8 +23,18 @@ adjustments and filters, resizing, cropping, rotating, and the clipboard.</p>
 <td>yes (24 bit)</td>
 </tr>
 <tr>
-<td>GIF, ICO, SVG, AVIF</td>
-<td>yes (GIF: first frame; SVG is converted to pixels)</td>
+<td>GIF</td>
+<td>yes (first frame)</td>
+<td>yes (up to 256 colours, transparency, optional dithering)</td>
+</tr>
+<tr>
+<td>ICO</td>
+<td>yes</td>
+<td>yes (sizes 16 to 256 pixels in one file)</td>
+</tr>
+<tr>
+<td>SVG, AVIF</td>
+<td>yes (SVG is converted to pixels)</td>
 <td>–</td>
 </tr>
 <tr>
@@ -49,6 +59,17 @@ Saving in any other format merges the layers into one image; the application poi
   them (or adds them as layers when you have already started working).</li>
 <li><strong>File → Save</strong> (<code>Ctrl+S</code>) and <strong>Save as</strong> (<code>Ctrl+Shift+S</code>, with format and quality): directly into the file in Chrome/Edge on the
   desktop, as a download in Firefox and on Android.</li>
+<li><strong>File → Export selection…</strong> saves the selected part of the active layer, <strong>Export layer…</strong> the active layer on its own, as a
+  file of its own (any of the single-image formats); the open image stays as it is.</li>
+<li><strong>File → Batch processing…</strong> changes many images the same way: choose the images (also from an archive), tick the steps –
+  fit into a size, rotate, flip, auto levels, grayscale, sharpen, a text watermark – and the output format, quality and file
+  names (<code>{name}</code>, <code>{n}</code>, <code>{w}</code>, <code>{h}</code>). <strong>Process and save as ZIP</strong> writes all results into one ZIP (without metadata); images
+  that cannot be read are listed in <code>errors.txt</code>. The steps are remembered.</li>
+<li>Photos open <strong>upright</strong>: the orientation a camera or phone stored in the file (EXIF) is applied in every browser.</li>
+<li><strong>File → Image information…</strong> shows the size and the <strong>metadata</strong> of the opened JPEG, PNG or WebP file: camera, lens, exposure,
+  date, author, copyright, comments, XMP/IPTC and the <strong>location</strong> where the picture was taken (with a warning). <strong>Save a copy
+  without metadata</strong> writes the file again without all of this – the image itself is not re-compressed and stays exactly as it
+  was; only the colour profile and the orientation are kept. Saving from the image editor never writes metadata.</li>
 </ul>
 <h2>Tools</h2>
 <table>
@@ -143,7 +164,17 @@ Saving in any other format merges the layers into one image; the application poi
 <tr>
 <td>T Text</td>
 <td><code>T</code></td>
-<td>click where the text should start; enter text, font, size, bold, italic</td>
+<td>click where the text should start; enter text, font, size, colour, alignment, bold, italic – it becomes a <strong>text layer</strong>; a click on existing text edits it</td>
+</tr>
+<tr>
+<td>⛶ Crop</td>
+<td><code>C</code></td>
+<td>drag the area to keep – free or with an aspect ratio (original, 1:1, 4:3, 3:2, 16:9, 5:4; upright when dragged taller than wide); the rest is darkened, with thirds; <code>Enter</code> or <strong>Crop</strong> crops, <code>Esc</code> cancels</td>
+</tr>
+<tr>
+<td>⤡ Free transform</td>
+<td><code>Ctrl+T</code></td>
+<td>the selected pixels (or the whole layer) in a box: drag a handle to scale (<code>Shift</code> keeps the proportions), the round handle or outside the box to rotate (<code>Shift</code>: 15° steps), inside to move; position, size and angle can be typed, ⇋ / ⇵ flip; <code>Enter</code>, <strong>Apply</strong> or another tool applies, <code>Esc</code> cancels; the selection follows</td>
 </tr>
 <tr>
 <td>✋ Hand</td>
@@ -154,11 +185,37 @@ Saving in any other format merges the layers into one image; the application poi
 </table>
 <p>The tool options (size, opacity, filling, tolerance) are on the right. <code>[</code> and <code>]</code> change the size, <code>X</code> swaps foreground and
 background colour. All painting tools work only inside the selection, if there is one.</p>
+<h3>Brush tips</h3>
+<p>The brush and the eraser paint with a <strong>brush tip</strong> (tool options): round, soft round, square, diamond, star, calligraphy
+(a flat tip at an angle) and scatter. <strong>Hardness</strong> makes the edge of generated tips sharp or soft, <strong>Spacing</strong> sets the distance
+between the imprints of the tip (in % of the size: small values give a smooth line, large values a row of separate imprints),
+<strong>Angle</strong> turns the tip. With a pen, <strong>Pen pressure: size</strong> (on by default) and <strong>Pen pressure: opacity</strong> follow how hard you press.</p>
+<p><strong>+</strong> loads your own tips, also from an archive: GIMP brushes (<code>.gbr</code>, grey or colour – the colour brushes paint in the
+foreground colour), GIMP parametric brushes (<code>.vbr</code>) and pictures (PNG, JPEG, WebP, … – dark pixels paint, light and transparent
+ones do not). Own tips are kept in the browser and travel with exported settings (also in a workspace with settings); <strong>×</strong>
+removes one.</p>
 <h3>Combining selections</h3>
 <p>With any selection tool, hold <code>Shift</code> to <strong>add</strong> to the existing selection and <code>Alt</code> to <strong>subtract</strong> from it; the tool option
 <strong>Selection</strong> (New, Add, Subtract, Intersect) does the same without keys, e.g. on a phone. <strong>Edit → Invert selection</strong>
 (<code>Ctrl+Shift+I</code>) selects everything else. Combined and magic-wand selections follow the pixels exactly; the move tool moves
 them like any selection.</p>
+<h3>Soft selections: feather, grow, shrink, border</h3>
+<p>A selection can select pixels <strong>partly</strong>, like in GIMP: a partly selected pixel changes only that much when you paint, fill,
+clear, apply a filter or an adjustment, copy (the copy is partly transparent there) or move it (that much of it moves, the rest
+stays). In the <strong>Edit</strong> menu:</p>
+<ul>
+<li><strong>Feather selection…</strong> gives the selection a soft edge over the radius (in pixels).</li>
+<li><strong>Grow selection…</strong> and <strong>Shrink selection…</strong> move the edge outwards or inwards by the radius; corners become round.</li>
+<li><strong>Border selection…</strong> selects a band of the radius on both sides of the edge, e.g. to paint a soft outline.</li>
+</ul>
+<p>The marching ants show where pixels are selected at least half. <strong>Invert selection</strong> keeps the soft edge. Combining a soft
+selection with another one (<code>Shift</code>, <code>Alt</code>) adds or subtracts the amounts.</p>
+<h3>Quick mask</h3>
+<p><strong>Quick mask</strong> (<code>Shift+Q</code>, <strong>Edit → Quick mask</strong> or the <strong>◐</strong> button in the status bar) shows the selection as an image: what
+is not selected is covered in red. Now every painting tool, filter and selection change works on this mask instead of the
+image: paint <strong>white</strong> to select, <strong>black</strong> to deselect, <strong>grey</strong> to select partly (e.g. the brush with a soft edge, the
+gradient, or <strong>Filters → Blur</strong> for a soft edge). Switch the quick mask off again and the painting is the selection. Changes of the
+mask are not part of the image's undo history; image operations (size, rotation, cropping) end the quick mask first.</p>
 <h3>Selections by coordinates</h3>
 <p>The status bar shows the position and size of the selection (<code>⬚ x, y · width × height</code>). With a selection tool, the tool options
 contain the fields <strong>X</strong>, <strong>Y</strong>, <strong>Width</strong> and <strong>Height</strong>: type values and press <code>Enter</code> (or <strong>Select</strong>) to select exactly that
@@ -177,15 +234,33 @@ belong to the open image and are not saved in the file.</p>
 <p>The layer list on the right shows the layers from top to bottom. Click a layer to make it active; the checkbox shows or hides it,
 a double-click on the name renames it. Below the list: <strong>opacity</strong> and <strong>blend mode</strong> (multiply, screen, overlay, …) of the active
 layer, and buttons to add, duplicate, move up/down, merge down and delete layers. The <strong>Layer</strong> menu also flips a single layer.</p>
+<p><strong>Layer masks</strong> hide parts of a layer without erasing them: <strong>Layer → Add layer mask</strong> (everything visible) or <strong>Add layer mask
+from selection</strong> (visible where selected). The mask appears next to the layer in the list; click it to paint on the mask – white
+shows, black hides, grey shows partly (all tools and filters work on it, e.g. a gradient for a soft transition) – and click the layer
+thumbnail or name to paint on the layer again. <strong>Disable layer mask</strong> shows the layer without it, <strong>Apply layer mask</strong> makes the
+hidden parts transparent for good, <strong>Delete layer mask</strong> removes it. Photoshop files keep layer masks (also those made in
+Photoshop stay editable); OpenRaster files keep them for the suite, other programs show the masked result.</p>
+<p><strong>Text layers</strong> (marked <strong>T</strong> in the list) stay editable: click the text with the text tool, the <strong>T</strong> button or <strong>Layer → Edit
+text…</strong> to change the text, font, size, colour or alignment; an emptied text removes the layer. Moving the whole layer with the
+move tool, cropping and changing the canvas size keep it a text layer. As soon as its pixels change otherwise (painting, filters,
+flipping, rotating or scaling the image, merging) it becomes a normal layer – undo makes it a text layer again; <strong>Layer →
+Rasterize text layer</strong> does this on purpose. OpenRaster files (<code>.ora</code>) keep text layers (other programs show their pixels),
+PSD files get their pixels.</p>
 <h2>Edit, image and filters</h2>
 <ul>
 <li><strong>Edit</strong>: undo (<code>Ctrl+Z</code>) and redo (<code>Ctrl+Y</code>) up to 50 steps; cut, copy and paste (<code>Ctrl+X/C/V</code>, also with other programs
   through the system clipboard; pasted images become a new layer); select all (<code>Ctrl+A</code>), deselect (<code>Ctrl+D</code>), clear the selection
   (<code>Del</code>), fill the selection with the foreground colour.</li>
-<li><strong>Image</strong>: image size (with or without smoothing), canvas size (with anchor), crop to selection, rotate by 90° or 180°, flip,
-  flatten.</li>
+<li><strong>Image</strong>: image size (with or without smoothing), canvas size (with anchor), crop to selection, rotate by 90° or 180°,
+  <strong>rotate by angle…</strong> (any angle; crop to the image so that no empty corners remain, enlarge the canvas, or keep the size),
+  <strong>straighten…</strong> (draw a line along something that should be level or upright, e.g. the horizon; the rotate dialog opens with
+  the angle), flip, flatten.</li>
 <li><strong>Filters</strong>: brightness/contrast, hue/saturation (with live preview), levels, curves, auto levels, blur, sharpen, grayscale,
-  sepia, invert, emboss, find edges. Filters change the active layer (inside the selection).</li>
+  sepia, invert, emboss, find edges; with a live preview: <strong>colour balance</strong> (cyan–red, magenta–green, yellow–blue for
+  shadows, midtones and highlights, optionally preserving the brightness), <strong>vibrance</strong> (more saturation for dull colours, little
+  for already strong ones), <strong>threshold</strong> (black and white), <strong>posterize</strong> (fewer levels per colour), <strong>unsharp mask</strong> (radius,
+  amount, threshold), <strong>median</strong> (removes noise and dust) and <strong>vignette</strong> (darker – or, negative, lighter – towards the
+  corners). Filters change the active layer (inside the selection; partly selected pixels partly).</li>
 </ul>
 <p><strong>Levels…</strong> shows the histogram of the active layer (inside the selection) and sets the input black point, mid-tones (gamma)
 and white point, and the output range – for all colours (RGB) or for red, green or blue alone. <strong>Curves…</strong> maps brightness
@@ -254,6 +329,10 @@ and <code>1</code> (100 %) work as well; the buttons are at the bottom right. Zo
 <td>Invert the selection</td>
 </tr>
 <tr>
+<td><code>Shift+Q</code></td>
+<td>Quick mask on/off</td>
+</tr>
+<tr>
 <td><code>Delete</code> / <code>Backspace</code></td>
 <td>Clear the selection</td>
 </tr>
@@ -319,6 +398,14 @@ and <code>1</code> (100 %) work as well; the buttons are at the bottom right. Zo
 <tr>
 <td><code>L</code> / <code>R</code> / <code>O</code> / <code>T</code></td>
 <td>Line / rectangle / ellipse / text</td>
+</tr>
+<tr>
+<td><code>C</code></td>
+<td>Crop tool (<code>Enter</code> crops, <code>Esc</code> cancels)</td>
+</tr>
+<tr>
+<td><code>Ctrl+T</code></td>
+<td>Free transform (<code>Enter</code> applies, <code>Esc</code> cancels)</td>
 </tr>
 </tbody>
 </table>

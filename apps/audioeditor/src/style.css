@@ -50,3 +50,13 @@
   .ae-transport input { width: 5.5rem; }
 }
 .ae-labels { flex: 1; min-width: 0; height: 44px; display: block; cursor: pointer; border-bottom: 1px solid var(--pico-muted-border-color); }
+
+.ae-tags { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0 .8rem; }
+.ae-spectrum { max-width: min(56rem, 96vw); width: 100%; }
+.ae-spectrum-canvas { width: 100%; height: min(22rem, 50vh); display: block; touch-action: none; border: 1px solid var(--pico-muted-border-color); }
+.ae-peq { font-size: .85rem; margin: .5rem 0; }
+.ae-peq td, .ae-peq th { padding: .15rem .3rem; }
+.ae-peq input, .ae-peq select { margin: 0; padding: .2rem .3rem; height: auto; font-size: .85rem; min-width: 4.5rem; }
+.ae-peq tr.active { outline: 2px solid var(--ae-cue, #ef6c00); }
+.ae-peq button { margin: 0; padding: 0 .5rem; width: auto; }
+.ae-peq-wrap { overflow-x: auto; max-width: 100%; }

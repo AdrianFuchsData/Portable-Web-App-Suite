@@ -12,7 +12,10 @@ const { html } = Suite.shell;
 const t = Suite.t;
 const APP = 'videoeditor';
 const MEDIA_TYPES = [{ description: 'Media', accept: { 'video/*': ['.webm', '.mp4', '.mov', '.mkv', '.m4v', '.ogv'], 'audio/*': ['.mp3', '.wav', '.ogg', '.opus', '.m4a', '.aac', '.flac'], 'image/*': ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif'] } }];
-const PROJECT_TYPES = [{ description: 'Video project', accept: { 'application/json': ['.json'] } }];
+const PROJECT_TYPES = [{ description: 'Video project', accept: { 'application/json': ['.json'], 'application/zip': ['.zip'] } }];
+const ZIP_TYPES = [{ description: 'Video project with media (ZIP)', accept: { 'application/zip': ['.zip'] } }];
+const isZipName = (name) => /\.zip$/i.test(name || '');
+const mimeOf = (s) => ({ image: 'image/', audio: 'audio/', video: 'video/' }[s.kind] || '') + ((s.name.split('.').pop() || '').toLowerCase().replace('jpg', 'jpeg').replace('mov', 'quicktime'));
 const SIZES = [[1920, 1080], [1280, 720], [854, 480], [1080, 1920], [720, 1280], [1080, 1080], [720, 720]];
 
 Suite.i18n.register({
@@ -25,7 +28,11 @@ Suite.i18n.register({
     've.fps': 'Frame rate', 've.background': 'Background', 've.start': 'Start (s)', 've.duration': 'Duration (s)', 've.in': 'Source in (s)', 've.volume': 'Volume (%)',
     've.cuesImported': '{0} subtitles imported (track “Subtitles”).', 've.noCues': '“{0}” contains no subtitles.', 've.noSubtitles': 'There are no titles to export.',
     've.exportSubtitles': 'Export the subtitles (titles) as an SRT file',
-    've.picture': 'Picture: colours, rotation, crop, motion', 've.brightness': 'Brightness (%)', 've.contrast': 'Contrast (%)', 've.saturation': 'Saturation (%)', 've.rotation': 'Rotation (°)',
+    've.picture': 'Picture: colours, effects, green screen, rotation, crop, motion', 've.freeze': 'Freeze frame', 've.editAudio': 'Edit in audio editor', 've.editAudioHint': 'Open the sound of this clip in the audio editor; saving there brings it back', 've.edited': 'edited', 've.editedBack': 'The edited sound is back in the timeline.', 've.saveZip': 'Save with media', 've.saveZipHint': 'The project and all its media files in one ZIP – to move it to another computer', 've.zipMissing': '{0} media files are missing and were left out.', 've.keyAdd': 'Keyframe at the playhead', 've.keyRemove': 'Remove the keyframe at the playhead', 've.keysHint': 'Animated: the fields show the values at the playhead; typing a value sets a keyframe there.', 've.keysClear': 'Remove all keyframes', 've.normalize': 'Normalise', 've.normalizeHint': 'Volume so that the loudest moment reaches −1 dBFS', 've.normalized': 'Volume set to {0} %.',
+    've.xfade': 'Cross-fade / transition to the next clip', 've.xfadeLength': 'Length (s)', 've.xfadeType': 'Picture transition', 've.xfadeNext': 'With the next clip', 've.xfadeTrack': 'Between all clips of the track',
+    've.xfadeNoHandle': 'The clip has no more footage after its end: shorten it first (a cross-fade needs material from both clips).', 've.xfadeShort': 'Only {0} s were possible (the source ends).', 've.xfadeNone': 'There are no neighbouring clips with spare footage on this track.', 've.xfadeDone': '{0} transitions.', 've.freezeHint': 'Hold the frame at the playhead for two seconds (F)', 've.noVideoHere': 'There is no video clip at the playhead.', 've.noFrame': 'The frame could not be read.',
+    've.marker': 'Marker', 've.markerText': 'Name', 've.exportWhat': 'Export', 've.whatVideo': 'Video with sound', 've.whatAudio': 'Only the sound', 've.whatGif': 'Animated GIF (no sound)', 've.gifWidth': 'Width (px)', 've.gifFps': 'Frames per second', 've.gifDither': 'Dithering (smoother, larger)', 've.gifHint': 'GIFs have 256 colours and get large quickly: keep them short and small (at most 600 frames).', 've.exportFrom': 'From (s)', 've.exportTo': 'To (s)', 've.rangeFromMarkers': 'Between markers:', 've.noAudio': 'There is nothing to hear in this range.', 've.effects': 'Effects', 've.blur': 'Blur (px)', 've.grayscale': 'Grayscale (%)', 've.sepia': 'Sepia (%)', 've.hue': 'Hue (°)', 've.invert': 'Invert colours',
+    've.chromaKey': 'Green screen (chroma key): a colour becomes transparent, the track below shows through', 've.keyOn': 'Key out a colour', 've.keyColor': 'Colour', 've.keyTolerance': 'Tolerance (%)', 've.keySoftness': 'Soft edge (%)', 've.keySpill': 'Remove colour cast (%)', 've.brightness': 'Brightness (%)', 've.contrast': 'Contrast (%)', 've.saturation': 'Saturation (%)', 've.rotation': 'Rotation (°)',
     've.crop.left': 'Crop left (%)', 've.crop.right': 'Crop right (%)', 've.crop.top': 'Crop top (%)', 've.crop.bottom': 'Crop bottom (%)',
     've.kenBurns': 'Motion (Ken Burns): size and offset at the end of the clip; the picture moves there from its values at the start.',
     've.endScale': 'Size at the end (%)', 've.endX': 'X offset at the end', 've.endY': 'Y offset at the end', 've.resetPicture': 'Reset picture',
@@ -51,7 +58,11 @@ Suite.i18n.register({
     've.fps': 'Bildrate', 've.background': 'Hintergrund', 've.start': 'Beginn (s)', 've.duration': 'Dauer (s)', 've.in': 'Quelle ab (s)', 've.volume': 'Lautstärke (%)',
     've.cuesImported': '{0} Untertitel importiert (Spur „Subtitles“).', 've.noCues': '„{0}“ enthält keine Untertitel.', 've.noSubtitles': 'Es gibt keine Titel zum Exportieren.',
     've.exportSubtitles': 'Die Untertitel (Titel) als SRT-Datei exportieren',
-    've.picture': 'Bild: Farben, Drehung, Zuschnitt, Bewegung', 've.brightness': 'Helligkeit (%)', 've.contrast': 'Kontrast (%)', 've.saturation': 'Sättigung (%)', 've.rotation': 'Drehung (°)',
+    've.picture': 'Bild: Farben, Effekte, Greenscreen, Drehung, Zuschnitt, Bewegung', 've.freeze': 'Standbild', 've.editAudio': 'Im Audio-Editor bearbeiten', 've.editAudioHint': 'Den Ton dieses Clips im Audio-Editor öffnen; Speichern dort bringt ihn zurück', 've.edited': 'bearbeitet', 've.editedBack': 'Der bearbeitete Ton ist zurück in der Zeitleiste.', 've.saveZip': 'Mit Medien speichern', 've.saveZipHint': 'Das Projekt und alle Mediendateien in einem ZIP – um es auf einen anderen Computer mitzunehmen', 've.zipMissing': '{0} Mediendateien fehlen und wurden ausgelassen.', 've.keyAdd': 'Schlüsselbild an der Abspielposition', 've.keyRemove': 'Das Schlüsselbild an der Abspielposition entfernen', 've.keysHint': 'Animiert: Die Felder zeigen die Werte an der Abspielposition; ein eingegebener Wert setzt dort ein Schlüsselbild.', 've.keysClear': 'Alle Schlüsselbilder entfernen', 've.normalize': 'Normalisieren', 've.normalizeHint': 'Lautstärke so, dass die lauteste Stelle −1 dBFS erreicht', 've.normalized': 'Lautstärke auf {0} % gesetzt.',
+    've.xfade': 'Überblendung / Übergang zum nächsten Clip', 've.xfadeLength': 'Länge (s)', 've.xfadeType': 'Bildübergang', 've.xfadeNext': 'Mit dem nächsten Clip', 've.xfadeTrack': 'Zwischen allen Clips der Spur',
+    've.xfadeNoHandle': 'Der Clip hat nach seinem Ende kein weiteres Material: Kürzen Sie ihn zuerst (eine Überblendung braucht Material beider Clips).', 've.xfadeShort': 'Nur {0} s waren möglich (die Quelle endet).', 've.xfadeNone': 'Auf dieser Spur gibt es keine Nachbarclips mit überschüssigem Material.', 've.xfadeDone': '{0} Übergänge.', 've.freezeHint': 'Das Bild an der Abspielposition zwei Sekunden halten (F)', 've.noVideoHere': 'An der Abspielposition liegt kein Videoclip.', 've.noFrame': 'Das Bild konnte nicht gelesen werden.',
+    've.marker': 'Marke', 've.markerText': 'Name', 've.exportWhat': 'Exportieren', 've.whatVideo': 'Video mit Ton', 've.whatAudio': 'Nur den Ton', 've.whatGif': 'Animiertes GIF (ohne Ton)', 've.gifWidth': 'Breite (px)', 've.gifFps': 'Bilder pro Sekunde', 've.gifDither': 'Rastern (weicher, größer)', 've.gifHint': 'GIFs haben 256 Farben und werden schnell groß: Halten Sie sie kurz und klein (höchstens 600 Bilder).', 've.exportFrom': 'Von (s)', 've.exportTo': 'Bis (s)', 've.rangeFromMarkers': 'Zwischen Marken:', 've.noAudio': 'In diesem Bereich ist nichts zu hören.', 've.effects': 'Effekte', 've.blur': 'Unschärfe (px)', 've.grayscale': 'Graustufen (%)', 've.sepia': 'Sepia (%)', 've.hue': 'Farbton (°)', 've.invert': 'Farben umkehren',
+    've.chromaKey': 'Greenscreen (Chroma-Key): Eine Farbe wird durchsichtig, die Spur darunter scheint durch', 've.keyOn': 'Eine Farbe ausstanzen', 've.keyColor': 'Farbe', 've.keyTolerance': 'Toleranz (%)', 've.keySoftness': 'Weicher Rand (%)', 've.keySpill': 'Farbstich entfernen (%)', 've.brightness': 'Helligkeit (%)', 've.contrast': 'Kontrast (%)', 've.saturation': 'Sättigung (%)', 've.rotation': 'Drehung (°)',
     've.crop.left': 'Links abschneiden (%)', 've.crop.right': 'Rechts abschneiden (%)', 've.crop.top': 'Oben abschneiden (%)', 've.crop.bottom': 'Unten abschneiden (%)',
     've.kenBurns': 'Bewegung (Ken Burns): Größe und Versatz am Ende des Clips; das Bild bewegt sich von seinen Werten am Anfang dorthin.',
     've.endScale': 'Größe am Ende (%)', 've.endX': 'X-Versatz am Ende', 've.endY': 'Y-Versatz am Ende', 've.resetPicture': 'Bild zurücksetzen',
@@ -299,6 +310,116 @@ function removeSource(s) {
 
 // ---- editing ------------------------------------------------------------------------------------------------------------------
 
+// ---- cross-fades, transitions between neighbours, normalising -------------------------------------------------------------------
+
+state.xfadeLength = 1;
+state.xfadeType = 'fade';
+/** The clip that directly follows c on its track (or null). */
+const nextOf = (c) => tl.clipsOn(state.project, c.track).find((x) => Math.abs(x.start - tl.end(c)) < 0.02 && x.id !== c.id) || null;
+const srcDuration = (c) => sourceDuration(c);
+
+function crossfadeNext(c) {
+  const b = nextOf(c);
+  if (!b) return;
+  const r = tl.crossfade(state.project, c.id, b.id, state.xfadeLength, state.xfadeType, srcDuration);
+  if (!r.overlap) { Suite.shell.toast(t('ve.xfadeNoHandle'), 'warning'); return; }
+  commit(r.p);
+  if (r.overlap < state.xfadeLength - 0.01) Suite.shell.toast(t('ve.xfadeShort', r.overlap.toFixed(2)), 'warning');
+}
+
+function transitionsTrack(track) {
+  const r = tl.transitionsOnTrack(state.project, track, state.xfadeLength, state.xfadeType, srcDuration);
+  if (!r.count) { Suite.shell.toast(t('ve.xfadeNone'), 'warning'); return; }
+  commit(r.p);
+  Suite.shell.toast(t('ve.xfadeDone', r.count));
+}
+
+/**
+ * "Edit in audio editor": the clip's sound goes to the audio editor; saving there brings it back as a new audio file – an audio
+ * clip then plays it, a video clip is muted and the edited sound is put on an audio track at the same place.
+ */
+function editInAudioEditor(c) {
+  const s = state.sources.get(c.source);
+  if (!s || s.missing) return;
+  const stem = `${s.name.replace(/\.[^.]+$/, '')}${c.kind === 'video' ? ' (sound)' : ''}`;
+  Suite.bridge.openIn('audioeditor', {
+    name: `${stem}.wav`,
+    source: `${state.name}: ${s.name}`,
+    data: async () => { const wav = await ex.sourceWav(s, c.in, c.out); if (!wav) throw new Error(t('ve.noAudio')); return wav; },
+    save: async (bytes) => {
+      const file = new File([bytes], `${stem} ${t('ve.edited')}.wav`, { type: 'audio/wav' });
+      const edited = { id: tl.newId('s'), name: file.name, kind: 'audio' };
+      await loadSource(edited, file);
+      state.sources.set(edited.id, edited);
+      const current = state.project.clips.find((x) => x.id === c.id);
+      if (!current) { render(); return; }
+      const len = Number.isFinite(edited.duration) ? edited.duration : current.out - current.in;
+      const sound = { source: edited.id, in: 0, out: len, fadeIn: current.fadeIn, fadeOut: current.fadeOut, speed: current.speed, reverse: current.reverse };
+      if (current.kind === 'audio') commit(tl.updateClip(state.project, current.id, sound));
+      else {
+        let p = tl.updateClip(state.project, current.id, { volume: 0 });
+        let track = p.tracks.find((tr) => tr.kind === 'audio' && !p.clips.some((x) => x.track === tr.id && tl.end(x) > current.start && x.start < tl.end(current)));
+        if (!track) { track = { id: tl.newId('t'), kind: 'audio', name: `A${p.tracks.filter((tr) => tr.kind === 'audio').length + 1}`, mute: false, hidden: false }; p = { ...p, tracks: [...p.tracks, track] }; }
+        const clip = { ...tl.makeClip('audio', { source: edited.id, track: track.id, start: current.start, sourceDuration: len }), ...sound, volume: current.volume || 1 };
+        commit(tl.addClip(p, clip));
+      }
+      setDirty();
+      Suite.shell.toast(t('ve.editedBack'));
+    },
+  }).catch(fail);
+}
+
+/** Set the volume so that the clip's loudest sample reaches −1 dBFS. */
+async function normalizeClip(c) {
+  const s = state.sources.get(c.source);
+  if (!s || s.missing) return;
+  const peak = await ex.peakOf(s, c.in, c.out);
+  if (!peak) { Suite.shell.toast(t('ve.noAudio'), 'warning'); return; }
+  const volume = Math.min(4, Math.round((10 ** (-1 / 20) / peak) * 1000) / 1000);
+  commit(tl.updateClip(state.project, c.id, { volume }));
+  Suite.shell.toast(t('ve.normalized', Math.round(volume * 100)));
+}
+
+// ---- freeze frame and markers ------------------------------------------------------------------------------------------------
+
+const FREEZE_SECONDS = 2;
+/** Hold the frame at the playhead of the selected video clip (or the one under the playhead) for two seconds. */
+async function freezeFrame() {
+  const p = state.project, at = state.time;
+  const sel = selected();
+  const c = sel && sel.kind === 'video' && at >= sel.start && at < tl.end(sel) ? sel : p.clips.find((x) => x.kind === 'video' && at >= x.start && at < tl.end(x));
+  if (!c) { Suite.shell.toast(t('ve.noVideoHere'), 'warning'); return; }
+  const src = state.sources.get(c.source);
+  try {
+    const canvas = src && !src.missing ? await ex.frameAt(src, Math.max(c.in, Math.min(c.out - 1e-3, tl.sourceTime(c, at)))) : null;
+    if (!canvas) { Suite.shell.toast(t('ve.noFrame'), 'warning'); return; }
+    const blob = await new Promise((r) => canvas.toBlob(r, 'image/png'));
+    const file = new File([blob], `${src.name.replace(/\.[^.]+$/, '')} ${fmt(at).replace(/:/g, '-')}.png`, { type: 'image/png' });
+    const s = { id: tl.newId('s'), name: file.name, kind: 'image' };
+    await loadSource(s, file);
+    state.sources.set(s.id, s);
+    commit(tl.freezeFrame(state.project, c.id, at, FREEZE_SECONDS, s.id));
+    setDirty();
+  } catch (e) { fail(e); }
+}
+
+function addMarker() { commit(tl.addMarker(state.project, state.time, '')); }
+function jumpMarker(direction) { const m = tl.markerNear(state.project, state.time, direction); if (m) seek(m.t); }
+
+function MarkerDialog() {
+  const d = state.dialog;
+  if (!d || d.kind !== 'marker') return null;
+  const m = (state.project.markers || []).find((x) => x.id === d.id);
+  if (!m) return null;
+  return html`<dialog open data-testid="marker-dialog"><article>
+    <header><strong>${t('ve.marker')} · ${fmt(m.t)}</strong></header>
+    <form onSubmit=${(e) => { e.preventDefault(); state.dialog = null; commit(tl.updateMarker(state.project, m.id, { text: e.target.elements.text.value })); }}>
+      <label>${t('ve.markerText')}<input name="text" data-testid="marker-text" defaultValue=${m.text} autofocus /></label>
+      <footer><button type="button" class="secondary outline" data-testid="marker-delete" onClick=${() => { state.dialog = null; commit(tl.removeMarker(state.project, m.id)); }}>${t('ve.delete')}</button>
+        <button type="button" class="secondary" onClick=${() => { state.dialog = null; render(); }}>${t('ve.cancel')}</button><button type="submit" data-testid="marker-ok">OK</button></footer>
+    </form></article></dialog>`;
+}
+
 function split() {
   const p = state.project;
   const at = state.time;
@@ -375,7 +496,7 @@ function syncMedia(time, playing) {
     live.add(c.id);
     if (!active) { if (!el.paused) el.pause(); continue; }
     const expected = tl.sourceTime(c, time);
-    const vol = tr.mute ? 0 : Math.min(1, c.volume * tl.fadeFactor(c, time));
+    const vol = tr.mute ? 0 : Math.min(1, c.volume * tl.audioFade(c, time));
     el.volume = Math.max(0, vol);
     // media elements cannot play backwards: a reversed clip is previewed by seeking frame by frame, without sound
     el.muted = vol <= 0 || !playing || !!c.reverse;
@@ -486,11 +607,30 @@ function projectJson() {
   };
 }
 
-async function saveProject(as = false) {
+/**
+ * The project with its media files as one ZIP: project.json and media/<source id>/<file name> (stored without compression – the
+ * media are compressed already). Missing media are left out (with a message).
+ */
+async function projectZip() {
+  const { zipSync, strToU8 } = await import('fflate');
+  const files = { 'project.json': [strToU8(`${JSON.stringify(projectJson(), null, 1)}\n`), { level: 6 }] };
+  let missing = 0;
+  for (const s of state.sources.values()) {
+    if (!s.file) { missing++; continue; }
+    files[`media/${s.id}/${s.name.replace(/[\\/]/g, '_')}`] = [new Uint8Array(await s.file.arrayBuffer()), { level: 0 }];
+  }
+  if (missing) Suite.shell.toast(t('ve.zipMissing', missing), 'warning');
+  return zipSync(files);
+}
+
+async function saveProject(as = false, zip = isZipName(state.name)) {
   try {
-    const bytes = new TextEncoder().encode(`${JSON.stringify(projectJson(), null, 1)}\n`);
-    const result = as || !state.handle ? await Suite.files.saveAs(bytes, { suggestedName: state.name, types: PROJECT_TYPES, type: 'application/json' })
-      : await Suite.files.save({ name: state.name, handle: state.handle }, bytes, { type: 'application/json' });
+    const name = zip ? (isZipName(state.name) ? state.name : `${state.name.replace(/\.json$/i, '')}.zip`) : state.name.replace(/\.zip$/i, '.json');
+    const bytes = zip ? await projectZip() : new TextEncoder().encode(`${JSON.stringify(projectJson(), null, 1)}\n`);
+    const type = zip ? 'application/zip' : 'application/json';
+    const sameFile = !as && state.handle && name === state.name;
+    const result = !sameFile ? await Suite.files.saveAs(bytes, { suggestedName: name, types: zip ? ZIP_TYPES : PROJECT_TYPES, type })
+      : await Suite.files.save({ name, handle: state.handle }, bytes, { type });
     if (!result) return;
     if (result.mode === 'downloaded') Suite.shell.banner(result.message); else Suite.shell.toast(result.message);
     Object.assign(state, { name: result.name || state.name, handle: result.handle || state.handle });
@@ -509,13 +649,32 @@ function resetProject(project = tl.newProject()) {
 
 async function loadProject({ file, handle }) {
   try {
-    const data = JSON.parse(await file.text());
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    let media = null;
+    let text;
+    if (bytes[0] === 0x50 && bytes[1] === 0x4b) {
+      // a project with its media (ZIP)
+      const { unzipSync, strFromU8 } = await import('fflate');
+      const files = unzipSync(bytes);
+      if (!files['project.json']) throw new Error(t('ve.badProject'));
+      text = strFromU8(files['project.json']);
+      media = files;
+    } else text = new TextDecoder().decode(bytes);
+    const data = JSON.parse(text);
     if (data.app !== 'videoeditor' || !data.project || !Array.isArray(data.project.clips)) throw new Error(t('ve.badProject'));
     resetProject(data.project);
     for (const s of data.sources || []) state.sources.set(s.id, { ...s, duration: s.duration ?? Infinity, missing: true, file: null, url: null });
+    if (media) {
+      for (const s of state.sources.values()) {
+        const entry = Object.keys(media).find((k) => k.startsWith(`media/${s.id}/`));
+        if (!entry) continue;
+        try { await loadSource(s, new File([media[entry]], s.name, { type: mimeOf(s) })); } catch (e) { console.warn(e); }
+      }
+    }
     Object.assign(state, { name: file.name, handle });
     setDirty(false);
-    if (state.sources.size) Suite.shell.toast(t('ve.missingFiles', state.sources.size), 'warning');
+    const missing = [...state.sources.values()].filter((s) => s.missing).length;
+    if (missing) Suite.shell.toast(t('ve.missingFiles', missing), 'warning');
     render();
   } catch (e) { Suite.shell.toast(t('ve.cannotOpen', file.name, e.message), 'error'); }
 }
@@ -564,7 +723,8 @@ async function openExport() {
   stop();
   const formats = await ex.availableFormats(state.project.width, state.project.height);
   if (!formats.length) { Suite.shell.toast(t('ve.noFormats'), 'error'); return; }
-  state.dialog = { kind: 'export', formats, format: formats[0], quality: 'high', stem: state.name.replace(/\.json$/i, '') };
+  const audioFormats = await ex.availableAudioFormats();
+  state.dialog = { kind: 'export', formats, format: formats[0], audioFormats, audioFormat: 'wav', what: 'video', gifWidth: 480, gifFps: 10, gifDither: false, quality: 'high', stem: state.name.replace(/\.json$/i, ''), from: 0, to: tl.duration(state.project) };
   render();
 }
 
@@ -573,8 +733,28 @@ async function runExport(d) {
   state.exporting = { progress: 0, controller };
   render();
   try {
+    const range = { from: Math.max(0, d.from || 0), to: Math.max(d.from || 0, d.to ?? tl.duration(state.project)) };
+    if (d.what === 'gif') {
+      const bytes = await ex.renderGif(state.project, { width: d.gifWidth, fps: d.gifFps, dither: d.gifDither, sources: state.sources, images: state.images, signal: controller.signal, ...range,
+        onProgress: (f) => { state.exporting.progress = f; render(); } });
+      state.exporting = null;
+      render();
+      const result = await Suite.files.saveAs(bytes, { suggestedName: `${d.stem}.gif`, types: [{ description: 'GIF', accept: { 'image/gif': ['.gif'] } }], type: 'image/gif' });
+      if (result) Suite.shell.toast(t('ve.exported'));
+      return;
+    }
+    if (d.what === 'audio') {
+      const bytes = await ex.renderAudio(state.project, { format: d.audioFormat, sources: state.sources, signal: controller.signal, ...range });
+      state.exporting = null;
+      render();
+      if (!bytes) { Suite.shell.toast(t('ve.noAudio'), 'warning'); return; }
+      const f = ex.AUDIO_FORMATS[d.audioFormat];
+      const result = await Suite.files.saveAs(bytes, { suggestedName: `${d.stem}.${f.ext}`, types: [{ description: f.label, accept: { [f.mime]: [`.${f.ext}`] } }], type: f.mime });
+      if (result) Suite.shell.toast(t('ve.exported'));
+      return;
+    }
     const bytes = await ex.render(state.project, {
-      format: d.format, quality: d.quality, sources: state.sources, images: state.images, signal: controller.signal,
+      format: d.format, quality: d.quality, sources: state.sources, images: state.images, signal: controller.signal, ...range,
       onProgress: (f) => { state.exporting.progress = f; render(); },
     });
     const f = ex.FORMATS[d.format];
@@ -678,6 +858,7 @@ function Toolbar() {
     <button class="secondary outline" data-testid="new-project" onClick=${newProject}>${t('ve.newProject')}</button>
     <button class="secondary" data-testid="open-project" onClick=${openProject}>${t('ve.openProject')}</button>
     <button class=${state.dirty ? '' : 'secondary outline'} data-testid="save-project" onClick=${() => saveProject()}>${t('ve.saveProject')}</button>
+    <button class="secondary outline" data-testid="save-project-zip" title=${t('ve.saveZipHint')} onClick=${() => saveProject(true, true)}>${t('ve.saveZip')}</button>
     <button class="secondary outline" data-testid="import" onClick=${async () => importFiles(await pickFiles())}>${t('ve.import')}</button>
     <button data-testid="export" onClick=${openExport}>${t('ve.export')}</button>
     <span class="ve-sep"></span>
@@ -729,9 +910,28 @@ function Preview() {
   </section>`;
 }
 
-function NumberField({ label, value, testid, step = 0.01, min, max, onCommit }) {
-  return html`<label>${label}<input type="number" data-testid=${testid} key=${`${testid}-${state.sel}-${state.rev}`} defaultValue=${Math.round(value * 1000) / 1000} step="any" min=${min} max=${max}
+function NumberField({ label, value, testid, step = 0.01, min, max, onCommit, rekey = '' }) {
+  return html`<label>${label}<input type="number" data-testid=${testid} key=${`${testid}-${state.sel}-${state.rev}-${rekey}`} defaultValue=${Math.round(value * 1000) / 1000} step="any" min=${min} max=${max}
     onChange=${(e) => { const v = Number(e.target.value); if (Number.isFinite(v)) onCommit(v); }} data-step=${step} /></label>`;
+}
+
+const KEY_DEFAULTS = { x: 0, y: 0, scale: 1, opacity: 1, rotation: 0 };
+
+/**
+ * A property that can be animated: the field shows its value at the playhead; with keyframes, typing sets a key there. ◆ adds a
+ * key at the playhead (or removes the one there).
+ */
+function KeyField({ c, prop, label, testid, factor = 1, min, max, clamp = (v) => v }) {
+  const local = Math.max(0, Math.min(tl.length(c), state.time - c.start));
+  const keyed = !!(c.keys && c.keys[prop] && c.keys[prop].length);
+  const value = tl.valueAt(c, prop, state.time, KEY_DEFAULTS[prop]) * factor;
+  const atKey = keyed && tl.keyNear(c, prop, local, 0.5 / state.project.fps);
+  const set = (v) => { const val = clamp(v / factor); if (keyed) commit(tl.setKey(state.project, c.id, prop, local, val)); else updateSelected({ [prop]: val }); };
+  const toggle = () => commit(atKey ? tl.removeKey(state.project, c.id, prop, local, 0.5 / state.project.fps) : tl.setKey(state.project, c.id, prop, local, tl.valueAt(c, prop, state.time, KEY_DEFAULTS[prop])));
+  return html`<div class="ve-keyfield">
+    <${NumberField} label=${label} testid=${testid} value=${value} min=${min} max=${max} rekey=${keyed ? Math.round(state.time * 1000) : ''} onCommit=${set} />
+    <button type="button" class=${`ve-key ${atKey ? 'on' : keyed ? 'some' : ''}`} data-testid=${`key-${prop}`} aria-pressed=${String(!!atKey)}
+      title=${t(atKey ? 've.keyRemove' : 've.keyAdd')} aria-label=${t(atKey ? 've.keyRemove' : 've.keyAdd')} onClick=${toggle}>◆</button></div>`;
 }
 
 function Properties() {
@@ -769,12 +969,14 @@ function Properties() {
           ${tl.TRANSITIONS.map((x) => html`<option value=${x} selected=${(c.transitionIn || 'fade') === x}>${t(`ve.tr.${x}`)}</option>`)}</select></label>
         <label>${t('ve.transitionOut')}<select data-testid="clip-transition-out" onChange=${(e) => updateSelected({ transitionOut: e.target.value })}>
           ${tl.TRANSITIONS.map((x) => html`<option value=${x} selected=${(c.transitionOut || 'fade') === x}>${t(`ve.tr.${x}`)}</option>`)}</select></label>` : null}
-      ${audible ? html`<label>${t('ve.volume')}<input type="range" min="0" max="200" step="5" data-testid="clip-volume" value=${Math.round(c.volume * 100)} onChange=${(e) => updateSelected({ volume: Number(e.target.value) / 100 })} /><small>${Math.round(c.volume * 100)} %</small></label>` : null}
+      ${audible ? html`<label>${t('ve.volume')}<input type="range" min="0" max="400" step="5" data-testid="clip-volume" value=${Math.round(c.volume * 100)} onChange=${(e) => updateSelected({ volume: Number(e.target.value) / 100 })} /><small>${Math.round(c.volume * 100)} %</small></label>` : null}
       ${visual ? html`
-        <${NumberField} label=${t('ve.x')} testid="clip-x" value=${c.x} onCommit=${(v) => updateSelected({ x: v })} />
-        <${NumberField} label=${t('ve.y')} testid="clip-y" value=${c.y} onCommit=${(v) => updateSelected({ y: v })} />
-        <${NumberField} label=${t('ve.scale')} testid="clip-scale" value=${c.scale * 100} min="1" onCommit=${(v) => updateSelected({ scale: Math.max(0.01, v / 100) })} />
-        <${NumberField} label=${t('ve.opacity')} testid="clip-opacity" value=${c.opacity * 100} min="0" max="100" onCommit=${(v) => updateSelected({ opacity: Math.max(0, Math.min(1, v / 100)) })} />` : null}
+        <${KeyField} c=${c} prop="x" label=${t('ve.x')} testid="clip-x" />
+        <${KeyField} c=${c} prop="y" label=${t('ve.y')} testid="clip-y" />
+        <${KeyField} c=${c} prop="scale" label=${t('ve.scale')} testid="clip-scale" factor=${100} min="1" clamp=${(v) => Math.max(0.01, v)} />
+        <${KeyField} c=${c} prop="opacity" label=${t('ve.opacity')} testid="clip-opacity" factor=${100} min="0" max="100" clamp=${(v) => Math.max(0, Math.min(1, v))} />` : null}
+    ${visual && c.keys && Object.values(c.keys).some((l) => l && l.length) ? html`<p class="ve-keys-hint"><small>${t('ve.keysHint')}</small>
+      <button type="button" class="secondary outline" data-testid="keys-clear" onClick=${() => updateSelected({ keys: null, ...Object.fromEntries(Object.entries(c.keys).filter(([, l]) => l && l.length).map(([k, l]) => [k, l[0].v])) })}>${t('ve.keysClear')}</button></p>` : null}
     </div>
     ${visual && c.kind !== 'text' ? html`<details class="ve-picture" open=${!!state.pictureOpen} onToggle=${(e) => { state.pictureOpen = e.target.open; }}>
       <summary data-testid="picture-section">${t('ve.picture')}</summary>
@@ -782,9 +984,26 @@ function Properties() {
         <${NumberField} label=${t('ve.brightness')} testid="clip-brightness" value=${c.brightness ?? 100} min="0" onCommit=${(v) => updateSelected({ brightness: Math.max(0, v) })} />
         <${NumberField} label=${t('ve.contrast')} testid="clip-contrast" value=${c.contrast ?? 100} min="0" onCommit=${(v) => updateSelected({ contrast: Math.max(0, v) })} />
         <${NumberField} label=${t('ve.saturation')} testid="clip-saturation" value=${c.saturation ?? 100} min="0" onCommit=${(v) => updateSelected({ saturation: Math.max(0, v) })} />
-        <${NumberField} label=${t('ve.rotation')} testid="clip-rotation" value=${c.rotation || 0} onCommit=${(v) => updateSelected({ rotation: v })} />
+        <${KeyField} c=${c} prop="rotation" label=${t('ve.rotation')} testid="clip-rotation" />
         ${['left', 'right', 'top', 'bottom'].map((side) => html`<${NumberField} label=${t(`ve.crop.${side}`)} testid=${`clip-crop-${side}`} value=${((c.crop || {})[side] || 0) * 100} min="0" max="90"
           onCommit=${(v) => updateSelected({ crop: { ...(c.crop || {}), [side]: Math.max(0, Math.min(0.9, v / 100)) } })} />`)}
+      </div>
+      <small>${t('ve.effects')}</small>
+      <div class="ve-grid">
+        <${NumberField} label=${t('ve.blur')} testid="clip-blur" value=${c.blur || 0} min="0" max="50" onCommit=${(v) => updateSelected({ blur: Math.max(0, Math.min(50, v)) })} />
+        <${NumberField} label=${t('ve.grayscale')} testid="clip-grayscale" value=${c.grayscale || 0} min="0" max="100" onCommit=${(v) => updateSelected({ grayscale: Math.max(0, Math.min(100, v)) })} />
+        <${NumberField} label=${t('ve.sepia')} testid="clip-sepia" value=${c.sepia || 0} min="0" max="100" onCommit=${(v) => updateSelected({ sepia: Math.max(0, Math.min(100, v)) })} />
+        <${NumberField} label=${t('ve.hue')} testid="clip-hue" value=${c.hue || 0} min="-180" max="180" onCommit=${(v) => updateSelected({ hue: v })} />
+        <label><input type="checkbox" data-testid="clip-invert" checked=${!!c.invert} onChange=${(e) => updateSelected({ invert: e.target.checked })} /> ${t('ve.invert')}</label>
+      </div>
+      <small>${t('ve.chromaKey')}</small>
+      <div class="ve-grid">
+        <label><input type="checkbox" data-testid="clip-key" checked=${!!(c.key && c.key.on)} onChange=${(e) => updateSelected({ key: { color: '#00ff00', tolerance: 30, softness: 10, spill: 50, ...(c.key || {}), on: e.target.checked } })} /> ${t('ve.keyOn')}</label>
+        ${c.key && c.key.on ? html`
+          <label>${t('ve.keyColor')}<input type="color" data-testid="clip-key-color" value=${c.key.color} onChange=${(e) => updateSelected({ key: { ...c.key, color: e.target.value } })} /></label>
+          <${NumberField} label=${t('ve.keyTolerance')} testid="clip-key-tolerance" value=${c.key.tolerance} min="0" max="100" onCommit=${(v) => updateSelected({ key: { ...c.key, tolerance: Math.max(0, Math.min(100, v)) } })} />
+          <${NumberField} label=${t('ve.keySoftness')} testid="clip-key-softness" value=${c.key.softness} min="0" max="100" onCommit=${(v) => updateSelected({ key: { ...c.key, softness: Math.max(0, Math.min(100, v)) } })} />
+          <${NumberField} label=${t('ve.keySpill')} testid="clip-key-spill" value=${c.key.spill} min="0" max="100" onCommit=${(v) => updateSelected({ key: { ...c.key, spill: Math.max(0, Math.min(100, v)) } })} />` : null}
       </div>
       <small>${t('ve.kenBurns')}</small>
       <div class="ve-grid">
@@ -792,8 +1011,20 @@ function Properties() {
         <${NumberField} label=${t('ve.endX')} testid="clip-end-x" value=${c.endX ?? c.x} onCommit=${(v) => updateSelected({ endX: v })} />
         <${NumberField} label=${t('ve.endY')} testid="clip-end-y" value=${c.endY ?? c.y} onCommit=${(v) => updateSelected({ endY: v })} />
       </div>
-      <button class="secondary outline" data-testid="picture-reset" onClick=${() => updateSelected({ brightness: 100, contrast: 100, saturation: 100, rotation: 0, crop: null, endScale: null, endX: null, endY: null })}>${t('ve.resetPicture')}</button>
+      <button class="secondary outline" data-testid="picture-reset" onClick=${() => updateSelected({ brightness: 100, contrast: 100, saturation: 100, rotation: 0, crop: null, endScale: null, endX: null, endY: null, blur: 0, grayscale: 0, sepia: 0, hue: 0, invert: false, key: null })}>${t('ve.resetPicture')}</button>
     </details>` : null}
+    <details class="ve-picture" open=${!!state.xfadeOpen} onToggle=${(e) => { state.xfadeOpen = e.target.open; }}>
+      <summary data-testid="xfade-section">${t('ve.xfade')}</summary>
+      <div class="ve-grid">
+        <${NumberField} label=${t('ve.xfadeLength')} testid="xfade-length" value=${state.xfadeLength} min="0.05" onCommit=${(v) => { state.xfadeLength = Math.max(0.05, v); }} />
+        ${visual ? html`<label>${t('ve.xfadeType')}<select data-testid="xfade-type" onChange=${(e) => { state.xfadeType = e.target.value; }}>
+          ${tl.TRANSITIONS.map((x) => html`<option value=${x} selected=${state.xfadeType === x}>${t(`ve.tr.${x}`)}</option>`)}</select></label>` : null}
+      </div>
+      <div class="ve-buttons">
+        <button class="secondary outline" data-testid="xfade-next" disabled=${!nextOf(c)} onClick=${() => crossfadeNext(c)}>${t('ve.xfadeNext')}</button>
+        <button class="secondary outline" data-testid="xfade-track" onClick=${() => transitionsTrack(c.track)}>${t('ve.xfadeTrack')}</button>
+      </div>
+    </details>
     ${c.kind === 'text' ? html`
       <label>${t('ve.text')}<textarea rows="2" data-testid="title-text" key=${`tt${c.id}${state.rev}`} onChange=${(e) => updateSelected({ text: { ...c.text, content: e.target.value } })}>${c.text.content}</textarea></label>
       <div class="ve-grid">
@@ -805,6 +1036,9 @@ function Properties() {
       </div>` : null}
     <div class="ve-buttons">
       <button class="secondary outline" data-testid="clip-split" onClick=${split}>✂ ${t('ve.split')}</button>
+      ${audible ? html`<button class="secondary outline" data-testid="clip-edit-audio" title=${t('ve.editAudioHint')} onClick=${() => editInAudioEditor(c)}>🎚 ${t('ve.editAudio')}</button>` : null}
+      ${audible ? html`<button class="secondary outline" data-testid="clip-normalize" title=${t('ve.normalizeHint')} onClick=${() => normalizeClip(c).catch(fail)}>${t('ve.normalize')}</button>` : null}
+      ${c.kind === 'video' ? html`<button class="secondary outline" data-testid="clip-freeze" title=${t('ve.freezeHint')} onClick=${() => freezeFrame()}>❄ ${t('ve.freeze')}</button>` : null}
       <button class="secondary outline" data-testid="clip-delete" onClick=${() => deleteSelected(false)}>${t('ve.delete')}</button>
       <button class="secondary outline" data-testid="clip-ripple" onClick=${() => deleteSelected(true)}>${t('ve.ripple')}</button>
     </div>
@@ -817,7 +1051,9 @@ function Ruler({ width }) {
   const marks = [];
   for (let s = 0; s * state.pps < width; s += step) marks.push(s);
   return html`<div class="ve-ruler" data-testid="ruler" onPointerDown=${scrub}>
-    ${marks.map((s) => html`<span style=${`left:${s * state.pps}px`}>${fmt(s).replace(/\.00$/, '')}</span>`)}</div>`;
+    ${marks.map((s) => html`<span style=${`left:${s * state.pps}px`}>${fmt(s).replace(/\.00$/, '')}</span>`)}
+    ${(state.project.markers || []).map((m) => html`<button type="button" class="ve-marker" data-testid="marker" title=${m.text || fmt(m.t)} style=${`left:${m.t * state.pps}px`}
+      onPointerDown=${(e) => { e.stopPropagation(); seek(m.t); }} onDblClick=${(e) => { e.stopPropagation(); state.dialog = { kind: 'marker', id: m.id }; render(); }}>${m.text ? html`<span>${m.text}</span>` : null}</button>`)}</div>`;
 }
 
 function Timeline() {
@@ -863,6 +1099,7 @@ function Timeline() {
               ${s && s.peaks && (c.kind === 'audio' || c.kind === 'video') ? html`<canvas class=${`ve-wave ${c.kind}`} data-testid="waveform" ref=${(el) => drawWave(el, c, s)}></canvas>` : null}
               <span class="ve-clip-label">${c.kind === 'text' ? `T ${c.text.content}` : s ? `${c.reverse ? '◀ ' : ''}${tl.speedOf(c) !== 1 ? `${Math.round(tl.speedOf(c) * 100)} % ` : ''}${s.name}` : ''}</span>
               ${c.fadeIn > 0 ? html`<span class="ve-fade in" style=${`width:${c.fadeIn * state.pps}px`}></span>` : null}
+              ${c.keys ? [...new Set(Object.values(c.keys).flatMap((l) => (l || []).map((k) => k.t)))].map((kt) => html`<span class="ve-keymark" data-testid="keymark" style=${`left:${kt * state.pps}px`}>◆</span>`) : null}
               ${c.fadeOut > 0 ? html`<span class="ve-fade out" style=${`width:${c.fadeOut * state.pps}px`}></span>` : null}
               <span class="ve-handle right" data-testid="trim-right" onPointerDown=${(e) => clipDown(e, c, 'right')}></span>
             </div>`;
@@ -881,10 +1118,24 @@ function ExportDialog() {
     <header><strong>${t('ve.export')}</strong></header>
     <form onSubmit=${(e) => { e.preventDefault(); state.dialog = null; render(); runExport(d); }}>
       <label>${t('ve.fileName')}<input data-testid="export-name" defaultValue=${d.stem} onInput=${(e) => { d.stem = e.target.value; }} /></label>
+      <label>${t('ve.exportWhat')}<select data-testid="export-what" onChange=${(e) => { d.what = e.target.value; render(); }}>
+        <option value="video" selected=${d.what === 'video'}>${t('ve.whatVideo')}</option><option value="audio" selected=${d.what === 'audio'}>${t('ve.whatAudio')}</option>
+        <option value="gif" selected=${d.what === 'gif'}>${t('ve.whatGif')}</option></select></label>
+      ${d.what === 'gif' ? html`<div class="ve-grid">
+        <label>${t('ve.gifWidth')}<input type="number" min="16" max="1920" step="1" data-testid="export-gif-width" value=${d.gifWidth} onChange=${(e) => { d.gifWidth = Math.max(16, Math.min(1920, Math.round(Number(e.target.value) || 480))); }} /></label>
+        <label>${t('ve.gifFps')}<select data-testid="export-gif-fps" onChange=${(e) => { d.gifFps = Number(e.target.value); }}>${[5, 8, 10, 12, 15, 20, 25].map((f) => html`<option value=${f} selected=${d.gifFps === f}>${f}</option>`)}</select></label>
+        <label><input type="checkbox" checked=${d.gifDither} data-testid="export-gif-dither" onChange=${(e) => { d.gifDither = e.target.checked; }} /> ${t('ve.gifDither')}</label></div>
+        <small>${t('ve.gifHint')}</small>` : d.what === 'audio' ? html`<label>${t('ve.format')}<select data-testid="export-audio-format" onChange=${(e) => { d.audioFormat = e.target.value; }}>
+        ${d.audioFormats.map((k) => html`<option value=${k} selected=${d.audioFormat === k}>${ex.AUDIO_FORMATS[k].label}</option>`)}</select></label>` : html`
       <label>${t('ve.format')}<select data-testid="export-format" onChange=${(e) => { d.format = e.target.value; }}>
         ${d.formats.map((k) => html`<option value=${k} selected=${d.format === k}>${ex.FORMATS[k].label}</option>`)}</select></label>
       <label>${t('ve.quality')}<select data-testid="export-quality" onChange=${(e) => { d.quality = e.target.value; }}>
-        ${Object.keys(ex.QUALITIES).map((q) => html`<option value=${q} selected=${d.quality === q}>${t(`ve.${q}`)}</option>`)}</select></label>
+        ${Object.keys(ex.QUALITIES).map((q) => html`<option value=${q} selected=${d.quality === q}>${t(`ve.${q}`)}</option>`)}</select></label>`}
+      <div class="ve-grid">
+        <label>${t('ve.exportFrom')}<input type="number" step="any" min="0" data-testid="export-from" value=${Math.round(d.from * 100) / 100} onChange=${(e) => { d.from = Math.max(0, Number(e.target.value) || 0); }} /></label>
+        <label>${t('ve.exportTo')}<input type="number" step="any" min="0" data-testid="export-to" value=${Math.round(d.to * 100) / 100} onChange=${(e) => { d.to = Math.max(0, Number(e.target.value) || 0); }} /></label>
+      </div>
+      ${(state.project.markers || []).length >= 2 ? html`<small>${t('ve.rangeFromMarkers')} ${(state.project.markers || []).map((m, i, all) => (i < all.length - 1 ? html`<a href="#" data-testid="export-marker-range" onClick=${(e) => { e.preventDefault(); d.from = m.t; d.to = all[i + 1].t; render(); }}>${m.text || fmt(m.t)} – ${all[i + 1].text || fmt(all[i + 1].t)}</a> ` : null))}</small>` : null}
       <small>${state.project.width} × ${state.project.height}, ${state.project.fps} fps, ${fmt(tl.duration(state.project))}</small>
       <footer><button type="button" class="secondary" onClick=${() => { state.dialog = null; render(); }}>${t('ve.cancel')}</button><button type="submit" data-testid="export-ok">${t('ve.export')}</button></footer>
     </form>
@@ -909,7 +1160,7 @@ function Main() {
         <button class=${`secondary ${state.panel === 'props' ? '' : 'outline'}`} data-testid="tab-props" onClick=${() => { state.panel = 'props'; render(); }}>${t('ve.properties')}</button>
       </span></div>
     <div class="ve-top"><${MediaBin} /><${Preview} /><${Properties} /></div>
-    <${Timeline} /><${ExportDialog} /><${Progress} />
+    <${Timeline} /><${ExportDialog} /><${MarkerDialog} /><${Progress} />
   </div>`;
 }
 
@@ -927,7 +1178,7 @@ document.addEventListener('keydown', (e) => {
   if (mod && e.key.toLowerCase() === 'o') { e.preventDefault(); openProject(); return; }
   if (state.dialog || state.exporting || e.target.closest('input, textarea, select, [contenteditable]')) return;
   const keys = {
-    ' ': () => (state.playing ? stop() : play()), s: split, Delete: () => deleteSelected(e.shiftKey), Backspace: () => deleteSelected(e.shiftKey),
+    ' ': () => (state.playing ? stop() : play()), s: split, f: freezeFrame, m: addMarker, ',': () => jumpMarker(-1), '.': () => jumpMarker(1), Delete: () => deleteSelected(e.shiftKey), Backspace: () => deleteSelected(e.shiftKey),
     ArrowLeft: () => seek(state.time - (e.shiftKey ? 1 : frame())), ArrowRight: () => seek(state.time + (e.shiftKey ? 1 : frame())),
     Home: () => seek(0), End: () => seek(tl.duration(state.project)), '+': () => zoom(2), '-': () => zoom(0.5),
   };
@@ -936,7 +1187,7 @@ document.addEventListener('keydown', (e) => {
   if (fn) { e.preventDefault(); fn(); }
 });
 
-Suite.bridge.receive((picked) => (/\.json$/i.test(picked.file.name) ? loadProject(picked) : importFiles([picked.file])), { app: 'videoeditor' }); // files opened from other apps ("Open with…")
+Suite.bridge.receive((picked) => (/\.(json|zip)$/i.test(picked.file.name) ? loadProject(picked) : importFiles([picked.file])), { app: 'videoeditor' }); // files opened from other apps ("Open with…")
 
 // the open file(s) for "Create an archive from the open files" (about dialog)
 // (the project only: its media files are not part of it)

@@ -6,6 +6,8 @@
  * Tool interface: { id, down(p, e), move(p, e), up(p, e), overlay(ctx, zoom) } — all optional except id.
  */
 import { canvas, copyCanvas, selectionPath, maskSelection, combineSelections } from '@app/doc.js';
+import { Stroke, tipById } from '@app/brushes.js';
+import { transformTool } from '@app/transform.js';
 
 function hexToRgba(hex, alpha = 1) {
   const n = parseInt(hex.slice(1), 16);
@@ -31,12 +33,11 @@ function composeStroke(ed, base, stroke, erase) {
   const ctx = work.getContext('2d');
   ctx.clearRect(0, 0, work.width, work.height);
   ctx.drawImage(base, 0, 0);
-  ctx.save();
-  ed.doc.clip(ctx);
-  ctx.globalAlpha = ed.opts.opacity;
-  ctx.globalCompositeOperation = erase ? 'destination-out' : 'source-over';
-  ctx.drawImage(stroke, 0, 0);
-  ctx.restore();
+  ed.doc.paintThrough(ctx, (c) => {
+    c.globalAlpha = ed.opts.opacity;
+    c.globalCompositeOperation = erase ? 'destination-out' : 'source-over';
+    c.drawImage(stroke, 0, 0);
+  });
 }
 
 function finishPreview(ed) {
@@ -49,34 +50,25 @@ function finishPreview(ed) {
 // ---- painting ---------------------------------------------------------------------------------------
 
 function paintTool(id, { erase = false, pixel = false } = {}) {
-  let base, stroke, last;
+  let base, stroke, last, dabs;
+  const pressureOf = (e) => (e.pointerType === 'pen' && e.pressure > 0 ? e.pressure : 1);
   const draw = (p, e) => {
+    if (!pixel) { dabs.to(p, pressureOf(e)); return; }
+    // pencil: hard square pixels along the line (Bresenham), no antialiasing
     const ctx = stroke.getContext('2d');
-    const pressure = e.pointerType === 'pen' && e.pressure > 0 ? e.pressure : 1;
-    const size = Math.max(1, ed_opts.size * pressure);
-    ctx.fillStyle = ctx.strokeStyle = erase ? '#000' : ed_colors.primary;
-    if (pixel) {
-      // pencil: hard square pixels along the line (Bresenham), no antialiasing
-      let x0 = Math.floor(last.x), y0 = Math.floor(last.y);
-      const x1 = Math.floor(p.x), y1 = Math.floor(p.y);
-      const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
-      let err = dx + dy;
-      const half = Math.floor(size / 2);
-      for (;;) {
-        ctx.fillRect(x0 - half, y0 - half, Math.round(size), Math.round(size));
-        if (x0 === x1 && y0 === y1) break;
-        const e2 = 2 * err;
-        if (e2 >= dy) { err += dy; x0 += sx; }
-        if (e2 <= dx) { err += dx; y0 += sy; }
-      }
-    } else {
-      ctx.lineCap = ctx.lineJoin = 'round';
-      ctx.lineWidth = size;
-      ctx.beginPath();
-      ctx.moveTo(last.x, last.y);
-      ctx.lineTo(p.x, p.y);
-      ctx.stroke();
-      if (last.x === p.x && last.y === p.y) { ctx.beginPath(); ctx.arc(p.x, p.y, size / 2, 0, Math.PI * 2); ctx.fill(); }
+    const size = Math.max(1, ed_opts.size * pressureOf(e));
+    ctx.fillStyle = erase ? '#000' : ed_colors.primary;
+    let x0 = Math.floor(last.x), y0 = Math.floor(last.y);
+    const x1 = Math.floor(p.x), y1 = Math.floor(p.y);
+    const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+    let err = dx + dy;
+    const half = Math.floor(size / 2);
+    for (;;) {
+      ctx.fillRect(x0 - half, y0 - half, Math.round(size), Math.round(size));
+      if (x0 === x1 && y0 === y1) break;
+      const e2 = 2 * err;
+      if (e2 >= dy) { err += dy; x0 += sx; }
+      if (e2 <= dx) { err += dx; y0 += sy; }
     }
     last = p;
   };
@@ -88,23 +80,33 @@ function paintTool(id, { erase = false, pixel = false } = {}) {
       ed_opts = ed.opts; ed_colors = ed.colors;
       base = copyCanvas(ed.doc.layer.canvas);
       stroke = canvas(ed.doc.width, ed.doc.height);
+      if (!pixel) {
+        // brush tips (brushes.js): dabs along the stroke
+        const b = ed.opts.brush || {};
+        const tip = tipById(b.tip || 'round');
+        dabs = new Stroke(stroke, { tip, size: ed.opts.size, spacing: b.spacing ?? 10, angle: b.angle || 0,
+          hardness: tip.mask || b.hardness == null ? undefined : b.hardness / 100, pressureSize: b.pressureSize !== false,
+          pressureOpacity: !!b.pressureOpacity, color: erase ? '#000000' : ed.colors.primary });
+      }
       ed.preview = { layer: ed.doc.layer, canvas: canvas(ed.doc.width, ed.doc.height) };
       last = p;
       draw(p, e);
+      if (dabs) dabs.flush();
       composeStroke(ed, base, stroke, erase);
     },
     move(p, e, ed) {
       if (!stroke) return;
       for (const ev of (e.getCoalescedEvents ? e.getCoalescedEvents() : []).slice(0, -1)) draw(ed.toImage(ev), ev);
       draw(p, e);
+      if (dabs) dabs.flush();
       composeStroke(ed, base, stroke, erase);
     },
     up(p, e, ed) {
       if (!stroke) return;
       finishPreview(ed);
-      base = stroke = null;
+      base = stroke = dabs = null;
     },
-    cancel(ed) { ed.preview = null; base = stroke = null; },
+    cancel(ed) { ed.preview = null; base = stroke = dabs = null; },
   };
 }
 
@@ -259,13 +261,12 @@ function smudgeTool() {
     move(p, e, ed) {
       if (!work) return;
       const ctx = work.getContext('2d');
-      ctx.save();
-      ed.doc.clip(ctx);
-      for (const q of along(last, p, Math.max(1, ed.opts.size / 8))) {
-        dabFrom(ctx, work, q, Math.round(last.x - q.x), Math.round(last.y - q.y), ed.opts.size, ed.opts.opacity);
-        last = q;
-      }
-      ctx.restore();
+      ed.doc.paintThrough(ctx, () => {
+        for (const q of along(last, p, Math.max(1, ed.opts.size / 8))) {
+          dabFrom(ctx, work, q, Math.round(last.x - q.x), Math.round(last.y - q.y), ed.opts.size, ed.opts.opacity);
+          last = q;
+        }
+      });
       this.show(ed);
     },
     show(ed) {
@@ -443,11 +444,7 @@ function shapeTool(id, kind) {
       if (Math.hypot(end.x - start.x, end.y - start.y) >= 1) {
         ed.doc.record('layer');
         const ctx = ed.doc.layer.canvas.getContext('2d');
-        ctx.save();
-        ed.doc.clip(ctx);
-        ctx.globalAlpha = ed.opts.opacity;
-        drawShape(ctx, kind, start, end, ed);
-        ctx.restore();
+        ed.doc.paintThrough(ctx, (c) => { c.globalAlpha = ed.opts.opacity; drawShape(c, kind, start, end, ed); });
         ed.doc.dirty = true;
         ed.changed();
       }
@@ -485,11 +482,7 @@ function gradientTool() {
       if (Math.hypot(end.x - start.x, end.y - start.y) >= 1) {
         ed.doc.record('layer');
         const ctx = ed.doc.layer.canvas.getContext('2d');
-        ctx.save();
-        ed.doc.clip(ctx);
-        ctx.globalAlpha = ed.opts.opacity;
-        paint(ctx, ed);
-        ctx.restore();
+        ed.doc.paintThrough(ctx, (c) => { c.globalAlpha = ed.opts.opacity; paint(c, ed); });
         ed.doc.dirty = true;
         ed.changed();
       }
@@ -511,20 +504,7 @@ function gradientTool() {
 
 // ---- text ---------------------------------------------------------------------------------------------
 
-export function drawText(doc, p, text, { color, font = 'sans-serif', fontSize = 32, bold = false, italic = false, opacity = 1 }) {
-  if (!text) return;
-  doc.record('layer');
-  const ctx = doc.layer.canvas.getContext('2d');
-  ctx.save();
-  doc.clip(ctx);
-  ctx.globalAlpha = opacity;
-  ctx.fillStyle = color;
-  ctx.textBaseline = 'top';
-  ctx.font = `${italic ? 'italic ' : ''}${bold ? 'bold ' : ''}${fontSize}px ${font}`;
-  text.split('\n').forEach((line, i) => ctx.fillText(line, p.x, p.y + i * fontSize * 1.25));
-  ctx.restore();
-  doc.dirty = true;
-}
+// (text layers: doc.js addTextLayer / setText / renderText; the text tool opens the text dialog in main.js)
 
 const textTool = {
   id: 'text',
@@ -680,7 +660,7 @@ const wandTool = {
 // ---- move ---------------------------------------------------------------------------------------------------
 
 function moveTool() {
-  let start = null, base = null, float = null, sel = null;
+  let start = null, base = null, float = null, sel = null, text = null;
   const compose = (ed, dx, dy) => {
     const ctx = ed.preview.canvas.getContext('2d');
     ctx.clearRect(0, 0, ed.doc.width, ed.doc.height);
@@ -695,6 +675,8 @@ function moveTool() {
   return {
     id: 'move',
     down(p, e, ed) {
+      // a text layer moved as a whole stays a text layer (its position changes)
+      text = !ed.doc.selection && ed.doc.layer.text ? ed.doc.layer.text : null;
       ed.doc.record('layer');
       start = p;
       const layer = ed.doc.layer;
@@ -704,9 +686,16 @@ function moveTool() {
         // lift the selected pixels: float = selection content, base = layer without it
         float = canvas(ed.doc.width, ed.doc.height);
         const fctx = float.getContext('2d');
-        fctx.save(); fctx.beginPath(); selectionPath(fctx, sel); fctx.clip(); fctx.drawImage(base, 0, 0); fctx.restore();
         const bctx = base.getContext('2d');
-        bctx.save(); bctx.beginPath(); selectionPath(bctx, sel); bctx.clip(); bctx.clearRect(0, 0, base.width, base.height); bctx.restore();
+        if (sel.type === 'alpha') {
+          // partly selected pixels: that much of them moves, the rest stays
+          const m = ed.doc.maskCanvas(sel);
+          fctx.drawImage(base, 0, 0); fctx.globalCompositeOperation = 'destination-in'; fctx.drawImage(m, 0, 0); fctx.globalCompositeOperation = 'source-over';
+          bctx.globalCompositeOperation = 'destination-out'; bctx.drawImage(m, 0, 0); bctx.globalCompositeOperation = 'source-over';
+        } else {
+          fctx.save(); fctx.beginPath(); selectionPath(fctx, sel); fctx.clip(); fctx.drawImage(base, 0, 0); fctx.restore();
+          bctx.save(); bctx.beginPath(); selectionPath(bctx, sel); bctx.clip(); bctx.clearRect(0, 0, base.width, base.height); bctx.restore();
+        }
       } else float = null;
       ed.preview = { layer, canvas: canvas(ed.doc.width, ed.doc.height) };
       compose(ed, 0, 0);
@@ -723,11 +712,113 @@ function moveTool() {
       const [dx, dy] = offset(ed, p);
       compose(ed, dx, dy);
       if (sel) ed.doc.selection = { ...sel, x: sel.x + dx, y: sel.y + dy };
+      const layer = ed.doc.layer;
       if (dx || dy) finishPreview(ed); else { ed.preview = null; ed.doc.undoStack.pop(); }
-      start = base = float = null;
+      if (text) layer.text = dx || dy ? { ...text, x: text.x + dx, y: text.y + dy } : text;
+      start = base = float = text = null;
       ed.render();
     },
-    cancel(ed) { if (sel) ed.doc.selection = sel; ed.preview = null; start = base = float = null; },
+    cancel(ed) {
+      if (sel) ed.doc.selection = sel;
+      if (text && ed.preview) ed.preview.layer.text = text;
+      ed.preview = null; start = base = float = text = null;
+    },
+  };
+}
+
+// ---- crop tool and straighten ----------------------------------------------------------------------------------
+
+/** Aspect ratios of the crop tool ('original': the image's; turned upright when the drag is taller than wide). */
+export const CROP_RATIOS = ['free', 'original', '1:1', '4:3', '3:2', '16:9', '5:4'];
+
+function cropTool() {
+  let start = null;
+  const ratioOf = (ed) => {
+    const r = ed.opts.cropRatio || 'free';
+    if (r === 'free') return null;
+    if (r === 'original') return ed.doc.width / ed.doc.height;
+    const [a, b] = r.split(':').map(Number);
+    return a / b;
+  };
+  const rectTo = (ed, p) => {
+    let dx = p.x - start.x, dy = p.y - start.y;
+    let ratio = ratioOf(ed);
+    if (ratio) {
+      if (ratio !== 1 && ed.opts.cropRatio !== 'original' && Math.abs(dy) > Math.abs(dx)) ratio = 1 / ratio; // (portrait)
+      if (Math.abs(dy) * ratio > Math.abs(dx)) dx = Math.sign(dx || 1) * Math.abs(dy) * ratio; else dy = Math.sign(dy || 1) * Math.abs(dx) / ratio;
+    }
+    let x0 = Math.round(Math.min(start.x, start.x + dx)), y0 = Math.round(Math.min(start.y, start.y + dy));
+    let x1 = Math.round(Math.max(start.x, start.x + dx)), y1 = Math.round(Math.max(start.y, start.y + dy));
+    x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(ed.doc.width, x1); y1 = Math.min(ed.doc.height, y1);
+    return x1 - x0 >= 1 && y1 - y0 >= 1 ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : null;
+  };
+  return {
+    id: 'crop',
+    snaps: true,
+    down(p, e, ed) { start = p; ed.cropRect = null; ed.render(); },
+    move(p, e, ed) { if (!start) return; ed.cropRect = rectTo(ed, p); ed.render(); },
+    up(p, e, ed) { if (!start) return; ed.cropRect = rectTo(ed, p); start = null; ed.render(); ed.refresh(); },
+    onKey(e, ed) {
+      if (e.key === 'Enter' && ed.cropRect) { ed.applyCrop(); return true; }
+      if (e.key === 'Escape' && ed.cropRect) { ed.cropRect = null; ed.refresh(); return true; }
+      return false;
+    },
+    overlay(ctx, zoom, ed) {
+      const r = ed.cropRect;
+      if (!r) return;
+      ctx.save();
+      // the part that goes away is darkened; thirds help with the composition
+      ctx.fillStyle = 'rgba(0,0,0,.55)';
+      ctx.beginPath();
+      ctx.rect(0, 0, ed.doc.width, ed.doc.height);
+      ctx.rect(r.x, r.y, r.w, r.h);
+      ctx.fill('evenodd');
+      ctx.lineWidth = 1 / zoom;
+      ctx.strokeStyle = 'rgba(255,255,255,.9)';
+      ctx.strokeRect(r.x, r.y, r.w, r.h);
+      ctx.strokeStyle = 'rgba(255,255,255,.4)';
+      ctx.beginPath();
+      for (const f of [1 / 3, 2 / 3]) { ctx.moveTo(r.x + r.w * f, r.y); ctx.lineTo(r.x + r.w * f, r.y + r.h); ctx.moveTo(r.x, r.y + r.h * f); ctx.lineTo(r.x + r.w, r.y + r.h * f); }
+      ctx.stroke();
+      ctx.restore();
+    },
+    cancel(ed) { start = null; if (ed) ed.cropRect = null; },
+  };
+}
+
+/** The rotation (degrees) that makes a line from a to b level, or upright when it is closer to vertical. */
+export function straightenAngle(a, b) {
+  let deg = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
+  if (deg > 90) deg -= 180; else if (deg <= -90) deg += 180;
+  if (Math.abs(deg) > 45) deg -= Math.sign(deg) * 90;
+  return -deg;
+}
+
+/** Straighten (Image menu): draw a line along something that should be level or upright; then the rotate dialog opens. */
+function straightenTool() {
+  let start = null, end = null;
+  return {
+    id: 'straighten',
+    hidden: true,
+    down(p) { start = end = p; },
+    move(p, e, ed) { if (start) { end = p; ed.render(); } },
+    up(p, e, ed) {
+      if (!start) return;
+      end = p;
+      const a = start, b = end;
+      start = end = null;
+      if (Math.hypot(b.x - a.x, b.y - a.y) < 3) { ed.render(); return; }
+      ed.straightened(straightenAngle(a, b));
+    },
+    overlay(ctx, zoom) {
+      if (!start) return;
+      ctx.save();
+      ctx.lineWidth = 2 / zoom;
+      ctx.strokeStyle = '#ffeb3b';
+      ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(end.x, end.y); ctx.stroke();
+      ctx.restore();
+    },
+    cancel() { start = end = null; },
   };
 }
 
@@ -750,5 +841,8 @@ export const TOOLS = [
   { ...shapeTool('rect', 'rect'), icon: '▭', key: 'r', snaps: true },
   { ...shapeTool('ellipse', 'ellipse'), icon: '◯', key: 'o', snaps: true },
   { ...textTool, icon: 'T', key: 't', snaps: true },
+  { ...cropTool(), icon: '⛶', key: 'c' },
+  Object.assign(transformTool(), { icon: '⤡' }),
   { id: 'hand', icon: '✋', key: 'h' },
+  straightenTool(),
 ];

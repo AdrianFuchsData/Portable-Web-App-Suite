@@ -43,7 +43,17 @@ Suite.i18n.register({
     'ae.mono': 'mono', 'ae.stereo': 'stereo', 'ae.range': 'Range', 'ae.all': 'everything', 'ae.selection': 'selection', 'ae.untitled': 'Audio',
     'ae.discard': 'Discard the unsaved changes?', 'ae.cannotOpen': '“{0}” cannot be opened: {1}', 'ae.track': 'Track {0}', 'ae.mute': 'Mute', 'ae.solo': 'Solo',
     'ae.envelope': 'Volume automation: click in the track adds a point, drag moves it, double-click removes it',
-    'ae.equalizer': 'Equaliser…', 'ae.compressor': 'Compressor…', 'ae.limiter': 'Limiter…', 'ae.reverb': 'Reverb…', 'ae.pitch': 'Change pitch…', 'ae.noiseReduction': 'Noise reduction…',
+    'ae.equalizer': 'Equaliser…', 'ae.compressor': 'Compressor…', 'ae.limiter': 'Limiter…', 'ae.reverb': 'Reverb…', 'ae.pitch': 'Change pitch…', 'ae.noiseReduction': 'Noise reduction…', 'ae.autoDuck': 'Auto duck…', 'ae.duckNeedsTwo': 'Auto duck needs two tracks: a voice and the music to lower.', 'ae.duckControl': 'Lower the others while this track sounds', 'ae.duckAmountDb': 'Lower by (dB)',
+    'ae.fadeDownS': 'Fade down before (s)', 'ae.fadeUpS': 'Fade up after (s)', 'ae.maxPauseS': 'Stay down in pauses up to (s)', 'ae.duckNothing': 'The control track never gets louder than the threshold.', 'ae.duckDone': '{0} passages: the volume automation of {1} ducks there (editable).',
+    'ae.parametricEq': 'Parametric equaliser…', 'ae.peqHint': 'Drag a point to change frequency and gain, the mouse wheel changes Q (the width) of the chosen band.', 'ae.peqType': 'Type', 'ae.peqGain': 'Gain (dB)', 'ae.peqAdd': 'Band', 'ae.peqRemove': 'Remove the band', 'ae.peqReset': 'Reset',
+    'ae.eq.peaking': 'Bell', 'ae.eq.lowshelf': 'Low shelf', 'ae.eq.highshelf': 'High shelf', 'ae.eq.lowpass': 'Low pass', 'ae.eq.highpass': 'High pass', 'ae.eq.notch': 'Notch',
+    'ae.clickRemoval': 'Click removal…', 'ae.deEsser': 'De-esser…', 'ae.clickSensitivity': 'Sensitivity (lower finds more)', 'ae.clickWidthMs': 'Longest click (ms)', 'ae.clicksFixed': '{0} clicks removed.',
+    'ae.plotSpectrum': 'Plot spectrum…', 'ae.fftSize': 'Window size (samples)', 'ae.exportCsv': 'Export as CSV', 'ae.close': 'Close', 'ae.spectrumHint': 'Point at the graph to read frequencies and levels.',
+    'ae.spectrumAt': '{0} Hz – peak {1} Hz, {2} dB ({3})', 'ae.split': 'Split into files', 'ae.split.none': 'One file', 'ae.split.labels': 'One file per label (ZIP)', 'ae.split.clips': 'One file per clip (ZIP)',
+    'ae.tags': 'Tags (title, artist, …)', 'ae.tag.title': 'Title', 'ae.tag.artist': 'Artist', 'ae.tag.album': 'Album', 'ae.tag.year': 'Year', 'ae.tag.track': 'Track number', 'ae.tag.genre': 'Genre', 'ae.tag.comment': 'Comment',
+    'ae.splitTagsHint': 'Every file gets the label or clip name as its title and its number as the track number.', 'ae.noLabels': 'There are no labels to split at.', 'ae.noClips': 'There are no clips.', 'ae.loudness': 'Normalise loudness (LUFS)…', 'ae.truncateSilence': 'Truncate silence…', 'ae.noiseGate': 'Noise gate…', 'ae.measureLoudness': 'Measure loudness',
+    'ae.targetLufs': 'Target loudness (LUFS)', 'ae.minPauseS': 'Pauses longer than (s)', 'ae.keepPauseS': 'Shorten them to (s)', 'ae.holdMs': 'Hold (ms)',
+    'ae.loudnessIs': 'Loudness: {0} LUFS, peak {1} dBFS.', 'ae.loudnessDone': '{0}: {1} → {2} LUFS.', 'ae.loudnessLimited': '⚠ {0}: {1} → {2} LUFS (the peak ceiling did not allow more).',
     'ae.bassDb': 'Bass (dB)', 'ae.middleDb': 'Middle (dB)', 'ae.trebleDb': 'Treble (dB)', 'ae.thresholdDb': 'Threshold (dB)', 'ae.ratio': 'Ratio (:1)', 'ae.attackMs': 'Attack (ms)',
     'ae.releaseMs': 'Release (ms)', 'ae.makeupDb': 'Make-up gain (dB)', 'ae.ceilingDb': 'Ceiling (dB)', 'ae.roomS': 'Room size (reverb time, s)', 'ae.wetPct': 'Reverb amount (%)',
     'ae.semitones': 'Semitones', 'ae.reductionDb': 'Reduction (dB)', 'ae.gateSensitivity': 'Noise threshold (× noise level − 1)',
@@ -79,7 +89,17 @@ Suite.i18n.register({
     'ae.mono': 'Mono', 'ae.stereo': 'Stereo', 'ae.range': 'Bereich', 'ae.all': 'alles', 'ae.selection': 'Auswahl', 'ae.untitled': 'Audio',
     'ae.discard': 'Die ungespeicherten Änderungen verwerfen?', 'ae.cannotOpen': '„{0}“ kann nicht geöffnet werden: {1}', 'ae.track': 'Spur {0}', 'ae.mute': 'Stumm', 'ae.solo': 'Solo',
     'ae.envelope': 'Lautstärkeverlauf: Klick in die Spur fügt einen Punkt hinzu, Ziehen verschiebt ihn, Doppelklick entfernt ihn',
-    'ae.equalizer': 'Equalizer…', 'ae.compressor': 'Kompressor…', 'ae.limiter': 'Limiter…', 'ae.reverb': 'Hall…', 'ae.pitch': 'Tonhöhe ändern…', 'ae.noiseReduction': 'Rauschminderung…',
+    'ae.equalizer': 'Equalizer…', 'ae.compressor': 'Kompressor…', 'ae.limiter': 'Limiter…', 'ae.reverb': 'Hall…', 'ae.pitch': 'Tonhöhe ändern…', 'ae.noiseReduction': 'Rauschminderung…', 'ae.autoDuck': 'Automatisch absenken (Ducking)…', 'ae.duckNeedsTwo': 'Ducking braucht zwei Spuren: eine Stimme und die Musik, die leiser werden soll.', 'ae.duckControl': 'Die anderen absenken, während diese Spur klingt', 'ae.duckAmountDb': 'Absenken um (dB)',
+    'ae.fadeDownS': 'Ausblenden davor (s)', 'ae.fadeUpS': 'Einblenden danach (s)', 'ae.maxPauseS': 'In Pausen bis (s) unten bleiben', 'ae.duckNothing': 'Die Steuerspur wird nie lauter als die Schwelle.', 'ae.duckDone': '{0} Abschnitte: Der Lautstärkeverlauf von {1} senkt dort ab (bearbeitbar).',
+    'ae.parametricEq': 'Parametrischer Equalizer…', 'ae.peqHint': 'Einen Punkt ziehen ändert Frequenz und Verstärkung, das Mausrad die Güte Q (Breite) des gewählten Bandes.', 'ae.peqType': 'Art', 'ae.peqGain': 'Verstärkung (dB)', 'ae.peqAdd': 'Band', 'ae.peqRemove': 'Das Band entfernen', 'ae.peqReset': 'Zurücksetzen',
+    'ae.eq.peaking': 'Glocke', 'ae.eq.lowshelf': 'Tiefen-Kuhschwanz', 'ae.eq.highshelf': 'Höhen-Kuhschwanz', 'ae.eq.lowpass': 'Tiefpass', 'ae.eq.highpass': 'Hochpass', 'ae.eq.notch': 'Kerbfilter',
+    'ae.clickRemoval': 'Knackser entfernen…', 'ae.deEsser': 'De-Esser…', 'ae.clickSensitivity': 'Empfindlichkeit (kleiner findet mehr)', 'ae.clickWidthMs': 'Längster Knackser (ms)', 'ae.clicksFixed': '{0} Knackser entfernt.',
+    'ae.plotSpectrum': 'Frequenzanalyse…', 'ae.fftSize': 'Fenstergröße (Abtastwerte)', 'ae.exportCsv': 'Als CSV exportieren', 'ae.close': 'Schließen', 'ae.spectrumHint': 'Zeigen Sie auf den Graphen, um Frequenzen und Pegel abzulesen.',
+    'ae.spectrumAt': '{0} Hz – Spitze {1} Hz, {2} dB ({3})', 'ae.split': 'In Dateien aufteilen', 'ae.split.none': 'Eine Datei', 'ae.split.labels': 'Eine Datei je Marke (ZIP)', 'ae.split.clips': 'Eine Datei je Clip (ZIP)',
+    'ae.tags': 'Tags (Titel, Interpret, …)', 'ae.tag.title': 'Titel', 'ae.tag.artist': 'Interpret', 'ae.tag.album': 'Album', 'ae.tag.year': 'Jahr', 'ae.tag.track': 'Titelnummer', 'ae.tag.genre': 'Genre', 'ae.tag.comment': 'Kommentar',
+    'ae.splitTagsHint': 'Jede Datei erhält den Namen der Marke oder des Clips als Titel und ihre Nummer als Titelnummer.', 'ae.noLabels': 'Es gibt keine Marken zum Aufteilen.', 'ae.noClips': 'Es gibt keine Clips.', 'ae.loudness': 'Lautheit normalisieren (LUFS)…', 'ae.truncateSilence': 'Stille kürzen…', 'ae.noiseGate': 'Noise-Gate…', 'ae.measureLoudness': 'Lautheit messen',
+    'ae.targetLufs': 'Ziel-Lautheit (LUFS)', 'ae.minPauseS': 'Pausen länger als (s)', 'ae.keepPauseS': 'Kürzen auf (s)', 'ae.holdMs': 'Halten (ms)',
+    'ae.loudnessIs': 'Lautheit: {0} LUFS, Spitze {1} dBFS.', 'ae.loudnessDone': '{0}: {1} → {2} LUFS.', 'ae.loudnessLimited': '⚠ {0}: {1} → {2} LUFS (die Spitzengrenze ließ nicht mehr zu).',
     'ae.bassDb': 'Bass (dB)', 'ae.middleDb': 'Mitten (dB)', 'ae.trebleDb': 'Höhen (dB)', 'ae.thresholdDb': 'Schwelle (dB)', 'ae.ratio': 'Verhältnis (:1)', 'ae.attackMs': 'Ansprechzeit (ms)',
     'ae.releaseMs': 'Abklingzeit (ms)', 'ae.makeupDb': 'Aufholverstärkung (dB)', 'ae.ceilingDb': 'Obergrenze (dB)', 'ae.roomS': 'Raumgröße (Nachhallzeit, s)', 'ae.wetPct': 'Hallanteil (%)',
     'ae.semitones': 'Halbtöne', 'ae.reductionDb': 'Minderung (dB)', 'ae.gateSensitivity': 'Rauschschwelle (× Rauschpegel − 1)',
@@ -108,6 +128,7 @@ const state = {
   view: { start: 0, pps: 100 }, playhead: 0, playing: null, loop: false, recording: null, snap: loadPrefs().snap !== false, snapLine: null,
   history: [], future: [], clipboard: null,
   name: '', handle: null, bits: 16, dirty: false, dialog: null, menu: null, busy: false, progress: null,
+  tags: {}, // title, artist, album, year, track, genre, comment: written into exported files
 };
 state.name = `${t('ae.untitled')}.wav`;
 let nextId = 1;
@@ -298,6 +319,14 @@ const EFFECTS = {
   limiter: { kind: 'map', fields: [{ key: 'threshold', label: 'ae.ceilingDb', value: -1, step: 0.5, max: 0 }], fn: (a, f, to, v) => fx2.compress(a, f, to, { threshold: v.threshold, ratio: 50, attack: 0.5, release: 60 }) },
   reverb: { kind: 'map', fields: [{ key: 'size', label: 'ae.roomS', value: 1.5, step: 0.1, min: 0.1, max: 8 }, { key: 'wet', label: 'ae.wetPct', value: 30, step: 5, min: 0, max: 100 }], fn: (a, f, to, v) => fx2.reverb(a, f, to, { size: v.size, wet: v.wet / 100 }) },
   pitch: { kind: 'merge', fields: [{ key: 'semitones', label: 'ae.semitones', value: 2, step: 1, min: -24, max: 24 }], fn: (a, v) => fx2.pitchShift(a, v.semitones) },
+  loudness: { kind: 'loudness', fields: [{ key: 'lufs', label: 'ae.targetLufs', value: -14, step: 0.5, min: -40, max: 0 }, { key: 'ceiling', label: 'ae.ceilingDb', value: -1, step: 0.5, min: -20, max: 0 }] },
+  truncateSilence: { kind: 'merge', fields: [{ key: 'threshold', label: 'ae.thresholdDb', value: -40, step: 1, min: -90, max: -10 }, { key: 'minLength', label: 'ae.minPauseS', value: 0.5, step: 0.05, min: 0.02 }, { key: 'keep', label: 'ae.keepPauseS', value: 0.25, step: 0.05, min: 0 }], fn: (a, v) => fx2.truncateSilence(a, v) },
+  noiseGate: { kind: 'map', fields: [{ key: 'threshold', label: 'ae.thresholdDb', value: -40, step: 1, min: -90, max: 0 }, { key: 'reduction', label: 'ae.reductionDb', value: 60, step: 1, min: 1, max: 100 }, { key: 'attack', label: 'ae.attackMs', value: 5, step: 1, min: 0.1 }, { key: 'hold', label: 'ae.holdMs', value: 80, step: 10, min: 0 }, { key: 'release', label: 'ae.releaseMs', value: 150, step: 10, min: 1 }], fn: (a, f, to, v) => fx2.noiseGate(a, f, to, v) },
+  measureLoudness: { kind: 'measure' },
+  parametricEq: { kind: 'peq' },
+  clickRemoval: { kind: 'map', fields: [{ key: 'sensitivity', label: 'ae.clickSensitivity', value: 8, step: 1, min: 2, max: 50 }, { key: 'width', label: 'ae.clickWidthMs', value: 2, step: 0.5, min: 0.1, max: 20 }],
+    fn: (a, f, to, v) => { const r = fx2.removeClicks(a, f, to, v); clicksFixed += r.clicks; return { rate: r.rate, channels: r.channels }; } },
+  deEsser: { kind: 'map', fields: [{ key: 'frequency', label: 'ae.frequency', value: 6000, step: 100, min: 2000, max: 16000 }, { key: 'threshold', label: 'ae.thresholdDb', value: -30, step: 1, min: -80, max: 0 }, { key: 'reduction', label: 'ae.reductionDb', value: 12, step: 1, min: 1, max: 40 }], fn: (a, f, to, v) => fx2.deEss(a, f, to, v) },
   noiseReduction: { kind: 'map', fields: [{ key: 'reduction', label: 'ae.reductionDb', value: 12, step: 1, min: 1, max: 60 }, { key: 'sensitivity', label: 'ae.gateSensitivity', value: 1.5, step: 0.1, min: 0, max: 10 }], fn: (a, f, to, v) => fx2.reduceNoise(a, f, to, v) },
 };
 
@@ -312,13 +341,45 @@ async function mapClips(list, a, b, fn) {
   return out;
 }
 
+let loudnessNotes = [];
+let clicksFixed = 0;
+
+/** The loudness of the selection (or everything) of the target tracks mixed: LUFS and peak, as a message. */
+function measureLoudness() {
+  if (!state.tracks.length) return;
+  const [a, b] = hasRange() ? range() : [0, Math.max(...state.tracks.map((tr) => clips.trackEnd(tr.clips)))];
+  const chans = Math.max(...targets().map(channelsOf));
+  const mixed = dsp.mix(targets().map((tr) => ({ audio: trackAudio(tr, a, b), gain: tr.gain, pan: tr.pan, mute: tr.mute, solo: tr.solo })), state.rate, chans, 0, b - a);
+  const lufs = fx2.loudness(mixed);
+  const peak = dsp.peak(mixed);
+  state.loudness = { lufs, peak: peak ? dsp.gainToDb(peak) : -Infinity };
+  Suite.shell.toast(t('ae.loudnessIs', Number.isFinite(lufs) ? lufs.toFixed(1) : '−∞', peak ? dsp.gainToDb(peak).toFixed(1) : '−∞'));
+  render();
+}
+
 function applyEffect(name, values = {}) {
   const fx = EFFECTS[name];
+  if (fx.kind === 'measure') { measureLoudness(); return; }
+  if (fx.kind === 'peq') { openEq(); return; }
+  loudnessNotes = [];
+  clicksFixed = 0;
   const sel = hasRange();
   let newLength = null;
   edit(async (tr) => {
     const [a, b] = sel ? range() : [0, clips.trackEnd(tr.clips)];
     if (fx.kind === 'map') return mapClips(tr.clips, a, b, (audio, from, to, c) => fx.fn(audio, from, to, values, [a - c.offset, b - c.offset]));
+    if (fx.kind === 'loudness') {
+      // to the target loudness (integrated, BS.1770) of the track's range, but its peak not above the ceiling
+      const audio = trackAudio(tr, a, b);
+      const lufs = fx2.loudness(audio);
+      if (!Number.isFinite(lufs)) return null;
+      let db = values.lufs - lufs;
+      const peak = dsp.peak(audio);
+      const limited = peak && dsp.gainToDb(peak) + db > values.ceiling;
+      if (limited) db = values.ceiling - dsp.gainToDb(peak);
+      loudnessNotes.push(t(limited ? 'ae.loudnessLimited' : 'ae.loudnessDone', tr.name, lufs.toFixed(1), (lufs + db).toFixed(1)));
+      return mapClips(tr.clips, a, b, (au, from, to) => dsp.amplify(au, from, to, db));
+    }
     if (fx.kind === 'normalize') {
       let peak = 0;
       for (const c of tr.clips) { const s = Math.max(a, c.offset) - c.offset, e = Math.min(b, clips.clipEnd(c)) - c.offset; if (e > s) peak = Math.max(peak, dsp.peak(c.audio, s, e)); }
@@ -335,6 +396,8 @@ function applyEffect(name, values = {}) {
     return out;
   }).then(() => {
     if (newLength != null) state.sel.end = state.sel.start + newLength / state.rate;
+    if (name === 'clickRemoval') Suite.shell.toast(t('ae.clicksFixed', clicksFixed));
+    if (loudnessNotes.length) Suite.shell.toast(loudnessNotes.join(' '), loudnessNotes.some((x) => x.includes('⚠')) ? 'warning' : 'success');
     render();
   });
 }
@@ -771,6 +834,7 @@ function snapTime(sec, targetsList) {
 async function decodeFile(file) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   let audio = dsp.decodeWav(bytes);
+  const tags = audio ? dsp.readWavTags(bytes) : await import('@app/encode.js').then((enc) => enc.readTags(bytes)).catch(() => null);
   let bits = audio ? (audio.float ? 32 : audio.bits === 24 ? 24 : 16) : 16;
   if (!audio) {
     const ctx = new OfflineAudioContext(1, 1, state.tracks.length ? state.rate : 44100);
@@ -778,7 +842,7 @@ async function decodeFile(file) {
     audio = { rate: b.sampleRate, channels: Array.from({ length: b.numberOfChannels }, (_, i) => b.getChannelData(i).slice()) };
     bits = 16;
   }
-  return { audio: { rate: audio.rate, channels: audio.channels }, bits };
+  return { audio: { rate: audio.rate, channels: audio.channels }, bits, tags };
 }
 
 /** Add files as tracks (the first file of an empty project sets the sample rate). */
@@ -789,7 +853,7 @@ async function addFiles(picked, replaceProject = false) {
   const before = snapshot();
   let added = 0;
   try {
-    if (replaceProject) { state.tracks = []; state.history = []; state.future = []; state.selTracks = new Set(); state.sel = { start: 0, end: 0 }; state.view.start = 0; state.clip = null; }
+    if (replaceProject) { state.tracks = []; state.history = []; state.future = []; state.selTracks = new Set(); state.sel = { start: 0, end: 0 }; state.view.start = 0; state.clip = null; state.tags = {}; }
     for (const { file, handle } of picked) {
       try {
         const bytes = new Uint8Array(await file.arrayBuffer());
@@ -802,7 +866,8 @@ async function addFiles(picked, replaceProject = false) {
           added++;
           continue;
         }
-        const { audio, bits } = await decodeFile(file);
+        const { audio, bits, tags } = await decodeFile(file);
+        if (tags && !Object.values(state.tags).some((x) => x)) state.tags = { ...tags }; // (the tags of the first file are kept for the export)
         if (!state.tracks.length) state.rate = audio.rate;
         const resampled = await dsp.resample(audio, state.rate);
         const name = file.name.replace(/\.[^.]+$/, '');
@@ -836,6 +901,7 @@ async function addProject(p) {
     state.tracks.push({ ...makeTrack(list, tr.name), gain: tr.gain, pan: tr.pan, mute: tr.mute, solo: tr.solo, view: tr.view, envelope: tr.envelope });
   }
   for (const l of p.labels || []) state.labels.push({ id: nextId++, start: l.start, end: l.end, text: l.text });
+  if (p.tags && !Object.values(state.tags).some((x) => x)) state.tags = { ...p.tags };
 }
 
 const isProjectName = (name) => name.toLowerCase().endsWith(project.EXTENSION);
@@ -844,7 +910,7 @@ const isProjectName = (name) => name.toLowerCase().endsWith(project.EXTENSION);
 async function saveProject({ as = false, name = state.name } = {}) {
   if (!state.tracks.length) return;
   try {
-    const bytes = project.encode({ rate: state.rate, tracks: state.tracks, labels: state.labels });
+    const bytes = project.encode({ rate: state.rate, tracks: state.tracks, labels: state.labels, tags: state.tags });
     const result = as || !state.handle ? await Suite.files.saveAs(bytes, { suggestedName: name, types: PROJECT_TYPES, type: 'application/zip' })
       : await Suite.files.save({ name, handle: state.handle }, bytes, { type: 'application/zip' });
     if (!result) return;
@@ -859,7 +925,7 @@ async function saveProject({ as = false, name = state.name } = {}) {
 // recovery copies of unsaved work (shared/js/autosave.js): the arrangement as a project file (at most 64 MB)
 Suite.autosave.register({
   app: APP,
-  save: () => (state.dirty && state.tracks.length ? { name: state.name, handle: isProjectName(state.name) ? state.handle : null, project: project.encode({ rate: state.rate, tracks: state.tracks, labels: state.labels }) } : null),
+  save: () => (state.dirty && state.tracks.length ? { name: state.name, handle: isProjectName(state.name) ? state.handle : null, project: project.encode({ rate: state.rate, tracks: state.tracks, labels: state.labels, tags: state.tags }) } : null),
   restore: async (s) => {
     stop();
     Object.assign(state, { tracks: [], labels: [], history: [], future: [], selTracks: new Set(), sel: { start: 0, end: 0 }, clip: null });
@@ -897,7 +963,7 @@ async function save({ as = false, name = state.name, bits = state.bits, channels
   if (!state.tracks.length) return;
   if (!as && isProjectName(state.name)) { saveProject(); return; }
   try {
-    const bytes = dsp.encodeWav(mixFor({ channels, selection }), bits);
+    const bytes = dsp.encodeWav(mixFor({ channels, selection }), bits, state.tags);
     const result = as || !state.handle ? await Suite.files.saveAs(bytes, { suggestedName: name, types: WAV_TYPES, type: 'audio/wav' })
       : await Suite.files.save({ name, handle: state.handle }, bytes, { type: 'audio/wav' });
     if (!result) return;
@@ -918,7 +984,7 @@ async function exportCompressed({ format, stem, channels, selection, bitrate }) 
     const enc = await import('@app/encode.js');
     const f = enc.FORMATS[format];
     const mixed = await dsp.resample(mixFor({ channels, selection }), enc.rateFor(format, state.rate));
-    const bytes = await enc.encode(mixed, format, { bitrate, onProgress: (p) => { state.progress = p; render(); } });
+    const bytes = await enc.encode(mixed, format, { bitrate, tags: state.tags, onProgress: (p) => { state.progress = p; render(); } });
     const result = await Suite.files.saveAs(bytes, { suggestedName: `${stem}.${f.ext}`, types: [{ description: t(`ae.${format}`), accept: { [f.mime]: [`.${f.ext}`] } }], type: f.mime });
     if (result) { if (result.mode === 'downloaded') Suite.shell.banner(result.message); else Suite.shell.toast(result.message); }
   } catch (e) { fail(e); } finally { state.busy = false; state.progress = null; render(); }
@@ -934,9 +1000,65 @@ function openExport() {
   import('@app/encode.js').then((enc) => enc.available(n, state.rate)).then((list) => { d.available = list; render(); }).catch((e) => { console.warn(e); d.available = []; render(); });
 }
 
+/**
+ * The parts of a split export: between the labels (ranges; or from each point label to the next and to the end) or every clip
+ * on its own. [{ name, from, to, clip? }] in samples.
+ */
+function exportParts(split) {
+  const end = projectLength();
+  if (split === 'clips') {
+    const all = state.tracks.flatMap((tr) => tr.clips.map((clip) => ({ tr, clip })));
+    all.sort((x, y) => x.clip.offset - y.clip.offset);
+    return all.map(({ tr, clip }, i) => ({ name: clip.name || `${tr.name} ${i + 1}`, from: clip.offset, to: clips.clipEnd(clip), tr, clip }));
+  }
+  const ranges = state.labels.filter((l) => l.end > l.start).sort((x, y) => x.start - y.start);
+  if (ranges.length) return ranges.map((l) => ({ name: l.text, from: toSample(l.start), to: Math.min(end, toSample(l.end)) }));
+  const points = state.labels.map((l) => l).sort((x, y) => x.start - y.start);
+  return points.map((l, i) => ({ name: l.text, from: toSample(l.start), to: i + 1 < points.length ? toSample(points[i + 1].start) : end })).filter((p) => p.to > p.from);
+}
+
+/** Export every part (labels or clips) as its own file, all in one ZIP; each file is tagged with its title and number. */
+async function exportSplit(d) {
+  const parts = exportParts(d.split);
+  if (!parts.length) { Suite.shell.toast(t(d.split === 'clips' ? 'ae.noClips' : 'ae.noLabels'), 'warning'); return; }
+  stop();
+  state.busy = true;
+  state.progress = 0;
+  render();
+  try {
+    const { zipSync } = await import('fflate');
+    const wav = d.format.startsWith('wav');
+    const enc = wav ? null : await import('@app/encode.js');
+    const ext = wav ? 'wav' : enc.FORMATS[d.format].ext;
+    const n = d.channels === 'mono' ? 1 : d.channels === 'stereo' ? 2 : state.tracks.some((tr) => channelsOf(tr) > 1 || tr.pan) ? 2 : 1;
+    const files = {};
+    const width = String(parts.length).length < 2 ? 2 : String(parts.length).length;
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const len = part.to - part.from;
+      const sources = part.clip ? [{ ...part.tr, audio: clips.flatten([part.clip], state.rate, part.from, part.to), solo: false, mute: false }]
+        : state.tracks.map((tr) => ({ ...tr, audio: withEnvelope(tr, trackAudio(tr, part.from, part.to), part.from) }));
+      let audio = dsp.mix(sources, state.rate, n, 0, len);
+      const tags = { ...state.tags, title: part.name || `${state.tags.title || d.stem} ${i + 1}`, track: String(i + 1) };
+      let bytes;
+      if (wav) bytes = dsp.encodeWav(audio, Number(d.format.slice(3)), tags);
+      else { audio = await dsp.resample(audio, enc.rateFor(d.format, state.rate)); bytes = await enc.encode(audio, d.format, { bitrate: d.bitrate, tags }); }
+      const safe = (part.name || `${d.stem} ${i + 1}`).replace(/[\\/:*?"<>|]/g, '_').trim().slice(0, 80) || String(i + 1);
+      let name = `${String(i + 1).padStart(width, '0')} ${safe}.${ext}`;
+      files[name] = [bytes, { level: wav ? 6 : 0 }];
+      state.progress = (i + 1) / parts.length;
+      render();
+    }
+    const zip = zipSync(files);
+    const result = await Suite.files.saveAs(zip, { suggestedName: `${d.stem}.zip`, types: [{ description: 'ZIP', accept: { 'application/zip': ['.zip'] } }], type: 'application/zip' });
+    if (result) { if (result.mode === 'downloaded') Suite.shell.banner(result.message); else Suite.shell.toast(result.message); }
+  } catch (e) { fail(e); } finally { state.busy = false; state.progress = null; render(); }
+}
+
 function runExport(d) {
   state.dialog = null;
   render();
+  if (d.format !== 'project' && d.split && d.split !== 'none') { exportSplit(d); return; }
   if (d.format === 'project') saveProject({ as: true, name: `${d.stem}${project.EXTENSION}` });
   else if (d.format.startsWith('wav')) save({ as: true, name: `${d.stem}.wav`, bits: Number(d.format.slice(3)), channels: d.channels, selection: d.selection });
   else exportCompressed(d);
@@ -1572,7 +1694,8 @@ function Menu() {
     : m.kind === 'generate' ? Object.keys(GENERATORS).map((k) => [k, () => generator(k)])
       : m.kind === 'clip' ? CLIP_MENU.map((k) => [k, () => clipAction(k)])
         : [['newTrack', () => trackAction('new')], ['mixdown', () => trackAction('mixdown')], ['selectAll', () => { state.menu = null; selectAll(); }],
-          ['-'], ['addLabel', () => { state.menu = null; addLabel(); }], ['importLabels', importLabels], ['exportLabels', exportLabels]];
+          ['-'], ['addLabel', () => { state.menu = null; addLabel(); }], ['importLabels', importLabels], ['exportLabels', exportLabels],
+          ['-'], ['autoDuck', () => { state.menu = null; openAutoDuck(); }], ['plotSpectrum', () => { state.menu = null; openSpectrum(); }], ['measureLoudness', () => { state.menu = null; measureLoudness(); }]];
   return html`<ul class="ae-menu" data-testid="menu" style=${`left:${m.x}px;top:${m.y}px`} onPointerDown=${(e) => e.stopPropagation()}>
     ${items.map(([k, fn]) => (k === '-' ? html`<li><hr /></li>` : html`<li><button class="secondary outline" data-testid=${`menu-${k}`} disabled=${state.busy} onClick=${fn}>${t(`ae.${k}`)}</button></li>`))}</ul>`;
 }
@@ -1683,7 +1806,7 @@ function Tracks() {
 
 function ParamDialog() {
   const d = state.dialog;
-  if (!d || d.kind === 'export') return null;
+  if (!d || d.kind === 'export' || d.kind === 'spectrum' || d.kind === 'peq') return null;
   return html`<dialog open data-testid="param-dialog"><article>
     <header><strong>${d.title}</strong></header>
     <form onSubmit=${(e) => {
@@ -1695,10 +1818,205 @@ function ParamDialog() {
       d.run(v);
     }}>
       ${d.fields.map((f) => html`<label>${t(f.label)}${f.text ? html`<input name=${f.key} data-testid=${`param-${f.key}`} defaultValue=${f.value} />` : f.options
-        ? html`<select name=${f.key} data-testid=${`param-${f.key}`}>${f.options.map((o) => html`<option value=${o} selected=${o === f.value}>${t(`ae.${o}`)}</option>`)}</select>`
+        ? html`<select name=${f.key} data-testid=${`param-${f.key}`}>${f.options.map((o, i) => html`<option value=${o} selected=${o === f.value}>${f.optionLabels ? f.optionLabels[i] : t(`ae.${o}`)}</option>`)}</select>`
         : html`<input type="number" name=${f.key} data-testid=${`param-${f.key}`} defaultValue=${f.value} step="any" min=${f.min} max=${f.max} required />`}</label>`)}
       <footer><button type="button" class="secondary" onClick=${() => { state.dialog = null; render(); }}>${t('ae.cancel')}</button><button type="submit" data-testid="param-ok">${t('ae.ok')}</button></footer>
     </form>
+  </article></dialog>`;
+}
+
+// ---- auto-duck: lower other tracks while the control track (voice) sounds – written as volume automation ------------------------
+
+function openAutoDuck() {
+  if (state.tracks.length < 2) { Suite.shell.toast(t('ae.duckNeedsTwo'), 'warning'); return; }
+  const ids = state.tracks.map((tr) => String(tr.id));
+  const sel = state.tracks.filter((tr) => state.selTracks.has(tr.id));
+  const control = String((sel.length === 1 ? sel[0] : state.tracks[0]).id);
+  state.dialog = {
+    title: t('ae.autoDuck').replace('…', ''),
+    fields: [{ key: 'control', label: 'ae.duckControl', value: control, options: ids, optionLabels: state.tracks.map((tr) => tr.name) },
+      { key: 'amount', label: 'ae.duckAmountDb', value: -12, step: 1, min: -40, max: 0 }, { key: 'threshold', label: 'ae.thresholdDb', value: -30, step: 1, min: -80, max: 0 },
+      { key: 'fadeDown', label: 'ae.fadeDownS', value: 0.5, step: 0.1, min: 0, max: 10 }, { key: 'fadeUp', label: 'ae.fadeUpS', value: 0.5, step: 0.1, min: 0, max: 10 },
+      { key: 'maxPause', label: 'ae.maxPauseS', value: 1, step: 0.1, min: 0, max: 10 }],
+    run: (v) => autoDuck(v),
+  };
+  render();
+}
+
+function autoDuck(v) {
+  const control = state.tracks.find((tr) => String(tr.id) === v.control);
+  if (!control) return;
+  const n = projectLength();
+  const mono = dsp.mono(trackAudio(control, 0, n));
+  const regions = fx2.activeRegions(mono, state.rate, { threshold: v.threshold, maxPause: v.maxPause });
+  if (!regions.length) { Suite.shell.toast(t('ae.duckNothing'), 'warning'); return; }
+  const chosen = state.tracks.filter((tr) => state.selTracks.has(tr.id) && tr !== control);
+  const others = chosen.length ? chosen : state.tracks.filter((tr) => tr !== control);
+  stop();
+  remember();
+  for (const tr of others) tr.envelope = fx2.duckEnvelope(regions, v, tr.envelope || [], (s) => envelopeDb(tr, s));
+  setDirty();
+  Suite.shell.toast(t('ae.duckDone', regions.length, others.map((tr) => tr.name).join(', ')));
+  render();
+}
+
+// ---- parametric equaliser (dialog with the response curve) -----------------------------------------------------------------------
+
+const PEQ_KEY = 'suite.audioeditor.peq';
+const PEQ_DEFAULT = () => [{ type: 'highpass', freq: 80, gain: 0, q: 0.71, on: false }, { type: 'lowshelf', freq: 200, gain: 0, q: 0.71, on: true },
+  { type: 'peaking', freq: 1000, gain: 0, q: 1, on: true }, { type: 'peaking', freq: 3000, gain: 0, q: 1, on: true }, { type: 'highshelf', freq: 8000, gain: 0, q: 0.71, on: true }];
+
+function openEq() {
+  state.menu = null;
+  let bands = PEQ_DEFAULT();
+  try { const saved = JSON.parse(localStorage.getItem(PEQ_KEY) || 'null'); if (Array.isArray(saved) && saved.length) bands = saved; } catch (e) { /* defaults */ }
+  state.dialog = { kind: 'peq', bands, drag: null };
+  render();
+}
+
+function applyEq(d) {
+  try { localStorage.setItem(PEQ_KEY, JSON.stringify(d.bands)); } catch (e) { /* not remembered */ }
+  state.dialog = null;
+  const bands = d.bands.map((b) => ({ ...b }));
+  const sel = hasRange();
+  edit(async (tr) => {
+    const [a, b] = sel ? range() : [0, clips.trackEnd(tr.clips)];
+    return mapClips(tr.clips, a, b, (audio, from, to) => fx2.parametricEq(audio, from, to, bands));
+  }).then(() => render());
+}
+
+const EQ_FMIN = 20, EQ_FMAX = 20000, EQ_DB = 24;
+function PeqDialog() {
+  const d = state.dialog;
+  if (!d || d.kind !== 'peq') return null;
+  const fs = state.rate;
+  const xOf = (f, w) => (Math.log(f / EQ_FMIN) / Math.log(EQ_FMAX / EQ_FMIN)) * w;
+  const fOf = (x, w) => EQ_FMIN * (EQ_FMAX / EQ_FMIN) ** Math.max(0, Math.min(1, x / w));
+  const yOf = (db, h) => ((EQ_DB - db) / (2 * EQ_DB)) * h;
+  const dbOf = (y, h) => Math.max(-EQ_DB, Math.min(EQ_DB, EQ_DB - (y / h) * 2 * EQ_DB));
+  const draw = (c) => {
+    if (!c) return;
+    const dpr = sizeCanvas(c);
+    const g = c.getContext('2d'), w = c.width, h = c.height, col = colors();
+    g.fillStyle = col.bg; g.fillRect(0, 0, w, h);
+    g.strokeStyle = col.line; g.fillStyle = col.text; g.lineWidth = 1; g.font = `${11 * dpr}px sans-serif`;
+    for (const f of [50, 100, 200, 500, 1000, 2000, 5000, 10000]) { g.beginPath(); g.moveTo(xOf(f, w), 0); g.lineTo(xOf(f, w), h); g.stroke(); g.fillText(f >= 1000 ? `${f / 1000}k` : String(f), xOf(f, w) + 3 * dpr, h - 4 * dpr); }
+    for (const db of [-18, -12, -6, 0, 6, 12, 18]) { g.beginPath(); g.moveTo(0, yOf(db, h)); g.lineTo(w, yOf(db, h)); g.stroke(); g.fillText(`${db > 0 ? '+' : ''}${db}`, 3 * dpr, yOf(db, h) - 2 * dpr); }
+    g.strokeStyle = col.wave; g.lineWidth = 2 * dpr; g.beginPath();
+    for (let x = 0; x <= w; x += 2) { const y = yOf(Math.max(-EQ_DB, Math.min(EQ_DB, fx2.eqResponseDb(d.bands, fs, fOf(x, w)))), h); if (x) g.lineTo(x, y); else g.moveTo(x, y); }
+    g.stroke();
+    d.bands.forEach((b, i) => {
+      if (b.on === false) return;
+      const x = xOf(b.freq, w), y = yOf(['peaking', 'lowshelf', 'highshelf'].includes(b.type) ? b.gain : 0, h);
+      g.beginPath(); g.arc(x, y, 7 * dpr, 0, Math.PI * 2); g.fillStyle = i === d.active ? col.cue : col.bg; g.fill(); g.strokeStyle = col.cue; g.stroke();
+      g.fillStyle = col.color; g.fillText(String(i + 1), x - 3 * dpr, y + 4 * dpr);
+    });
+  };
+  const at = (e) => { const r = e.currentTarget.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top, w: r.width, h: r.height }; };
+  const down = (e) => {
+    const p = at(e);
+    let best = -1, bd = 20;
+    d.bands.forEach((b, i) => { if (b.on === false) return; const dist = Math.hypot(xOf(b.freq, p.w) - p.x, yOf(b.gain, p.h) - p.y); if (dist < bd) { bd = dist; best = i; } });
+    if (best < 0) return;
+    d.active = best; d.drag = best;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    render();
+  };
+  const move = (e) => {
+    if (d.drag == null) return;
+    const p = at(e), b = d.bands[d.drag];
+    b.freq = Math.round(fOf(p.x, p.w));
+    if (['peaking', 'lowshelf', 'highshelf'].includes(b.type)) b.gain = Math.round(dbOf(p.y, p.h) * 2) / 2;
+    render();
+  };
+  const wheel = (e) => { if (d.active == null) return; e.preventDefault(); const b = d.bands[d.active]; b.q = Math.max(0.1, Math.min(20, Math.round(b.q * (e.deltaY < 0 ? 1.15 : 1 / 1.15) * 100) / 100)); render(); };
+  const field = (b, i, key, props) => html`<input type="number" step="any" ...${props} value=${b[key]} data-testid=${`peq-${key}-${i}`} onChange=${(e) => { const v = Number(e.target.value); if (Number.isFinite(v)) { b[key] = v; render(); } }} />`;
+  return html`<dialog open data-testid="peq-dialog"><article class="ae-spectrum">
+    <header><strong>${t('ae.parametricEq').replace('…', '')}</strong></header>
+    <canvas class="ae-spectrum-canvas" data-testid="peq-canvas" ref=${draw} onPointerDown=${down} onPointerMove=${move} onPointerUp=${() => { d.drag = null; }} onWheel=${wheel}></canvas>
+    <small>${t('ae.peqHint')}</small>
+    <div class="ae-peq-wrap"><table class="ae-peq"><thead><tr><th></th><th>${t('ae.peqType')}</th><th>${t('ae.frequency')}</th><th>${t('ae.peqGain')}</th><th>Q</th><th></th></tr></thead><tbody>
+      ${d.bands.map((b, i) => html`<tr class=${i === d.active ? 'active' : ''} onClick=${() => { d.active = i; render(); }}>
+        <td><input type="checkbox" checked=${b.on !== false} data-testid=${`peq-on-${i}`} onChange=${(e) => { b.on = e.target.checked; render(); }} /> ${i + 1}</td>
+        <td><select data-testid=${`peq-type-${i}`} onChange=${(e) => { b.type = e.target.value; render(); }}>${fx2.EQ_TYPES.map((ty) => html`<option value=${ty} selected=${b.type === ty}>${t(`ae.eq.${ty}`)}</option>`)}</select></td>
+        <td>${field(b, i, 'freq', { min: 10, max: 22000 })}</td><td>${field(b, i, 'gain', { min: -EQ_DB, max: EQ_DB })}</td><td>${field(b, i, 'q', { min: 0.1, max: 20 })}</td>
+        <td><button type="button" class="secondary outline" title=${t('ae.peqRemove')} aria-label=${t('ae.peqRemove')} onClick=${(e) => { e.stopPropagation(); d.bands.splice(i, 1); d.active = null; render(); }}>×</button></td></tr>`)}
+    </tbody></table></div>
+    <footer>
+      <button type="button" class="secondary outline" data-testid="peq-add" disabled=${d.bands.length >= 8} onClick=${() => { d.bands.push({ type: 'peaking', freq: 1000, gain: 0, q: 1, on: true }); d.active = d.bands.length - 1; render(); }}>＋ ${t('ae.peqAdd')}</button>
+      <button type="button" class="secondary outline" data-testid="peq-reset" onClick=${() => { d.bands = PEQ_DEFAULT(); d.active = null; render(); }}>${t('ae.peqReset')}</button>
+      <button type="button" class="secondary" onClick=${() => { state.dialog = null; render(); }}>${t('ae.cancel')}</button>
+      <button type="button" data-testid="peq-ok" onClick=${() => applyEq(d)}>${t('ae.ok')}</button></footer>
+  </article></dialog>`;
+}
+
+// ---- spectrum (frequency analysis) ------------------------------------------------------------------------------------------------
+
+const SPECTRUM_SIZES = [512, 1024, 2048, 4096, 8192, 16384];
+
+/** The selection (or everything) of the target tracks mixed to mono. */
+function analysisAudio() {
+  const [a, b] = hasRange() ? range() : [0, projectLength()];
+  return dsp.mix(targets().map((tr) => ({ ...tr, audio: withEnvelope(tr, trackAudio(tr, a, b), a) })), state.rate, 1, 0, b - a).channels[0];
+}
+
+function openSpectrum(size = 4096) {
+  if (!state.tracks.length) return;
+  const mono = analysisAudio();
+  state.dialog = { kind: 'spectrum', size, sp: fx2.spectrum(mono, state.rate, size), hover: null };
+  render();
+}
+
+function spectrumCsv(sp) {
+  const lines = ['frequency_hz;level_db'];
+  for (let k = 1; k < sp.freqs.length; k++) lines.push(`${sp.freqs[k].toFixed(2)};${sp.db[k].toFixed(2)}`);
+  return new TextEncoder().encode(lines.join('\n') + '\n');
+}
+
+function SpectrumDialog() {
+  const d = state.dialog;
+  if (!d || d.kind !== 'spectrum') return null;
+  const sp = d.sp;
+  const fMin = 20, fMax = sp.rate / 2;
+  let top = -Infinity;
+  for (let k = 1; k < sp.db.length; k++) if (sp.db[k] > top) top = sp.db[k];
+  const yMax = Math.min(20, Math.ceil(top / 10) * 10 + 10), yMin = yMax - 100;
+  const draw = (c) => {
+    if (!c) return;
+    const dpr = sizeCanvas(c);
+    const g = c.getContext('2d');
+    const w = c.width, h = c.height, col = colors();
+    g.fillStyle = col.bg; g.fillRect(0, 0, w, h);
+    const X = (f) => (Math.log(f / fMin) / Math.log(fMax / fMin)) * w, Y = (db) => ((yMax - db) / (yMax - yMin)) * h;
+    g.strokeStyle = col.line; g.fillStyle = col.text; g.lineWidth = 1; g.font = `${11 * dpr}px sans-serif`;
+    for (const f of [50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]) if (f < fMax) { g.beginPath(); g.moveTo(X(f), 0); g.lineTo(X(f), h); g.stroke(); g.fillText(f >= 1000 ? `${f / 1000}k` : String(f), X(f) + 3 * dpr, h - 4 * dpr); }
+    for (let db = yMax; db >= yMin; db -= 20) { g.beginPath(); g.moveTo(0, Y(db)); g.lineTo(w, Y(db)); g.stroke(); g.fillText(`${db} dB`, 3 * dpr, Y(db) + 12 * dpr); }
+    g.beginPath();
+    g.strokeStyle = col.wave; g.lineWidth = 1.5 * dpr;
+    let first = true;
+    for (let k = 1; k < sp.freqs.length; k++) { const f = sp.freqs[k]; if (f < fMin) continue; const x = X(f), y = Y(Math.max(yMin, sp.db[k])); if (first) { g.moveTo(x, y); first = false; } else g.lineTo(x, y); }
+    g.stroke();
+    if (d.hover) { g.strokeStyle = col.cue; g.lineWidth = dpr; g.beginPath(); g.moveTo(X(d.hover.hz), 0); g.lineTo(X(d.hover.hz), h); g.stroke(); }
+  };
+  const move = (e) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const f = fMin * (fMax / fMin) ** ((e.clientX - r.left) / r.width);
+    const p = fx2.peakNear(sp, f);
+    d.hover = { hz: f, peak: p };
+    render();
+  };
+  const exportCsv = async () => {
+    const result = await Suite.files.saveAs(spectrumCsv(sp), { suggestedName: `${state.name.replace(/\.[^.]+$/, '') || 'audio'}-spectrum.csv`, types: [{ description: 'CSV', accept: { 'text/csv': ['.csv'] } }], type: 'text/csv' });
+    if (result) Suite.shell.toast(result.message);
+  };
+  return html`<dialog open data-testid="spectrum-dialog"><article class="ae-spectrum">
+    <header><strong>${t('ae.plotSpectrum')}</strong></header>
+    <canvas class="ae-spectrum-canvas" data-testid="spectrum-canvas" ref=${draw} onPointerMove=${move} onPointerDown=${move}></canvas>
+    <p data-testid="spectrum-readout">${d.hover ? t('ae.spectrumAt', Math.round(d.hover.hz), d.hover.peak.hz.toFixed(1), d.hover.peak.db.toFixed(1), fx2.noteOf(d.hover.peak.hz)) : t('ae.spectrumHint')}</p>
+    <div class="ae-row"><label>${t('ae.fftSize')}<select data-testid="spectrum-size" onChange=${(e) => openSpectrum(Number(e.target.value))}>
+      ${SPECTRUM_SIZES.map((n) => html`<option value=${n} selected=${n === d.size}>${n}</option>`)}</select></label></div>
+    <footer><button type="button" class="secondary" data-testid="spectrum-csv" onClick=${() => exportCsv().catch(fail)}>${t('ae.exportCsv')}</button>
+      <button type="button" data-testid="spectrum-close" onClick=${() => { state.dialog = null; render(); }}>${t('ae.close')}</button></footer>
   </article></dialog>`;
 }
 
@@ -1723,8 +2041,14 @@ function ExportDialog() {
         ${bitrates.map((r) => html`<option value=${r} selected=${(d.bitrate || defaultRate) === r}>${r}</option>`)}</select></label>` : null}
       ${d.format === 'project' ? null : html`<label>${t('ae.channels')}<select data-testid="export-channels" onChange=${(e) => { d.channels = e.target.value; }}>
         ${['auto', 'mono', 'stereo'].map((c) => html`<option value=${c} selected=${d.channels === c}>${t(`ae.${c}`)}</option>`)}</select></label>
-      <label>${t('ae.range')}<select data-testid="export-range" disabled=${!hasRange()} onChange=${(e) => { d.selection = e.target.value === 'selection'; }}>
-        <option value="all">${t('ae.all')}</option><option value="selection">${t('ae.selection')}</option></select></label>`}
+      <label>${t('ae.range')}<select data-testid="export-range" disabled=${!hasRange() || (d.split && d.split !== 'none')} onChange=${(e) => { d.selection = e.target.value === 'selection'; }}>
+        <option value="all">${t('ae.all')}</option><option value="selection">${t('ae.selection')}</option></select></label>
+      <label>${t('ae.split')}<select data-testid="export-split" onChange=${(e) => { d.split = e.target.value; render(); }}>
+        ${['none', 'labels', 'clips'].map((v) => html`<option value=${v} selected=${(d.split || 'none') === v}>${t(`ae.split.${v}`)}</option>`)}</select></label>
+      <details data-testid="export-tags"><summary>${t('ae.tags')}</summary>
+        <div class="ae-tags">${['title', 'artist', 'album', 'year', 'track', 'genre', 'comment'].map((k) => html`<label>${t(`ae.tag.${k}`)}<input data-testid=${`tag-${k}`}
+          value=${state.tags[k] || ''} onInput=${(e) => { state.tags = { ...state.tags, [k]: e.target.value }; setDirty(); }} /></label>`)}</div>
+        ${d.split && d.split !== 'none' ? html`<small>${t('ae.splitTagsHint')}</small>` : null}</details>`}
       <footer><button type="button" class="secondary" onClick=${() => { state.dialog = null; render(); }}>${t('ae.cancel')}</button><button type="submit" data-testid="export-ok">${t('ae.export')}</button></footer>
     </form>
   </article></dialog>`;
@@ -1733,7 +2057,7 @@ function ExportDialog() {
 function Main() {
   return html`<div class="ae-layout">
     <div class="ae-name-bar"><span data-testid="file-name">${state.name}${state.dirty ? ' •' : ''}</span></div>
-    <${Transport} /><${Tracks} /><${Menu} /><${ParamDialog} /><${ExportDialog} />
+    <${Transport} /><${Tracks} /><${Menu} /><${ParamDialog} /><${ExportDialog} /><${SpectrumDialog} /><${PeqDialog} />
   </div>`;
 }
 
@@ -1764,7 +2088,7 @@ Suite.bridge.receive((picked) => addFiles([picked], true), { app: 'audioeditor' 
 // (as an audio project: tracks, clips, labels)
 Suite.openFiles.register(() => (state.tracks.length ? [{
   name: isProjectName(state.name || '') ? state.name : `${(state.name || 'audio').replace(/\.[^.]+$/, '')}${project.EXTENSION}`,
-  bytes: project.encode({ rate: state.rate, tracks: state.tracks, labels: state.labels }), dirty: state.dirty }] : []));
+  bytes: project.encode({ rate: state.rate, tracks: state.tracks, labels: state.labels, tags: state.tags }), dirty: state.dirty }] : []));
 
 // for tests
 window.AE = { fx: fx2, state, dsp, clips, beats, labelText, play, stop, fmtTime, parseTime, trackAudio, get time() { return currentTime(); } };

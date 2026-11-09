@@ -16,6 +16,11 @@ Ogg Opus or M4A.
 - **Export** (`Ctrl+Shift+S`) chooses the file name, the format, the bit rate (compressed formats), the channels
   (automatic: stereo if a track is stereo or panned) and the range (everything or only the selection). Exporting does not
   change which file **Save** writes to.
+- **Tags** (in the export dialog): title, artist, album, year, track number, genre and comment are written into WAV, MP3,
+  FLAC, Ogg and M4A files and kept in the project. The tags of the first opened file are taken over.
+- **Split into files**: *one file per label* exports every labelled range (or, with point labels, from each label to the
+  next) as its own file, *one file per clip* every clip with its volume and fades; all files come in one ZIP, numbered and
+  named after the label or clip, which also become their title and track number.
 
 | Format | Notes |
 |---|---|
@@ -125,6 +130,22 @@ fade in, fade out, reverse, invert, echo (delay and decay), change speed (change
 - **Noise reduction**: lowers steady background noise (hiss, hum, fans) by the given amount. The noise is measured in the
   quietest parts of the selection, so select some of the pauses together with the speech or music; a higher noise threshold
   removes more but may affect quiet sounds.
+- **Normalise loudness (LUFS)**: makes each target track as loud as the target in LUFS – the loudness measure of streaming
+  services and broadcasting (EBU R 128). Typical targets: −14 LUFS (streaming, music), −16 LUFS (podcasts), −23 LUFS (broadcast).
+  The peak never goes above the ceiling (dBFS); if that does not allow the full target, a message says so. **Measure loudness**
+  shows the loudness and peak of the selection (or everything) of the target tracks mixed together.
+- **Truncate silence**: shortens every pause that is quieter than the threshold and longer than the given time to the given
+  length – for speech recordings. The length changes.
+- **Noise gate**: turns the sound down by the reduction while it is below the threshold (breathing, room noise between words);
+  attack, hold and release make it open and close smoothly.
+- **Parametric equaliser**: up to eight bands – bell, low and high shelf, low and high pass, notch – each with frequency, gain
+  and Q (width). The graph shows the resulting frequency response; drag a band's point to change its frequency and gain, the
+  mouse wheel changes the Q of the chosen band, or type the values in the table. The bands are remembered for the next time.
+- **Click removal**: finds clicks and crackle (e.g. from vinyl records or digital glitches) and smooths them over; a lower
+  sensitivity finds more, the longest click sets how long a disturbance may be (longer ones are left alone as real sounds). The
+  number of removed clicks is shown.
+- **De-esser**: tames sharp "s" and "sh" sounds in speech and vocals: the frequencies above the given frequency are turned down
+  by at most the reduction while they are louder than the threshold; the rest of the voice stays unchanged.
 
 Effects that change the length or reverse work
 on the selection as one piece (the clips inside become one clip); without a selection they apply to every clip. **Generate** inserts a tone (sine, square, sawtooth, triangle), noise or silence at the cursor; without
@@ -145,6 +166,19 @@ hum, noise, whistles or clicks. The setting is saved in the project file.
 −40 dB). A click on the lane adds a point, dragging moves it, a double-click removes it. Between the points the volume changes
 smoothly; before the first and after the last point it stays at their level. Click ⤴ again to edit the waveform as usual.
 The automation applies to playing, saving and export and is kept in the project file.
+
+**Tracks → Auto duck…** lowers the other tracks (the selected ones, otherwise all) while one track sounds – typically music
+under a voice-over. Choose the voice track, by how much to lower (dB), the threshold above which the voice counts as speaking,
+how long to fade down before and up after, and how long a pause may be without the music coming back. The result is written into
+the volume automation of the music tracks (added to an automation that is already there), so it can be seen and adjusted with ⤴.
+
+## Analysis
+
+**Tracks → Plot spectrum…** shows which frequencies the selection (or everything) of the target tracks contains: an average
+over the whole range, frequencies on a logarithmic axis, levels in dB (0 dB = a full-scale sine). Point at the graph to read the
+frequency, the nearest peak with its level and the musical note (e.g. *A4 +3* cents). A larger window size separates close
+frequencies better, a smaller one smooths. **Export as CSV** saves the values, e.g. for a spreadsheet. **Measure loudness**
+shows the loudness in LUFS and the peak.
 
 ## Playing and recording
 

@@ -87,3 +87,13 @@
 .ve-picture { margin: .4rem 0; }
 .ve-picture summary { font-size: .85rem; }
 .ve-picture small { display: block; margin: .3rem 0; color: var(--pico-muted-color); font-size: .75rem; }
+.ve-marker { position: absolute; top: 0; bottom: 0; width: auto; min-width: 10px; margin: 0 0 0 -5px; padding: 0 3px 0 10px; border: 0; border-left: 2px solid #ef6c00; border-radius: 0; background: transparent; color: #ef6c00; font-size: .7rem; line-height: 1; cursor: pointer; z-index: 2; }
+.ve-marker::before { content: ''; position: absolute; left: -6px; top: 0; border: 5px solid transparent; border-top: 7px solid #ef6c00; }
+.ve-marker span { white-space: nowrap; background: var(--pico-background-color); padding: 1px 2px; }
+.ve-keyfield { display: flex; align-items: flex-end; gap: .2rem; }
+.ve-keyfield > label { flex: 1; min-width: 0; }
+.ve-key { margin: 0 0 var(--pico-spacing, 1rem) 0; width: auto; padding: .15rem .35rem; font-size: .8rem; background: transparent; border: 1px solid var(--pico-muted-border-color); color: var(--pico-muted-color); }
+.ve-key.some { color: #ef6c00; }
+.ve-key.on { background: #ef6c00; color: #fff; border-color: #ef6c00; }
+.ve-keymark { position: absolute; bottom: 0; margin-left: -.35em; font-size: .6rem; color: #ef6c00; pointer-events: none; }
+.ve-keys-hint { margin: 0 0 .5rem; }

@@ -20,6 +20,11 @@ track at the desired time. Videos can also be dragged onto an audio track to use
 <li>The track header has 👁 (hide a video track), 🔊 (mute) and × (delete the track); <strong>+V</strong> and <strong>+A</strong> add tracks.</li>
 <li>Audio clips show their waveform (scaled by the clip's volume), video clips with sound a smaller one at the bottom edge.
   This makes it easy to cut at pauses or align clips to a beat. (Files above 400 MB are shown without a waveform.)</li>
+<li><strong>Freeze frame</strong> (<code>F</code>, or ❄ in the clip settings of a video): the frame at the playhead stands still for two seconds –
+  the clip is split there, its rest moves two seconds later, and a picture of the frame (added to the media list) fills the gap;
+  change its duration like any clip.</li>
+<li><strong>Markers</strong> (<code>M</code>) mark points on the time ruler, e.g. the beats of the music or the start of a scene; <code>,</code> and <code>.</code> jump to the
+  previous and next one, clips snap to them, a double-click names or deletes one. They are saved in the project.</li>
 <li><code>Ctrl+Z</code>/<code>Ctrl+Y</code> undo and redo every change.</li>
 </ul>
 <h2>Properties</h2>
@@ -35,14 +40,33 @@ may play less smoothly (the browser cannot play media backwards); the export has
 <p><strong>Subtitles</strong>: importing an SRT or WebVTT file (with the media, or by dropping it) puts every subtitle as a title on a track
 <em>Subtitles</em> at the top – at the bottom of the picture, white on a dark band; they can be edited, moved and trimmed like any title
 and are burnt into the exported video. <strong>CC</strong> saves the titles of that track (or all titles) as an SRT file again.</p>
+<p><strong>Keyframes</strong> animate X, Y, size, opacity and rotation: move the playhead to a moment, set the value and click ◆ next to the
+field – a keyframe. At another moment type another value: as soon as a property has a keyframe, typing sets a new keyframe at the
+playhead. In between the value changes evenly; before the first and after the last keyframe it stays. The fields always show the
+value at the playhead, ◆ is filled where a keyframe is (click it to remove that keyframe), and ◆ marks on the clip show where
+keyframes lie. Keyframes replace the motion settings (Ken Burns) of the same property, also work for titles and stay right
+when a clip is split. <strong>Remove all keyframes</strong> makes the clip static again.</p>
 <p><strong>Picture</strong> (for videos and images, folded below the clip settings): brightness, contrast and saturation (100 % = unchanged),
 rotation in degrees, cropping each edge (in % of the picture), and <strong>motion</strong> (Ken Burns): the size and X/Y offset at the end of
 the clip – the picture zooms and pans smoothly from its values at the start to these; for example <em>size at the end</em> 130 % for a
 slow zoom into a photo. <strong>Reset picture</strong> restores everything.</p>
+<p><strong>Effects</strong> (in the same section): blur, grayscale, sepia, hue shift and inverted colours. <strong>Green screen</strong> (chroma key):
+tick <em>Key out a colour</em> and choose the colour (green by default) – it becomes transparent, so the clip on the track below shows
+through (e.g. a person filmed in front of a green cloth on V2 over a background on V1). <em>Tolerance</em> sets how similar a colour
+must be to disappear, <em>soft edge</em> smooths the border, <em>remove colour cast</em> takes the green (or blue) glow off hair and edges.</p>
 <p><strong>Transitions</strong>: <em>Fade in as</em> and <em>Fade out as</em> choose how a picture appears or disappears during its fade: dissolve
 (becomes transparent, the default), wipe or slide in one of four directions, zoom or circle. What lies below shows
 through: a clip on V1 below gives a transition between two pictures (put the next clip on V2 so that it overlaps the
 end of the first one and fade it in), with nothing below it is black.</p>
+<p><strong>Cross-fade / transition to the next clip</strong> does this for you: choose the length and the picture transition and click
+<em>With the next clip</em> – the next clip moves to the track above (for sound: the next audio track) and fades in over the first
+one, which is extended by the length into the footage after its end; the sound cross-fades. <em>Between all clips of the track</em>
+does it for every pair of neighbours (alternating between two tracks). Nothing else moves on the timeline. A video clip
+needs footage after its end for this (shorten it first if it ends where its file ends); pictures and titles always can.</p>
+<p><strong>Edit in audio editor</strong> (sound of a clip) opens the clip's sound in the audio editor (a new tab or window) for cleaning up,
+cutting or effects. <strong>Save</strong> there brings it back as a new file in the media list: an audio clip then plays the edited sound;
+for a video clip its own sound is muted and the edited sound is put on an audio track at the same place.</p>
+<p><strong>Normalise</strong> (sound of a clip) sets the clip's volume so that its loudest moment reaches −1 dBFS (up to 400 %).</p>
 <h2>Preview</h2>
 <p>▶ (<code>Space</code>) plays from the playhead, ◀ ▶| (<code>←</code> <code>→</code>) step one frame (<code>Shift</code>: one second), ⏮ ⏭ (<code>Home</code>/<code>End</code>) jump to the
 start or end. <strong>📷</strong> saves the current frame as PNG.</p>
@@ -50,12 +74,19 @@ start or end. <strong>📷</strong> saves the current frame as PNG.</p>
 <p><strong>Export</strong> renders the timeline with the browser's video encoder (WebCodecs) into WebM (VP9 or VP8, Opus sound) or MP4
 (H.264 and AAC in Chrome and Edge, otherwise VP9 and Opus), at the project resolution and frame rate, with the chosen
 quality. A progress bar shows how far rendering is (long videos take a while); it can be cancelled.</p>
+<p><em>From</em> and <em>To</em> export only a part of the timeline (with markers, the dialog offers the ranges between them). <em>Only the sound</em>
+exports the mixed audio as WAV, or as Opus (WebM) or AAC (M4A) where the browser can encode them. <em>Animated GIF</em> makes a
+looping GIF without sound (width, frames per second, optional dithering) – for short clips: GIFs have 256 colours and grow
+quickly (at most 600 frames).</p>
 <p>Export needs WebCodecs: Chrome, Edge and Firefox on the desktop have it, <strong>Firefox for Android does not</strong> (editing works,
 exporting does not).</p>
 <h2>Projects</h2>
 <p><strong>Save project</strong> (<code>Ctrl+S</code>) saves the timeline and settings as a JSON file. The media files are <strong>not</strong> included: keep them
 together with the project. After <strong>Open project</strong>, the media are listed as "missing"; import them again (files with the same
 names are linked automatically) or use <strong>Locate…</strong> for each.</p>
+<p><strong>Save with media</strong> writes the project and all its media files into one ZIP – to move a project to another computer or keep
+it in one piece. <strong>Open project</strong> opens such a ZIP with everything linked; <code>Ctrl+S</code> then saves the ZIP again. (The ZIP holds
+the media files as they are, so it is as large as they are together.)</p>
 <h2>Keyboard shortcuts</h2>
 <p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
 <h3>Files</h3>
@@ -101,6 +132,18 @@ names are linked automatically) or use <strong>Locate…</strong> for each.</p>
 <tr>
 <td><code>S</code></td>
 <td>Split at the playhead</td>
+</tr>
+<tr>
+<td><code>F</code></td>
+<td>Freeze frame at the playhead</td>
+</tr>
+<tr>
+<td><code>M</code></td>
+<td>Marker at the playhead</td>
+</tr>
+<tr>
+<td><code>,</code> / <code>.</code></td>
+<td>Previous / next marker</td>
 </tr>
 <tr>
 <td><code>Delete</code> / <code>Backspace</code></td>

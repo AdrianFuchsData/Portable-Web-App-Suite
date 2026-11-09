@@ -47,10 +47,12 @@ export async function available(channels = 2, rate = 44100) {
  * Encode audio ({ rate, channels }, already at rateFor(format, rate)) into a file; bitrate in kbit/s. onProgress(0…1).
  * Returns the file content (Uint8Array).
  */
-export async function encode(audio, format, { bitrate, onProgress = () => {} } = {}) {
+export async function encode(audio, format, { bitrate, tags = null, onProgress = () => {} } = {}) {
   const mb = await load();
   const f = FORMATS[format];
   const output = new mb.Output({ format: new mb[f.output](), target: new mb.BufferTarget() });
+  const meta = toMetadata(tags);
+  if (meta) output.setMetadataTags(meta); // (ID3 in MP3, Vorbis comments in FLAC and Ogg, iTunes atoms in M4A)
   const source = new mb.AudioSampleSource({ codec: f.codec, ...(f.lossless ? {} : { bitrate: (bitrate || f.bitrate) * 1000 }) });
   output.addAudioTrack(source);
   await output.start();
@@ -68,4 +70,30 @@ export async function encode(audio, format, { bitrate, onProgress = () => {} } =
   source.close();
   await output.finalize();
   return new Uint8Array(output.target.buffer);
+}
+
+/** Our tags ({ title, artist, album, year, track, genre, comment }) as Mediabunny metadata tags, or null when empty. */
+function toMetadata(tags) {
+  if (!tags) return null;
+  const m = {};
+  for (const k of ['title', 'artist', 'album', 'genre', 'comment']) if (tags[k] && String(tags[k]).trim()) m[k] = String(tags[k]).trim();
+  const year = parseInt(tags.year, 10);
+  if (year > 0 && year < 10000) m.date = new Date(Date.UTC(year, 0, 1));
+  const track = parseInt(tags.track, 10);
+  if (track > 0) m.trackNumber = track;
+  return Object.keys(m).length ? m : null;
+}
+
+/** The tags of a compressed audio file (MP3, FLAC, Ogg, M4A …) read with Mediabunny, or null. */
+export async function readTags(bytes) {
+  try {
+    const mb = await import('mediabunny');
+    const input = new mb.Input({ source: new mb.BufferSource(bytes), formats: mb.ALL_FORMATS });
+    const m = await input.getMetadataTags();
+    const out = {};
+    for (const k of ['title', 'artist', 'album', 'genre', 'comment']) if (typeof m[k] === 'string' && m[k].trim()) out[k] = m[k].trim();
+    if (m.date instanceof Date && !Number.isNaN(m.date.getTime())) out.year = String(m.date.getUTCFullYear());
+    if (m.trackNumber) out.track = String(m.trackNumber);
+    return Object.keys(out).length ? out : null;
+  } catch (e) { return null; }
 }

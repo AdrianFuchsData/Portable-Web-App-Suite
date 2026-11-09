@@ -3,6 +3,7 @@
     "app/timeline": "timeline.js",
     "app/export": "export.js",
     "app/subtitles": "subtitles.js",
+    "app/gif": "../../../../shared/js/gif.js",
     "app/spell": "../../../../shared/js/spell.js",
     "app/spell-dom": "../../../../shared/js/spell-dom.js"
   }

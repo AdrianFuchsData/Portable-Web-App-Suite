@@ -912,12 +912,76 @@ view, frame steps and snapshot size, German interface, phone layout.</p>
   clip with all of them. Combining (add, subtract, intersect, invert) works on <code>selectionMask()</code> and turns the result back
   into runs (<code>maskSelection</code>); the marching ants of a mask follow its pixel border (<code>selectionOutline</code>, cached per selection).
   The magic wand shares the region search of the fill tool (<code>regionMask</code>).
+  <strong>Soft selections</strong> are <code>alpha</code> (<code>{ x, y, w, h, alpha }</code>: one amount 0–255 per pixel of the bounds; <code>alphaSelection</code> makes one
+  from a mask, or a plain <code>mask</code> selection when no pixel is partly selected). Every change of pixels goes through
+  <code>doc.paintThrough(ctx, draw)</code>: hard selections clip as before; with an <code>alpha</code> selection the drawing happens unclipped and is
+  blended with a copy of the previous pixels by the mask on the GPU (<code>blendThrough</code>: <code>destination-in</code> / <code>destination-out</code> with
+  <code>maskCanvas()</code>, then <code>lighter</code>, which in premultiplied alpha is exactly <code>new · m + old · (1 − m)</code>). Pixel loops (convolution,
+  auto levels, levels/curves, fill) weight by <code>selectionMask()</code>; copy and the move tool cut with the mask canvas. Clipping and the
+  marching ants use the pixels selected at least 50 % (<code>hardSelection</code>, cached). <code>modifySelection</code> feathers (three box blurs ≈
+  Gaussian), grows and shrinks (Euclidean distance transform after Felzenszwalb–Huttenlocher, O(n), with a one-pixel smooth edge;
+  the image edge counts as unselected when shrinking) and borders (<code>min(grow, 1 − shrink)</code>); with soft selections, combining takes
+  the maximum / minimum of the amounts. The <strong>quick mask</strong> is a grey canvas (<code>doc.quickMask</code>, white = selected) that <code>doc.layer</code>
+  returns while it is on, so all tools, filters and the layer history work on it unchanged; switching it off turns
+  brightness × alpha into an <code>alpha</code> selection and drops its history steps. The view draws a red overlay (half opaque where nothing
+  is selected) computed from the mask, or from the stroke preview while painting.</li>
+<li><strong>Brush tips</strong> (<code>brushes.js</code>): the brush and the eraser place dabs every <code>spacing</code> % of the (pressure-scaled) size along the
+  path; a stroke keeps a Float32 alpha buffer of the image size into which dabs are combined by their maximum (GIMP's
+  non-incremental mode, so a soft tip stays soft however dense the dabs are) with bilinear sub-pixel placement; only the changed
+  rectangle is written into the stroke canvas (<code>putImageData</code>), which is composed as before. Generated tips follow GIMP's
+  generated brushes: the point is turned by the angle, y stretched by the aspect ratio, folded into one of <code>spikes</code> sectors and
+  measured as circle / square / diamond; hardness h gives <code>gauss(r^(1/(1−h)))</code> (GIMP's smooth step) with a one-pixel
+  antialiased edge. <code>.vbr</code> files (1.0 and 1.5) are such parameters; <code>.gbr</code> (versions 1–3, grey or RGBA → alpha) and images
+  (<code>(1 − luminance) · alpha</code>, scaled to at most 512 px) are masks, scaled and turned with bilinear sampling. Own tips are stored
+  in <code>localStorage</code> (<code>suite.imageeditor.brushes</code>, masks as version-2 <code>.gbr</code> in base64), so settings exports include them.
   Levels and curves build 256-entry lookup tables (levels: <code>outBlack + (outWhite − outBlack) · x^(1/γ)</code>; curves: monotone cubic
   Hermite interpolation after Fritsch–Carlson, so the curve never overshoots); the RGB table is applied first, then the channel's
   own (<code>channelLuts</code>). The preview is the layer with the tables applied, shown through <code>ed.preview</code> and recomputed once per frame;
-  these dialogs (and the adjustments) do not dim the image.</li>
+  these dialogs (and the adjustments) do not dim the image. <strong>Pixel adjustments</strong> (<code>PIXEL_ADJUSTMENTS</code>: colour balance,
+  vibrance, threshold, posterize, unsharp mask, median, vignette) declare their parameters (sliders, choices, checkboxes; colour
+  balance keeps values per tone range) and change <code>ImageData</code> in place; <code>pixelAdjustCanvas</code> blends the result with the original
+  by <code>selectionMask()</code> and is shown through <code>ed.preview</code> 60 ms after the last change. Colour balance weights each range's shift by
+  the pixel's lightness (shadows <code>(1 − 2l)^1.5</code>, midtones <code>1 − |2l − 1|</code>, highlights <code>(2l − 1)^1.5</code>) and can restore the
+  luminance; vibrance scales the distance from grey by <code>1 + a · (1 − saturation)</code>; unsharp mask uses a canvas <code>blur()</code> copy;
+  median uses a sliding 256-bin histogram per channel and row (Huang), O(n · r); vignette is a smoothstep over the distance
+  from the centre in an ellipse of the image's proportions.</li>
 <li><strong>Files</strong>: decoding through <code>&lt;img&gt;</code>/Blob URL; encoding with <code>canvas.toBlob</code> (PNG, JPEG, WebP), an own 24-bit BMP writer and
-  OpenRaster (<code>mimetype</code> stored first, <code>stack.xml</code> top layer first, <code>data/*.png</code>, <code>mergedimage.png</code>, thumbnail). PSD with ag-psd
+  OpenRaster (<code>mimetype</code> stored first, <code>stack.xml</code> top layer first, <code>data/*.png</code>, <code>mergedimage.png</code>, thumbnail; a text layer
+  carries its text as JSON in <code>suite:text</code>, namespace <code>urn:portable-web-app-suite:openraster</code>, validated on reading – the PNG
+  stays the pixels until it is edited). <strong>Text layers</strong> are layers with <code>text</code> (<code>{ text, x, y, font, fontSize, bold, italic,
+  color, align }</code>) whose canvas <code>renderText</code> draws; <code>record('layer')</code> – called before every pixel change – drops <code>text</code> after
+  taking the snapshot (which keeps it, so undo restores the text layer); <code>setText</code> records without dropping. <code>transformAll</code>
+  shifts the text for canvas size and crop and drops it for the other transforms; the move tool keeps it when the whole layer
+  moves. <strong>Rotate by angle</strong> (<code>rotateBy</code>) draws every layer turned about the centre into the new canvas: <code>expand</code> grows it to
+  <code>W·|cos| + H·|sin|</code> × <code>W·|sin| + H·|cos|</code>, <code>crop</code> keeps the largest rectangle of the same aspect ratio inside the turned
+  image (scale <code>min(W / (W·|cos| + H·|sin|), H / (W·|sin| + H·|cos|))</code>); straighten turns the angle of the drawn line into the
+  rotation that makes it level (or upright beyond 45°). The crop tool keeps its rectangle in <code>ed.cropRect</code> until Enter / the
+  button crops. <strong>Metadata</strong> (<code>meta.js</code>): a small TIFF/EXIF reader (IFD0, Exif IFD, GPS IFD; bounded counts and depth) for
+  JPEG <code>APP1</code>, PNG <code>eXIf</code> and WebP <code>EXIF</code> chunks, plus detection of XMP, IPTC (<code>APP13</code>), comments and PNG text chunks.
+  <code>stripMetadata</code> copies the file without them – JPEG segments <code>APP1</code>–<code>APP15</code> (except ICC <code>APP2</code> and <code>Adobe</code> <code>APP14</code>) and
+  <code>COM</code>, PNG <code>eXIf</code>/<code>tEXt</code>/<code>zTXt</code>/<code>iTXt</code>/<code>tIME</code>, WebP <code>EXIF</code>/<code>XMP</code> (VP8X flags and RIFF size updated) – leaving the
+  compressed image data untouched; an orientation other than 1 is written back as a minimal one-tag EXIF block. Browsers
+  disagree on EXIF orientation (Firefox reads only the first <code>APP1</code>, and not for canvases), so files with an orientation are
+  decoded from a copy without metadata and turned with the matching canvas transform (<code>decodeUpright</code>). <strong>GIF</strong> (<code>gif.js</code>):
+  median cut on a 15-bit histogram (the box with the largest range × √pixels is split at its median) to 256 colours (255 and
+  a transparent index when pixels have alpha &lt; 128), nearest-colour mapping weighted 3:4:2 with optional Floyd–Steinberg
+  error diffusion, LZW with variable code sizes and a clear code at 4096. <strong>ICO</strong>: each chosen size is the image fitted into
+  a transparent square, stored as PNG (directory entries with 0 for 256). Export selection / layer encodes a temporary
+  one-layer document. <strong>Free transform</strong> (<code>transform.js</code>): on activation the selected pixels (through the mask canvas, so
+  soft selections lift partly) or the layer's content bounds are copied into a float canvas and removed from a base copy; the
+  transform <code>{ cx, cy, w, h, angle, fx, fy }</code> is drawn into <code>ed.preview</code> as base + float (translate, rotate, scale). Handles are
+  hit-tested in the box's own (unrotated) coordinates; scaling keeps the opposite handle fixed. Applying records the layer, takes
+  the preview and, with a selection, makes the transformed float's alpha the new selection; choosing another tool applies
+  (<code>leave</code>). <strong>Layer masks</strong>: <code>layer.mask</code> is a grey canvas of the image size (white shows, black hides, transparent counts as
+  white); while it is edited (<code>doc.editMask</code>), <code>doc.layer</code> returns a proxy whose <code>canvas</code> is the mask (<code>maskTarget</code>, id
+  <code>mask-&lt;layer id&gt;</code>), so tools, filters, the free transform and the layer history work on it unchanged. Compositing converts the
+  mask to alpha (<code>grey · a + 255 · (1 − a)</code>) and draws the layer through it with <code>destination-in</code>; the alpha version is cached per
+  mask canvas until <code>masksChanged()</code> (every change). Image transforms transform masks too; merging and applying bake them in.
+  PSD masks are read into an image-sized canvas (outside their rectangle: <code>defaultColor</code>) and written as full-size layer masks;
+  OpenRaster writes the masked result as the layer PNG plus <code>suite:pixels</code> and <code>suite:mask</code>. <strong>Batch processing</strong> (<code>batch.js</code>)
+  opens one file after the other as a document without undo history, applies the steps in a fixed order (resize to fit, rotate,
+  flip, auto levels, grayscale, sharpen, watermark), encodes it and collects the results with fflate (<code>level: 0</code>, the images are
+  compressed already); failures go to <code>errors.txt</code>. The steps are kept in <code>localStorage</code> (<code>suite.imageeditor.batch</code>). PSD with ag-psd
   (<code>vendor/esm/psd</code>, MIT, with pako; imported on first use): layers are read bottom-up with their offsets, groups flattened
   (hidden/opacity inherited), layer masks multiplied into the alpha (<code>defaultColor</code> outside the mask rectangle); blend mode
   names map to composite operations (<code>color dodge</code> ↔ <code>color-dodge</code>, <code>linear dodge</code> ↔ <code>lighter</code>). Writing stores every layer at
@@ -1557,7 +1621,21 @@ resamples to the project rate and scales offsets, beat phases and cues according
 equaliser and reverb as offline Web Audio graphs (<code>BiquadFilterNode</code> shelves/peak; <code>ConvolverNode</code> with a deterministic decaying
 noise impulse response), pitch shift = WSOLA time stretch by 1/r followed by resampling with <code>playbackRate</code> r, noise reduction =
 spectral gate (STFT 2048/512 with Hann windows, noise level per bin from the quietest 10 % of the frames that lie fully inside the
-range, gains smoothed over neighbouring bins and decaying over time, overlap-add with window normalisation).</p>
+range, gains smoothed over neighbouring bins and decaying over time, overlap-add with window normalisation). Loudness follows
+ITU-R BS.1770-4: K-weighting with libebur128's biquad formulas for any sample rate, mean square per channel in 400 ms blocks
+every 100 ms (prefix sums), absolute gate −70 LUFS, relative gate −10 LU, channel weights 1; normalising measures each track's
+range and amplifies by the difference, reduced so that the sample peak stays below the ceiling. Truncate silence finds runs
+where every channel is below the threshold and removes their middle; the noise gate is a linked peak detector with hold and
+one-pole attack/release smoothing of the gain between 1 and the floor. The spectrum plot averages the power of half-overlapping
+Hann-windowed FFT frames (Welch) of the mono mix, scaled so that a full-scale sine is 0 dB (<code>(Σw / 2)²</code>); peaks are refined by
+parabolic interpolation of the dB values, notes are named from A4 = 440 Hz with the deviation in cents. Click removal compares the
+absolute second difference with 4 × sensitivity × the median of the surrounding 20 ms blocks; a run back to the calm level that
+is at most <code>width</code> ms long is replaced by a cubic Hermite curve between the neighbouring samples (with their slopes). The
+de-esser splits off the band above the frequency with an RBJ high-pass run forwards and backwards (zero phase, so
+<code>low = x − high</code> is exact), follows its peak level and subtracts <code>(1 − g) · high</code> with <code>g = max(floor, threshold / level)</code>. The
+parametric equaliser runs RBJ-cookbook biquads in series (the same coefficients draw the response curve, evaluated as
+<code>|B(e^jω)|² / |A(e^jω)|²</code>); auto duck finds the control track's passages above the threshold (RMS over 50 ms, gaps below the
+maximum pause joined) and writes ramps into the volume automation of the other tracks, summed in dB with their existing points.</p>
 <p>Clip volume and fades (<code>clips.envelopeAt</code>): gain in dB and equal-power fade curves (<code>sin</code> over the fade length) per clip, applied in
 <code>flatten()</code> (saving, export, effects that mix) and during playback as a <code>GainNode</code> with <code>setValueCurveAtTime</code> from the playback
 position to the clip's end. Splitting keeps the fade-in on the left and the fade-out on the right part; the project file stores
@@ -1580,7 +1658,11 @@ libFLAC encoders are registered only where the browser has none). <code>encode()
 (<code>f32-planar</code>) into an <code>AudioSampleSource</code> of an <code>Output</code> (<code>Mp3OutputFormat</code>, <code>FlacOutputFormat</code>, <code>OggOutputFormat</code> with
 Opus, <code>Mp4OutputFormat</code> with AAC) with a <code>BufferTarget</code>. MP3 is encoded at the project rate (at most 48 kHz), Opus at
 48 kHz, AAC at 44.1 or 48 kHz. The encoders run in workers created from Blob URLs; the CSP therefore allows
-<code>worker-src blob:</code> and <code>'wasm-unsafe-eval'</code>.</p>
+<code>worker-src blob:</code> and <code>'wasm-unsafe-eval'</code>. Tags go through Mediabunny's <code>setMetadataTags</code> (ID3v2, Vorbis comments, iTunes
+atoms; the year as a <code>Date</code>, the track number as <code>trackNumber</code>) and are read from opened files with <code>Input.getMetadataTags</code>; WAV
+files carry them in a <code>LIST</code>/<code>INFO</code> chunk after the samples (<code>INAM</code>, <code>IART</code>, <code>IPRD</code>, <code>ICRD</code>, <code>ITRK</code>, <code>IGNR</code>, <code>ICMT</code>, read by
+<code>dsp.readWavTags</code>). A split export renders each part (label range, the span between point labels, or one clip through
+<code>clips.flatten</code> with its gain and fades) through the same mix and encoder and collects the files with fflate.</p>
 <p>Tests: <code>tests/apps/test_audioeditor.py</code> (WAV files generated and checked with <code>wave</code>/<code>struct</code>) — opening, deleting with
 undo/redo and bit-identical saving, mouse selection over tracks, copy/paste, resampled import, mute/pan and mixdown, all
 effects, generators, WAV export (24 bit stereo selection, 32 bit float), 24-bit decoding, playback with loop, recording
@@ -1621,7 +1703,29 @@ correction, EAN example and invalid content, Data Matrix/Aztec/PDF417/Code 128, 
   (wipes, circle) or transform (slides, zoom) the drawing; exits are mirrored; only 'fade' changes the opacity, the sound
   always fades. Picture settings: a CSS <code>filter</code> (brightness, contrast, saturate) on the 2D context (also on the export's
   <code>OffscreenCanvas</code>), the crop as the source rectangle of <code>drawImage</code>, rotation around the picture's centre, and <code>motion(c, t)</code>
-  interpolating scale and offset over the clip (Ken Burns). Speed and reverse: a clip covers <code>(out - in) / speed</code> seconds of the
+  interpolating scale and offset over the clip (Ken Burns). Picture effects extend the CSS filter (<code>hue-rotate</code>, <code>grayscale</code>,
+  <code>sepia</code>, <code>invert</code>, <code>blur</code>). The chroma key draws the cropped source at its output size into an <code>OffscreenCanvas</code>, measures
+  each pixel's distance to the key colour in the Cb/Cr plane (independent of brightness), maps distances between <code>tolerance</code> and
+  <code>tolerance + softness</code> to alpha with a smoothstep and limits the key channel to the larger of the other two (spill).
+  Freeze frame reads the frame with Mediabunny's <code>CanvasSink.getCanvas(sourceTime)</code>, adds it as a PNG image source and edits
+  the timeline with <code>freezeFrame</code> (split, <code>insertGap</code> on the track, an image clip with the clip's picture settings). Markers live
+  in <code>project.markers</code> and join the snap points. A range export renders frames <code>round(from · fps)</code> … <code>round(to · fps)</code> with
+  timestamps from 0 and mixes the audio of the same range; sound only encodes the <code>OfflineAudioContext</code> mix as 16-bit WAV
+  or through an audio-only Mediabunny output. Cross-fades (<code>crossfade</code>, <code>transitionsOnTrack</code>) never move other clips: the
+  following clip goes to a free neighbouring track (created if needed) and fades in, the previous one is extended into its
+  source handle (<code>maxLength</code>), and <code>audioFadeIn</code>/<code>audioFadeOut</code> fade only the sound (<code>audioFade</code> in the preview, the gain ramps
+  of the export mix); on an A/B roll the upper clip of a later pair is extended and fades out instead. Normalising reads the
+  clip's source range with <code>AudioBufferSink</code> for its peak. The frame loop (<code>composeFrames</code>, an async generator with one
+  sequential <code>CanvasSink</code> iterator per clip) feeds both the video encoder and the GIF export, which scales every n-th frame to
+  the GIF size, takes one palette from up to eight frames across the range (<code>shared/js/gif.js</code> <code>GifAnimation</code>: global colour
+  table, NETSCAPE2.0 loop, per-frame delays rounded so that their sum stays right) and encodes the frames with LZW.
+  Keyframes: <code>clip.keys[prop]</code> lists <code>{ t, v }</code> (seconds from the clip start) for x, y, scale, opacity and rotation; <code>valueAt</code>
+  interpolates linearly and is used by <code>motion</code>, the opacity and the rotation of <code>drawClip</code> (so preview and export agree);
+  <code>subClip</code> (split, trim, overwrite) rebases the keys and adds keys with the interpolated values at the new edges. A project
+  ZIP holds <code>project.json</code> and <code>media/&lt;source id&gt;/&lt;name&gt;</code> (stored, fflate); opening one recreates the sources from these
+  entries through <code>loadSource</code>, so nothing has to be relinked. "Edit in audio editor" sends the clip's source range as a
+  16-bit WAV (<code>sourceWav</code>) with <code>Suite.bridge.openIn('audioeditor', { data, save })</code>; the <code>save</code> callback adds the returned WAV
+  as a new source and points the audio clip at it, or mutes the video clip and adds an audio clip on a free audio track. Speed and reverse: a clip covers <code>(out - in) / speed</code> seconds of the
   timeline; <code>sourceTime(c, t)</code> maps timeline to source time (backwards from <code>out</code> when <code>reverse</code>), and <code>subClip(c, a, b)</code> is
   used by overwrite edits, trimming and splitting, so the source range of every part stays correct. The export asks
   <code>CanvasSink.canvasesAtTimestamps</code> for the mapped times (descending for reversed clips) and plays the clip's audio as one

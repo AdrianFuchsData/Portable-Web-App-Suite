@@ -24,6 +24,11 @@ track at the desired time. Videos can also be dragged onto an audio track to use
 - The track header has 👁 (hide a video track), 🔊 (mute) and × (delete the track); **+V** and **+A** add tracks.
 - Audio clips show their waveform (scaled by the clip's volume), video clips with sound a smaller one at the bottom edge.
   This makes it easy to cut at pauses or align clips to a beat. (Files above 400 MB are shown without a waveform.)
+- **Freeze frame** (`F`, or ❄ in the clip settings of a video): the frame at the playhead stands still for two seconds –
+  the clip is split there, its rest moves two seconds later, and a picture of the frame (added to the media list) fills the gap;
+  change its duration like any clip.
+- **Markers** (`M`) mark points on the time ruler, e.g. the beats of the music or the start of a scene; `,` and `.` jump to the
+  previous and next one, clips snap to them, a double-click names or deletes one. They are saved in the project.
 - `Ctrl+Z`/`Ctrl+Y` undo and redo every change.
 
 ## Properties
@@ -44,15 +49,39 @@ may play less smoothly (the browser cannot play media backwards); the export has
 *Subtitles* at the top – at the bottom of the picture, white on a dark band; they can be edited, moved and trimmed like any title
 and are burnt into the exported video. **CC** saves the titles of that track (or all titles) as an SRT file again.
 
+**Keyframes** animate X, Y, size, opacity and rotation: move the playhead to a moment, set the value and click ◆ next to the
+field – a keyframe. At another moment type another value: as soon as a property has a keyframe, typing sets a new keyframe at the
+playhead. In between the value changes evenly; before the first and after the last keyframe it stays. The fields always show the
+value at the playhead, ◆ is filled where a keyframe is (click it to remove that keyframe), and ◆ marks on the clip show where
+keyframes lie. Keyframes replace the motion settings (Ken Burns) of the same property, also work for titles and stay right
+when a clip is split. **Remove all keyframes** makes the clip static again.
+
 **Picture** (for videos and images, folded below the clip settings): brightness, contrast and saturation (100 % = unchanged),
 rotation in degrees, cropping each edge (in % of the picture), and **motion** (Ken Burns): the size and X/Y offset at the end of
 the clip – the picture zooms and pans smoothly from its values at the start to these; for example *size at the end* 130 % for a
 slow zoom into a photo. **Reset picture** restores everything.
 
+**Effects** (in the same section): blur, grayscale, sepia, hue shift and inverted colours. **Green screen** (chroma key):
+tick *Key out a colour* and choose the colour (green by default) – it becomes transparent, so the clip on the track below shows
+through (e.g. a person filmed in front of a green cloth on V2 over a background on V1). *Tolerance* sets how similar a colour
+must be to disappear, *soft edge* smooths the border, *remove colour cast* takes the green (or blue) glow off hair and edges.
+
 **Transitions**: *Fade in as* and *Fade out as* choose how a picture appears or disappears during its fade: dissolve
 (becomes transparent, the default), wipe or slide in one of four directions, zoom or circle. What lies below shows
 through: a clip on V1 below gives a transition between two pictures (put the next clip on V2 so that it overlaps the
 end of the first one and fade it in), with nothing below it is black.
+
+**Cross-fade / transition to the next clip** does this for you: choose the length and the picture transition and click
+*With the next clip* – the next clip moves to the track above (for sound: the next audio track) and fades in over the first
+one, which is extended by the length into the footage after its end; the sound cross-fades. *Between all clips of the track*
+does it for every pair of neighbours (alternating between two tracks). Nothing else moves on the timeline. A video clip
+needs footage after its end for this (shorten it first if it ends where its file ends); pictures and titles always can.
+
+**Edit in audio editor** (sound of a clip) opens the clip's sound in the audio editor (a new tab or window) for cleaning up,
+cutting or effects. **Save** there brings it back as a new file in the media list: an audio clip then plays the edited sound;
+for a video clip its own sound is muted and the edited sound is put on an audio track at the same place.
+
+**Normalise** (sound of a clip) sets the clip's volume so that its loudest moment reaches −1 dBFS (up to 400 %).
 
 ## Preview
 
@@ -65,6 +94,11 @@ start or end. **📷** saves the current frame as PNG.
 (H.264 and AAC in Chrome and Edge, otherwise VP9 and Opus), at the project resolution and frame rate, with the chosen
 quality. A progress bar shows how far rendering is (long videos take a while); it can be cancelled.
 
+*From* and *To* export only a part of the timeline (with markers, the dialog offers the ranges between them). *Only the sound*
+exports the mixed audio as WAV, or as Opus (WebM) or AAC (M4A) where the browser can encode them. *Animated GIF* makes a
+looping GIF without sound (width, frames per second, optional dithering) – for short clips: GIFs have 256 colours and grow
+quickly (at most 600 frames).
+
 Export needs WebCodecs: Chrome, Edge and Firefox on the desktop have it, **Firefox for Android does not** (editing works,
 exporting does not).
 
@@ -73,6 +107,10 @@ exporting does not).
 **Save project** (`Ctrl+S`) saves the timeline and settings as a JSON file. The media files are **not** included: keep them
 together with the project. After **Open project**, the media are listed as "missing"; import them again (files with the same
 names are linked automatically) or use **Locate…** for each.
+
+**Save with media** writes the project and all its media files into one ZIP – to move a project to another computer or keep
+it in one piece. **Open project** opens such a ZIP with everything linked; `Ctrl+S` then saves the ZIP again. (The ZIP holds
+the media files as they are, so it is as large as they are together.)
 
 ## Keyboard shortcuts
 
@@ -93,6 +131,9 @@ On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the applicat
 | `Ctrl+Z` | Undo |
 | `Ctrl+Y` / `Ctrl+Shift+Z` | Redo |
 | `S` | Split at the playhead |
+| `F` | Freeze frame at the playhead |
+| `M` | Marker at the playhead |
+| `,` / `.` | Previous / next marker |
 | `Delete` / `Backspace` | Delete the clip (with Shift: close the gap) |
 
 ### Playback

@@ -4,6 +4,11 @@
     "@app/tools.js": "tools.js",
     "@app/filters.js": "filters.js",
     "@app/guides.js": "guides.js",
+    "@app/brushes.js": "brushes.js",
+    "@app/meta.js": "meta.js",
+    "@app/gif.js": "../../../../shared/js/gif.js",
+    "@app/transform.js": "transform.js",
+    "@app/batch.js": "batch.js",
     "app/spell": "../../../../shared/js/spell.js",
     "app/spell-dom": "../../../../shared/js/spell-dom.js"
   }

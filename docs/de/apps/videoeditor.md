@@ -25,6 +25,11 @@ Spur an die gewünschte Zeit. Videos können auch auf eine Audiospur gezogen wer
 - Der Spurkopf hat 👁 (Videospur ausblenden), 🔊 (stumm) und × (Spur löschen); **+V** und **+A** fügen Spuren hinzu.
 - Audioclips zeigen ihre Wellenform (mit der Lautstärke des Clips skaliert), Videoclips mit Ton eine kleinere am unteren Rand.
   So schneidet man leicht in Pausen oder richtet Clips an einem Takt aus. (Dateien über 400 MB erscheinen ohne Wellenform.)
+- **Standbild** (`F` oder ❄ in den Clip-Einstellungen eines Videos): Das Bild an der Abspielposition steht zwei Sekunden still – der Clip
+  wird dort geteilt, sein Rest rückt zwei Sekunden nach hinten, und ein Bild des Frames (in der Medienliste) füllt die Lücke; seine Dauer
+  ändern Sie wie bei jedem Clip.
+- **Marken** (`M`) markieren Stellen auf dem Zeitlineal, etwa die Schläge der Musik oder den Beginn einer Szene; `,` und `.` springen zur
+  vorigen und nächsten, Clips rasten an ihnen ein, ein Doppelklick benennt oder löscht eine. Sie werden im Projekt gespeichert.
 - `Strg+Z`/`Strg+Y` machen jede Änderung rückgängig bzw. wiederholen sie.
 
 ## Eigenschaften
@@ -46,15 +51,42 @@ abspielen); der Export enthält Bild und Ton rückwärts.
 *Subtitles* ganz oben – am unteren Bildrand, weiß auf dunklem Band; sie lassen sich wie jeder Titel bearbeiten, verschieben und kürzen und werden
 in das exportierte Video eingebrannt. **CC** speichert die Titel dieser Spur (oder alle Titel) wieder als SRT-Datei.
 
+**Schlüsselbilder** animieren X, Y, Größe, Deckkraft und Drehung: die Abspielposition an eine Stelle setzen, den Wert einstellen und ◆ neben
+dem Feld klicken – ein Schlüsselbild. An einer anderen Stelle einen anderen Wert eingeben: Sobald eine Eigenschaft ein Schlüsselbild hat, setzt
+die Eingabe ein neues an der Abspielposition. Dazwischen ändert sich der Wert gleichmäßig; vor dem ersten und nach dem letzten Schlüsselbild
+bleibt er. Die Felder zeigen immer den Wert an der Abspielposition, ◆ ist gefüllt, wo ein Schlüsselbild liegt (ein Klick entfernt es), und
+◆-Marken auf dem Clip zeigen, wo Schlüsselbilder liegen. Schlüsselbilder ersetzen die Bewegungseinstellungen (Ken Burns) derselben
+Eigenschaft, wirken auch bei Titeln und bleiben beim Teilen eines Clips richtig. **Alle Schlüsselbilder entfernen** macht den Clip wieder
+statisch.
+
 **Bild** (für Videos und Bilder, unter den Clip-Einstellungen aufklappbar): Helligkeit, Kontrast und Sättigung (100 % = unverändert),
 Drehung in Grad, Abschneiden jedes Rands (in % des Bildes) und **Bewegung** (Ken Burns): Größe und X/Y-Versatz am Ende des Clips – das
 Bild zoomt und schwenkt gleichmäßig von seinen Werten am Anfang dorthin, etwa *Größe am Ende* 130 % für ein langsames Hineinzoomen in ein
 Foto. **Bild zurücksetzen** stellt alles zurück.
 
+**Effekte** (im selben Abschnitt): Unschärfe, Graustufen, Sepia, Farbtonverschiebung und umgekehrte Farben. **Greenscreen** (Chroma-Key):
+*Eine Farbe ausstanzen* ankreuzen und die Farbe wählen (voreingestellt Grün) – sie wird durchsichtig, und der Clip auf der Spur darunter
+scheint durch (etwa eine Person vor grünem Tuch auf V2 über einem Hintergrund auf V1). *Toleranz* legt fest, wie ähnlich eine Farbe sein
+muss, um zu verschwinden, *weicher Rand* glättet die Kante, *Farbstich entfernen* nimmt den grünen (oder blauen) Schimmer von Haaren und
+Kanten.
+
 **Übergänge**: *Einblenden als* und *Ausblenden als* legen fest, wie ein Bild während seiner Blende erscheint bzw. verschwindet:
 Überblendung (wird durchsichtig, Standard), Wischen oder Schieben in eine von vier Richtungen, Zoom oder Kreis. Was darunter liegt, scheint
 durch: Ein Clip auf V1 darunter ergibt einen Übergang zwischen zwei Bildern (legen Sie den nächsten Clip so auf V2, dass er das Ende des
 ersten überlappt, und blenden Sie ihn ein); ohne etwas darunter ist es schwarz.
+
+**Überblendung / Übergang zum nächsten Clip** erledigt das für Sie: Länge und Bildübergang wählen und *Mit dem nächsten Clip* klicken – der
+nächste Clip wandert auf die Spur darüber (beim Ton: die nächste Audiospur) und blendet über den ersten ein, der um die Länge in das
+Material nach seinem Ende verlängert wird; der Ton wird übergeblendet. *Zwischen allen Clips der Spur* macht das für jedes Nachbarpaar
+(abwechselnd auf zwei Spuren). Sonst verschiebt sich nichts auf der Zeitleiste. Ein Videoclip braucht dafür Material nach seinem Ende
+(kürzen Sie ihn zuerst, wenn er dort endet, wo seine Datei endet); Bilder und Titel können es immer.
+
+**Im Audio-Editor bearbeiten** (Ton eines Clips) öffnet den Ton des Clips im Audio-Editor (neuer Tab oder neues Fenster) zum Säubern,
+Schneiden oder für Effekte. **Speichern** dort bringt ihn als neue Datei in die Medienliste zurück: Ein Audioclip spielt dann den
+bearbeiteten Ton; bei einem Videoclip wird sein eigener Ton stummgeschaltet und der bearbeitete Ton an derselben Stelle auf eine Audiospur
+gelegt.
+
+**Normalisieren** (Ton eines Clips) setzt die Lautstärke des Clips so, dass seine lauteste Stelle −1 dBFS erreicht (bis 400 %).
 
 ## Vorschau
 
@@ -67,6 +99,11 @@ ersten überlappt, und blenden Sie ihn ein); ohne etwas darunter ist es schwarz.
 oder MP4 (H.264 und AAC in Chrome und Edge, sonst VP9 und Opus), in der Auflösung und Bildrate des Projekts und der gewählten
 Qualität. Ein Fortschrittsbalken zeigt den Stand (lange Videos dauern eine Weile); der Export kann abgebrochen werden.
 
+*Von* und *Bis* exportieren nur einen Teil der Zeitleiste (mit Marken bietet der Dialog die Bereiche dazwischen an). *Nur den Ton*
+exportiert die Tonmischung als WAV oder, wo der Browser sie kodieren kann, als Opus (WebM) oder AAC (M4A). *Animiertes GIF* erzeugt ein
+endlos laufendes GIF ohne Ton (Breite, Bilder pro Sekunde, wahlweise gerastert) – für kurze Ausschnitte: GIFs haben 256 Farben und
+werden schnell groß (höchstens 600 Bilder).
+
 Der Export braucht WebCodecs: Chrome, Edge und Firefox am Desktop haben es, **Firefox für Android nicht** (Schneiden geht,
 Exportieren nicht).
 
@@ -75,6 +112,10 @@ Exportieren nicht).
 **Projekt speichern** (`Strg+S`) speichert Zeitleiste und Einstellungen als JSON-Datei. Die Mediendateien sind **nicht**
 enthalten: Bewahren Sie sie zusammen mit dem Projekt auf. Nach **Projekt öffnen** stehen die Medien als „fehlt“ in der Liste;
 importieren Sie sie erneut (Dateien mit gleichem Namen werden automatisch verknüpft) oder verwenden Sie **Suchen…** für jede.
+
+**Mit Medien speichern** schreibt das Projekt und alle seine Mediendateien in ein ZIP – um ein Projekt auf einen anderen Computer mitzunehmen
+oder es in einem Stück aufzubewahren. **Projekt öffnen** öffnet ein solches ZIP mit allem verknüpft; `Strg+S` speichert danach wieder das
+ZIP. (Das ZIP enthält die Mediendateien unverändert und ist daher so groß wie sie zusammen.)
 
 ## Tastenkürzel
 
@@ -95,6 +136,9 @@ Auf dem Mac verwenden Sie Cmd statt Strg. `F1` (oder `?`) zeigt diese Liste in d
 | `Strg+Z` | Rückgängig |
 | `Strg+Y` / `Strg+Umschalt+Z` | Wiederholen |
 | `S` | An der Abspielposition teilen |
+| `F` | Standbild an der Abspielposition |
+| `M` | Marke an der Abspielposition |
+| `,` / `.` | Vorige / nächste Marke |
 | `Entf` / `Rücktaste` | Clip löschen (mit Umschalt: Lücke schließen) |
 
 ### Wiedergabe

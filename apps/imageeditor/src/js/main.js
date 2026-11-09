@@ -2,10 +2,16 @@
  * Image editor: layers, painting and selection tools, adjustments, transformations, clipboard, zoom/pan, PNG/JPEG/WebP/BMP
  * and OpenRaster (layered) files. Document model in doc.js, tools in tools.js, filters in filters.js.
  */
-import { ImageDoc, BLEND_MODES, SAVE_FORMATS, formatOfName, openFile, encode, decodeImage, canvas, selectionPath, selectionOutline, maskSelection } from '@app/doc.js';
-import { TOOLS, drawText, clampSelection } from '@app/tools.js';
+import * as brushes from '@app/brushes.js';
+import { BUILTIN_TIPS, tipById, tipPreview, tipFromFile, loadOwnTips, saveOwnTips } from '@app/brushes.js';
+import { textBounds, textFont, masksChanged } from '@app/doc.js';
+import { readMetadata, stripMetadata, formatOfBytes } from '@app/meta.js';
+import { ICO_SIZES } from '@app/gif.js';
+import { DEFAULT_STEPS, runBatch } from '@app/batch.js';
+import { ImageDoc, BLEND_MODES, SAVE_FORMATS, formatOfName, openFile, encode, decodeImage, canvas, selectionPath, selectionOutline, maskSelection, modifySelection, invertedSelection } from '@app/doc.js';
+import { TOOLS, CROP_RATIOS, clampSelection } from '@app/tools.js';
 import { snapPoint, snapRect, drawRuler } from '@app/guides.js';
-import { ADJUSTMENTS, cssFilter, applyCssFilter, convolve, KERNELS, autoLevels, histogram, levelsLut, curveLut, channelLuts, lutCanvas, applyLuts } from '@app/filters.js';
+import { ADJUSTMENTS, cssFilter, applyCssFilter, convolve, KERNELS, autoLevels, histogram, levelsLut, curveLut, channelLuts, lutCanvas, applyLuts, PIXEL_ADJUSTMENTS, pixelDefaults, pixelAdjustCanvas, applyPixelAdjust } from '@app/filters.js';
 import 'app/spell-dom'; // spelling selector in the header, marks in text fields (shared/js/spell-dom.js)
 
 const { html } = Suite.shell;
@@ -43,12 +49,37 @@ Suite.i18n.register({
     'ie.sourceHint': 'Alt+click (or ⊕ and a tap) sets the source, then paint.', 'ie.sourceSet': 'Source set: paint to copy from it (Alt+click sets a new one).',
     'ie.pickSource': 'Set source', 'ie.aligned': 'Aligned (the source moves with every stroke)', 'ie.blurMode': 'Mode', 'ie.blurMode.blur': 'Blur', 'ie.blurMode.sharpen': 'Sharpen',
     'ie.strengthHint': 'The opacity sets the strength.',
-    'tool.select-lasso': 'Lasso (F)', 'tool.select-polygon': 'Polygon lasso (P)', 'tool.select-wand': 'Magic wand (W)', 'ie.invertSel': 'Invert selection',
+    'ie.adj.colorBalance': 'Colour balance…', 'ie.adj.vibrance': 'Vibrance…', 'ie.adj.threshold': 'Threshold…', 'ie.adj.posterize': 'Posterize…', 'ie.adj.unsharpMask': 'Unsharp mask…', 'ie.adj.median': 'Median (remove noise)…', 'ie.adj.vignette': 'Vignette…',
+    'ie.p.range': 'Tone range', 'ie.p.shadows': 'Shadows', 'ie.p.midtones': 'Midtones', 'ie.p.highlights': 'Highlights', 'ie.p.cyanRed': 'Cyan – red', 'ie.p.magentaGreen': 'Magenta – green', 'ie.p.yellowBlue': 'Yellow – blue', 'ie.p.preserve': 'Preserve luminosity',
+    'ie.p.vibrance': 'Vibrance', 'ie.p.level': 'Threshold', 'ie.p.levels': 'Levels per channel', 'ie.p.radius': 'Radius', 'ie.p.amount': 'Amount', 'ie.p.threshold': 'Threshold', 'ie.p.size': 'Size', 'ie.p.softness': 'Softness',
+    'ie.info': 'Image information…', 'ie.metaNone': 'The file contains no metadata (camera, location, author, comments).', 'ie.metaUnknown': 'Metadata is shown for JPEG, PNG and WebP files opened from a file.',
+    'ie.metaGps': 'The picture contains the place where it was taken.', 'ie.metaSaveHint': 'Saving from the image editor writes the image without any of this metadata.', 'ie.metaStrip': 'Save a copy without metadata (unchanged image)',
+    'ie.metaCannot': 'This file cannot be saved without its metadata.', 'ie.metaSuffix': '-clean', 'ie.meta.present': 'present', 'ie.meta.kept': 'kept', 'ie.meta.comment': 'Comment', 'ie.meta.icc': 'Colour profile',
+    'ie.meta.make': 'Camera maker', 'ie.meta.model': 'Camera', 'ie.meta.lens': 'Lens', 'ie.meta.serialNumber': 'Serial number', 'ie.meta.dateTimeOriginal': 'Taken', 'ie.meta.dateTime': 'Changed', 'ie.meta.exposureTime': 'Exposure', 'ie.meta.fNumber': 'Aperture',
+    'ie.meta.iso': 'ISO', 'ie.meta.focalLength': 'Focal length', 'ie.meta.orientation': 'Orientation', 'ie.meta.software': 'Software', 'ie.meta.artist': 'Author', 'ie.meta.owner': 'Owner', 'ie.meta.copyright': 'Copyright', 'ie.meta.description': 'Description', 'ie.meta.gps': 'Location',
+    'ie.dither': 'Dithering (smoother colour transitions)', 'ie.icoSizes': 'Icon sizes (pixels)', 'ie.exportSelection': 'Export selection…', 'ie.exportLayer': 'Export layer…', 'ie.selectionWord': 'selection',
+    'ie.exportSelHint': 'Saves the selected part of the active layer as its own file; the image stays open as it is.', 'ie.exportLayerHint': 'Saves the active layer on its own; the image stays open as it is.',
+    'ie.batch': 'Batch processing…', 'ie.batchPick': 'Choose images…', 'ie.batchCount': '{0} images', 'ie.batchClear': 'clear', 'ie.batchNoFiles': 'Choose the images first.',
+    'ie.batchResize': 'Fit into a size (keeps the proportions)', 'ie.batchEnlarge': 'Enlarge smaller images too', 'ie.batchRotate': 'Rotate', 'ie.batchFlip': 'Flip horizontally', 'ie.batchWatermark': 'Text watermark',
+    'ie.batchWmSize': 'Size (% of the image)', 'ie.batchWmPos': 'Place', 'ie.pos.br': 'Bottom right', 'ie.pos.bl': 'Bottom left', 'ie.pos.bc': 'Bottom centre', 'ie.pos.tr': 'Top right', 'ie.pos.tl': 'Top left', 'ie.pos.mc': 'Centre',
+    'ie.batchOutput': 'Output', 'ie.batchPattern': 'File names', 'ie.batchPatternHint': '{name}: original name, {n}: number, {w} × {h}: new size. All images go into one ZIP, without metadata.',
+    'ie.batchRunning': 'Image {0} of {1}…', 'ie.batchRun': 'Process and save as ZIP', 'ie.batchZip': 'images.zip', 'ie.batchDone': '{0} images processed, {1} could not be read (listed in errors.txt).',
+    'ie.textColor': 'Colour', 'ie.align': 'Alignment', 'ie.align.left': 'Left', 'ie.align.center': 'Centred', 'ie.align.right': 'Right', 'ie.editText': 'Edit text…', 'ie.rasterize': 'Rasterize text layer', 'ie.notText': 'The active layer is not a text layer.', 'ie.textLayerHint': 'The text becomes a text layer: click it with the text tool to edit it.',
+    'ie.brushTip': 'Brush tip', 'ie.hardness': 'Hardness', 'ie.spacing': 'Spacing', 'ie.angle': 'Angle', 'ie.pressureSize': 'Pen pressure: size', 'ie.pressureOpacity': 'Pen pressure: opacity',
+    'ie.loadTips': 'Load brush tips (GIMP .gbr / .vbr, images)…', 'ie.removeTip': 'Remove this tip', 'ie.brushFiles': 'Brush tips', 'ie.brushUnreadable': 'not a brush tip that can be read',
+    'ie.brushNotStored': 'The tips could not be stored in the browser (too large); they are available until the page is closed.',
+    'ie.tip.round': 'Round', 'ie.tip.soft': 'Soft round', 'ie.tip.square': 'Square', 'ie.tip.diamond': 'Diamond', 'ie.tip.star': 'Star', 'ie.tip.calligraphy': 'Calligraphy', 'ie.tip.scatter': 'Scatter',
+    'tool.select-lasso': 'Lasso (F)', 'tool.select-polygon': 'Polygon lasso (P)', 'tool.select-wand': 'Magic wand (W)', 'ie.invertSel': 'Invert selection', 'ie.feather': 'Feather selection…', 'ie.grow': 'Grow selection…', 'ie.shrink': 'Shrink selection…', 'ie.border': 'Border selection…', 'ie.noSelection': 'Select something first.', 'ie.selectionGone': 'Nothing is left of the selection.', 'ie.quickMask': 'Quick mask', 'ie.quickMaskOn': 'Quick mask: paint white to select, black to deselect',
     'ie.selOp': 'Selection', 'ie.selOp.new': 'New', 'ie.selOp.add': 'Add (Shift)', 'ie.selOp.subtract': 'Subtract (Alt)', 'ie.selOp.intersect': 'Intersect',
     'ie.selOpHint': 'Shift adds to the selection, Alt subtracts from it.', 'ie.polygonHint': 'Click the corners; double-click, Enter or a click on the first point closes, Backspace removes the last corner.',
     'tool.move': 'Move (V)', 'tool.select-rect': 'Rectangle selection (M)', 'tool.select-ellipse': 'Ellipse selection (Q)', 'tool.brush': 'Brush (B)',
     'tool.pencil': 'Pencil (N)', 'tool.eraser': 'Eraser (E)', 'tool.fill': 'Fill (G)', 'tool.gradient': 'Gradient (D)', 'tool.picker': 'Colour picker (I)',
-    'tool.line': 'Line (L)', 'tool.rect': 'Rectangle (R)', 'tool.ellipse': 'Ellipse (O)', 'tool.text': 'Text (T)', 'tool.hand': 'Hand (H, or hold Space)',
+    'tool.line': 'Line (L)', 'tool.rect': 'Rectangle (R)', 'tool.ellipse': 'Ellipse (O)', 'tool.text': 'Text (T)', 'tool.hand': 'Hand (H, or hold Space)', 'tool.crop': 'Crop (C)', 'ie.addMask': 'Add layer mask', 'ie.addMaskSel': 'Add layer mask from selection', 'ie.editMaskToggle': 'Edit layer mask', 'ie.disableMask': 'Disable layer mask', 'ie.applyMask': 'Apply layer mask', 'ie.deleteMask': 'Delete layer mask',
+    'ie.noMask': 'The active layer has no mask.', 'ie.editMask': 'Edit the mask (white shows, black hides)', 'ie.editLayer': 'Edit the layer', 'ie.editingMask': 'Mask', 'tool.transform': 'Free transform (Ctrl+T)', 'ie.nothingToTransform': 'The active layer is empty: nothing to transform.',
+    'ie.transformHint': 'Choose this tool with a selection or a layer with content.', 'ie.transformKeys': 'Drag a handle to scale (Shift: keep proportions), the round handle or outside to rotate (Shift: 15° steps), inside to move. Enter applies, Esc cancels.', 'tool.straighten': 'Straighten',
+    'ie.cropRatio': 'Aspect ratio', 'ie.ratio.free': 'Free', 'ie.ratio.original': 'Original', 'ie.cropHint': 'Drag the area to keep; Enter crops, Esc cancels.', 'ie.cropApply': 'Crop',
+    'ie.rotateAngle': 'Rotate by angle…', 'ie.straighten': 'Straighten…', 'ie.straightenHint': 'Draw a line along something that should be level (or upright).', 'ie.angleDeg': 'Angle (degrees, clockwise)',
+    'ie.rotateHint': 'Negative angles turn counter-clockwise.', 'ie.rotate.crop': 'Crop to the image (no empty corners)', 'ie.rotate.expand': 'Enlarge the canvas (whole image)', 'ie.rotate.keep': 'Keep the size (corners transparent)',
     'ie.selectCoords': 'Selection by coordinates…', 'ie.rulers': 'Rulers', 'ie.guides': 'Guides', 'ie.snapGuides': 'Snap to guides', 'ie.grid': 'Grid',
     'ie.snapGrid': 'Snap to grid', 'ie.snapEdges': 'Snap to image edges', 'ie.guideSettings': 'Guides and grid…', 'ie.newGuide': 'New guide…', 'ie.clearGuides': 'Remove all guides',
     'ie.gridSize': 'Grid spacing (px)', 'ie.snapDistance': 'Snap distance (screen px)', 'ie.orientation': 'Orientation', 'ie.horizontal': 'Horizontal', 'ie.vertical': 'Vertical',
@@ -84,12 +115,37 @@ Suite.i18n.register({
     'ie.sourceHint': 'Alt+Klick (oder ⊕ und Tippen) legt die Quelle fest, dann malen.', 'ie.sourceSet': 'Quelle gesetzt: malen kopiert von dort (Alt+Klick setzt eine neue).',
     'ie.pickSource': 'Quelle setzen', 'ie.aligned': 'Ausgerichtet (die Quelle wandert mit jedem Strich mit)', 'ie.blurMode': 'Modus', 'ie.blurMode.blur': 'Weichzeichnen', 'ie.blurMode.sharpen': 'Schärfen',
     'ie.strengthHint': 'Die Deckkraft bestimmt die Stärke.',
-    'tool.select-lasso': 'Lasso (F)', 'tool.select-polygon': 'Polygon-Lasso (P)', 'tool.select-wand': 'Zauberstab (W)', 'ie.invertSel': 'Auswahl umkehren',
+    'ie.adj.colorBalance': 'Farbbalance…', 'ie.adj.vibrance': 'Dynamik…', 'ie.adj.threshold': 'Schwellwert…', 'ie.adj.posterize': 'Tontrennung…', 'ie.adj.unsharpMask': 'Unscharf maskieren…', 'ie.adj.median': 'Median (Rauschen entfernen)…', 'ie.adj.vignette': 'Vignette…',
+    'ie.p.range': 'Tonbereich', 'ie.p.shadows': 'Schatten', 'ie.p.midtones': 'Mitteltöne', 'ie.p.highlights': 'Lichter', 'ie.p.cyanRed': 'Cyan – Rot', 'ie.p.magentaGreen': 'Magenta – Grün', 'ie.p.yellowBlue': 'Gelb – Blau', 'ie.p.preserve': 'Helligkeit erhalten',
+    'ie.p.vibrance': 'Dynamik', 'ie.p.level': 'Schwellwert', 'ie.p.levels': 'Stufen je Kanal', 'ie.p.radius': 'Radius', 'ie.p.amount': 'Stärke', 'ie.p.threshold': 'Schwellwert', 'ie.p.size': 'Größe', 'ie.p.softness': 'Weichheit',
+    'ie.info': 'Bildinformationen…', 'ie.metaNone': 'Die Datei enthält keine Metadaten (Kamera, Ort, Urheber, Kommentare).', 'ie.metaUnknown': 'Metadaten werden für JPEG-, PNG- und WebP-Dateien gezeigt, die aus einer Datei geöffnet wurden.',
+    'ie.metaGps': 'Das Bild enthält den Ort, an dem es aufgenommen wurde.', 'ie.metaSaveHint': 'Speichern aus der Bildbearbeitung schreibt das Bild ohne diese Metadaten.', 'ie.metaStrip': 'Kopie ohne Metadaten speichern (Bild unverändert)',
+    'ie.metaCannot': 'Diese Datei kann nicht ohne ihre Metadaten gespeichert werden.', 'ie.metaSuffix': '-bereinigt', 'ie.meta.present': 'vorhanden', 'ie.meta.kept': 'bleibt', 'ie.meta.comment': 'Kommentar', 'ie.meta.icc': 'Farbprofil',
+    'ie.meta.make': 'Kamerahersteller', 'ie.meta.model': 'Kamera', 'ie.meta.lens': 'Objektiv', 'ie.meta.serialNumber': 'Seriennummer', 'ie.meta.dateTimeOriginal': 'Aufgenommen', 'ie.meta.dateTime': 'Geändert', 'ie.meta.exposureTime': 'Belichtung', 'ie.meta.fNumber': 'Blende',
+    'ie.meta.iso': 'ISO', 'ie.meta.focalLength': 'Brennweite', 'ie.meta.orientation': 'Ausrichtung', 'ie.meta.software': 'Software', 'ie.meta.artist': 'Urheber', 'ie.meta.owner': 'Eigentümer', 'ie.meta.copyright': 'Copyright', 'ie.meta.description': 'Beschreibung', 'ie.meta.gps': 'Ort',
+    'ie.dither': 'Rastern (weichere Farbübergänge)', 'ie.icoSizes': 'Symbolgrößen (Pixel)', 'ie.exportSelection': 'Auswahl exportieren…', 'ie.exportLayer': 'Ebene exportieren…', 'ie.selectionWord': 'Auswahl',
+    'ie.exportSelHint': 'Speichert den ausgewählten Teil der aktiven Ebene als eigene Datei; das Bild bleibt unverändert offen.', 'ie.exportLayerHint': 'Speichert die aktive Ebene allein; das Bild bleibt unverändert offen.',
+    'ie.batch': 'Stapelverarbeitung…', 'ie.batchPick': 'Bilder wählen…', 'ie.batchCount': '{0} Bilder', 'ie.batchClear': 'leeren', 'ie.batchNoFiles': 'Wählen Sie zuerst die Bilder.',
+    'ie.batchResize': 'In eine Größe einpassen (Seitenverhältnis bleibt)', 'ie.batchEnlarge': 'Kleinere Bilder auch vergrößern', 'ie.batchRotate': 'Drehen', 'ie.batchFlip': 'Horizontal spiegeln', 'ie.batchWatermark': 'Text-Wasserzeichen',
+    'ie.batchWmSize': 'Größe (% des Bildes)', 'ie.batchWmPos': 'Ort', 'ie.pos.br': 'Unten rechts', 'ie.pos.bl': 'Unten links', 'ie.pos.bc': 'Unten Mitte', 'ie.pos.tr': 'Oben rechts', 'ie.pos.tl': 'Oben links', 'ie.pos.mc': 'Mitte',
+    'ie.batchOutput': 'Ausgabe', 'ie.batchPattern': 'Dateinamen', 'ie.batchPatternHint': '{name}: ursprünglicher Name, {n}: Nummer, {w} × {h}: neue Größe. Alle Bilder kommen in ein ZIP, ohne Metadaten.',
+    'ie.batchRunning': 'Bild {0} von {1}…', 'ie.batchRun': 'Bearbeiten und als ZIP speichern', 'ie.batchZip': 'bilder.zip', 'ie.batchDone': '{0} Bilder bearbeitet, {1} konnten nicht gelesen werden (in errors.txt aufgeführt).',
+    'ie.textColor': 'Farbe', 'ie.align': 'Ausrichtung', 'ie.align.left': 'Links', 'ie.align.center': 'Zentriert', 'ie.align.right': 'Rechts', 'ie.editText': 'Text bearbeiten…', 'ie.rasterize': 'Textebene in Pixel umwandeln', 'ie.notText': 'Die aktive Ebene ist keine Textebene.', 'ie.textLayerHint': 'Der Text wird eine Textebene: Klicken Sie ihn mit dem Textwerkzeug an, um ihn zu bearbeiten.',
+    'ie.brushTip': 'Pinselspitze', 'ie.hardness': 'Härte', 'ie.spacing': 'Abstand', 'ie.angle': 'Winkel', 'ie.pressureSize': 'Stiftdruck: Größe', 'ie.pressureOpacity': 'Stiftdruck: Deckkraft',
+    'ie.loadTips': 'Pinselspitzen laden (GIMP .gbr / .vbr, Bilder)…', 'ie.removeTip': 'Diese Spitze entfernen', 'ie.brushFiles': 'Pinselspitzen', 'ie.brushUnreadable': 'keine lesbare Pinselspitze',
+    'ie.brushNotStored': 'Die Spitzen konnten nicht im Browser gespeichert werden (zu groß); sie bleiben bis zum Schließen der Seite verfügbar.',
+    'ie.tip.round': 'Rund', 'ie.tip.soft': 'Weich rund', 'ie.tip.square': 'Quadrat', 'ie.tip.diamond': 'Raute', 'ie.tip.star': 'Stern', 'ie.tip.calligraphy': 'Kalligrafie', 'ie.tip.scatter': 'Streuung',
+    'tool.select-lasso': 'Lasso (F)', 'tool.select-polygon': 'Polygon-Lasso (P)', 'tool.select-wand': 'Zauberstab (W)', 'ie.invertSel': 'Auswahl umkehren', 'ie.feather': 'Auswahl ausblenden…', 'ie.grow': 'Auswahl vergrößern…', 'ie.shrink': 'Auswahl verkleinern…', 'ie.border': 'Auswahlrand…', 'ie.noSelection': 'Wählen Sie zuerst etwas aus.', 'ie.selectionGone': 'Von der Auswahl ist nichts übrig.', 'ie.quickMask': 'Schnellmaske', 'ie.quickMaskOn': 'Schnellmaske: weiß malen wählt aus, schwarz wählt ab',
     'ie.selOp': 'Auswahl', 'ie.selOp.new': 'Neu', 'ie.selOp.add': 'Hinzufügen (Umschalt)', 'ie.selOp.subtract': 'Abziehen (Alt)', 'ie.selOp.intersect': 'Schnittmenge',
     'ie.selOpHint': 'Umschalt fügt der Auswahl hinzu, Alt zieht davon ab.', 'ie.polygonHint': 'Klicken Sie die Ecken an; Doppelklick, Eingabe oder ein Klick auf den ersten Punkt schließt, Rücktaste entfernt die letzte Ecke.',
     'tool.move': 'Verschieben (V)', 'tool.select-rect': 'Rechteckauswahl (M)', 'tool.select-ellipse': 'Ellipsenauswahl (Q)', 'tool.brush': 'Pinsel (B)',
     'tool.pencil': 'Stift (N)', 'tool.eraser': 'Radierer (E)', 'tool.fill': 'Füllen (G)', 'tool.gradient': 'Verlauf (D)', 'tool.picker': 'Farbpipette (I)',
-    'tool.line': 'Linie (L)', 'tool.rect': 'Rechteck (R)', 'tool.ellipse': 'Ellipse (O)', 'tool.text': 'Text (T)', 'tool.hand': 'Hand (H oder Leertaste halten)',
+    'tool.line': 'Linie (L)', 'tool.rect': 'Rechteck (R)', 'tool.ellipse': 'Ellipse (O)', 'tool.text': 'Text (T)', 'tool.hand': 'Hand (H oder Leertaste halten)', 'tool.crop': 'Zuschneiden (C)', 'ie.addMask': 'Ebenenmaske hinzufügen', 'ie.addMaskSel': 'Ebenenmaske aus Auswahl', 'ie.editMaskToggle': 'Ebenenmaske bearbeiten', 'ie.disableMask': 'Ebenenmaske deaktivieren', 'ie.applyMask': 'Ebenenmaske anwenden', 'ie.deleteMask': 'Ebenenmaske löschen',
+    'ie.noMask': 'Die aktive Ebene hat keine Maske.', 'ie.editMask': 'Die Maske bearbeiten (weiß zeigt, schwarz verbirgt)', 'ie.editLayer': 'Die Ebene bearbeiten', 'ie.editingMask': 'Maske', 'tool.transform': 'Frei transformieren (Strg+T)', 'ie.nothingToTransform': 'Die aktive Ebene ist leer: Es gibt nichts zu transformieren.',
+    'ie.transformHint': 'Wählen Sie dieses Werkzeug mit einer Auswahl oder einer Ebene mit Inhalt.', 'ie.transformKeys': 'Einen Griff ziehen skaliert (Umschalt: Seitenverhältnis bleibt), der runde Griff oder außerhalb dreht (Umschalt: 15°-Schritte), innen verschiebt. Eingabe übernimmt, Esc bricht ab.', 'tool.straighten': 'Ausrichten',
+    'ie.cropRatio': 'Seitenverhältnis', 'ie.ratio.free': 'Frei', 'ie.ratio.original': 'Original', 'ie.cropHint': 'Den Bereich aufziehen, der bleiben soll; Eingabe schneidet zu, Esc bricht ab.', 'ie.cropApply': 'Zuschneiden',
+    'ie.rotateAngle': 'Um Winkel drehen…', 'ie.straighten': 'Ausrichten…', 'ie.straightenHint': 'Ziehen Sie eine Linie entlang etwas, das waagrecht (oder senkrecht) sein soll.', 'ie.angleDeg': 'Winkel (Grad, im Uhrzeigersinn)',
+    'ie.rotateHint': 'Negative Winkel drehen gegen den Uhrzeigersinn.', 'ie.rotate.crop': 'Auf das Bild zuschneiden (keine leeren Ecken)', 'ie.rotate.expand': 'Arbeitsfläche vergrößern (ganzes Bild)', 'ie.rotate.keep': 'Größe behalten (Ecken durchsichtig)',
     'ie.selectCoords': 'Auswahl nach Koordinaten…', 'ie.rulers': 'Lineale', 'ie.guides': 'Hilfslinien', 'ie.snapGuides': 'An Hilfslinien einrasten', 'ie.grid': 'Raster',
     'ie.snapGrid': 'Am Raster einrasten', 'ie.snapEdges': 'An Bildrändern einrasten', 'ie.guideSettings': 'Hilfslinien und Raster…', 'ie.newGuide': 'Neue Hilfslinie…', 'ie.clearGuides': 'Alle Hilfslinien entfernen',
     'ie.gridSize': 'Rasterabstand (px)', 'ie.snapDistance': 'Einrastabstand (Bildschirm-px)', 'ie.orientation': 'Ausrichtung', 'ie.horizontal': 'Waagrecht', 'ie.vertical': 'Senkrecht',
@@ -104,11 +160,11 @@ const ed = {
   doc: new ImageDoc(800, 600, { background: '#ffffff' }),
   name: '', handle: null, format: 'png',
   tool: TOOLS.find((x) => x.id === 'brush'),
-  opts: { size: 8, opacity: 1, fillShape: false, tolerance: 32, contiguous: true, selMode: 'free', selRatioW: 16, selRatioH: 9, selW: 100, selH: 100, aligned: true, pickSource: false, blurMode: 'blur' },
+  opts: { size: 8, opacity: 1, cropRatio: 'free', rotateMode: 'crop', brush: { tip: 'round', hardness: 100, spacing: 10, angle: 0, pressureSize: true, pressureOpacity: false }, fillShape: false, tolerance: 32, contiguous: true, selMode: 'free', selRatioW: 16, selRatioH: 9, selW: 100, selH: 100, aligned: true, pickSource: false, blurMode: 'blur' },
   colors: { primary: '#000000', secondary: '#ffffff' },
   view: { zoom: 1, x: 0, y: 0 },
   preview: null, adjust: null, dialog: null, panels: false, cursor: null, renamingLayer: null, clip: null,
-  render: () => draw(), refresh: () => refresh(), changed, toImage, textAt,
+  render: () => draw(), refresh: () => refresh(), changed, toImage, textAt, applyCrop: () => applyCrop(), straightened: (a) => straightened(a), cropRect: null,
   guides: [], selecting: false,
 };
 
@@ -142,6 +198,7 @@ function refresh() {
 }
 
 function changed() {
+  masksChanged();
   ed.doc.dirty = true;
   Suite.shell.setDirty(true);
   thumbsVersion++;
@@ -209,6 +266,7 @@ function paint() {
   vctx.scale(zoom, zoom);
   vctx.imageSmoothingEnabled = zoom < 2;
   doc.drawLayers(vctx, { override: ed.preview, filterLayer: ed.adjust ? doc.layer : null, filter: ed.adjust ? ed.adjust.filter : 'none' });
+  if (doc.quickMask) vctx.drawImage(quickMaskOverlay(ed.preview && ed.preview.layer === doc.quickMask ? ed.preview.canvas : doc.quickMask.canvas), 0, 0);
   vctx.restore();
   vctx.save();
   vctx.translate(x, y);
@@ -490,6 +548,8 @@ Suite.autosave.register({
 
 function setDoc(doc, name, handle = null) {
   if (ed.tool.cancel) ed.tool.cancel(ed);
+  ed.original = null;
+  if (ed.doc && ed.doc.quickMask) ed.doc.leaveQuickMask();
   ed.doc = doc;
   ed.name = name;
   ed.handle = handle;
@@ -508,7 +568,9 @@ async function confirmDiscard() { return !ed.doc.dirty || Suite.shell.confirm(t(
 
 async function openPicked({ file, handle }) {
   try {
-    setDoc(await openFile(new Uint8Array(await file.arrayBuffer()), file.name), file.name, handle);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    setDoc(await openFile(bytes, file.name), file.name, handle);
+    ed.original = formatOfBytes(bytes) ? { bytes, name: file.name } : null; // (for "Image information": metadata, a copy without it)
     if (handle) Suite.files.remember(APP, handle);
   } catch (e) { console.warn(e); Suite.shell.toast(t('ie.cannotOpen', file.name), 'error'); }
 }
@@ -535,10 +597,29 @@ async function openAsLayer() {
 
 function report(result) { if (result.mode === 'downloaded') Suite.shell.banner(result.message); else Suite.shell.toast(result.message); }
 
-async function save({ as = false, name = ed.name, format = ed.format, quality = 0.92 } = {}) {
+/** Export the selection's pixels (of the active layer) or the active layer on its own as a file; the open image stays as it is. */
+async function exportPart(d, name, opts) {
+  try {
+    let c;
+    if (d.export === 'selection') {
+      const sel = selectionCanvas();
+      if (!sel) return;
+      c = sel.canvas;
+    } else c = ed.doc.layers[ed.doc.active].canvas;
+    const tmp = new ImageDoc(c.width, c.height);
+    tmp.layers[0].canvas = c;
+    const fmt = ['ora', 'psd'].includes(d.format) ? 'png' : d.format;
+    const bytes = await encode(tmp, fmt, opts);
+    const info = SAVE_FORMATS[fmt];
+    const result = await Suite.files.saveAs(bytes, { suggestedName: name.replace(/\.[^.]+$/, info.ext), types: [{ description: info.label, accept: { [info.mime]: [info.ext] } }], type: info.mime });
+    if (result) report(result);
+  } catch (e) { fail(e); }
+}
+
+async function save({ as = false, name = ed.name, format = ed.format, quality = 0.92, dither = true, icoSizes } = {}) {
   try {
     if (ed.preview && ed.tool.cancel) ed.tool.cancel(ed);
-    const bytes = await encode(ed.doc, format, { quality });
+    const bytes = await encode(ed.doc, format, { quality, dither, icoSizes });
     const info = SAVE_FORMATS[format];
     const types = [{ description: info.label, accept: { [info.mime]: [info.ext] } }];
     const result = as || !ed.handle ? await Suite.files.saveAs(bytes, { suggestedName: name, types, type: info.mime }) : await Suite.files.save({ name, handle: ed.handle }, bytes, { type: info.mime });
@@ -554,10 +635,45 @@ async function save({ as = false, name = ed.name, format = ed.format, quality = 
   } catch (e) { fail(e); }
 }
 
-function openSaveAs() {
-  ed.dialog = { kind: 'saveAs', stem: ed.name.replace(/\.[^.]+$/, '') || t('ie.untitled'), format: ed.format, quality: 92 };
+function openSaveAs(exportWhat = null) {
+  const stem = ed.name.replace(/\.[^.]+$/, '') || t('ie.untitled');
+  const format = exportWhat ? (['jpeg', 'webp', 'bmp', 'gif', 'ico'].includes(ed.format) ? ed.format : 'png') : ed.format;
+  ed.dialog = { kind: 'saveAs', stem: exportWhat === 'layer' ? `${stem}-${ed.doc.layers[ed.doc.active].name}` : exportWhat ? `${stem}-${t('ie.selectionWord')}` : stem,
+    format, quality: 92, dither: true, icoSizes: [16, 32, 48, 256], export: exportWhat };
   refresh();
 }
+
+// ---- quick mask ----------------------------------------------------------------------------------------------
+
+let overlayCanvas = null;
+/** Red over what is not selected (half opaque where nothing is selected, like GIMP), from the grey mask. */
+function quickMaskOverlay(mask) {
+  const { width: w, height: h } = mask;
+  if (!overlayCanvas || overlayCanvas.width !== w || overlayCanvas.height !== h) overlayCanvas = canvas(w, h);
+  const d = mask.getContext('2d').getImageData(0, 0, w, h).data;
+  const octx = overlayCanvas.getContext('2d');
+  const out = octx.createImageData(w, h);
+  const o = out.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const amount = ((0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) * d[i + 3]) / 255;
+    o[i] = 255; o[i + 3] = (255 - amount) * 0.5;
+  }
+  octx.putImageData(out, 0, 0);
+  return overlayCanvas;
+}
+
+/** Quick mask (Shift+Q): the selection becomes a grey image to paint on; switched off, the painting is the selection. */
+function toggleQuickMask() {
+  if (ed.tool.cancel) ed.tool.cancel(ed);
+  ed.preview = null;
+  if (ed.doc.quickMask) ed.doc.leaveQuickMask(); else ed.doc.enterQuickMask();
+  thumbsVersion++;
+  draw();
+  refresh();
+}
+
+/** Before operations on the image or its layers: the quick mask ends (its painting becomes the selection). */
+function endQuickMask() { if (ed.doc.quickMask) toggleQuickMask(); }
 
 // ---- edit operations ----------------------------------------------------------------------------------------
 
@@ -569,6 +685,13 @@ function selectionCanvas() {
   const c = canvas(b.w, b.h);
   const ctx = c.getContext('2d');
   ctx.translate(-b.x, -b.y);
+  if (doc.softSelection) {
+    // partly selected pixels are copied partly (their alpha)
+    ctx.drawImage(doc.layer.canvas, 0, 0);
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.drawImage(doc.maskCanvas(), 0, 0);
+    return { canvas: c, x: b.x, y: b.y };
+  }
   doc.clip(ctx);
   ctx.drawImage(doc.layer.canvas, 0, 0);
   return { canvas: c, x: b.x, y: b.y };
@@ -590,10 +713,7 @@ function clearSelection() {
   const doc = ed.doc;
   doc.record('layer');
   const ctx = doc.layer.canvas.getContext('2d');
-  ctx.save();
-  if (doc.selection) { doc.clip(ctx); }
-  ctx.clearRect(0, 0, doc.width, doc.height);
-  ctx.restore();
+  doc.paintThrough(ctx, (c) => c.clearRect(0, 0, doc.width, doc.height));
   changed();
 }
 
@@ -633,42 +753,191 @@ function fillSelection() {
   const doc = ed.doc;
   doc.record('layer');
   const ctx = doc.layer.canvas.getContext('2d');
-  ctx.save();
-  doc.clip(ctx);
-  ctx.globalAlpha = ed.opts.opacity;
-  ctx.fillStyle = ed.colors.primary;
-  ctx.fillRect(0, 0, doc.width, doc.height);
-  ctx.restore();
+  doc.paintThrough(ctx, (c) => { c.globalAlpha = ed.opts.opacity; c.fillStyle = ed.colors.primary; c.fillRect(0, 0, doc.width, doc.height); });
   changed();
 }
 
 function undo() { if (ed.tool.cancel) ed.tool.cancel(ed); if (ed.doc.undo()) { thumbsVersion++; changed(); } }
 function redo() { if (ed.doc.redo()) { thumbsVersion++; changed(); } }
 
-function docOp(fn) { return () => { fn(ed.doc); thumbsVersion++; changed(); if (ed.view.zoom) fit(); }; }
+function docOp(fn) { return () => { endQuickMask(); fn(ed.doc); thumbsVersion++; changed(); if (ed.view.zoom) fit(); }; }
 
 const toolCursor = () => ({ hand: 'grab', move: 'move', text: 'text', picker: 'copy' }[ed.tool.id] || 'crosshair');
 
 /** Select everything that is not selected (nothing selected: nothing changes). */
 function invertSelection() {
-  const doc = ed.doc;
-  const mask = doc.selectionMask();
-  if (!mask) return;
-  for (let i = 0; i < mask.length; i++) mask[i] = mask[i] >= 128 ? 0 : 1;
-  doc.selection = maskSelection(mask, doc.width, doc.height);
+  if (!ed.doc.selection) return;
+  ed.doc.selection = invertedSelection(ed.doc);
   draw();
 }
 
 function selectTool(id) {
-  if (ed.tool.cancel) ed.tool.cancel(ed);
+  if (ed.tool.leave) ed.tool.leave(ed); else if (ed.tool.cancel) ed.tool.cancel(ed); // (a pending free transform is applied)
   ed.tool = TOOLS.find((x) => x.id === id) || ed.tool;
+  if (ed.tool.activate && !ed.tool.activate(ed)) Suite.shell.toast(t('ie.nothingToTransform'), 'warning');
   view.style.cursor = toolCursor();
   draw();
   refresh();
 }
 
+/**
+ * The text tool: a click on the text of a text layer edits it (the active layer first, then from the top), elsewhere a new
+ * text layer starts there.
+ */
+// ---- batch processing (batch.js) ------------------------------------------------------------------------------------------
+
+const BATCH_KEY = 'suite.imageeditor.batch';
+function openBatch() {
+  let steps = structuredClone(DEFAULT_STEPS);
+  try { const saved = JSON.parse(localStorage.getItem(BATCH_KEY) || 'null'); if (saved) for (const k of Object.keys(steps)) Object.assign(steps[k], saved[k] || {}); } catch (e) { /* defaults */ }
+  ed.dialog = { kind: 'batch', files: [], steps, running: false, progress: 0 };
+  refresh();
+}
+
+async function pickBatchFiles(d) {
+  const picked = await Suite.files.open({ types: OPEN_TYPES, multiple: true });
+  if (!picked) return;
+  for (const p of picked) d.files.push({ name: p.file.name, bytes: new Uint8Array(await p.file.arrayBuffer()) });
+  refresh();
+}
+
+async function runBatchDialog(d) {
+  if (!d.files.length) { Suite.shell.toast(t('ie.batchNoFiles'), 'warning'); ed.dialog = d; refresh(); return; }
+  try { localStorage.setItem(BATCH_KEY, JSON.stringify(d.steps)); } catch (e) { /* not remembered */ }
+  d.running = true;
+  ed.dialog = d;
+  refresh();
+  const result = await runBatch(d.files, d.steps, { onProgress: (i, n) => { d.progress = i; d.total = n; refresh(); }, cancelled: () => ed.dialog !== d });
+  if (ed.dialog !== d) return; // (cancelled)
+  ed.dialog = null;
+  refresh();
+  const saved = await Suite.files.saveAs(result.zip, { suggestedName: t('ie.batchZip'), types: [{ description: 'ZIP', accept: { 'application/zip': ['.zip'] } }], type: 'application/zip' });
+  if (saved) report(saved);
+  Suite.shell.toast(t('ie.batchDone', result.done, result.errors.length), result.errors.length ? 'warning' : 'success');
+}
+
+function batchBody(d) {
+  const st = d.steps;
+  const check = (step, label) => html`<label><input type="checkbox" checked=${st[step].on} data-testid=${`batch-${step}`} onChange=${(e) => { st[step].on = e.target.checked; refresh(); }} /> ${label}</label>`;
+  const num = (step, key, label, min, max) => html`<label>${label}<input type="number" min=${min} max=${max} value=${st[step][key]} data-testid=${`batch-${step}-${key}`}
+    onInput=${(e) => { st[step][key] = Math.max(min, Math.min(max, Math.round(+e.target.value || min))); }} /></label>`;
+  if (d.running) return html`<h3>${t('ie.batch').replace('…', '')}</h3><p data-testid="batch-progress">${t('ie.batchRunning', Math.min(d.progress + 1, d.total || 1), d.total || d.files.length)}</p>
+    <progress value=${d.progress} max=${d.total || d.files.length}></progress>`;
+  return html`<h3>${t('ie.batch').replace('…', '')}</h3>
+    <p><button type="button" class="secondary" data-testid="batch-files" onClick=${() => pickBatchFiles(d).catch(fail)}>${t('ie.batchPick')}</button>
+      <span data-testid="batch-count"> ${t('ie.batchCount', d.files.length)}</span>
+      ${d.files.length ? html` <a href="#" data-testid="batch-clear" onClick=${(e) => { e.preventDefault(); d.files = []; refresh(); }}>${t('ie.batchClear')}</a>` : null}</p>
+    ${check('resize', t('ie.batchResize'))}
+    ${st.resize.on ? html`<div class="ie-row">${num('resize', 'width', t('ie.width'), 1, 20000)}${num('resize', 'height', t('ie.height'), 1, 20000)}</div>
+      <label><input type="checkbox" checked=${st.resize.enlarge} onChange=${(e) => { st.resize.enlarge = e.target.checked; }} /> ${t('ie.batchEnlarge')}</label>` : null}
+    ${check('rotate', t('ie.batchRotate'))}
+    ${st.rotate.on ? html`<select data-testid="batch-rotate-degrees" onChange=${(e) => { st.rotate.degrees = +e.target.value; }}>${[90, 180, 270].map((v) => html`<option value=${v} selected=${st.rotate.degrees === v}>${v}°</option>`)}</select>` : null}
+    ${check('flip', t('ie.batchFlip'))}
+    ${check('autoLevels', t('ie.autoLevels'))}${check('grayscale', t('ie.grayscale'))}${check('sharpen', t('ie.sharpen'))}
+    ${check('watermark', t('ie.batchWatermark'))}
+    ${st.watermark.on ? html`<label>${t('ie.text')}<input value=${st.watermark.text} data-testid="batch-watermark-text" onInput=${(e) => { st.watermark.text = e.target.value; }} /></label>
+      <div class="ie-row">${num('watermark', 'size', t('ie.batchWmSize'), 1, 30)}${num('watermark', 'opacity', t('ie.opacity'), 5, 100)}</div>
+      <label>${t('ie.batchWmPos')}<select onChange=${(e) => { st.watermark.position = e.target.value; }}>${['br', 'bl', 'bc', 'tr', 'tl', 'mc'].map((v) => html`<option value=${v} selected=${st.watermark.position === v}>${t(`ie.pos.${v}`)}</option>`)}</select></label>` : null}
+    <fieldset><legend>${t('ie.batchOutput')}</legend>
+      <div class="ie-row"><label>${t('ie.format')}<select data-testid="batch-format" onChange=${(e) => { st.output.format = e.target.value; refresh(); }}>
+        ${Object.entries(SAVE_FORMATS).filter(([k]) => !['ora', 'psd'].includes(k)).map(([k, f]) => html`<option value=${k} selected=${st.output.format === k}>${f.label}</option>`)}</select></label>
+      ${SAVE_FORMATS[st.output.format].quality ? num('output', 'quality', t('ie.quality'), 10, 100) : null}</div>
+      <label>${t('ie.batchPattern')}<input value=${st.output.pattern} data-testid="batch-pattern" onInput=${(e) => { st.output.pattern = e.target.value; }} /></label>
+      <small class="ie-hint">${t('ie.batchPatternHint')}</small></fieldset>`;
+}
+
+// ---- image information and metadata (meta.js) -----------------------------------------------------------------------------
+
+function openInfo() {
+  ed.dialog = { kind: 'info', meta: ed.original ? readMetadata(ed.original.bytes) : null };
+  refresh();
+}
+
+/** Save a copy of the opened file without its metadata (no re-encoding: the image data stays as it is). */
+async function saveWithoutMetadata() {
+  const o = ed.original;
+  const clean = o && stripMetadata(o.bytes);
+  if (!clean) { Suite.shell.toast(t('ie.metaCannot'), 'warning'); return; }
+  const fmt = formatOfBytes(clean);
+  const info = SAVE_FORMATS[fmt];
+  const name = o.name.replace(/(\.[^.]+)?$/, (ext) => `${t('ie.metaSuffix')}${ext || info.ext}`);
+  const result = await Suite.files.saveAs(clean, { suggestedName: name, types: [{ description: info.label, accept: { [info.mime]: [info.ext] } }], type: info.mime });
+  if (result) report(result);
+}
+
+const META_ROWS = ['make', 'model', 'lens', 'serialNumber', 'dateTimeOriginal', 'dateTime', 'exposureTime', 'fNumber', 'iso', 'focalLength', 'orientation', 'software', 'artist', 'owner', 'copyright', 'description'];
+function metaValue(key, v) {
+  if (key === 'exposureTime' && typeof v === 'number') return v < 1 ? `1/${Math.round(1 / v)} s` : `${v} s`;
+  if (key === 'fNumber' && typeof v === 'number') return `f/${Math.round(v * 10) / 10}`;
+  if (key === 'focalLength' && typeof v === 'number') return `${Math.round(v * 10) / 10} mm`;
+  return Array.isArray(v) ? v.join(', ') : String(v);
+}
+
+function infoBody(d) {
+  const doc = ed.doc;
+  const m = d.meta;
+  const e = (m && m.exif) || {};
+  const rows = META_ROWS.filter((k) => e[k] !== undefined && e[k] !== '').map((k) => [t(`ie.meta.${k}`), metaValue(k, e[k])]);
+  if (e.gps) rows.push([t('ie.meta.gps'), `${e.gps.lat !== undefined ? e.gps.lat.toFixed(6) : '?'}, ${e.gps.lon !== undefined ? e.gps.lon.toFixed(6) : '?'}${e.gps.alt !== undefined ? ` (${Math.round(e.gps.alt)} m)` : ''}`]);
+  if (m) {
+    if (m.xmp) rows.push(['XMP', t('ie.meta.present')]);
+    if (m.iptc) rows.push(['IPTC', t('ie.meta.present')]);
+    for (const c of m.comments) rows.push([t('ie.meta.comment'), c.slice(0, 200)]);
+    for (const x of m.texts) rows.push([x.key, x.value]);
+    if (m.icc) rows.push([t('ie.meta.icc'), t('ie.meta.kept')]);
+  }
+  return html`<h3>${t('ie.info').replace('…', '')}</h3>
+    <p data-testid="info-size">${ed.name} · ${doc.width} × ${doc.height} px · ${doc.layers.length} ${t('ie.layers')}</p>
+    ${rows.length ? html`<table class="ie-meta" data-testid="meta-table"><tbody>${rows.map(([k, v]) => html`<tr><th>${k}</th><td>${v}</td></tr>`)}</tbody></table>`
+      : html`<p data-testid="meta-none">${t(m ? 'ie.metaNone' : 'ie.metaUnknown')}</p>`}
+    ${e.gps ? html`<p class="ie-warn" data-testid="meta-gps">⚠ ${t('ie.metaGps')}</p>` : null}
+    <small class="ie-hint">${t('ie.metaSaveHint')}</small>
+    ${m && m.kinds.length ? html`<p><button type="button" class="secondary" data-testid="meta-strip" onClick=${() => saveWithoutMetadata().catch(fail)}>${t('ie.metaStrip')}</button></p>` : null}`;
+}
+
+// ---- crop tool, rotate by an angle, straighten ---------------------------------------------------------------------------
+
+function applyCrop() {
+  const r = ed.cropRect;
+  if (!r) return;
+  ed.cropRect = null;
+  docOp((d) => d.crop(r))();
+}
+
+function openRotate(angle) {
+  ed.dialog = { kind: 'rotateAngle', angle: Math.round(angle * 100) / 100, mode: ed.opts.rotateMode };
+  refresh();
+}
+
+let straightenFrom = null;
+function startStraighten() {
+  straightenFrom = ed.tool.id === 'straighten' ? straightenFrom : ed.tool.id;
+  selectTool('straighten');
+  Suite.shell.toast(t('ie.straightenHint'));
+}
+
+function straightened(angle) {
+  selectTool(straightenFrom || 'move');
+  straightenFrom = null;
+  openRotate(angle);
+}
+
 function textAt(p) {
-  ed.dialog = { kind: 'text', point: p, text: '', font: ed.opts.font || 'sans-serif', fontSize: ed.opts.fontSize || 32, bold: false, italic: false };
+  const doc = ed.doc;
+  const hit = (layer) => { if (!layer || !layer.text || !layer.visible) return false; const b = textBounds(layer.text); return p.x >= b.x - 4 && p.y >= b.y - 4 && p.x <= b.x + b.w + 4 && p.y <= b.y + b.h + 4; };
+  const index = hit(doc.layers[doc.active]) ? doc.active : doc.layers.map((l, i) => i).reverse().find((i) => hit(doc.layers[i]));
+  if (index !== undefined && index >= 0) { editText(index); return; }
+  ed.dialog = { kind: 'text', point: { x: Math.round(p.x), y: Math.round(p.y) }, text: '', font: ed.opts.font || 'sans-serif', fontSize: ed.opts.fontSize || 32, bold: false, italic: false,
+    color: ed.colors.primary, align: 'left' };
+  refresh();
+}
+
+/** Edit the text layer at index (dialog). */
+function editText(index = ed.doc.active) {
+  const layer = ed.doc.layers[index];
+  if (!layer || !layer.text) return;
+  if (ed.doc.quickMask) endQuickMask();
+  ed.dialog = { kind: 'text', layerId: layer.id, point: { x: layer.text.x, y: layer.text.y }, ...layer.text };
   refresh();
 }
 
@@ -692,18 +961,23 @@ function closeMenus() { for (const d of document.querySelectorAll('details.ie-me
 const MENUS = () => [
   ['ie.file', [
     ['ie.new', () => confirmDiscard().then((ok) => { if (ok) { ed.dialog = { kind: 'new', width: 800, height: 600, background: 'white' }; refresh(); } }), 'Ctrl+N'],
-    ['ie.open', openImage, 'Ctrl+O'], ['ie.openLayer', openAsLayer], ['ie.save', () => save(), 'Ctrl+S'], ['ie.saveAs', openSaveAs, 'Ctrl+Shift+S'],
+    ['ie.open', openImage, 'Ctrl+O'], ['ie.openLayer', openAsLayer], ['ie.save', () => save(), 'Ctrl+S'], ['ie.saveAs', openSaveAs, 'Ctrl+Shift+S'], null,
+    ['ie.exportSelection', () => { if (ed.doc.selection) openSaveAs('selection'); else Suite.shell.toast(t('ie.noSelection'), 'warning'); }],
+    ['ie.exportLayer', () => openSaveAs('layer')], null,
+    ['ie.info', openInfo], ['ie.batch', openBatch],
   ]],
   ['ie.edit', [
     ['ie.undo', undo, 'Ctrl+Z'], ['ie.redo', redo, 'Ctrl+Y'], null, ['ie.cut', cut, 'Ctrl+X'], ['ie.copy', copy, 'Ctrl+C'], ['ie.paste', paste, 'Ctrl+V'], null,
     ['ie.selectAll', () => { ed.doc.selection = { type: 'rect', x: 0, y: 0, w: ed.doc.width, h: ed.doc.height }; draw(); }, 'Ctrl+A'],
     ['ie.deselect', () => { ed.doc.selection = null; draw(); }, 'Ctrl+D'], ['ie.invertSel', invertSelection, 'Ctrl+Shift+I'], ['ie.clear', clearSelection, 'Del'], ['ie.fillSel', fillSelection], null,
-    ['ie.selectCoords', openSelectionDialog],
+    ['ie.selectCoords', openSelectionDialog], ['ie.quickMask', toggleQuickMask, 'Shift+Q', !!(ed.doc && ed.doc.quickMask)],
+    ['ie.feather', () => openModifySelection('feather')], ['ie.grow', () => openModifySelection('grow')], ['ie.shrink', () => openModifySelection('shrink')], ['ie.border', () => openModifySelection('border')],
   ]],
   ['ie.image', [
     ['ie.resize', () => { ed.dialog = { kind: 'resize', width: ed.doc.width, height: ed.doc.height, keep: true, smooth: true }; refresh(); }],
     ['ie.canvasSize', () => { ed.dialog = { kind: 'canvasSize', width: ed.doc.width, height: ed.doc.height, ax: 0.5, ay: 0.5 }; refresh(); }],
     ['ie.crop', () => { if (ed.doc.selection) docOp((d) => d.crop(d.selectionBounds()))(); }], null,
+    ['ie.rotateAngle', () => openRotate(0)], ['ie.straighten', startStraighten],
     ['ie.rotateCw', docOp((d) => d.rotate(90))], ['ie.rotateCcw', docOp((d) => d.rotate(270))], ['ie.rotate180', docOp((d) => d.rotate(180))],
     ['ie.flipH', docOp((d) => d.flip(true))], ['ie.flipV', docOp((d) => d.flip(false))], null, ['ie.flatten', docOp((d) => d.flatten())],
   ]],
@@ -711,6 +985,12 @@ const MENUS = () => [
     ['ie.newLayer', () => { ed.doc.addLayer(null, { index: ed.doc.active + 1 }); changed(); }, 'Ctrl+Shift+N'],
     ['ie.duplicate', () => { ed.doc.duplicateLayer(); changed(); }], ['ie.deleteLayer', () => { ed.doc.deleteLayer(); changed(); }],
     ['ie.mergeDown', () => { ed.doc.mergeDown(); changed(); }, 'Ctrl+E'], null,
+    ['ie.editText', () => { if (ed.doc.layers[ed.doc.active].text) editText(); else Suite.shell.toast(t('ie.notText'), 'warning'); }],
+    ['ie.rasterize', () => { if (ed.doc.layers[ed.doc.active].text) { ed.doc.rasterize(); thumbsVersion++; changed(); } else Suite.shell.toast(t('ie.notText'), 'warning'); }], null,
+    ['ie.addMask', maskCommand((doc) => doc.addMask('white'))], ['ie.addMaskSel', maskCommand((doc) => { if (doc.selection) doc.addMask('selection'); else Suite.shell.toast(t('ie.noSelection'), 'warning'); })],
+    ['ie.editMaskToggle', maskCommand(needMask((doc) => { doc.editMask = !doc.editMask; })), '', !!(ed.doc && ed.doc.editMask && ed.doc.layers[ed.doc.active].mask)],
+    ['ie.disableMask', maskCommand(needMask((doc, layer) => { doc.setLayerProps(doc.active, { maskDisabled: !layer.maskDisabled }); })), '', !!(ed.doc && (ed.doc.layers[ed.doc.active] || {}).maskDisabled)],
+    ['ie.applyMask', maskCommand(needMask((doc) => doc.removeMask('apply')))], ['ie.deleteMask', maskCommand(needMask((doc) => doc.removeMask('delete')))], null,
     ['ie.flipLayerH', () => { ed.doc.flip(true, true); changed(); }], ['ie.flipLayerV', () => { ed.doc.flip(false, true); changed(); }],
   ]],
   ['ie.filters', [
@@ -719,7 +999,8 @@ const MENUS = () => [
     ['ie.autoLevels', () => { autoLevels(ed.doc); changed(); }], null,
     ['ie.blur', () => startAdjust('blur')], ['ie.sharpen', () => { convolve(ed.doc, KERNELS.sharpen); changed(); }], null,
     ['ie.grayscale', () => startAdjust('grayscale')], ['ie.sepia', () => startAdjust('sepia')], ['ie.invert', () => startAdjust('invert')], null,
-    ['ie.emboss', () => { convolve(ed.doc, KERNELS.emboss); changed(); }], ['ie.edges', () => { convolve(ed.doc, KERNELS.edges); changed(); }],
+    ['ie.emboss', () => { convolve(ed.doc, KERNELS.emboss); changed(); }], ['ie.edges', () => { convolve(ed.doc, KERNELS.edges); changed(); }], null,
+    ...Object.keys(PIXEL_ADJUSTMENTS).map((k) => [`ie.adj.${k}`, () => startPixelAdjust(k)]),
   ]],
   ['ie.view', [
     ['ie.zoomIn', () => zoomStep(1), '+'], ['ie.zoomOut', () => zoomStep(-1), '−'], ['ie.fit', fit, '0'], ['ie.actual', () => setZoom(1, null, true), '1'], null,
@@ -748,7 +1029,7 @@ function Menus() {
 // ---- side panels --------------------------------------------------------------------------------------------------
 
 function ToolPalette() {
-  return html`<div class="ie-tools" role="toolbar" data-testid="tools">${TOOLS.map((tool) => html`<button class=${ed.tool === tool ? 'active' : 'secondary outline'}
+  return html`<div class="ie-tools" role="toolbar" data-testid="tools">${TOOLS.filter((tool) => !tool.hidden).map((tool) => html`<button class=${ed.tool === tool ? 'active' : 'secondary outline'}
     title=${t(`tool.${tool.id}`)} aria-label=${t(`tool.${tool.id}`)} aria-pressed=${ed.tool === tool} data-testid=${`tool-${tool.id}`} onClick=${() => selectTool(tool.id)}>${tool.icon}</button>`)}
     <div class="ie-swatches" title=${t('ie.colors')}>
       <input type="color" value=${ed.colors.primary} data-testid="color-primary" title=${t('ie.foreground')} onInput=${(e) => { ed.colors.primary = e.target.value; refresh(); }} />
@@ -768,13 +1049,19 @@ function ToolOptions() {
   const selecting = id === 'select-rect' || id === 'select-ellipse';
   const anySelect = id.startsWith('select-');
   return html`<section class="ie-options" data-testid="tool-options">
-    <strong>${t(`tool.${id}`).replace(/ \(.*/, '')}</strong>
+    <strong>${t(`tool.${id}`).replace(/ \(.*/, '')}${ed.doc.editMask && ed.doc.layers[ed.doc.active].mask && !ed.doc.quickMask ? html` <span class="ie-mask-badge" data-testid="editing-mask">${t('ie.editingMask')}</span>` : null}</strong>
     ${anySelect ? html`<label>${t('ie.selOp')}<select data-testid="opt-sel-op" onChange=${(e) => { o.selOp = e.target.value; refresh(); }}>
       ${['new', 'add', 'subtract', 'intersect'].map((v) => html`<option value=${v} selected=${(o.selOp || 'new') === v}>${t(`ie.selOp.${v}`)}</option>`)}</select></label>
       <small class="ie-hint">${t(id === 'select-polygon' ? 'ie.polygonHint' : 'ie.selOpHint')}</small>` : null}
     ${selecting ? html`<${SelectionOptions} />` : null}
     ${id === 'move' || id === 'hand' ? html`<small class="ie-hint">${t('ie.guideHint')}</small>` : null}
     ${sized ? html`<label>${t('ie.size')}: ${o.size} px<input type="range" min="1" max="200" value=${o.size} data-testid="opt-size" onInput=${(e) => { o.size = +e.target.value; refresh(); }} /></label>` : null}
+    ${id === 'brush' || id === 'eraser' ? html`<${BrushOptions} />` : null}
+    ${id === 'transform' ? html`<${TransformOptions} />` : null}
+    ${id === 'crop' ? html`<label>${t('ie.cropRatio')}<select data-testid="opt-crop-ratio" onChange=${(e) => { o.cropRatio = e.target.value; refresh(); }}>
+        ${CROP_RATIOS.map((r) => html`<option value=${r} selected=${o.cropRatio === r}>${r === 'free' || r === 'original' ? t(`ie.ratio.${r}`) : r}</option>`)}</select></label>
+      <small class="ie-hint" data-testid="crop-info">${ed.cropRect ? `${ed.cropRect.w} × ${ed.cropRect.h}` : t('ie.cropHint')}</small>
+      <button type="button" data-testid="crop-apply" disabled=${!ed.cropRect} onClick=${applyCrop}>⛶ ${t('ie.cropApply')}</button>` : null}
     ${opaque ? html`<label>${t('ie.opacity')}: ${Math.round(o.opacity * 100)} %<input type="range" min="1" max="100" value=${Math.round(o.opacity * 100)} data-testid="opt-opacity" onInput=${(e) => { o.opacity = +e.target.value / 100; refresh(); }} /></label>` : null}
     ${id === 'clone' || id === 'heal' ? html`<small class="ie-hint" data-testid="source-hint">${t(ed.tool.source ? 'ie.sourceSet' : 'ie.sourceHint')}</small>
       <button type="button" class=${o.pickSource ? '' : 'secondary outline'} data-testid="opt-pick-source" aria-pressed=${o.pickSource} onClick=${() => { o.pickSource = !o.pickSource; refresh(); }}>⊕ ${t('ie.pickSource')}</button>
@@ -786,6 +1073,91 @@ function ToolOptions() {
     ${id === 'fill' || id === 'select-wand' ? html`<label>${t('ie.tolerance')}: ${o.tolerance}<input type="range" min="0" max="100" value=${o.tolerance} data-testid="opt-tolerance" onInput=${(e) => { o.tolerance = +e.target.value; refresh(); }} /></label>
       <label><input type="checkbox" checked=${o.contiguous} data-testid="opt-contiguous" onChange=${(e) => { o.contiguous = e.target.checked; refresh(); }} /> ${t('ie.contiguous')}</label>` : null}
   </section>`;
+}
+
+// ---- brush tips (brushes.js) ----------------------------------------------------------------------------------------
+
+let ownTips = loadOwnTips();
+const tipImages = new Map(); // id -> data URL of the preview
+function tipImage(tip) {
+  if (!tipImages.has(tip.id)) { try { tipImages.set(tip.id, tipPreview(tipById(tip.id, ownTips)).toDataURL()); } catch (e) { tipImages.set(tip.id, ''); } }
+  return tipImages.get(tip.id);
+}
+
+function chooseTip(tip) {
+  const b = ed.opts.brush;
+  const def = tipById(tip.id, ownTips);
+  b.tip = tip.id;
+  if (!def.mask) b.hardness = Math.round((def.hardness ?? 1) * 100);
+  if (tip.spacing) b.spacing = Math.max(1, Math.min(200, Math.round(tip.spacing)));
+  refresh();
+}
+
+/** Own tips from files: GIMP brushes (.gbr), parametric brushes (.vbr) and images (dark = paint), also from archives. */
+async function loadTips() {
+  const picked = await Suite.files.open({ multiple: true, types: [{ description: t('ie.brushFiles'), accept: { 'image/*': ['.gbr', '.vbr', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.svg'] } }] });
+  if (!picked) return;
+  let added = null;
+  for (const p of picked) {
+    try {
+      const tip = await tipFromFile(p.file.name, new Uint8Array(await p.file.arrayBuffer()), decodeImage);
+      ownTips = [...ownTips, tip];
+      added = tip;
+    } catch (e) { Suite.shell.toast(`${p.file.name}: ${t('ie.brushUnreadable')}`, 'error'); }
+  }
+  if (!saveOwnTips(ownTips)) Suite.shell.toast(t('ie.brushNotStored'), 'warning');
+  if (added) chooseTip(added); else refresh();
+}
+
+function removeTip(id) {
+  ownTips = ownTips.filter((x) => x.id !== id);
+  saveOwnTips(ownTips);
+  if (ed.opts.brush.tip === id) ed.opts.brush.tip = 'round';
+  refresh();
+}
+
+function BrushOptions() {
+  const b = ed.opts.brush;
+  const tip = tipById(b.tip, ownTips);
+  const range = (key, label, min, max, unit = '') => html`<label>${label}: ${b[key]}${unit}<input type="range" min=${min} max=${max} value=${b[key]}
+    data-testid=${`opt-brush-${key}`} onInput=${(e) => { b[key] = +e.target.value; refresh(); }} /></label>`;
+  const button = (x, own) => html`<span class="ie-tip-wrap"><button type="button" class=${b.tip === x.id ? 'ie-tip active' : 'ie-tip secondary outline'}
+      title=${own ? x.name : t(`ie.tip.${x.id}`)} aria-label=${own ? x.name : t(`ie.tip.${x.id}`)} aria-pressed=${String(b.tip === x.id)} data-testid=${`tip-${own ? 'own' : x.id}`}
+      onClick=${() => chooseTip(x)}><img src=${tipImage(x)} alt="" /></button>${own ? html`<button type="button" class="ie-tip-remove secondary outline"
+      title=${t('ie.removeTip')} aria-label=${t('ie.removeTip')} data-testid="tip-remove" onClick=${() => removeTip(x.id)}>×</button>` : null}</span>`;
+  return html`<div class="ie-brush" data-testid="brush-options">
+    <span class="ie-label">${t('ie.brushTip')}</span>
+    <div class="ie-tips">${BUILTIN_TIPS.map((x) => button(x, false))}${ownTips.map((x) => button(x, true))}
+      <button type="button" class="ie-tip secondary outline" title=${t('ie.loadTips')} aria-label=${t('ie.loadTips')} data-testid="tip-load" onClick=${() => loadTips().catch(fail)}>+</button></div>
+    ${tip.mask ? null : range('hardness', t('ie.hardness'), 0, 100, ' %')}
+    ${range('spacing', t('ie.spacing'), 1, 200, ' %')}
+    ${range('angle', t('ie.angle'), -180, 180, '°')}
+    <label><input type="checkbox" checked=${b.pressureSize} data-testid="opt-pressure-size" onChange=${(e) => { b.pressureSize = e.target.checked; refresh(); }} /> ${t('ie.pressureSize')}</label>
+    <label><input type="checkbox" checked=${b.pressureOpacity} data-testid="opt-pressure-opacity" onChange=${(e) => { b.pressureOpacity = e.target.checked; refresh(); }} /> ${t('ie.pressureOpacity')}</label>
+  </div>`;
+}
+
+/** Position, size and angle of a free transform (typed values), flip, apply and cancel. */
+function TransformOptions() {
+  const tr = ed.transform;
+  if (!tr) return html`<small class="ie-hint" data-testid="transform-hint">${t('ie.transformHint')}</small>`;
+  const tool = ed.tool;
+  const field = (key, label, value) => html`<label>${label}<input type="number" step="any" data-testid=${`tr-${key}`} value=${Math.round(value * 10) / 10}
+    onChange=${(e) => { const v = +e.target.value; if (Number.isFinite(v)) { tool.set(ed, { [key]: v }); refresh(); } }} /></label>`;
+  return html`<div class="ie-sel-options" data-testid="transform-options">
+    <div class="ie-row">${field('x', 'X', tr.cx - tr.w / 2)}${field('y', 'Y', tr.cy - tr.h / 2)}</div>
+    <div class="ie-row">${field('w', t('ie.width'), tr.w)}${field('h', t('ie.height'), tr.h)}</div>
+    ${field('angle', t('ie.angle'), ((tr.angle * 180) / Math.PI))}
+    <div class="ie-row">
+      <button type="button" class="secondary outline" data-testid="tr-flip-x" onClick=${() => { tool.set(ed, { flipX: true }); refresh(); }}>⇋</button>
+      <button type="button" class="secondary outline" data-testid="tr-flip-y" onClick=${() => { tool.set(ed, { flipY: true }); refresh(); }}>⇵</button>
+    </div>
+    <small class="ie-hint">${t('ie.transformKeys')}</small>
+    <div class="ie-row">
+      <button type="button" data-testid="tr-apply" onClick=${() => tool.apply(ed)}>${t('ie.apply')}</button>
+      <button type="button" class="secondary" data-testid="tr-cancel" onClick=${() => { tool.cancel(ed); draw(); refresh(); }}>${t('ie.cancel')}</button>
+    </div>
+  </div>`;
 }
 
 /** Selection mode and coordinates of the selection tools (the fields are kept up to date by syncSelectionInfo). */
@@ -806,49 +1178,76 @@ function SelectionOptions() {
   </div>`;
 }
 
+/** Feather, grow, shrink or border the selection by a radius in pixels (a dialog; the last radius per change is kept). */
+const modifyRadius = { feather: 10, grow: 5, shrink: 5, border: 5 };
+function openModifySelection(op) {
+  if (!ed.doc.selection) { Suite.shell.toast(t('ie.noSelection'), 'warning'); return; }
+  ed.dialog = { kind: 'selModify', op, radius: modifyRadius[op] };
+  refresh();
+}
+
 /** Select the rectangle typed into the selection fields (shape of the current tool). */
 function applySelectionFields() {
   const v = (key) => Math.round(+(document.querySelector(`[data-testid=sel-${key}]`) || {}).value);
   const [x, y, w, h] = ['x', 'y', 'w', 'h'].map(v);
   if (![x, y, w, h].every(Number.isFinite) || w < 1 || h < 1) return;
-  const type = ed.tool.type || (ed.doc.selection ? ed.doc.selection.type : 'rect');
+  const type = ed.tool.type || (ed.doc.selection && ed.doc.selection.type === 'ellipse' ? 'ellipse' : 'rect');
   ed.doc.selection = clampSelection(ed.doc, type, x, y, x + w, y + h);
   draw();
 }
 
 function openSelectionDialog() {
   const s = ed.doc.selection || { type: 'rect', x: 0, y: 0, w: ed.doc.width, h: ed.doc.height };
-  ed.dialog = { kind: 'selection', type: s.type, x: s.x, y: s.y, w: s.w, h: s.h };
+  ed.dialog = { kind: 'selection', type: s.type === 'ellipse' ? 'ellipse' : 'rect', x: s.x, y: s.y, w: s.w, h: s.h };
   refresh();
 }
 
 let thumbsVersion = 0;
-function Thumb({ layer }) {
-  return html`<canvas class="ie-thumb" width="40" height="30" ref=${(c) => {
-    if (!c || (c._v === thumbsVersion && c._layer === layer.canvas)) return;
-    c._v = thumbsVersion; c._layer = layer.canvas;
+function Thumb({ layer, source = layer.canvas, extra = '' }) {
+  return html`<canvas class=${`ie-thumb ${extra}`} width="40" height="30" ref=${(c) => {
+    if (!c || (c._v === thumbsVersion && c._layer === source)) return;
+    c._v = thumbsVersion; c._layer = source;
     const ctx = c.getContext('2d');
     ctx.clearRect(0, 0, 40, 30);
     const s = Math.min(40 / ed.doc.width, 30 / ed.doc.height);
-    ctx.drawImage(layer.canvas, (40 - ed.doc.width * s) / 2, (30 - ed.doc.height * s) / 2, ed.doc.width * s, ed.doc.height * s);
+    if (extra) { ctx.fillStyle = '#fff'; ctx.fillRect((40 - ed.doc.width * s) / 2, (30 - ed.doc.height * s) / 2, ed.doc.width * s, ed.doc.height * s); } // (a mask: transparent is white)
+    ctx.drawImage(source, (40 - ed.doc.width * s) / 2, (30 - ed.doc.height * s) / 2, ed.doc.width * s, ed.doc.height * s);
   }}></canvas>`;
 }
 
+// ---- layer masks ----------------------------------------------------------------------------------------------------------
+
+function maskCommand(fn) {
+  return () => {
+    endQuickMask();
+    if (ed.tool.leave) ed.tool.leave(ed); else if (ed.tool.cancel) ed.tool.cancel(ed);
+    fn(ed.doc, ed.doc.layers[ed.doc.active]);
+    thumbsVersion++;
+    changed();
+  };
+}
+const needMask = (fn) => (doc, layer) => { if (layer.mask) fn(doc, layer); else Suite.shell.toast(t('ie.noMask'), 'warning'); };
+
 function Layers() {
   const doc = ed.doc;
-  const active = doc.layer;
+  const active = doc.layers[doc.active];
   return html`<section class="ie-layers" data-testid="layers">
     <strong>${t('ie.layers')}</strong>
     <ul>${doc.layers.map((layer, i) => ({ layer, i })).reverse().map(({ layer, i }) => html`<li key=${layer.id} class=${i === doc.active ? 'active' : ''} data-testid="layer"
-        onClick=${() => { doc.active = i; refresh(); }}>
+        onClick=${() => { if (ed.tool.leave) ed.tool.leave(ed); doc.active = i; doc.editMask = false; refresh(); }}>
       <input type="checkbox" checked=${layer.visible} title="👁" data-testid="layer-visible" onClick=${(e) => e.stopPropagation()}
         onChange=${(e) => { doc.setLayerProps(i, { visible: e.target.checked }); changed(); }} />
-      <${Thumb} layer=${layer} />
+      <span class=${i === doc.active && !doc.editMask && layer.mask ? 'ie-thumb-wrap editing' : 'ie-thumb-wrap'} title=${t('ie.editLayer')}><${Thumb} layer=${layer} /></span>
+      ${layer.mask ? html`<button type="button" class=${`ie-mask-thumb ${i === doc.active && doc.editMask ? 'editing' : ''} ${layer.maskDisabled ? 'disabled' : ''}`} title=${t('ie.editMask')}
+        aria-label=${t('ie.editMask')} aria-pressed=${String(i === doc.active && !!doc.editMask)} data-testid="layer-mask"
+        onClick=${(e) => { e.stopPropagation(); if (ed.tool.leave) ed.tool.leave(ed); doc.active = i; doc.editMask = true; refresh(); }}><${Thumb} layer=${layer} source=${layer.mask} extra="mask" /></button>` : null}
       ${ed.renamingLayer === layer.id
         ? html`<input class="ie-layer-name" defaultValue=${layer.name} data-testid="layer-name-input" autofocus onClick=${(e) => e.stopPropagation()}
             onKeyDown=${(e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') { ed.renamingLayer = null; refresh(); } }}
             onBlur=${(e) => { if (ed.renamingLayer !== layer.id) return; ed.renamingLayer = null; if (e.target.value && e.target.value !== layer.name) { doc.setLayerProps(i, { name: e.target.value }); changed(); } else refresh(); }} />`
         : html`<span class="ie-layer-name" data-testid="layer-name" onDblClick=${() => { ed.renamingLayer = layer.id; refresh(); }}>${layer.name}</span>`}
+      ${layer.text ? html`<button class="ie-text-badge secondary outline" title=${t('ie.editText')} aria-label=${t('ie.editText')} data-testid="layer-text"
+        onClick=${(e) => { e.stopPropagation(); editText(i); }}>T</button>` : null}
     </li>`)}</ul>
     <label>${t('ie.opacity')}: ${Math.round(active.opacity * 100)} %<input type="range" min="0" max="100" value=${Math.round(active.opacity * 100)} data-testid="layer-opacity"
       onInput=${(e) => { doc.setLayerProps(doc.active, { opacity: +e.target.value / 100 }); changed(); }} /></label>
@@ -871,6 +1270,45 @@ function Layers() {
 
 const CHANNELS = ['rgb', 'r', 'g', 'b'];
 const LEVELS = { black: 0, gamma: 1, white: 255, outBlack: 0, outWhite: 255 };
+
+// ---- pixel adjustments: colour balance, vibrance, threshold, posterize, unsharp mask, median, vignette -----------------------
+
+function startPixelAdjust(kind) {
+  if (ed.tool.cancel) ed.tool.cancel(ed);
+  ed.dialog = { kind: 'pixelAdjust', adjust: kind, values: pixelDefaults(kind) };
+  refresh();
+  updatePixelAdjust();
+}
+
+let pixelTimer = null;
+/** The preview of the adjustment (computed a moment after the last change: some are slow on big images). */
+function updatePixelAdjust() {
+  clearTimeout(pixelTimer);
+  pixelTimer = setTimeout(() => {
+    const d = ed.dialog;
+    if (!d || d.kind !== 'pixelAdjust') return;
+    ed.preview = { layer: ed.doc.layer, canvas: pixelAdjustCanvas(ed.doc, d.adjust, d.values) };
+    draw();
+  }, 60);
+}
+
+function pixelAdjustBody(d) {
+  const def = PIXEL_ADJUSTMENTS[d.adjust];
+  const v = d.values;
+  const target = (key) => (def.perRange && def.perRange.includes(key) ? v[v.range] : v);
+  const set = (key, value) => { target(key)[key] = value; refresh(); updatePixelAdjust(); };
+  return html`<h3>${t(`ie.adj.${d.adjust}`).replace('…', '')}</h3>${def.params.map((p) => {
+    if (Array.isArray(p)) {
+      const [key, min, max, , step = 1] = p;
+      const value = target(key)[key];
+      return html`<label>${t(`ie.p.${key}`)}: ${value}<input type="range" min=${min} max=${max} step=${step} value=${value} data-testid=${`padj-${key}`}
+        onInput=${(e) => set(key, +e.target.value)} /></label>`;
+    }
+    if (p.check) return html`<label><input type="checkbox" checked=${v[p.key]} data-testid=${`padj-${p.key}`} onChange=${(e) => set(p.key, e.target.checked)} /> ${t(`ie.p.${p.key}`)}</label>`;
+    return html`<label>${t(`ie.p.${p.key}`)}<select data-testid=${`padj-${p.key}`} onChange=${(e) => set(p.key, e.target.value)}>
+      ${p.options.map((o) => html`<option value=${o} selected=${v[p.key] === o}>${t(`ie.p.${o}`)}</option>`)}</select></label>`;
+  })}`;
+}
 
 function startTones(kind) {
   const per = (make) => Object.fromEntries(CHANNELS.map((c) => [c, make()]));
@@ -973,7 +1411,7 @@ function tonesBody(d) {
 
 function closeDialog() {
   if (ed.adjust) { ed.adjust = null; draw(); }
-  if (ed.dialog && (ed.dialog.kind === 'levels' || ed.dialog.kind === 'curves')) { ed.preview = null; draw(); }
+  if (ed.dialog && ['levels', 'curves', 'pixelAdjust'].includes(ed.dialog.kind)) { ed.preview = null; draw(); }
   ed.dialog = null;
   refresh();
 }
@@ -1007,6 +1445,9 @@ function Dialog() {
     body = html`${ADJUSTMENTS[a.kind].params.map(([k, min, max]) => html`<label>${t(`ie.${k}`)}: ${a.values[k]}
       <input type="range" min=${min} max=${max} value=${a.values[k]} data-testid=${`adj-${k}`} onInput=${(e) => { a.values[k] = +e.target.value; a.filter = cssFilter(a.kind, a.values); draw(); refresh(); }} /></label>`)}`;
     onOk = () => { const f = a.filter; ed.adjust = null; applyCssFilter(ed.doc, f); changed(); };
+  } else if (d.kind === 'pixelAdjust') {
+    body = pixelAdjustBody(d);
+    onOk = () => { ed.preview = null; applyPixelAdjust(ed.doc, d.adjust, d.values); changed(); };
   } else if (d.kind === 'levels' || d.kind === 'curves') {
     body = tonesBody(d);
     onOk = () => { ed.preview = null; applyLuts(ed.doc, tonesLuts(d)); changed(); };
@@ -1017,13 +1458,27 @@ function Dialog() {
           ...(Suite.fonts ? Suite.fonts.families().map((f) => [`"${f.name}"`, f.name]) : [])].map(([value, label]) => html`<option value=${value} selected=${d.font === value}>${label}</option>`)}</select></label>
         ${num('fontSize', 'ie.fontSize')}
       </div>
-      <label><input type="checkbox" onChange=${(e) => { d.bold = e.target.checked; }} /> ${t('ie.bold')}</label>
-      <label><input type="checkbox" onChange=${(e) => { d.italic = e.target.checked; }} /> ${t('ie.italic')}</label>`;
+      <div class="ie-row">
+        <label>${t('ie.textColor')}<input type="color" value=${d.color} data-testid="dlg-text-color" onInput=${(e) => { d.color = e.target.value; }} /></label>
+        <label>${t('ie.align')}<select data-testid="dlg-text-align" onChange=${(e) => { d.align = e.target.value; }}>
+          ${['left', 'center', 'right'].map((a) => html`<option value=${a} selected=${d.align === a}>${t(`ie.align.${a}`)}</option>`)}</select></label>
+      </div>
+      <label><input type="checkbox" checked=${d.bold} data-testid="dlg-text-bold" onChange=${(e) => { d.bold = e.target.checked; }} /> ${t('ie.bold')}</label>
+      <label><input type="checkbox" checked=${d.italic} data-testid="dlg-text-italic" onChange=${(e) => { d.italic = e.target.checked; }} /> ${t('ie.italic')}</label>
+      ${d.layerId ? null : html`<small class="ie-hint">${t('ie.textLayerHint')}</small>`}`;
     onOk = async () => {
       ed.opts.font = d.font; ed.opts.fontSize = d.fontSize;
+      const text = { text: d.text, x: d.point.x, y: d.point.y, font: d.font, fontSize: d.fontSize, bold: !!d.bold, italic: !!d.italic, color: d.color, align: d.align || 'left' };
       // (a canvas draws with a font only once it is loaded)
-      try { await document.fonts.load(`${d.italic ? 'italic ' : ''}${d.bold ? 'bold ' : ''}${d.fontSize}px ${d.font}`, d.text || 'A'); } catch (e) { /* the browser's fallback */ }
-      drawText(ed.doc, d.point, d.text, { color: ed.colors.primary, font: d.font, fontSize: d.fontSize, bold: d.bold, italic: d.italic, opacity: ed.opts.opacity });
+      try { await document.fonts.load(textFont(text), d.text || 'A'); } catch (e) { /* the browser's fallback */ }
+      const doc = ed.doc;
+      const index = d.layerId ? doc.layers.findIndex((l) => l.id === d.layerId) : -1;
+      if (index >= 0) {
+        if (d.text) doc.setText(index, text);
+        else { doc.active = index; doc.deleteLayer(); } // (an emptied text layer goes away)
+      } else if (d.text) doc.addTextLayer(text);
+      else return;
+      thumbsVersion++;
       changed();
     };
   } else if (d.kind === 'selection') {
@@ -1032,6 +1487,29 @@ function Dialog() {
         <option value="rect" selected=${d.type === 'rect'}>${t('ie.rectangle')}</option><option value="ellipse" selected=${d.type === 'ellipse'}>${t('ie.ellipseShape')}</option></select></label>
       <div class="ie-row">${coord('x', 'X')}${coord('y', 'Y')}</div><div class="ie-row">${coord('w', t('ie.width'))}${coord('h', t('ie.height'))}</div>`;
     onOk = () => { ed.doc.selection = clampSelection(ed.doc, d.type, d.x, d.y, d.x + Math.max(1, d.w), d.y + Math.max(1, d.h)); draw(); };
+  } else if (d.kind === 'batch') {
+    body = batchBody(d);
+    onOk = () => (d.running ? undefined : runBatchDialog(d));
+  } else if (d.kind === 'info') {
+    body = infoBody(d);
+    onOk = () => {};
+  } else if (d.kind === 'rotateAngle') {
+    body = html`<h3>${t('ie.rotateAngle').replace('…', '')}</h3>
+      <label>${t('ie.angleDeg')}<input type="number" min="-360" max="360" step="any" value=${d.angle} data-testid="dlg-rotate-angle" autofocus
+        onInput=${(e) => { d.angle = Math.max(-360, Math.min(360, +e.target.value || 0)); }} /></label>
+      <small class="ie-hint">${t('ie.rotateHint')}</small>
+      ${['crop', 'expand', 'keep'].map((m) => html`<label><input type="radio" name="rotate-mode" value=${m} checked=${d.mode === m} data-testid=${`dlg-rotate-${m}`}
+        onChange=${() => { d.mode = m; }} /> ${t(`ie.rotate.${m}`)}</label>`)}`;
+    onOk = () => { ed.opts.rotateMode = d.mode; if (d.angle) docOp((doc) => doc.rotateBy(d.angle, d.mode))(); };
+  } else if (d.kind === 'selModify') {
+    body = html`<h3>${t(`ie.${d.op}`).replace('…', '')}</h3>
+      <label>${t('ie.radius')}<input type="number" min="0" max="500" step="1" value=${d.radius} data-testid="dlg-sel-radius" autofocus onInput=${(e) => { d.radius = Math.max(0, Math.min(500, Math.round(+e.target.value || 0))); }} /></label>`;
+    onOk = () => {
+      modifyRadius[d.op] = d.radius;
+      ed.doc.selection = modifySelection(ed.doc, d.op, d.radius);
+      if (!ed.doc.selection) Suite.shell.toast(t('ie.selectionGone'), 'warning');
+      draw();
+    };
   } else if (d.kind === 'guide') {
     body = html`<label>${t('ie.orientation')}<select data-testid="dlg-guide-axis" onChange=${(e) => { d.axis = e.target.value; }}>
         <option value="h" selected=${d.axis === 'h'}>${t('ie.horizontal')}</option><option value="v" selected=${d.axis === 'v'}>${t('ie.vertical')}</option></select></label>
@@ -1050,16 +1528,21 @@ function Dialog() {
     body = html`<label>${t('ie.fileName')}<input value=${d.stem} data-testid="dlg-name" onInput=${(e) => { d.stem = e.target.value; }} /></label>
       <label>${t('ie.format')}<select data-testid="dlg-format" onChange=${(e) => { d.format = e.target.value; refresh(); }}>
         ${Object.entries(SAVE_FORMATS).map(([k, f]) => html`<option value=${k} selected=${d.format === k}>${f.label} (${f.ext})</option>`)}</select></label>
-      ${fmt.quality ? html`<label>${t('ie.quality')}: ${d.quality} %<input type="range" min="10" max="100" value=${d.quality} onInput=${(e) => { d.quality = +e.target.value; refresh(); }} /></label>` : null}`;
-    onOk = () => save({ as: true, name: `${d.stem}${fmt.ext}`, format: d.format, quality: d.quality / 100 });
+      ${fmt.quality ? html`<label>${t('ie.quality')}: ${d.quality} %<input type="range" min="10" max="100" value=${d.quality} onInput=${(e) => { d.quality = +e.target.value; refresh(); }} /></label>` : null}
+      ${d.format === 'gif' ? html`<label><input type="checkbox" checked=${d.dither} data-testid="dlg-dither" onChange=${(e) => { d.dither = e.target.checked; }} /> ${t('ie.dither')}</label>` : null}
+      ${d.format === 'ico' ? html`<fieldset><legend>${t('ie.icoSizes')}</legend><div class="ie-ico-sizes">${ICO_SIZES.map((n) => html`<label><input type="checkbox" checked=${d.icoSizes.includes(n)}
+        data-testid=${`dlg-ico-${n}`} onChange=${(e) => { d.icoSizes = e.target.checked ? [...d.icoSizes, n] : d.icoSizes.filter((x) => x !== n); refresh(); }} /> ${n}</label>`)}</div></fieldset>` : null}
+      ${d.export ? html`<small class="ie-hint">${t(d.export === 'selection' ? 'ie.exportSelHint' : 'ie.exportLayerHint')}</small>` : null}`;
+    const opts = { quality: d.quality / 100, dither: d.dither, icoSizes: d.icoSizes.length ? d.icoSizes : [32] };
+    onOk = () => (d.export ? exportPart(d, `${d.stem}${fmt.ext}`, opts) : save({ as: true, name: `${d.stem}${fmt.ext}`, format: d.format, ...opts }));
   }
-  const live = ['adjust', 'levels', 'curves'].includes(d.kind); // the image stays visible for the live preview
+  const live = ['adjust', 'levels', 'curves', 'pixelAdjust'].includes(d.kind); // the image stays visible for the live preview
   return html`<dialog open data-testid="dialog" class=${live ? 'ie-live' : ''}><article>
     <form onSubmit=${(e) => { e.preventDefault(); ed.dialog = null; Promise.resolve(onOk()).catch(fail); refresh(); }}>
       ${body}
       <footer>
         <button type="button" class="secondary" data-testid="dlg-cancel" onClick=${closeDialog}>${t('ie.cancel')}</button>
-        <button type="submit" data-testid="dlg-ok">${['adjust', 'levels', 'curves'].includes(d.kind) ? t('ie.apply') : t('ie.ok')}</button>
+        ${d.running ? null : html`<button type="submit" data-testid="dlg-ok">${['adjust', 'levels', 'curves'].includes(d.kind) ? t('ie.apply') : d.kind === 'batch' ? t('ie.batchRun') : t('ie.ok')}</button>`}
       </footer>
     </form>
   </article></dialog>`;
@@ -1078,6 +1561,8 @@ function Main() {
       <span data-testid="image-size">${doc.width} × ${doc.height}</span>
       <span data-testid="position"></span>
       <span data-testid="selection-info"></span>
+      <button class=${doc.quickMask ? 'ie-qm active' : 'ie-qm secondary outline'} data-testid="quick-mask" aria-pressed=${String(!!doc.quickMask)}
+        title=${`${t('ie.quickMask')} (Shift+Q)`} onClick=${toggleQuickMask}>◐${doc.quickMask ? html`<span class="ie-qm-label"> ${t('ie.quickMaskOn')}</span>` : ''}</button>
       <span class="ie-zoom">
         <button class="secondary outline" data-testid="zoom-out" onClick=${() => zoomStep(-1)}>−</button>
         <span data-testid="zoom">${Math.round(ed.view.zoom * 100)} %</span>
@@ -1116,6 +1601,7 @@ document.addEventListener('keydown', (e) => {
       d: () => { ed.doc.selection = null; draw(); },
       ...(e.shiftKey ? { i: invertSelection } : {}),
       n: e.shiftKey ? () => { ed.doc.addLayer(null, { index: ed.doc.active + 1 }); changed(); } : () => MENUS()[0][1][0][1](),
+      t: () => selectTool('transform'),
       '0': fit, '+': () => zoomStep(1), '=': () => zoomStep(1), '-': () => zoomStep(-1),
     };
     if (map[k]) run(map[k]);
@@ -1131,6 +1617,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '[') { ed.opts.size = Math.max(1, Math.round(ed.opts.size / 1.25)); draw(); refresh(); return; }
   if (e.key === ']') { ed.opts.size = Math.min(200, Math.round(ed.opts.size * 1.25) || 2); draw(); refresh(); return; }
   if (k === 'x') { swapColors(); return; }
+  if (k === 'q' && e.shiftKey) { e.preventDefault(); toggleQuickMask(); return; }
   const tool = TOOLS.find((x) => x.key === k);
   if (tool) selectTool(tool.id);
 });
@@ -1146,5 +1633,5 @@ Suite.openFiles.register(async () => (ed.doc && (ed.doc.dirty || ed.name !== `${
   ? [{ name: ed.name, bytes: await encode(ed.doc, ed.format, { quality: 0.92 }), dirty: !!ed.doc.dirty }] : []));
 
 // for tests
-window.IE = { prefs, setPref, addGuide, ed, setDoc, openFile, encode, ImageDoc, save };
+window.IE = { prefs, setPref, addGuide, ed, setDoc, openFile, encode, ImageDoc, save, brushes };
 document.body.dataset.ready = 'true';
