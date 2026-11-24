@@ -224,6 +224,8 @@ $config = @{
     Common = $common.ToString()
     Sessions = [hashtable]::Synchronized(@{}); Failures = [hashtable]::Synchronized(@{})
     Serve = $serveDir; Proxy = $upstream; NoProxy = @($NoProxy)
+    CanListen = [System.Net.IPAddress]::IsLoopback($bindAddress)  # (port forwarding: only on the user's own machine)
+    Pending = [hashtable]::Synchronized(@{})                       # id of an accepted connection -> @{ Client; Time }
 }
 
 # Everything below runs in its own runspace per connection.
@@ -468,6 +470,144 @@ $handler = {
         return $tcp
     }
 
+    # ---- installing the served apps as a web app (PWA), as relay.py does: NAME.webmanifest for NAME.html, the service worker
+    # suite-sw.js, the icons, and in the served HTML the manifest link, <meta name="suite-pwa"> and the CSP directives for both
+    $PwaSw = @'
+// Portable Web App Suite: service worker of the apps served by the relay (network first, the last copy when the relay is not running)
+const CACHE = 'suite-pwa-v1';
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+self.addEventListener('fetch', (e) => {
+  const req = e.request;
+  const url = new URL(req.url);
+  if (req.method !== 'GET' || url.origin !== self.location.origin || !/\.(html|webmanifest|png|svg)$/.test(url.pathname)) return;
+  e.respondWith(fetch(req).then((res) => {
+    if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {}); }
+    return res;
+  }).catch(() => caches.match(req, { ignoreSearch: true }).then((hit) => hit || Response.error())));
+});
+'@ + "`n"
+    $PwaIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="113" fill="#1565c0"/><g fill="#fff"><rect x="138" y="138" width="103" height="103" rx="23"/><rect x="271" y="138" width="103" height="103" rx="23"/><rect x="138" y="271" width="103" height="103" rx="23"/><rect x="271" y="271" width="103" height="103" rx="23" fill-opacity=".67"/></g></svg>'
+    $PwaIconPng = [Convert]::FromBase64String(
+    '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')
+
+    function Get-PwaFile([string]$rel) {
+        if ($rel -eq 'suite-sw.js') { return @{ Body = [System.Text.Encoding]::UTF8.GetBytes($PwaSw.Replace("`r`n", "`n")); Type = 'text/javascript; charset=utf-8' } }
+        if ($rel -eq 'suite-icon.svg') { return @{ Body = [System.Text.Encoding]::UTF8.GetBytes($PwaIconSvg); Type = 'image/svg+xml' } }
+        if ($rel -eq 'suite-icon-192.png') { return @{ Body = $PwaIconPng; Type = 'image/png' } }
+        foreach ($suffix in '.webmanifest', '.icon.svg') {
+            if (-not $rel.EndsWith($suffix) -or $rel.Contains('/') -or $rel.Contains('\') -or $rel.StartsWith('.')) { continue }
+            $stem = $rel.Substring(0, $rel.Length - $suffix.Length)
+            $page = Join-Path $config.Serve "$stem.html"
+            if (-not (Test-Path -LiteralPath $page -PathType Leaf)) { return $null }
+            $head = [System.IO.File]::ReadAllText($page)
+            if ($head.Length -gt 8192) { $head = $head.Substring(0, 8192) }
+            $im = [regex]::Match($head, '<link rel="icon" href="data:image/svg\+xml,([^"]+)"')
+            $icon = if ($im.Success) { [System.Text.Encoding]::UTF8.GetBytes([Uri]::UnescapeDataString($im.Groups[1].Value)) } else { $null }
+            if ($suffix -eq '.icon.svg') { if ($icon) { return @{ Body = $icon; Type = 'image/svg+xml' } } else { return $null } }
+            $m = [regex]::Match($head, '<title>([^<]*)</title>')
+            $name = if ($m.Success -and $m.Groups[1].Value.Trim()) { $m.Groups[1].Value.Trim() } else { $stem }
+            if ($stem -eq 'overview') { $name = 'Portable Web App Suite' }
+            $icons = @()
+            if ($icon) { $icons += [ordered]@{ src = "$stem.icon.svg"; sizes = 'any'; type = 'image/svg+xml' } }
+            $icons += [ordered]@{ src = 'suite-icon.svg'; sizes = 'any'; type = 'image/svg+xml' }
+            $icons += [ordered]@{ src = 'suite-icon-192.png'; sizes = '192x192'; type = 'image/png' }
+            $manifest = [ordered]@{ name = $name; short_name = $name; id = "$stem.html"; start_url = "$stem.html"; scope = './'; display = 'standalone'
+                background_color = '#ffffff'; theme_color = '#1565c0'; icons = $icons }
+            return @{ Body = [System.Text.Encoding]::UTF8.GetBytes(($manifest | ConvertTo-Json -Depth 5 -Compress)); Type = 'application/manifest+json' }
+        }
+        return $null
+    }
+
+    function Add-PwaToPage([string]$html, [string]$fileName) {
+        $html = [regex]::Replace($html, '(<meta\s+http-equiv="Content-Security-Policy"\s+content=")([^"]*)(")', {
+            param($m)
+            $directives = [System.Collections.Generic.List[string]]::new()
+            foreach ($d in $m.Groups[2].Value.Split(';')) { if ($d.Trim()) { $directives.Add($d.Trim()) } }
+            foreach ($pair in @(@('manifest-src', "'self'"), @('worker-src', "'self'"))) {
+                $i = -1
+                for ($k = 0; $k -lt $directives.Count; $k++) { if (($directives[$k] -split '\s+')[0] -eq $pair[0]) { $i = $k; break } }
+                if ($i -lt 0) { $directives.Add("$($pair[0]) $($pair[1])") } elseif (($directives[$i] -split '\s+') -notcontains $pair[1]) { $directives[$i] = "$($directives[$i]) $($pair[1])" }
+            }
+            return $m.Groups[1].Value + ($directives -join '; ') + $m.Groups[3].Value
+        }, [System.Text.RegularExpressions.RegexOptions]::None, [TimeSpan]::FromSeconds(5))
+        $stem = [System.IO.Path]::GetFileNameWithoutExtension($fileName)
+        $tags = "<link rel=`"manifest`" href=`"$stem.webmanifest`"><meta name=`"suite-pwa`" content=`"suite-sw.js`"><meta name=`"theme-color`" content=`"#1565c0`">"
+        # (right after <head>: inlined code further down may contain the text "</head>")
+        $m = [regex]::Match($html, '<head\b[^>]*>', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+        if ($m.Success) { $html = $html.Substring(0, $m.Index + $m.Length) + $tags + $html.Substring($m.Index + $m.Length) }
+        return $html
+    }
+
     # a file of -Serve with the headers of cross-origin isolated pages (no token needed: the built apps are public)
     function Send-StaticFile($stream, [string]$path, [bool]$headOnly) {
         $root = $config.Serve
@@ -479,17 +619,24 @@ $handler = {
             throw (New-HttpError 404 'not found')
         }
         $sep = [System.IO.Path]::DirectorySeparatorChar
+        $pwa = Get-PwaFile $rel
         $full = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($root, $rel))
-        if (-not $full.StartsWith($root + $sep, [System.StringComparison]::Ordinal) -or -not (Test-Path -LiteralPath $full -PathType Leaf) -or
-            @($full.Substring($root.Length + 1) -split '[\\/]' | Where-Object { $_.StartsWith('.') }).Count) { throw (New-HttpError 404 'not found') }
+        if (-not $pwa -and (-not $full.StartsWith($root + $sep, [System.StringComparison]::Ordinal) -or -not (Test-Path -LiteralPath $full -PathType Leaf) -or
+            @($full.Substring($root.Length + 1) -split '[\\/]' | Where-Object { $_.StartsWith('.') }).Count)) { throw (New-HttpError 404 'not found') }
         $types = @{ '.html' = 'text/html; charset=utf-8'; '.htm' = 'text/html; charset=utf-8'; '.js' = 'text/javascript; charset=utf-8'; '.mjs' = 'text/javascript; charset=utf-8'
                     '.css' = 'text/css; charset=utf-8'; '.json' = 'application/json'; '.webmanifest' = 'application/manifest+json'; '.svg' = 'image/svg+xml'
                     '.png' = 'image/png'; '.ico' = 'image/x-icon'; '.wasm' = 'application/wasm'; '.txt' = 'text/plain; charset=utf-8'; '.md' = 'text/plain; charset=utf-8' }
         $ext = [System.IO.Path]::GetExtension($full).ToLowerInvariant()
-        $h = [ordered]@{ 'Content-Type' = $(if ($types[$ext]) { $types[$ext] } else { 'application/octet-stream' })
+        $contentType = if ($pwa) { $pwa.Type } elseif ($types[$ext]) { $types[$ext] } else { 'application/octet-stream' }
+        $h = [ordered]@{ 'Content-Type' = $contentType
                          'Cross-Origin-Opener-Policy' = 'same-origin'; 'Cross-Origin-Embedder-Policy' = 'require-corp'
                          'Cross-Origin-Resource-Policy' = 'same-origin'; 'X-Content-Type-Options' = 'nosniff'; 'Cache-Control' = 'no-cache' }
-        $body = [System.IO.File]::ReadAllBytes($full)
+        if ($pwa) { $body = $pwa.Body } else {
+            $body = [System.IO.File]::ReadAllBytes($full)
+            if (($ext -eq '.html' -or $ext -eq '.htm') -and [System.IO.Path]::GetDirectoryName($full) -eq $root) {
+                $body = [System.Text.Encoding]::UTF8.GetBytes((Add-PwaToPage ([System.Text.Encoding]::UTF8.GetString($body)) ([System.IO.Path]::GetFileName($full))))
+            }
+        }
         if (-not $headOnly) { Write-HttpResponse $stream 200 'OK' $h $body; return }
         $sb = New-Object System.Text.StringBuilder
         [void]$sb.Append("HTTP/1.1 200 OK`r`n")
@@ -622,6 +769,46 @@ $handler = {
 
     # ---- TCP tunnel ----------------------------------------------------------------------------
 
+    # Listen on 127.0.0.1 for a page (port forwarding): announce every incoming connection ({"op":"accept","id"}), keep it in
+    # $config.Pending until a tunnel takes it ({"accept": id}, within 30 s); closing the WebSocket stops listening.
+    function Start-Listen($ws, $listen) {
+        if (-not $config.CanListen) { throw 'this relay does not listen on ports (only a relay on the local machine does)' }
+        $port = [int]$listen.port
+        if ($port -and ($port -lt 1024 -or $port -gt 65535)) { throw 'port must be between 1024 and 65535' }
+        $l = New-Object System.Net.Sockets.TcpListener ([System.Net.IPAddress]::Loopback, $port)
+        try { $l.Start() } catch { throw "cannot listen on port ${port}: $($_.Exception.InnerException.Message)" }
+        $ids = New-Object System.Collections.ArrayList
+        try {
+            Send-Text $ws.Stream ([ordered]@{ ok = $true; port = $l.LocalEndpoint.Port })
+            while ($true) {
+                while ($l.Pending()) {
+                    $c = $l.AcceptTcpClient()
+                    $bytes = New-Object byte[] 12
+                    [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+                    $id = -join ($bytes | ForEach-Object { $_.ToString('x2') })
+                    $config.Pending[$id] = @{ Client = $c; Time = [DateTime]::UtcNow }
+                    [void]$ids.Add($id)
+                    Send-Text $ws.Stream ([ordered]@{ op = 'accept'; id = $id })
+                }
+                if (-not (Receive-WsData $ws)) { return }
+                foreach ($m in (Read-Messages $ws)) {
+                    if ($m.Opcode -eq 8) { return }
+                    if ($m.Opcode -eq 9) { Send-Frame $ws.Stream 10 $m.Payload }
+                }
+                foreach ($id in @($ids)) {
+                    $entry = $config.Pending[$id]
+                    if (-not $entry) { $ids.Remove($id) }
+                    elseif (([DateTime]::UtcNow - $entry.Time).TotalSeconds -gt 30) { $config.Pending.Remove($id); $entry.Client.Close(); $ids.Remove($id) }
+                }
+                if ($ws.Task -and -not $ws.Task.IsCompleted) { [void]$ws.Task.Wait(20) }
+            }
+        } finally {
+            $l.Stop()
+            foreach ($id in $ids) { $entry = $config.Pending[$id]; if ($entry) { $config.Pending.Remove($id); $entry.Client.Close() } }
+            try { Send-Frame $ws.Stream 8 ([byte[]](3, 232)) } catch { }
+        }
+    }
+
     function Start-Tunnel($ws) {
         $first = Wait-Message $ws 30000
         if (-not $first -or $first.Opcode -ne 1) { return }
@@ -629,9 +816,19 @@ $handler = {
         try {
             $spec = ConvertFrom-Json $Utf8.GetString($first.Payload)
             $user = Confirm-Token $spec.token $ws.Client
-            $targetHost = [string]$spec.host; $targetPort = [int]$spec.port
-            if (-not (Test-TargetAllowed $targetHost $targetPort $user)) { throw "target not allowed: ${targetHost}:$targetPort" }
-            $tcp = Connect-Target $targetHost $targetPort 20000
+            if ($null -ne $spec.listen) { Start-Listen $ws $spec.listen; return }
+            if ($null -ne $spec.accept) {
+                $id = [string]$spec.accept
+                $entry = $config.Pending[$id]
+                if (-not $entry) { throw 'no such connection (or it waited too long)' }
+                $config.Pending.Remove($id)
+                $tcp = $entry.Client
+                $targetHost = '127.0.0.1'
+            } else {
+                $targetHost = [string]$spec.host; $targetPort = [int]$spec.port
+                if (-not (Test-TargetAllowed $targetHost $targetPort $user)) { throw "target not allowed: ${targetHost}:$targetPort" }
+                $tcp = Connect-Target $targetHost $targetPort 20000
+            }
             $tcpStream = $tcp.GetStream()
             if ($spec.tls) { $tcpStream = New-TlsStream $tcpStream $targetHost ([bool]$spec.insecure) }
         } catch {
@@ -880,7 +1077,7 @@ $handler = {
             Write-HttpResponse $stream 204 'No Content' $h $null
         } elseif ($method -eq 'GET' -and $path -eq '/info') {
             Write-Json $stream 200 (Get-CorsHeaders $origin) ([ordered]@{ relay = 'portable-web-app-suite'; version = 2; implementation = 'powershell'
-                auth = @($config.AuthMethods); tls = ([bool]$config.Cert -or ($info.Proxied -and $info.Secure)) })
+                auth = @($config.AuthMethods); tls = ([bool]$config.Cert -or ($info.Proxied -and $info.Secure)); features = @(if ($config.CanListen) { 'listen' }) })
         } elseif ($method -eq 'GET' -and $path -eq '/tcp' -and ([string]$headers['upgrade']).ToLowerInvariant() -eq 'websocket') {
             $key = $headers['sec-websocket-key']
             if (-not $key -or $headers['sec-websocket-version'] -ne '13') { throw (New-HttpError 400 'invalid WebSocket handshake') }

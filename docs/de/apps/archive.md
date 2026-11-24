@@ -51,6 +51,24 @@ nach und führt sie auf; danach lassen sich diese Dateien weder daraus laden noc
 - Ein Doppelklick (Tippen) auf eine Datei zeigt eine Vorschau: Text, Bilder, Audio und Video. **Herunterladen** in der Vorschau
   speichert die Datei.
 
+## Suchen
+
+**🔍** (`Strg+F`) durchsucht das ganze Archiv samt allen Ordnern. Geben Sie einen **Namen** ein – einen Teil davon oder ein Muster mit `*`
+(beliebige Zeichen) und `?` (ein Zeichen), etwa `*.log` oder `bericht-202?.pdf` –, und die passenden Dateien und Ordner erscheinen schon beim
+Tippen. Mit **Im Inhalt** werden die Dateien selbst nach einem Text durchsucht (wahlweise als regulärer Ausdruck und mit Groß-/Kleinschreibung):
+Jeder Treffer erscheint mit Zeile, Spalte und dem umgebenden Text; das Namensfeld schränkt dann ein, welche Dateien durchsucht werden.
+Binärdateien, verschlüsselte Dateien und Dateien über 32 MiB werden übersprungen (die Zusammenfassung nennt, wie viele); eine lange Suche lässt
+sich anhalten. Ein Klick auf ein Ergebnis öffnet seinen Ordner mit der Datei ausgewählt; ein Doppelklick zeigt die Datei. `Esc` oder × beendet
+die Suche.
+
+## Zwei Archive vergleichen
+
+**⇔** vergleicht das geöffnete Archiv mit einem anderen (in jedem Format, das der Archivmanager liest, etwa ein ZIP mit einem TAR.GZ): Dateien,
+die **nur hier**, **nur im anderen**, **verschieden** oder **gleich** sind. ZIP-Dateien werden über ihre gespeicherte Prüfsumme und Größe
+verglichen, andere Formate über den Inhalt. Die Liste zeigt zuerst die Unterschiede; die Auswahl zeigt auch die gleichen oder alle Dateien.
+**⇐ Übernehmen** holt die Fassung einer verschiedenen Datei aus dem anderen Archiv – oder eine hier fehlende Datei – in dieses Archiv
+(Rückgängig mit `Strg+Z`; speichern, um sie zu behalten). Ein Klick auf einen Namen zeigt die Datei in ihrem Ordner. × beendet den Vergleich.
+
 ## Auswählen
 
 Ein Klick wählt ein Element, `Strg`+Klick fügt Elemente hinzu oder entfernt sie, `Umschalt`+Klick wählt einen Bereich, `Strg+A` wählt
@@ -89,6 +107,11 @@ Rückgängig (↶, `Strg+Z`) und Wiederholen (↷, `Strg+Y`) wirken auf Hinzufü
 - **Speichern unter** (`Strg+Umschalt+S`) fragt nach dem Dateinamen und dem **Format** (ZIP, 7Z, TAR, TAR.GZ, TAR.BZ2, TAR.XZ, GZ). So wird ein Archiv
   umgewandelt, etwa ein `.tar.gz` in ein `.zip`. Eine GZ-Datei enthält genau eine Datei. Ein geöffnetes TAR.BZ2- oder TAR.XZ-Archiv wird
   wieder in seinem Format gespeichert. Einzelne `.bz2`- und `.xz`-Dateien ohne Archiv darin lassen sich weder öffnen noch schreiben.
+- **In Teile aufteilen** (in *Speichern unter*) schneidet das Archiv in Teile der gewählten Größe, etwa um es per E-Mail zu schicken oder auf
+  einen FAT32-Stick zu kopieren (höchstens 4 GB je Datei). Die Teile heißen `name.zip.001`, `.002`, …, wie 7-Zip sie schreibt; 7-Zip und andere
+  Programme können sie wieder zusammenfügen. In Chrome/Edge am Desktop wählen Sie einen Ordner für die Teile, sonst werden sie einzeln
+  heruntergeladen. Um ein aufgeteiltes Archiv hier zu öffnen, wählen Sie im Öffnen-Dialog **alle seine Teile** zusammen aus (die Reihenfolge ist
+  gleich).
 - **Kompression** in der Statusleiste legt die Kompression neuer und geänderter Dateien fest: Speichern, Schnell, Normal, Maximal.
   Unveränderte Dateien eines geöffneten ZIP-Archivs werden unverändert übernommen, daher ist das Speichern schnell.
 
@@ -119,6 +142,7 @@ Auf dem Mac verwenden Sie Cmd statt Strg. `F1` (oder `?`) zeigt diese Liste in d
 | Tasten | Funktion |
 |---|---|
 | `Strg+O` | Öffnen |
+| `Strg+F` | Suchen (Namen und Inhalte) |
 | `Strg+S` | Speichern |
 | `Strg+Umschalt+S` | Speichern unter |
 

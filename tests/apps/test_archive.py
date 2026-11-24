@@ -133,7 +133,7 @@ def test_browse_zip_and_preview(app_page, tmp_path):
     expect(page.locator("[data-testid=status]")).to_contain_text("ZIP · 5 files, 3 folders")
     open_row(page, "docs")
     expect_names(page, ["sub", "a.md"])
-    expect(page.locator("[data-testid=crumb]")).to_have_text(["📦 demo.zip", "docs"])
+    expect(page.locator("[data-testid=crumb]")).to_have_text(["demo.zip", "docs"])
     page.keyboard.press("Backspace")
     expect_names(page, ["docs", "empty", "image.png", "readme.txt", "Ümlaut.txt"])
 
@@ -304,7 +304,8 @@ def test_zipcrypto_password_and_kept_entries(app_page, tmp_path):
         assert z.read("secret.txt", pwd=b"pw") == b"top secret"  # the helper writes valid ZipCrypto
     page = app_page("archive", init_script=NO_PICKERS)
     open_archive(page, source)
-    expect(row(page, "secret.txt")).to_contain_text("🔒")
+    expect(row(page, "secret.txt")).to_contain_text("secret.txt")
+    expect(row(page, "secret.txt").locator(".suite-icon-lock")).to_have_count(1)
     expect(row(page, "secret.txt").locator("[data-testid=lock]")).to_have_attribute("title", "encrypted: ZipCrypto")
     # cancelling the password prompt, a wrong password, the right one
     open_row(page, "secret.txt")
@@ -319,7 +320,7 @@ def test_zipcrypto_password_and_kept_entries(app_page, tmp_path):
     expect(page.locator("[data-testid=preview]")).to_contain_text("top secret")
     page.keyboard.press("Escape")
     # files added after unlocking are encrypted the same way; unchanged entries stay as they are
-    expect(page.locator("[data-testid=encryption]")).to_have_text("🔒 ZipCrypto")
+    expect(page.locator("[data-testid=encryption]")).to_have_text("ZipCrypto")
     page.evaluate("AR.app.addFiles([{ file: new File(['new'], 'new.txt'), path: 'new.txt' }])")
     saved = save_download(page, tmp_path)
     with zipfile.ZipFile(saved) as z:
@@ -583,7 +584,7 @@ def test_integrity_test(app_page, tmp_path):
     page = app_page("archive", init_script=NO_PICKERS)
     open_archive(page, make_zip(tmp_path / "good.zip"))
     page.click("[data-testid=test]")
-    expect(page.locator("[data-testid=test-summary]")).to_have_text("✓ All 5 file(s) are intact.")
+    expect(page.locator("[data-testid=test-summary]")).to_have_text("All 5 file(s) are intact.")
     page.click("[data-testid=test-close]")
     expect(page.locator("[data-testid=test-dialog]")).to_have_count(0)
     # a stored entry with a changed byte fails the CRC check

@@ -39,7 +39,7 @@ Suite.i18n.register({
     'pr.notes': 'Speaker notes', 'pr.notesHint': 'Notes for this slide (shown in the presenter view, saved in the file)', 'pr.presenterView': 'Presenter view (Alt+F5): notes, timer and next slide here, the slides in a second window',
     'pr.audience': 'audience', 'pr.popupBlocked': 'The audience window was blocked: allow pop-ups for this page.', 'pr.slideOf': 'Slide {0} of {1}', 'pr.endShow': 'End', 'pr.pauseTimer': 'Pause / continue the timer',
     'pr.lastSlide': 'End of the presentation',
-    'app.title': 'Presentation', 'pr.new': 'New', 'pr.open': 'Open', 'pr.save': 'Save', 'pr.saveAs': 'Save as', 'pr.format': 'Format', 'pr.odpNote': 'OpenDocument keeps slides, texts, lists, shapes, pictures, tables, groups and notes; transitions and animations are left out.', 'pr.print': 'Print / PDF', 'pr.present': '▶ Present',
+    'app.title': 'Presentation', 'pr.new': 'New', 'pr.open': 'Open', 'pr.save': 'Save', 'pr.saveAs': 'Save as', 'pr.format': 'Format', 'pr.odpNote': 'OpenDocument keeps slides, texts, lists, shapes, pictures, tables, groups and notes; transitions and animations are left out.', 'pr.print': 'Print / PDF', 'pr.present': 'Present',
     'pr.layout': 'New slide with a layout', 'pr.layout.title': 'Title slide', 'pr.layout.content': 'Title and content', 'pr.layout.two': 'Two contents',
     'pr.layout.section': 'Section header', 'pr.layout.titleOnly': 'Title only', 'pr.layout.blank': 'Blank', 'pr.ph.title': 'Title', 'pr.ph.subtitle': 'Subtitle', 'pr.ph.text': 'Text',
     'pr.media': 'Video/audio', 'pr.mediaHint': 'Insert a video or a sound (played in the show)', 'pr.crop': 'Crop (%)', 'pr.cropReset': 'No cropping', 'pr.cropL': 'Left', 'pr.cropT': 'Top', 'pr.cropR': 'Right', 'pr.cropB': 'Bottom',
@@ -57,6 +57,8 @@ Suite.i18n.register({
     'pr.cannotOpen': '“{0}” cannot be opened: {1}', 'pr.noSlides': 'it contains no readable slide', 'pr.slides': '{0} slides', 'pr.panels': 'Format', 'pr.editHint': 'Double-click a text to edit it.',
     'pr.hf': 'Header & footer', 'pr.hfDate': 'Date', 'pr.hfAuto': 'Update automatically', 'pr.hfFixed': 'Fixed', 'pr.hfNumber': 'Slide number', 'pr.hfFooter': 'Footer',
     'pr.hfSkipTitle': 'Not on the title slide (the first slide)', 'pr.hfApply': 'Apply to this slide', 'pr.hfApplyAll': 'Apply to all slides',
+    'pr.cm.cut': 'Cut', 'pr.cm.copy': 'Copy', 'pr.cm.paste': 'Paste', 'pr.cm.delete': 'Delete', 'pr.cm.editText': 'Edit text', 'pr.cm.selectAll': 'Select all',
+    'pr.cm.moveUp': 'Move slide up', 'pr.cm.moveDown': 'Move slide down', 'pr.cm.showSlide': 'Show in the show again', 'pr.cm.alignTo': 'Align',
     'pr.hideSlide': 'Hide in the show', 'pr.hiddenSlide': 'Hidden in the show', 'pr.toolPen': 'Pen (Ctrl+P)', 'pr.toolLaser': 'Laser pointer (Ctrl+L)',
     'pr.toolErase': 'Erase the ink (E)', 'pr.toolBlack': 'Black screen (B)', 'pr.toolPrev': 'Previous', 'pr.toolNext': 'Next', 'pr.toolEnd': 'End the show (Esc)',
     'pr.cancel': 'Cancel', 'pr.fileName': 'File name', 'pr.templateNote': 'Templates and slide shows are saved as a new .pptx file.',
@@ -71,7 +73,7 @@ Suite.i18n.register({
     'pr.notes': 'Notizen', 'pr.notesHint': 'Notizen zu dieser Folie (in der Referentenansicht, in der Datei gespeichert)', 'pr.presenterView': 'Referentenansicht (Alt+F5): Notizen, Zeit und nächste Folie hier, die Folien in einem zweiten Fenster',
     'pr.audience': 'Publikum', 'pr.popupBlocked': 'Das Publikumsfenster wurde blockiert: Erlauben Sie Pop-ups für diese Seite.', 'pr.slideOf': 'Folie {0} von {1}', 'pr.endShow': 'Beenden', 'pr.pauseTimer': 'Zeit anhalten / fortsetzen',
     'pr.lastSlide': 'Ende der Präsentation',
-    'app.title': 'Präsentation', 'pr.new': 'Neu', 'pr.open': 'Öffnen', 'pr.save': 'Speichern', 'pr.saveAs': 'Speichern unter', 'pr.format': 'Format', 'pr.odpNote': 'OpenDocument behält Folien, Texte, Listen, Formen, Bilder, Tabellen, Gruppen und Notizen; Übergänge und Animationen entfallen.', 'pr.print': 'Drucken / PDF', 'pr.present': '▶ Vorführen',
+    'app.title': 'Präsentation', 'pr.new': 'Neu', 'pr.open': 'Öffnen', 'pr.save': 'Speichern', 'pr.saveAs': 'Speichern unter', 'pr.format': 'Format', 'pr.odpNote': 'OpenDocument behält Folien, Texte, Listen, Formen, Bilder, Tabellen, Gruppen und Notizen; Übergänge und Animationen entfallen.', 'pr.print': 'Drucken / PDF', 'pr.present': 'Vorführen',
     'pr.layout': 'Neue Folie mit Layout', 'pr.layout.title': 'Titelfolie', 'pr.layout.content': 'Titel und Inhalt', 'pr.layout.two': 'Zwei Inhalte',
     'pr.layout.section': 'Abschnittsüberschrift', 'pr.layout.titleOnly': 'Nur Titel', 'pr.layout.blank': 'Leer', 'pr.ph.title': 'Titel', 'pr.ph.subtitle': 'Untertitel', 'pr.ph.text': 'Text',
     'pr.media': 'Video/Audio', 'pr.mediaHint': 'Ein Video oder einen Klang einfügen (in der Vorführung abgespielt)', 'pr.crop': 'Zuschneiden (%)', 'pr.cropReset': 'Nicht zuschneiden', 'pr.cropL': 'Links', 'pr.cropT': 'Oben', 'pr.cropR': 'Rechts', 'pr.cropB': 'Unten',
@@ -89,6 +91,8 @@ Suite.i18n.register({
     'pr.cannotOpen': '„{0}“ kann nicht geöffnet werden: {1}', 'pr.noSlides': 'sie enthält keine lesbare Folie', 'pr.slides': '{0} Folien', 'pr.panels': 'Format', 'pr.editHint': 'Doppelklick auf einen Text bearbeitet ihn.',
     'pr.hf': 'Kopf- & Fußzeile', 'pr.hfDate': 'Datum', 'pr.hfAuto': 'Automatisch aktualisieren', 'pr.hfFixed': 'Fest', 'pr.hfNumber': 'Foliennummer', 'pr.hfFooter': 'Fußzeile',
     'pr.hfSkipTitle': 'Nicht auf der Titelfolie (der ersten Folie)', 'pr.hfApply': 'Für diese Folie übernehmen', 'pr.hfApplyAll': 'Für alle Folien übernehmen',
+    'pr.cm.cut': 'Ausschneiden', 'pr.cm.copy': 'Kopieren', 'pr.cm.paste': 'Einfügen', 'pr.cm.delete': 'Löschen', 'pr.cm.editText': 'Text bearbeiten', 'pr.cm.selectAll': 'Alles auswählen',
+    'pr.cm.moveUp': 'Folie nach oben', 'pr.cm.moveDown': 'Folie nach unten', 'pr.cm.showSlide': 'In der Vorführung wieder zeigen', 'pr.cm.alignTo': 'Ausrichten',
     'pr.hideSlide': 'In der Vorführung ausblenden', 'pr.hiddenSlide': 'In der Vorführung ausgeblendet', 'pr.toolPen': 'Stift (Strg+P)', 'pr.toolLaser': 'Laserpointer (Strg+L)',
     'pr.toolErase': 'Freihand löschen (E)', 'pr.toolBlack': 'Schwarzer Bildschirm (B)', 'pr.toolPrev': 'Zurück', 'pr.toolNext': 'Weiter', 'pr.toolEnd': 'Vorführung beenden (Esc)',
     'pr.cancel': 'Abbrechen', 'pr.fileName': 'Dateiname', 'pr.templateNote': 'Vorlagen und Bildschirmpräsentationen werden als neue .pptx-Datei gespeichert.',
@@ -218,12 +222,69 @@ function renderThumbs() {
 }
 
 stage.addEventListener('pointerdown', (e) => {
-  if (editing) return;
+  if (editing || e.button === 2) return; // (the right button opens the context menu)
   const target = e.target.closest('.el:not(.locked)');
   const add = e.shiftKey || e.ctrlKey || e.metaKey;
   if (target) { select(target.dataset.id, add); return; }
   if (!add) select(null);
   marquee(e, add);
+});
+
+// right click (or a long press on a touch screen): the app's context menu with the actions for the elements or the slide
+const MOD = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl+';
+function slideMenu() {
+  const i = state.current, n = state.deck.slides.length, sl = slide();
+  return [
+    { label: t('pr.newSlide'), icon: 'file-plus', run: () => addSlide(false), testid: 'cm-new-slide' },
+    { label: t('pr.duplicateSlide'), icon: 'copy', run: () => addSlide(true), testid: 'cm-duplicate-slide' },
+    { label: t('pr.deleteSlide'), icon: 'trash-2', run: deleteSlide, disabled: n < 2, testid: 'cm-delete-slide' },
+    '-',
+    { label: t('pr.cm.moveUp'), icon: 'arrow-up', run: () => moveSlide(i, i - 1), disabled: i === 0, testid: 'cm-slide-up' },
+    { label: t('pr.cm.moveDown'), icon: 'arrow-down', run: () => moveSlide(i, i + 1), disabled: i === n - 1, testid: 'cm-slide-down' },
+    { label: t(sl.hidden ? 'pr.cm.showSlide' : 'pr.hideSlide'), icon: sl.hidden ? 'eye' : 'eye-off', run: () => { record(); if (sl.hidden) delete sl.hidden; else sl.hidden = true; changed(); }, testid: 'cm-hide-slide' },
+  ];
+}
+function elementMenu() {
+  const chosen = selectedElements();
+  const one = chosen.length === 1 ? chosen[0] : null;
+  const copy = () => { state.clipboard = structuredClone(selectedElements()); };
+  return [
+    one && (one.type === 'text' || one.type === 'shape') ? { label: t('pr.cm.editText'), icon: 'type', shortcut: 'F2', run: () => editText(one.id), testid: 'cm-edit-text' } : null,
+    one && isDiagramImage(one) ? { label: t('dia.edit'), icon: 'shapes', run: () => editDiagram(one.id), testid: 'cm-edit-diagram' } : null,
+    '-',
+    { label: t('pr.cm.cut'), icon: 'scissors', shortcut: `${MOD}X`, run: () => { copy(); deleteSelection(); }, testid: 'cm-cut' },
+    { label: t('pr.cm.copy'), icon: 'copy', shortcut: `${MOD}C`, run: copy, testid: 'cm-copy' },
+    { label: t('pr.cm.paste'), icon: 'clipboard-paste', shortcut: `${MOD}V`, run: () => addCopies(state.clipboard), disabled: !state.clipboard, testid: 'cm-paste' },
+    { label: t('pr.duplicate'), icon: 'copy-plus', shortcut: `${MOD}D`, run: duplicateElement, testid: 'cm-duplicate' },
+    { label: t('pr.cm.delete'), icon: 'trash-2', shortcut: 'Del', run: deleteSelection, testid: 'cm-delete' },
+    '-',
+    { label: t('pr.toFront'), icon: 'bring-to-front', run: () => reorder(true), testid: 'cm-to-front' },
+    { label: t('pr.toBack'), icon: 'send-to-back', run: () => reorder(false), testid: 'cm-to-back' },
+    chosen.length > 1 ? { label: t('pr.group'), icon: 'group', shortcut: `${MOD}G`, run: groupSelection, testid: 'cm-group' } : null,
+    chosen.some((e) => e.group) ? { label: t('pr.ungroup'), icon: 'ungroup', shortcut: `${MOD}⇧G`, run: ungroupSelection, testid: 'cm-ungroup' } : null,
+    '-',
+    { label: `${t('pr.cm.alignTo')}: ${t('pr.alignLeft')}`, icon: 'align-horizontal-justify-start', run: () => alignSelection('left') },
+    { label: `${t('pr.cm.alignTo')}: ${t('pr.alignCenter')}`, icon: 'align-horizontal-justify-center', run: () => alignSelection('center') },
+    { label: `${t('pr.cm.alignTo')}: ${t('pr.alignTop')}`, icon: 'align-vertical-justify-start', run: () => alignSelection('top') },
+    { label: `${t('pr.cm.alignTo')}: ${t('pr.alignMiddle')}`, icon: 'align-vertical-justify-center', run: () => alignSelection('middle') },
+  ];
+}
+stageWrap.addEventListener('contextmenu', (e) => {
+  if (editing) return; // (while editing a text: the browser's menu, with its spelling suggestions)
+  const target = e.target.closest('.el:not(.locked)');
+  if (target && !selectionIds().includes(target.dataset.id)) select(target.dataset.id);
+  if (!target) select(null);
+  Suite.shell.contextMenu(e, state.selected ? elementMenu() : [
+    { label: t('pr.cm.paste'), icon: 'clipboard-paste', shortcut: `${MOD}V`, run: () => addCopies(state.clipboard), disabled: !state.clipboard, testid: 'cm-paste' },
+    { label: t('pr.cm.selectAll'), icon: 'text-select', shortcut: `${MOD}A`, run: () => selectMany(slide().elements.filter((x) => !x.locked).map((x) => x.id)), testid: 'cm-select-all' },
+    '-', ...slideMenu()]);
+});
+thumbs.addEventListener('contextmenu', (e) => {
+  const th = e.target.closest('.pr-thumb');
+  if (!th) { e.preventDefault(); return; }
+  const i = [...thumbs.children].indexOf(th);
+  if (i >= 0 && i !== state.current) { state.current = i; select(null); render(); }
+  Suite.shell.contextMenu(e, slideMenu());
 });
 
 /** Drag on the empty slide: select the elements inside the rectangle (with Shift/Ctrl: add them). */
@@ -1157,8 +1218,8 @@ consoleEl.className = 'pr-console';
 consoleEl.dataset.testid = 'console';
 consoleEl.hidden = true;
 consoleEl.innerHTML = `<header><span data-testid="console-timer" class="pr-timer">00:00</span><span data-testid="console-clock" class="pr-clock"></span>
-  <span data-testid="console-count"></span><span class="pr-console-buttons"><button type="button" data-act="prev">◀</button><button type="button" data-act="next">▶</button>
-  <button type="button" data-act="pause" data-testid="console-pause">⏸</button><button type="button" data-act="reset">⟲</button><button type="button" data-act="end" data-testid="console-end"></button></span></header>
+  <span data-testid="console-count"></span><span class="pr-console-buttons"><button type="button" data-act="prev">${Suite.icons.svg('step-back')}</button><button type="button" data-act="next">${Suite.icons.svg('step-forward')}</button>
+  <button type="button" data-act="pause" data-testid="console-pause">${Suite.icons.svg('pause')}</button><button type="button" data-act="reset">${Suite.icons.svg('rotate-ccw')}</button><button type="button" data-act="end" data-testid="console-end"></button></span></header>
   <div class="pr-console-current" data-testid="console-current"></div>
   <div class="pr-console-side"><div class="pr-console-next" data-testid="console-next"></div><div class="pr-console-notes" data-testid="console-notes"></div></div>`;
 document.body.append(consoleEl);
@@ -1231,10 +1292,11 @@ const blankEl = Object.assign(document.createElement('div'), { className: 'pr-bl
 blankEl.dataset.testid = 'show-blank';
 const showTools = Object.assign(document.createElement('div'), { className: 'pr-show-tools' });
 showTools.dataset.testid = 'show-tools';
-const TOOL_BUTTONS = [['prev', '◀\uFE0E', 'pr.toolPrev'], ['next', '▶\uFE0E', 'pr.toolNext'], ['pen', '✎', 'pr.toolPen'], ['laser', '●', 'pr.toolLaser'], ['erase', '⌫', 'pr.toolErase'], ['black', '■', 'pr.toolBlack'], ['end', '✕', 'pr.toolEnd']];
+const TOOL_BUTTONS = [['prev', 'step-back', 'pr.toolPrev'], ['next', 'step-forward', 'pr.toolNext'], ['pen', 'pencil', 'pr.toolPen'], ['laser', 'circle-dot', 'pr.toolLaser'], ['erase', 'eraser', 'pr.toolErase'], ['black', 'square', 'pr.toolBlack'], ['end', 'x', 'pr.toolEnd']];
 function renderShowTools() {
   showTools.replaceChildren(...TOOL_BUTTONS.map(([act, icon, title]) => {
-    const b = Object.assign(document.createElement('button'), { type: 'button', textContent: icon, title: t(title) });
+    const b = Object.assign(document.createElement('button'), { type: 'button', innerHTML: Suite.icons.svg(icon), title: t(title) });
+    b.setAttribute('aria-label', t(title));
     b.dataset.act = act;
     b.dataset.testid = `show-${act}`;
     if (act === show.tool || (act === 'black' && show.blank)) b.setAttribute('aria-pressed', 'true');
@@ -1396,24 +1458,24 @@ function Toolbar() {
     <button class="secondary outline" data-testid="save-as" onClick=${() => { state.dialog = { stem: state.name.replace(/\.(pptx|odp)$/i, ''), format: isOdp(state.name) ? 'odp' : 'pptx' }; Suite.shell.refresh(); }}>${t('pr.saveAs')}</button>
     <button class="secondary outline" data-testid="print" onClick=${print}>${t('pr.print')}</button>
     <span class="pr-sep"></span>
-    <button class="secondary outline" title=${t('pr.undo')} data-testid="undo" disabled=${!state.undo.length} onClick=${undo}>↶</button>
-    <button class="secondary outline" title=${t('pr.redo')} data-testid="redo" disabled=${!state.redo.length} onClick=${redo}>↷</button>
+    <button class="secondary outline" title=${t('pr.undo')} data-testid="undo" disabled=${!state.undo.length} onClick=${undo}>${Suite.icon('undo-2')}</button>
+    <button class="secondary outline" title=${t('pr.redo')} data-testid="redo" disabled=${!state.redo.length} onClick=${redo}>${Suite.icon('redo-2')}</button>
     <button class="secondary outline" data-testid="add-text" onClick=${addText}>T ${t('pr.text')}</button>
-    <details class="dropdown pr-shapes" data-testid="shape-menu"><summary>◼ ${t('pr.shape')}</summary>
+    <details class="dropdown pr-shapes" data-testid="shape-menu"><summary>${Suite.icon('shapes')} ${t('pr.shape')}</summary>
       <ul>${SHAPES.map((g) => html`<li><a href="#" data-testid=${`add-${g}`} onClick=${(e) => { e.preventDefault(); e.target.closest('details').open = false; addShape(g); }}>${g}</a></li>`)}</ul></details>
-    <button class="secondary outline" data-testid="add-image" onClick=${pickImage}>🖼 ${t('pr.image')}</button>
-    <button class="secondary outline" data-testid="add-diagram" title=${t('dia.insert')} onClick=${insertDiagram}>📐 ${t('pr.diagram')}</button>
-    <button class="secondary outline" data-testid="add-chart" title=${t('ch.insert')} onClick=${insertChart}>📊 ${t('ch.chart')}</button>
-    <button class="secondary outline" data-testid="add-media" title=${t('pr.mediaHint')} onClick=${() => insertMedia().catch(fail)}>🎬 ${t('pr.media')}</button>
-    <button class="secondary outline" data-testid="add-table" onClick=${() => addTable()}>▦ ${t('pr.table')}</button>
+    <button class="secondary outline" data-testid="add-image" onClick=${pickImage}>${Suite.icon('image')} ${t('pr.image')}</button>
+    <button class="secondary outline" data-testid="add-diagram" title=${t('dia.insert')} onClick=${insertDiagram}>${Suite.icon('shapes')} ${t('pr.diagram')}</button>
+    <button class="secondary outline" data-testid="add-chart" title=${t('ch.insert')} onClick=${insertChart}>${Suite.icon('chart-column')} ${t('ch.chart')}</button>
+    <button class="secondary outline" data-testid="add-media" title=${t('pr.mediaHint')} onClick=${() => insertMedia().catch(fail)}>${Suite.icon('clapperboard')} ${t('pr.media')}</button>
+    <button class="secondary outline" data-testid="add-table" onClick=${() => addTable()}>${Suite.icon('table')} ${t('pr.table')}</button>
     <button class="secondary outline" data-testid="header-footer" title=${t('pr.hf')} onClick=${openHeaderFooter}># ${t('pr.hf')}</button>
     <span class="pr-sep"></span>
     <button class="secondary outline" data-testid="add-slide" onClick=${() => addSlide(false)}>+ ${t('pr.newSlide')}</button>
-    <details class="dropdown pr-shapes" data-testid="layout-menu"><summary title=${t('pr.layout')} aria-label=${t('pr.layout')}>▤</summary>
+    <details class="dropdown pr-shapes" data-testid="layout-menu"><summary title=${t('pr.layout')} aria-label=${t('pr.layout')}>${Suite.icon('rows-3')}</summary>
       <ul>${LAYOUTS.map((k) => html`<li><a href="#" data-testid=${`layout-${k}`} onClick=${(e) => { e.preventDefault(); e.target.closest('details').open = false; addSlide(false, k); }}>${t(`pr.layout.${k}`)}</a></li>`)}</ul></details>
-    <button data-testid="present" onClick=${() => present(false)}>${t('pr.present')}</button>
-    <button class=${spelling.open ? 'secondary' : 'secondary outline'} data-testid="spell" title=${`${t('spell.button')} (F7)`} aria-pressed=${spelling.open ? 'true' : 'false'} onClick=${spelling.toggle}>ABC✓</button>
-    <button class="secondary outline" data-testid="present-console" title=${t('pr.presenterView')} onClick=${startConsole}>🎤</button>
+    <button data-testid="present" onClick=${() => present(false)}>${Suite.icon('play')} ${t('pr.present')}</button>
+    <button class=${spelling.open ? 'secondary' : 'secondary outline'} data-testid="spell" title=${`${t('spell.button')} (F7)`} aria-pressed=${spelling.open ? 'true' : 'false'} onClick=${spelling.toggle}>ABC${Suite.icon('check')}</button>
+    <button class="secondary outline" data-testid="present-console" title=${t('pr.presenterView')} onClick=${startConsole}>${Suite.icon('mic')}</button>
   </nav>`;
 }
 
@@ -1454,8 +1516,8 @@ function AnimationList({ sl }) {
   return html`<details class="pr-motion" open><summary>${t('pr.animations')} (${list.length})</summary>
     <ol class="pr-anim-list" data-testid="animation-list">${list.map((a, i) => html`<li data-testid="animation-item">
       <span>${elementLabel(sl, a.id)}</span> <small>${t(`pr.fx.${a.effect}`)}, ${t(`pr.start.${a.start}`)}</small>
-      <button class="secondary outline" title="↑" data-testid="animation-up" disabled=${i === 0} onClick=${() => move(i, -1)}>↑</button>
-      <button class="secondary outline" title="↓" data-testid="animation-down" disabled=${i === list.length - 1} onClick=${() => move(i, 1)}>↓</button>
+      <button class="secondary outline" title="↑" data-testid="animation-up" disabled=${i === 0} onClick=${() => move(i, -1)}>${Suite.icon('arrow-up')}</button>
+      <button class="secondary outline" title="↓" data-testid="animation-down" disabled=${i === list.length - 1} onClick=${() => move(i, 1)}>${Suite.icon('arrow-down')}</button>
       <button class="secondary outline" title=${t('pr.delete')} data-testid="animation-remove" onClick=${() => { record(); sl.animations = list.filter((x) => x !== a); changed(); }}>×</button></li>`)}</ol>
   </details>`;
 }
@@ -1490,8 +1552,8 @@ function Panel() {
       <div class="pr-buttons">
         <button class="secondary outline" data-testid="duplicate-slide" onClick=${() => addSlide(true)}>${t('pr.duplicateSlide')}</button>
         <button class="secondary outline" data-testid="delete-slide" disabled=${state.deck.slides.length < 2} onClick=${deleteSlide}>${t('pr.deleteSlide')}</button>
-        <button class="secondary outline" title="↑" data-testid="slide-up" onClick=${() => moveSlide(state.current, state.current - 1)}>↑</button>
-        <button class="secondary outline" title="↓" data-testid="slide-down" onClick=${() => moveSlide(state.current, state.current + 1)}>↓</button>
+        <button class="secondary outline" title="↑" data-testid="slide-up" onClick=${() => moveSlide(state.current, state.current - 1)}>${Suite.icon('arrow-up')}</button>
+        <button class="secondary outline" title="↓" data-testid="slide-down" onClick=${() => moveSlide(state.current, state.current + 1)}>${Suite.icon('arrow-down')}</button>
       </div>
       <${TransitionFields} sl=${sl} />
       <${AnimationList} sl=${sl} />
@@ -1510,15 +1572,15 @@ function Panel() {
   return html`<aside class=${`pr-panel pico suite-drawer ${state.panels ? 'open' : ''}`} data-testid="panel">
     <strong data-testid="panel-title">${chosen.length > 1 ? t('pr.selectedN', chosen.length) : el.name || el.type}</strong>
     <div class="pr-buttons pr-arrange" title=${t('pr.alignTo')}>
-      ${tool('arrange-left', t('pr.alignLeft'), '⫷', () => alignSelection('left'))}${tool('arrange-center', t('pr.alignCenter'), '⇹', () => alignSelection('center'))}
-      ${tool('arrange-right', t('pr.alignRight'), '⫸', () => alignSelection('right'))}${tool('arrange-top', t('pr.alignTop'), '⊤', () => alignSelection('top'))}
-      ${tool('arrange-middle', t('pr.alignMiddle'), '⇳', () => alignSelection('middle'))}${tool('arrange-bottom', t('pr.alignBottom'), '⊥', () => alignSelection('bottom'))}
-      ${tool('distribute-h', t('pr.distributeH'), '⋯', () => distributeSelection('x'), units < 3)}${tool('distribute-v', t('pr.distributeV'), '⋮', () => distributeSelection('y'), units < 3)}
-      ${tool('group', t('pr.group'), '▣', groupSelection, units < 2)}${tool('ungroup', t('pr.ungroup'), '▢', ungroupSelection, !chosen.some((e) => e.group))}
+      ${tool('arrange-left', t('pr.alignLeft'), Suite.icon('align-horizontal-justify-start'), () => alignSelection('left'))}${tool('arrange-center', t('pr.alignCenter'), Suite.icon('align-horizontal-justify-center'), () => alignSelection('center'))}
+      ${tool('arrange-right', t('pr.alignRight'), Suite.icon('align-horizontal-justify-end'), () => alignSelection('right'))}${tool('arrange-top', t('pr.alignTop'), Suite.icon('align-vertical-justify-start'), () => alignSelection('top'))}
+      ${tool('arrange-middle', t('pr.alignMiddle'), Suite.icon('align-vertical-justify-center'), () => alignSelection('middle'))}${tool('arrange-bottom', t('pr.alignBottom'), Suite.icon('align-vertical-justify-end'), () => alignSelection('bottom'))}
+      ${tool('distribute-h', t('pr.distributeH'), Suite.icon('align-horizontal-distribute-center'), () => distributeSelection('x'), units < 3)}${tool('distribute-v', t('pr.distributeV'), Suite.icon('align-vertical-distribute-center'), () => distributeSelection('y'), units < 3)}
+      ${tool('group', t('pr.group'), Suite.icon('group'), groupSelection, units < 2)}${tool('ungroup', t('pr.ungroup'), Suite.icon('ungroup'), ungroupSelection, !chosen.some((e) => e.group))}
     </div>
     ${chosen.length > 1 ? null : html`<div class="pr-grid">${num('x', 'X', 'el-x')}${num('y', 'Y', 'el-y')}${num('w', t('pr.width'), 'el-w')}${num('h', 'H', 'el-h')}${num('rot', t('pr.rotation'), 'el-rot')}</div>`}
-    ${isDiagramImage(el) ? html`<button class="secondary" data-testid="edit-diagram" onClick=${() => editDiagram(el.id)}>📐 ${t('dia.edit')}</button>` : null}
-    ${chosen.length === 1 && isChartImage(el) ? html`<button class="secondary" data-testid="edit-chart" onClick=${() => editChart(el.id)}>📊 ${t('ch.edit')}</button>` : null}
+    ${isDiagramImage(el) ? html`<button class="secondary" data-testid="edit-diagram" onClick=${() => editDiagram(el.id)}>${Suite.icon('shapes')} ${t('dia.edit')}</button>` : null}
+    ${chosen.length === 1 && isChartImage(el) ? html`<button class="secondary" data-testid="edit-chart" onClick=${() => editChart(el.id)}>${Suite.icon('chart-column')} ${t('ch.edit')}</button>` : null}
     ${chosen.length === 1 && el.type === 'image' && !isChartImage(el) && !isDiagramImage(el) ? html`<fieldset class="pr-crop" data-testid="crop"><legend>${t('pr.crop')}</legend><div class="pr-grid">
       ${[['l', 'pr.cropL'], ['t', 'pr.cropT'], ['r', 'pr.cropR'], ['b', 'pr.cropB']].map(([k, label]) => html`<label>${t(label)}<input type="number" min="0" max="90" step="1"
         key=${`${el.id}-crop-${k}-${Math.round(((el.image.crop || {})[k] || 0) * 1000)}`} defaultValue=${Math.round(((el.image.crop || {})[k] || 0) * 100)} data-testid=${`crop-${k}`}
@@ -1537,16 +1599,16 @@ function Panel() {
       <div class="pr-buttons">
         ${[['bold', 'B', 'bold'], ['italic', 'I', 'italic'], ['underline', 'U', 'underline']].map(([p, label, cmd]) => html`<button class=${runs.length && runs.every((r) => r[p]) ? '' : 'secondary outline'}
           title=${t(`pr.${p}`)} data-testid=${`fmt-${p}`} onMouseDown=${(e) => e.preventDefault()} onClick=${() => formatRuns(p, (rs) => !rs.every((r) => r[p]), cmd)}>${label}</button>`)}
-        ${[['l', '⇤'], ['ctr', '↔'], ['r', '⇥']].map(([a, icon]) => html`<button class="secondary outline" title=${t('pr.align')} data-testid=${`align-${a}`}
+        ${[['l', Suite.icon('align-left')], ['ctr', Suite.icon('align-center')], ['r', Suite.icon('align-right')]].map(([a, icon]) => html`<button class="secondary outline" title=${t('pr.align')} data-testid=${`align-${a}`}
           onMouseDown=${(e) => e.preventDefault()}
           onClick=${() => setProp((x) => {
             const box = editing && editBox(); // (while editing: the paragraphs being edited too, read back when the editing ends)
             if (box) for (const p of box.children) { p.dataset.align = a; p.style.textAlign = { l: 'left', ctr: 'center', r: 'right' }[a]; } for (const tx of x.type === 'table' ? x.table.rows.flatMap((r) => r.cells.map((c) => c.text).filter(Boolean)) : [x.text].filter(Boolean)) for (const p of tx.paragraphs) p.align = a; })}>${icon}</button>`)}
-        ${el.text ? [['t', '⤒'], ['ctr', '↕'], ['b', '⤓']].map(([a, icon]) => html`<button class=${el.text.anchor === a ? '' : 'secondary outline'} title=${t('pr.anchor')} data-testid=${`anchor-${a}`}
+        ${el.text ? [['t', Suite.icon('align-vertical-justify-start')], ['ctr', Suite.icon('align-vertical-justify-center')], ['b', Suite.icon('align-vertical-justify-end')]].map(([a, icon]) => html`<button class=${el.text.anchor === a ? '' : 'secondary outline'} title=${t('pr.anchor')} data-testid=${`anchor-${a}`}
           onClick=${() => setProp((x) => { x.text.anchor = a; })}>${icon}</button>`) : null}
       </div>
       <div class="pr-buttons">
-        ${[['bullet', '•≡', 'pr.listBullet'], ['number', '1.≡', 'pr.listNumber'], ['outdent', '⇠', 'pr.outdent'], ['indent', '⇢', 'pr.indent']].map(([k, icon, key]) => html`<button
+        ${[['bullet', '•≡', 'pr.listBullet'], ['number', '1.≡', 'pr.listNumber'], ['outdent', Suite.icon('arrow-left'), 'pr.outdent'], ['indent', Suite.icon('arrow-right'), 'pr.indent']].map(([k, icon, key]) => html`<button
           class="secondary outline" title=${t(key)} aria-label=${t(key)} data-testid=${`list-${k}`} onMouseDown=${(e) => e.preventDefault()} onClick=${() => listCommand(k)}>${icon}</button>`)}
       </div>` : null}
     ${chosen.length > 1 ? null : html`<${ElementAnimation} el=${el} sl=${sl} />`}

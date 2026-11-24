@@ -62,7 +62,7 @@ Suite.i18n.register({
     'ae.spectrum': 'Spectrogram (instead of the waveform)', 'ae.addLabel': 'Add label (Ctrl+B)', 'ae.labelText': 'Label (empty: remove)', 'ae.exportLabels': 'Export labels…', 'ae.importLabels': 'Import labels…',
     'ae.labelsImported': '{0} label(s) imported.', 'ae.noLabels': 'There are no labels.', 'ae.label': 'Label',
     'ae.deleteTrack': 'Delete track', 'ae.gain': 'Volume', 'ae.pan': 'Balance', 'ae.newTrack': 'New track', 'ae.duplicateTrack': 'Duplicate track', 'ae.tracks': 'Tracks',
-    'ae.makeMono': 'Make mono', 'ae.makeStereo': 'Make stereo', 'ae.noMic': 'The microphone cannot be used: {0}', 'ae.recording': 'Recording', 'ae.selectAll': 'Select all',
+    'ae.makeMono': 'Make mono', 'ae.makeStereo': 'Make stereo', 'ae.noMic': 'The microphone cannot be used: {0}', 'ae.audioRestarted': 'The audio output had an error and was restarted.', 'ae.audioFailed': 'The audio output does not work: {0}', 'ae.recording': 'Recording', 'ae.selectAll': 'Select all',
     'ae.mixdown': 'Mix down to one track',
     'ae.clip': 'Clip', 'ae.split': 'Split at cursor', 'ae.moveTo': 'Move to…', 'ae.removeClip': 'Remove clip', 'ae.duplicateClip': 'Duplicate clip',
     'ae.detectBeats': 'Detect beats', 'ae.detectCues': 'Detect cues…', 'ae.beatGrid': 'Beat grid…', 'ae.beatAtCursor': 'Put a beat at the cursor',
@@ -108,7 +108,7 @@ Suite.i18n.register({
     'ae.spectrum': 'Spektrogramm (statt der Wellenform)', 'ae.addLabel': 'Beschriftung hinzufügen (Strg+B)', 'ae.labelText': 'Beschriftung (leer: entfernen)', 'ae.exportLabels': 'Beschriftungen exportieren…', 'ae.importLabels': 'Beschriftungen importieren…',
     'ae.labelsImported': '{0} Beschriftung(en) importiert.', 'ae.noLabels': 'Es gibt keine Beschriftungen.', 'ae.label': 'Beschriftung',
     'ae.deleteTrack': 'Spur löschen', 'ae.gain': 'Lautstärke', 'ae.pan': 'Balance', 'ae.newTrack': 'Neue Spur', 'ae.duplicateTrack': 'Spur duplizieren', 'ae.tracks': 'Spuren',
-    'ae.makeMono': 'In Mono umwandeln', 'ae.makeStereo': 'In Stereo umwandeln', 'ae.noMic': 'Das Mikrofon kann nicht verwendet werden: {0}', 'ae.recording': 'Aufnahme', 'ae.selectAll': 'Alles auswählen',
+    'ae.makeMono': 'In Mono umwandeln', 'ae.makeStereo': 'In Stereo umwandeln', 'ae.noMic': 'Das Mikrofon kann nicht verwendet werden: {0}', 'ae.audioRestarted': 'Die Audioausgabe hatte einen Fehler und wurde neu gestartet.', 'ae.audioFailed': 'Die Audioausgabe funktioniert nicht: {0}', 'ae.recording': 'Aufnahme', 'ae.selectAll': 'Alles auswählen',
     'ae.mixdown': 'Zu einer Spur abmischen',
     'ae.clip': 'Clip', 'ae.split': 'Am Cursor teilen', 'ae.moveTo': 'Verschieben nach…', 'ae.removeClip': 'Clip entfernen', 'ae.duplicateClip': 'Clip duplizieren',
     'ae.detectBeats': 'Beats erkennen', 'ae.detectCues': 'Cues erkennen…', 'ae.beatGrid': 'Beat-Raster…', 'ae.beatAtCursor': 'Beat auf den Cursor legen',
@@ -1066,8 +1066,33 @@ function runExport(d) {
 
 // ---- playback and recording -------------------------------------------------------------------------------------------------------
 
+// The audio output. Chrome can lose it (“The AudioContext encountered an error from the audio device or the WebAudio renderer”, e.g.
+// after the output device changed or the system's audio service restarted): the context reports an error or its clock stops. Then
+// a new context replaces it and the playback goes on from where it was (a few times in a row at most).
 let audioCtx = null;
-const context = () => { if (!audioCtx) audioCtx = new AudioContext(); return audioCtx; };
+let recoveries = 0;
+function context() {
+  if (audioCtx && audioCtx.state === 'closed') audioCtx = null;
+  if (!audioCtx) {
+    const ctx = new AudioContext();
+    ctx.addEventListener('error', () => recoverAudio(ctx, ctx.error && ctx.error.message));
+    audioCtx = ctx;
+  }
+  return audioCtx;
+}
+
+function recoverAudio(ctx, reason = '') {
+  if (ctx !== audioCtx) return; // (already replaced)
+  const position = state.playing ? currentTime() : null;
+  if (state.playing) stop(false);
+  audioCtx = null;
+  ctx.close().catch(() => {});
+  if (position === null) return;
+  if (recoveries >= 3) { recoveries = 0; state.playhead = position; render(); Suite.shell.toast(t('ae.audioFailed', reason || 'AudioContext'), 'error'); return; }
+  recoveries++;
+  Suite.shell.toast(t('ae.audioRestarted'), 'warning');
+  play(position);
+}
 const buffers = new WeakMap(); // audio -> { ctx, b }
 
 function clipBuffer(ctx, audio) {
@@ -1093,7 +1118,7 @@ function play(from = null) {
   if (!state.tracks.length) return;
   stop(false);
   const ctx = context();
-  ctx.resume();
+  ctx.resume().catch((e) => recoverAudio(ctx, e && e.message));
   const [a, b] = range();
   const sel = b > a;
   let start = from ?? (sel ? a / state.rate : state.playhead);
@@ -1139,7 +1164,7 @@ function play(from = null) {
     }
     nodes.push({ tr, gain, panner });
   }
-  state.playing = { ctx, nodes, sources, at, from: start, to: end, sel };
+  state.playing = { ctx, nodes, sources, at, from: start, to: end, sel, check: { time: ctx.currentTime, wall: performance.now() } };
   applyLevels();
   tick();
   render();
@@ -1161,6 +1186,11 @@ const currentTime = () => (state.playing ? Math.max(state.playing.from, state.pl
 function tick() {
   const p = state.playing;
   if (!p) return;
+  // a context whose clock stands still although it should run has lost its output
+  const wall = performance.now();
+  if (p.ctx.currentTime !== p.check.time || p.ctx.state !== 'running') p.check = { time: p.ctx.currentTime, wall };
+  else if (wall - p.check.wall > 1500) { recoverAudio(p.ctx, 'the audio clock stopped'); return; }
+  if (p.ctx.currentTime > p.at + 1) recoveries = 0; // (plays again)
   const now = currentTime();
   if (now >= p.to) {
     if (state.loop && p.sel) { play(); return; }
@@ -1171,9 +1201,14 @@ function tick() {
   state.playhead = now;
   // keep the playhead visible
   const lane = laneWidth();
-  if (lane && (now < state.view.start || now > state.view.start + lane / state.view.pps)) state.view.start = Math.max(0, now - lane / state.view.pps * 0.1);
-  drawOverlays();
-  updateClock();
+  if (lane && (now < state.view.start || now > state.view.start + lane / state.view.pps)) {
+    // the view moves on: the waveforms, the ruler and the scroll bar are drawn for the new range
+    state.view.start = Math.max(0, now - lane / state.view.pps * 0.1);
+    render();
+  } else {
+    drawOverlays();
+    updateClock();
+  }
   requestAnimationFrame(tick);
 }
 
@@ -1573,6 +1608,7 @@ function laneDown(e, tr) {
   if (handle) { fadeDown(e, tr, handle); return; }
   const clip = clips.clipAt(tr.clips, toSample(t0));
   if (clip && (e.clientY - el.getBoundingClientRect().top < CLIP_HEAD() || e.altKey)) { clipDown(e, tr, clip); return; }
+  if (e.pointerType === 'touch') { touchDown(e, tr); return; }
   el.setPointerCapture(e.pointerId);
   const ids = state.tracks.map((x) => x.id);
   const anchorIndex = ids.indexOf(tr.id);
@@ -1588,9 +1624,10 @@ function laneDown(e, tr) {
     if (under >= 0 && !(e.ctrlKey || e.metaKey)) state.selTracks = new Set(ids.slice(Math.min(anchorIndex, under), Math.max(anchorIndex, under) + 1));
     // scroll while dragging beyond the edges
     const r = el.getBoundingClientRect();
+    const before = state.view.start;
     if (ev.clientX > r.right) state.view.start += 20 / state.view.pps; else if (ev.clientX < r.left) state.view.start = Math.max(0, state.view.start - 20 / state.view.pps);
-    drawOverlays();
     Suite.shell.refresh();
+    if (state.view.start !== before) draw(); else drawOverlays(); // (scrolled: the waveforms of the new range)
   };
   const up = () => {
     el.removeEventListener('pointermove', move);
@@ -1605,6 +1642,95 @@ function laneDown(e, tr) {
   el.addEventListener('pointerup', up);
   el.addEventListener('pointercancel', up);
   render();
+}
+
+// ---- touch: one finger moves the view (in time and through the tracks), two fingers zoom, a tap sets the cursor, a long press
+// starts a selection that follows the finger; clip title bars, fade handles and volume points work as with the mouse
+
+const touches = new Map(); // pointerId -> { x, y }
+let touchGesture = null; // { mode: 'wait' | 'pan' | 'select' | 'pinch', … }
+const LONG_PRESS = 450, MOVE_SLOP = 8;
+
+function touchDown(e, tr) {
+  const el = e.currentTarget;
+  try { el.setPointerCapture(e.pointerId); } catch (x) { /* (not an active pointer) */ }
+  touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  const rows = el.closest('.ae-rows');
+  if (touches.size === 2) {
+    clearTimeout(touchGesture && touchGesture.timer);
+    const [a, b] = [...touches.values()];
+    const mid = (a.x + b.x) / 2;
+    touchGesture = { mode: 'pinch', el, dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, pps: state.view.pps, at: timeAt({ clientX: mid }, el) };
+    return;
+  }
+  if (touches.size > 2) return;
+  const g = { mode: 'wait', el, tr, rows, x: e.clientX, y: e.clientY, start: state.view.start, scroll: rows ? rows.scrollTop : 0, t0: timeAt(e, el) };
+  g.timer = setTimeout(() => {
+    if (touchGesture !== g || g.mode !== 'wait') return;
+    // long press: a selection from here
+    g.mode = 'select';
+    state.clip = null;
+    state.sel = { start: g.t0, end: g.t0 };
+    state.selTracks = new Set([tr.id]);
+    if (navigator.vibrate) try { navigator.vibrate(15); } catch (x) { /* not allowed */ }
+    render();
+  }, LONG_PRESS);
+  touchGesture = g;
+  const move = (ev) => {
+    if (!touches.has(ev.pointerId)) return;
+    touches.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    const t = touchGesture;
+    if (!t) return;
+    if (t.mode === 'pinch') {
+      const [a, b] = [...touches.values()];
+      if (!b) return;
+      const factor = (Math.hypot(a.x - b.x, a.y - b.y) || 1) / t.dist;
+      const pps = Math.min(state.rate * 4, Math.max(0.2, t.pps * factor));
+      const rel = (t.at - state.view.start) * state.view.pps;
+      state.view = { pps, start: Math.max(0, t.at - rel / pps) };
+      render();
+      return;
+    }
+    const dx = ev.clientX - t.x, dy = ev.clientY - t.y;
+    if (t.mode === 'wait' && Math.hypot(dx, dy) > MOVE_SLOP) { clearTimeout(t.timer); t.mode = 'pan'; }
+    if (t.mode === 'pan') {
+      state.view.start = Math.max(0, t.start - dx / state.view.pps);
+      if (t.rows) t.rows.scrollTop = t.scroll - dy;
+      render();
+    } else if (t.mode === 'select') {
+      state.sel.end = timeAt(ev, el);
+      const under = laneIndexAt(ev.clientY);
+      const ids = state.tracks.map((x) => x.id), anchor = ids.indexOf(t.tr.id);
+      if (under >= 0) state.selTracks = new Set(ids.slice(Math.min(anchor, under), Math.max(anchor, under) + 1));
+      drawOverlays();
+      Suite.shell.refresh();
+    }
+  };
+  const up = (ev) => {
+    touches.delete(ev.pointerId);
+    const t = touchGesture;
+    if (touches.size) { if (t && t.mode === 'pinch') touchGesture = { mode: 'done' }; return; } // (the other finger lifts later)
+    el.removeEventListener('pointermove', move);
+    el.removeEventListener('pointerup', up);
+    el.removeEventListener('pointercancel', up);
+    if (!t) return;
+    clearTimeout(t.timer);
+    if (t.mode === 'wait' && ev.type === 'pointerup') {
+      // a tap: the cursor
+      state.clip = null;
+      state.sel = { start: t.t0, end: t.t0 };
+      state.selTracks = new Set([t.tr.id]);
+      if (state.playing) play(t.t0); else state.playhead = t.t0;
+    } else if (t.mode === 'select') {
+      if (state.sel.end < state.sel.start) state.sel = { start: state.sel.end, end: state.sel.start };
+      if (!state.playing) state.playhead = state.sel.start;
+    }
+    touchGesture = null;
+    render();
+  };
+  el.addEventListener('pointermove', move);
+  el.addEventListener('pointerup', up);
+  el.addEventListener('pointercancel', up);
 }
 
 /** Drag a clip by its title bar: in time and to other tracks, snapping its edges, beats and cues to the others. */
@@ -1719,19 +1845,19 @@ function Toolbar() {
     <button class=${state.dirty ? '' : 'secondary outline'} data-testid="save" disabled=${!any} onClick=${() => save()}>${t('ae.save')}</button>
     <button class="secondary outline" data-testid="export" disabled=${!any || state.busy} onClick=${openExport}>${t('ae.export')}</button>
     <span class="ae-sep"></span>
-    <button class="secondary outline" title=${t('ae.undo')} data-testid="undo" disabled=${!state.history.length} onClick=${undo}>↶</button>
-    <button class="secondary outline" title=${t('ae.redo')} data-testid="redo" disabled=${!state.future.length} onClick=${redo}>↷</button>
-    <button class="secondary outline" title=${t('ae.cut')} data-testid="cut" disabled=${!sel} onClick=${cut}>✂</button>
-    <button class="secondary outline" title=${t('ae.copy')} data-testid="copy" disabled=${!sel} onClick=${copy}>⧉</button>
-    <button class="secondary outline" title=${t('ae.paste')} data-testid="paste" disabled=${!state.clipboard} onClick=${paste}>📋</button>
-    <button class="secondary outline" title=${t('ae.delete')} data-testid="delete" disabled=${!sel} onClick=${deleteRange}>⌫</button>
+    <button class="secondary outline" title=${t('ae.undo')} data-testid="undo" disabled=${!state.history.length} onClick=${undo}>${Suite.icon('undo-2')}</button>
+    <button class="secondary outline" title=${t('ae.redo')} data-testid="redo" disabled=${!state.future.length} onClick=${redo}>${Suite.icon('redo-2')}</button>
+    <button class="secondary outline" title=${t('ae.cut')} data-testid="cut" disabled=${!sel} onClick=${cut}>${Suite.icon('scissors')}</button>
+    <button class="secondary outline" title=${t('ae.copy')} data-testid="copy" disabled=${!sel} onClick=${copy}>${Suite.icon('copy')}</button>
+    <button class="secondary outline" title=${t('ae.paste')} data-testid="paste" disabled=${!state.clipboard} onClick=${paste}>${Suite.icon('clipboard')}</button>
+    <button class="secondary outline" title=${t('ae.delete')} data-testid="delete" disabled=${!sel} onClick=${deleteRange}>${Suite.icon('delete')}</button>
     <button class="secondary outline" title=${t('ae.trim')} data-testid="trim" disabled=${!sel} onClick=${trim}>⊐⊏</button>
     <button class="secondary outline" title=${t('ae.silence')} data-testid="silence" disabled=${!sel} onClick=${() => edit((tr) => mapClips(tr.clips, ...range(), (a, f, to) => dsp.silenceRange(a, f, to)))}>∅</button>
-    <button class="secondary outline" title=${t('ae.split')} data-testid="split" disabled=${!any} onClick=${split}>⫶</button>
-    <button class="secondary outline" data-testid="clip-menu" disabled=${!any} onClick=${(e) => openMenu(e, 'clip')}>${t('ae.clip')} ▾</button>
-    <button class="secondary outline" data-testid="effects" disabled=${!any} onClick=${(e) => openMenu(e, 'effects')}>${t('ae.effects')} ▾</button>
-    <button class="secondary outline" data-testid="generate" onClick=${(e) => openMenu(e, 'generate')}>${t('ae.generate')} ▾</button>
-    <button class="secondary outline" data-testid="tracks-menu" onClick=${(e) => openMenu(e, 'tracks')}>${t('ae.tracks')} ▾</button>
+    <button class="secondary outline" title=${t('ae.split')} data-testid="split" disabled=${!any} onClick=${split}>${Suite.icon('grip-vertical')}</button>
+    <button class="secondary outline" data-testid="clip-menu" disabled=${!any} onClick=${(e) => openMenu(e, 'clip')}>${t('ae.clip')} ${Suite.icon('chevron-down')}</button>
+    <button class="secondary outline" data-testid="effects" disabled=${!any} onClick=${(e) => openMenu(e, 'effects')}>${t('ae.effects')} ${Suite.icon('chevron-down')}</button>
+    <button class="secondary outline" data-testid="generate" onClick=${(e) => openMenu(e, 'generate')}>${t('ae.generate')} ${Suite.icon('chevron-down')}</button>
+    <button class="secondary outline" data-testid="tracks-menu" onClick=${(e) => openMenu(e, 'tracks')}>${t('ae.tracks')} ${Suite.icon('chevron-down')}</button>
   </nav>`;
 }
 
@@ -1742,14 +1868,14 @@ function Transport() {
   const show = (samples) => (el) => { if (el && document.activeElement !== el) el.value = fmtTime(samples / state.rate); };
   const setSel = (k) => (e) => { const v = parseTime(e.target.value); if (v != null) { state.sel[k] = Math.max(0, v); if (k === 'start' && state.sel.end < v) state.sel.end = v; if (!state.playing) state.playhead = state.sel.start; render(); } };
   return html`<div class="ae-transport" data-testid="transport">
-    <button class="secondary outline" title=${t('ae.start')} data-testid="to-start" onClick=${() => { state.playhead = 0; state.sel = { start: 0, end: 0 }; state.view.start = 0; if (state.playing) play(0); else render(); }}>⏮</button>
-    ${state.playing ? html`<button title=${t('ae.pause')} data-testid="pause" onClick=${pause}>⏸</button>`
-      : html`<button title=${t('ae.play')} data-testid="play" disabled=${!state.tracks.length} onClick=${() => play()}>▶</button>`}
-    <button class="secondary outline" title=${t('ae.stop')} data-testid="stop" onClick=${() => { stop(); if (state.recording) state.recording.recorder.stop(); }}>⏹</button>
-    <button class="secondary outline" title=${t('ae.end')} data-testid="to-end" onClick=${() => { state.playhead = projectDuration(); state.sel = { start: state.playhead, end: state.playhead }; render(); }}>⏭</button>
-    <button class=${`secondary ${state.loop ? '' : 'outline'}`} title=${t('ae.loop')} data-testid="loop" aria-pressed=${state.loop} onClick=${() => { state.loop = !state.loop; render(); }}>🔁</button>
-    <button class=${`ae-rec ${rec ? '' : 'outline'}`} title=${rec ? t('ae.stopRecord') : t('ae.record')} data-testid="record" onClick=${record}>● ${rec ? `${Math.floor((Date.now() - rec.started) / 1000)} s` : ''}</button>
-    <button class=${`secondary ${state.snap ? '' : 'outline'}`} title=${t('ae.snap')} data-testid="snap" aria-pressed=${state.snap} onClick=${() => { state.snap = !state.snap; savePrefs(); render(); }}>🧲</button>
+    <button class="secondary outline" title=${t('ae.start')} data-testid="to-start" onClick=${() => { state.playhead = 0; state.sel = { start: 0, end: 0 }; state.view.start = 0; if (state.playing) play(0); else render(); }}>${Suite.icon('skip-back')}</button>
+    ${state.playing ? html`<button title=${t('ae.pause')} data-testid="pause" onClick=${pause}>${Suite.icon('pause')}</button>`
+      : html`<button title=${t('ae.play')} data-testid="play" disabled=${!state.tracks.length} onClick=${() => play()}>${Suite.icon('play')}</button>`}
+    <button class="secondary outline" title=${t('ae.stop')} data-testid="stop" onClick=${() => { stop(); if (state.recording) state.recording.recorder.stop(); }}>${Suite.icon('square')}</button>
+    <button class="secondary outline" title=${t('ae.end')} data-testid="to-end" onClick=${() => { state.playhead = projectDuration(); state.sel = { start: state.playhead, end: state.playhead }; render(); }}>${Suite.icon('skip-forward')}</button>
+    <button class=${`secondary ${state.loop ? '' : 'outline'}`} title=${t('ae.loop')} data-testid="loop" aria-pressed=${state.loop} onClick=${() => { state.loop = !state.loop; render(); }}>${Suite.icon('repeat')}</button>
+    <button class=${`ae-rec ${rec ? '' : 'outline'}`} title=${rec ? t('ae.stopRecord') : t('ae.record')} data-testid="record" onClick=${record}>${Suite.icon('circle-dot')} ${rec ? `${Math.floor((Date.now() - rec.started) / 1000)} s` : ''}</button>
+    <button class=${`secondary ${state.snap ? '' : 'outline'}`} title=${t('ae.snap')} data-testid="snap" aria-pressed=${state.snap} onClick=${() => { state.snap = !state.snap; savePrefs(); render(); }}>${Suite.icon('magnet')}</button>
     <span class="ae-clock" data-testid="clock">${fmtTime(currentTime())}</span>
     <label>${t('ae.selStart')}<input data-testid="sel-start" ref=${show(a)} onChange=${setSel('start')} /></label>
     <label>${t('ae.selEnd')}<input data-testid="sel-end" ref=${show(b)} onChange=${setSel('end')} /></label>
@@ -1757,7 +1883,7 @@ function Transport() {
     <span class="ae-sep"></span>
     <button class="secondary outline" title=${t('ae.zoomOut')} data-testid="zoom-out" onClick=${() => zoom(0.5)}>−</button>
     <button class="secondary outline" title=${t('ae.zoomIn')} data-testid="zoom-in" onClick=${() => zoom(2)}>+</button>
-    <button class="secondary outline" title=${t('ae.fit')} data-testid="zoom-fit" onClick=${() => { fitView(); render(); }}>⤢</button>
+    <button class="secondary outline" title=${t('ae.fit')} data-testid="zoom-fit" onClick=${() => { fitView(); render(); }}>${Suite.icon('maximize-2')}</button>
     <small class="ae-rate">${state.rate} Hz</small>
     ${state.progress != null ? html`<small data-testid="progress">${t('ae.encoding', Math.round(state.progress * 100))}</small>` : null}
   </div>`;
@@ -1772,19 +1898,19 @@ function TrackHeader({ tr }) {
     <div class="ae-head-row">
       <input class="ae-name" data-testid="track-name" defaultValue=${tr.name} key=${`n${tr.id}`} onChange=${(e) => { tr.name = e.target.value; render(); }} />
       <button class=${`secondary ${state.envelopeTrack === tr.id ? '' : 'outline'}`} title=${t('ae.envelope')} data-testid="track-envelope" aria-pressed=${state.envelopeTrack === tr.id}
-        onClick=${() => { state.envelopeTrack = state.envelopeTrack === tr.id ? null : tr.id; draw(); render(); }}>⤴</button>
+        onClick=${() => { state.envelopeTrack = state.envelopeTrack === tr.id ? null : tr.id; draw(); render(); }}>${Suite.icon('corner-right-up')}</button>
       <button class="secondary outline" title=${t('ae.deleteTrack')} data-testid="track-delete" onClick=${() => trackAction('delete', tr)}>×</button>
     </div>
     <div class="ae-head-row">
       <button class=${`secondary ${tr.mute ? '' : 'outline'}`} title=${t('ae.mute')} data-testid="track-mute" aria-pressed=${tr.mute} onClick=${() => set('mute', !tr.mute)}>M</button>
       <button class=${`secondary ${tr.solo ? '' : 'outline'}`} title=${t('ae.solo')} data-testid="track-solo" aria-pressed=${tr.solo} onClick=${() => set('solo', !tr.solo)}>S</button>
-      <button class="secondary outline" title=${t('ae.duplicateTrack')} data-testid="track-duplicate" onClick=${() => trackAction('duplicate', tr)}>⧉</button>
+      <button class="secondary outline" title=${t('ae.duplicateTrack')} data-testid="track-duplicate" onClick=${() => trackAction('duplicate', tr)}>${Suite.icon('copy')}</button>
       <button class="secondary outline" title=${stereo ? t('ae.makeMono') : t('ae.makeStereo')} data-testid="track-channels" onClick=${() => trackAction(stereo ? 'mono' : 'stereo', tr)}>${stereo ? '2→1' : '1→2'}</button>
       <button class=${`secondary ${tr.view === 'spectrum' ? '' : 'outline'}`} title=${t('ae.spectrum')} data-testid="track-view" aria-pressed=${tr.view === 'spectrum'}
         onClick=${() => { tr.view = tr.view === 'spectrum' ? undefined : 'spectrum'; tr.cache = null; render(); }}>≋</button>
     </div>
-    <label class="ae-slider" title=${`${t('ae.gain')}: ${tr.gain.toFixed(1)} dB`}>🔊<input type="range" min="-36" max="12" step="0.5" value=${tr.gain} data-testid="track-gain" onInput=${(e) => set('gain', Number(e.target.value))} onDblClick=${() => set('gain', 0)} /></label>
-    <label class="ae-slider" title=${`${t('ae.pan')}: ${tr.pan.toFixed(2)}`}>⇆<input type="range" min="-1" max="1" step="0.05" value=${tr.pan} data-testid="track-pan" onInput=${(e) => set('pan', Number(e.target.value))} onDblClick=${() => set('pan', 0)} /></label>
+    <label class="ae-slider" title=${`${t('ae.gain')}: ${tr.gain.toFixed(1)} dB`}>${Suite.icon('volume-2')}<input type="range" min="-36" max="12" step="0.5" value=${tr.gain} data-testid="track-gain" onInput=${(e) => set('gain', Number(e.target.value))} onDblClick=${() => set('gain', 0)} /></label>
+    <label class="ae-slider" title=${`${t('ae.pan')}: ${tr.pan.toFixed(2)}`}>${Suite.icon('arrow-left-right')}<input type="range" min="-1" max="1" step="0.05" value=${tr.pan} data-testid="track-pan" onInput=${(e) => set('pan', Number(e.target.value))} onDblClick=${() => set('pan', 0)} /></label>
   </div>`;
 }
 
@@ -2091,5 +2217,5 @@ Suite.openFiles.register(() => (state.tracks.length ? [{
   bytes: project.encode({ rate: state.rate, tracks: state.tracks, labels: state.labels, tags: state.tags }), dirty: state.dirty }] : []));
 
 // for tests
-window.AE = { fx: fx2, state, dsp, clips, beats, labelText, play, stop, fmtTime, parseTime, trackAudio, get time() { return currentTime(); } };
+window.AE = { fx: fx2, state, dsp, clips, beats, labelText, play, stop, fmtTime, parseTime, trackAudio, get time() { return currentTime(); }, get audioContext() { return audioCtx; } };
 document.body.dataset.ready = 'true';

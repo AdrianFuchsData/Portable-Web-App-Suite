@@ -17,6 +17,10 @@ Protocol (version 2; version 1 clients keep working), see relay/README.md:
       {"token": "...", "host": "imap.example.org", "port": 993, "tls": true, "insecure": false}
   "token" is the relay token or a session token. Answer {"ok": true} or {"ok": false, "error": "..."}. Then binary
   messages carry the TCP data; text messages are control messages ({"op": "starttls", "insecure": false}).
+  Listening (port forwarding; only a relay bound to a loopback address, "listen" in /info features): first message
+  {"token", "listen": {"port": N}} -> the relay listens on 127.0.0.1:N (N >= 1024, 0 = any) and answers {"ok": true, "port": N};
+  for every incoming connection it sends {"op": "accept", "id": "..."}. Another WebSocket /tcp with {"token", "accept": "<id>"}
+  takes that connection (within 30 s) and is a tunnel to it like above. Closing the listening WebSocket stops listening.
 * POST /http (header X-Relay-Token) -> HTTP proxy, body {"method", "url", "headers": [[n, v]], "body": "<base64>",
   "insecure", "followRedirects", "timeout"}; answer {"status", "reason", "headers", "body", "url", "httpVersion",
   "timeMs"} or {"error"} with status 502.
@@ -54,6 +58,7 @@ import ipaddress
 import json
 import os
 import pathlib
+import re
 import secrets
 import ssl
 import struct
@@ -118,6 +123,140 @@ STATIC_TYPES = {".html": "text/html; charset=utf-8", ".htm": "text/html; charset
                 ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json",
                 ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon",
                 ".wasm": "application/wasm", ".txt": "text/plain; charset=utf-8", ".md": "text/plain; charset=utf-8"}
+# ---- installing the served apps as a web app (PWA) ----------------------------------------------------------------------------------
+# With --serve, every page gets a web app manifest (NAME.webmanifest for NAME.html, generated) and the pages register a service worker
+# (suite-sw.js): the browser can install the suite or a single app, and an installed app opens from its cache when the relay does not
+# run. The served HTML gets a link to its manifest, a <meta name="suite-pwa"> for shell.js and the CSP directives for both.
+PWA_SW = """// Portable Web App Suite: service worker of the apps served by the relay (network first, the last copy when the relay is not running)
+const CACHE = 'suite-pwa-v1';
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+self.addEventListener('fetch', (e) => {
+  const req = e.request;
+  const url = new URL(req.url);
+  if (req.method !== 'GET' || url.origin !== self.location.origin || !/\\.(html|webmanifest|png|svg)$/.test(url.pathname)) return;
+  e.respondWith(fetch(req).then((res) => {
+    if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {}); }
+    return res;
+  }).catch(() => caches.match(req, { ignoreSearch: true }).then((hit) => hit || Response.error())));
+});
+"""
+PWA_ICON_SVG = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="113" fill="#1565c0"/>'
+                '<g fill="#fff"><rect x="138" y="138" width="103" height="103" rx="23"/><rect x="271" y="138" width="103" height="103" rx="23"/>'
+                '<rect x="138" y="271" width="103" height="103" rx="23"/><rect x="271" y="271" width="103" height="103" rx="23" fill-opacity=".67"/></g></svg>')
+PWA_ICON_PNG = base64.b64decode(
+    "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")
+PWA_CSP = {"manifest-src": "'self'", "worker-src": "'self'"}
+
+
+def pwa_manifest(name, start, own_icon):
+    """The web app manifest of a served page (start: its file name; own_icon: the page has a favicon, served as NAME.icon.svg)."""
+    stem = start.rsplit(".", 1)[0]
+    icons = [{"src": f"{stem}.icon.svg", "sizes": "any", "type": "image/svg+xml"}] if own_icon else []
+    icons += [{"src": "suite-icon.svg", "sizes": "any", "type": "image/svg+xml"}, {"src": "suite-icon-192.png", "sizes": "192x192", "type": "image/png"}]
+    return json.dumps({
+        "name": name, "short_name": name, "id": start, "start_url": start, "scope": "./", "display": "standalone",
+        "background_color": "#ffffff", "theme_color": "#1565c0", "icons": icons,
+    }, ensure_ascii=False).encode("utf-8")
+
+
+def page_icon(head):
+    """The SVG favicon of a page (a data: URL in <link rel="icon">), or None."""
+    m = re.search(r'<link rel="icon" href="data:image/svg\+xml,([^"]+)"', head)
+    return urllib.parse.unquote(m.group(1)).encode("utf-8") if m else None
+
+
+def pwa_page(html, file_name):
+    """A served page with its manifest link, the marker for shell.js and the CSP directives for the manifest and the service worker."""
+    def csp(m):
+        directives = [d.strip() for d in m.group(2).split(";") if d.strip()]
+        for key, value in PWA_CSP.items():
+            for i, d in enumerate(directives):
+                if d.split()[0] == key:
+                    if value not in d.split():
+                        directives[i] = f"{d} {value}"
+                    break
+            else:
+                directives.append(f"{key} {value}")
+        return m.group(1) + "; ".join(directives) + m.group(3)
+    html = re.sub(r'(<meta\s+http-equiv="Content-Security-Policy"\s+content=")([^"]*)(")', csp, html, count=1)
+    stem = file_name.rsplit(".", 1)[0]
+    tags = (f'<link rel="manifest" href="{stem}.webmanifest"><meta name="suite-pwa" content="suite-sw.js">'
+            f'<meta name="theme-color" content="#1565c0">')
+    # (right after <head>: inlined code further down may contain the text "</head>")
+    m = re.search(r"<head\b[^>]*>", html, re.I)
+    return html[:m.end()] + tags + html[m.end():] if m else html
+
+
 # headers of served files: cross-origin isolated pages (SharedArrayBuffer for the notebook's interrupt and network functions)
 ISOLATION = {"Cross-Origin-Opener-Policy": "same-origin", "Cross-Origin-Embedder-Policy": "require-corp",
              "Cross-Origin-Resource-Policy": "same-origin", "X-Content-Type-Options": "nosniff", "Cache-Control": "no-cache"}
@@ -158,8 +297,10 @@ async def upgrade_tls(writer, ctx, host):
 class Relay:
     def __init__(self, token, origins, allow, cafile, port, users=None, users_file=None, hosts=(), base_path="",
                  trusted_proxies=(), proxy_user_header=None, session_hours=12, tls=False, insecure_transport=False,
-                 serve=None, upstream_proxy=None, no_proxy=()):
+                 serve=None, upstream_proxy=None, no_proxy=(), bind="127.0.0.1"):
         self.token = token
+        self.can_listen = is_loopback(bind)  # (port forwarding: only on the user's own machine)
+        self.pending = {}  # id of an accepted connection -> (reader, writer, time)
         self.origins = set(origins)
         self.allow = allow
         self.cafile = cafile
@@ -322,16 +463,46 @@ class Relay:
             await self.write_response(writer, 302, "Found", {"Location": f"{self.base_path}/{start}"})
             return
         file = (self.serve / rel).resolve()
-        if self.serve not in file.parents or not file.is_file() or any(part.startswith(".") for part in file.relative_to(self.serve).parts):
-            raise HttpError(404, "not found")
-        body = await asyncio.get_running_loop().run_in_executor(None, file.read_bytes)
-        headers = {"Content-Type": STATIC_TYPES.get(file.suffix.lower(), "application/octet-stream"), **ISOLATION}
+        virtual = self.pwa_file(rel)
+        if virtual:
+            body, kind = virtual
+            headers = {"Content-Type": kind, **ISOLATION}
+        else:
+            if self.serve not in file.parents or not file.is_file() or any(part.startswith(".") for part in file.relative_to(self.serve).parts):
+                raise HttpError(404, "not found")
+            body = await asyncio.get_running_loop().run_in_executor(None, file.read_bytes)
+            if file.suffix.lower() in (".html", ".htm") and file.parent == self.serve:
+                body = pwa_page(body.decode("utf-8", "replace"), file.name).encode("utf-8")
+            headers = {"Content-Type": STATIC_TYPES.get(file.suffix.lower(), "application/octet-stream"), **ISOLATION}
         if head_only:
             lines = [f"HTTP/1.1 200 OK"] + [f"{k}: {v}" for k, v in headers.items()] + [f"Content-Length: {len(body)}", "Connection: close", "", ""]
             writer.write("\r\n".join(lines).encode("latin-1"))
             await writer.drain()
         else:
             await self.write_response(writer, 200, "OK", headers, body)
+
+    def pwa_file(self, rel):
+        """(body, content type) of the generated PWA files (manifest, service worker, icons), or None."""
+        if rel == "suite-sw.js":
+            return PWA_SW.encode("utf-8"), "text/javascript; charset=utf-8"
+        if rel == "suite-icon.svg":
+            return PWA_ICON_SVG.encode("utf-8"), "image/svg+xml"
+        if rel == "suite-icon-192.png":
+            return PWA_ICON_PNG, "image/png"
+        for suffix in (".webmanifest", ".icon.svg"):
+            if not rel.endswith(suffix) or any(c in rel for c in "/\\") or rel.startswith("."):
+                continue
+            page = self.serve / (rel[: -len(suffix)] + ".html")
+            if not page.is_file():
+                return None
+            head = page.read_bytes()[:8192].decode("utf-8", "replace")
+            icon = page_icon(head)
+            if suffix == ".icon.svg":
+                return (icon, "image/svg+xml") if icon else None
+            m = re.search(r"<title>([^<]*)</title>", head)
+            name = (m.group(1).strip() if m else "") or page.stem
+            return pwa_manifest(name if page.stem != "overview" else "Portable Web App Suite", page.name, bool(icon)), "application/manifest+json"
+        return None
 
     def cors_headers(self, origin):
         if origin and origin in self.origins:
@@ -387,7 +558,8 @@ class Relay:
                 })
             elif method == "GET" and path == "/info":
                 body = json.dumps({"relay": "portable-web-app-suite", "version": VERSION, "implementation": "python",
-                                   "auth": self.auth_methods(), "tls": self.tls or (client["proxied"] and client["secure"])})
+                                   "auth": self.auth_methods(), "tls": self.tls or (client["proxied"] and client["secure"]),
+                                   "features": ["listen"] if self.can_listen else []})
                 await self.write_response(writer, 200, "OK", {**self.cors_headers(origin), "Content-Type": "application/json"}, body.encode())
             elif method == "GET" and path == "/tcp" and headers.get("upgrade", "").lower() == "websocket":
                 await self.websocket(reader, writer, headers, client)
@@ -499,6 +671,15 @@ class Relay:
                 user = self.authenticate(spec.get("token"), client)
             except HttpError as e:
                 raise ValueError(str(e))
+            if "listen" in spec:
+                return await _relay_listen(self, ws, spec["listen"] or {})
+            if "accept" in spec:
+                taken = self.pending.pop(str(spec["accept"]), None)
+                if not taken:
+                    raise ValueError("no such connection (or it waited too long)")
+                await ws.send_text(json.dumps({"ok": True}))
+                await Tunnel(ws, taken[0], taken[1], "127.0.0.1", self).run()
+                return
             host, port = str(spec["host"]), int(spec["port"])
             if not self.target_allowed(host, port, user):
                 raise ValueError(f"target not allowed: {host}:{port}")
@@ -510,6 +691,57 @@ class Relay:
             return
         await ws.send_text(json.dumps({"ok": True}))
         await Tunnel(ws, tcp_reader, tcp_writer, host, self).run()
+
+
+async def _relay_listen(relay, ws, spec):
+    """Listen on 127.0.0.1 for a page (port forwarding): announce every incoming connection, keep it until a tunnel takes it."""
+    if not relay.can_listen:
+        raise ValueError("this relay does not listen on ports (only a relay on the local machine does)")
+    port = int(spec.get("port") or 0)
+    if port and not 1024 <= port <= 65535:
+        raise ValueError("port must be between 1024 and 65535")
+    ids = set()
+
+    async def incoming(reader, writer):
+        conn_id = secrets.token_hex(12)
+        relay.pending[conn_id] = (reader, writer, time.monotonic())
+        ids.add(conn_id)
+        try:
+            await ws.send_text(json.dumps({"op": "accept", "id": conn_id}))
+        except Exception:
+            writer.close()
+
+    try:
+        server = await asyncio.start_server(incoming, "127.0.0.1", port)
+    except OSError as e:
+        raise ValueError(f"cannot listen on port {port}: {e.strerror or e}")
+    await ws.send_text(json.dumps({"ok": True, "port": server.sockets[0].getsockname()[1]}))
+
+    async def expire():
+        while True:
+            await asyncio.sleep(5)
+            for conn_id in list(ids):
+                entry = relay.pending.get(conn_id)
+                if entry is None:
+                    ids.discard(conn_id)
+                elif time.monotonic() - entry[2] > 30:
+                    relay.pending.pop(conn_id, None)
+                    ids.discard(conn_id)
+                    entry[1].close()
+    expiring = asyncio.ensure_future(expire())
+    try:
+        while True:
+            opcode, _ = await ws.receive()
+            if opcode is None or opcode == 8:
+                break
+    finally:
+        expiring.cancel()
+        server.close()
+        for conn_id in ids:
+            entry = relay.pending.pop(conn_id, None)
+            if entry:
+                entry[1].close()
+        await ws.close()
 
 
 class Tunnel:
@@ -719,7 +951,8 @@ def main():
     relay = Relay(token, args.origin or ["null"], args.allow, args.cafile, args.port, users=users, users_file=args.users,
                   hosts=args.host, base_path=args.base_path, trusted_proxies=args.trusted_proxy,
                   proxy_user_header=args.proxy_user_header, session_hours=args.session_hours, tls=bool(ssl_ctx),
-                  insecure_transport=args.insecure_transport, serve=args.serve, upstream_proxy=upstream, no_proxy=no_proxy)
+                  insecure_transport=args.insecure_transport, serve=args.serve, upstream_proxy=upstream, no_proxy=no_proxy,
+                  bind=args.bind)
 
     async def serve():
         server = await asyncio.start_server(relay.handle, args.bind, args.port, limit=MAX_HEADER, ssl=ssl_ctx)

@@ -96,7 +96,7 @@ def test_unlock_browse_search_totp(app_page, sample_db):
     expect(password).to_have_attribute("type", "text")
     expect(password).to_have_value("pw-bank")
     expect(page.locator("[data-testid=custom-PIN]")).to_have_attribute("type", "password")
-    code = page.text_content("[data-testid=otp-code]")
+    code = page.text_content("[data-testid=otp-code]").replace(" ", "")
     assert code in {totp(TOTP_SECRET, time.time() + d) for d in (-30, 0, 30)}
     assert page.errors == [] and page.requests == []
 
@@ -155,6 +155,7 @@ def test_history_restore(app_page, sample_db, tmp_path):
     open_entry(page, "Web", "Mail")
     page.click("[data-testid=history] summary")
     expect(page.locator("[data-testid=history-item]")).to_have_count(1)
+    page.click("[data-testid=history-open]")
     page.click("[data-testid=restore]")
     expect(page.locator("[data-testid=field-UserName]")).to_have_value("anna@example.org")
     kp = PyKeePass(str(save_download(page, tmp_path)), password="secret")

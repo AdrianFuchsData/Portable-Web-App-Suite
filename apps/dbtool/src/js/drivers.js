@@ -7,7 +7,8 @@
  *   driver.quote(identifier), driver.literal(value)
  *   await driver.close()
  * SQLite runs in memory with sql.js (driver.export() gives the database file); Postgres speaks the frontend/backend
- * protocol (version 3) over a TCP connection of the relay (shared/js/relay.js).
+ * protocol (version 3) and MySQL/MariaDB the client/server protocol (4.1, text queries) over a TCP connection of the relay
+ * (shared/js/relay.js).
  */
 
 // ---- SQLite (sql.js) --------------------------------------------------------------------------------
@@ -333,6 +334,273 @@ export async function openPostgres({ relay, host, port = 5432, database, user, p
     quote,
     literal: (v) => (v === null || v === undefined ? 'NULL' : typeof v === 'number' || typeof v === 'boolean' ? String(v) : `'${String(v).replace(/'/g, "''")}'`),
     async close() { try { conn.send(message('X')); } catch (e) { /* closed */ } conn.close(); },
+  };
+  return driver;
+}
+
+// ---- MySQL / MariaDB (client/server protocol 4.1) --------------------------------------------------------------
+
+export class MysqlError extends Error {
+  constructor(code, state, text) { super(text); this.code = state || String(code); this.errno = code; this.fields = { C: state, M: text }; }
+}
+
+const CLIENT = {
+  LONG_PASSWORD: 0x1, FOUND_ROWS: 0x2, LONG_FLAG: 0x4, CONNECT_WITH_DB: 0x8, PROTOCOL_41: 0x200, SSL: 0x800, TRANSACTIONS: 0x2000,
+  SECURE_CONNECTION: 0x8000, MULTI_STATEMENTS: 0x10000, MULTI_RESULTS: 0x20000, PLUGIN_AUTH: 0x80000, PLUGIN_AUTH_LENENC: 0x200000,
+};
+const MYSQL_NUMERIC = new Set([0, 1, 2, 3, 4, 5, 8, 9, 13, 246]); // DECIMAL TINY SHORT LONG FLOAT DOUBLE LONGLONG INT24 YEAR NEWDECIMAL
+const MYSQL_TYPES = { 0: 'decimal', 1: 'tinyint', 2: 'smallint', 3: 'int', 4: 'float', 5: 'double', 7: 'timestamp', 8: 'bigint', 9: 'mediumint', 10: 'date', 11: 'time', 12: 'datetime',
+  13: 'year', 15: 'varchar', 16: 'bit', 245: 'json', 246: 'decimal', 247: 'enum', 248: 'set', 249: 'tinyblob', 250: 'mediumblob', 251: 'longblob', 252: 'blob', 253: 'varchar', 254: 'char', 255: 'geometry' };
+const SERVER_MORE_RESULTS = 0x8;
+
+async function sha(alg, ...parts) {
+  const bytes = parts.map((p) => (typeof p === 'string' ? enc.encode(p) : p));
+  const all = new Uint8Array(bytes.reduce((n, b) => n + b.length, 0));
+  let o = 0;
+  for (const b of bytes) { all.set(b, o); o += b.length; }
+  return new Uint8Array(await crypto.subtle.digest(alg, all));
+}
+const xor = (a, b) => a.map((x, i) => x ^ b[i % b.length]);
+
+/** The scrambled password for an authentication plugin. */
+async function mysqlScramble(plugin, password, nonce) {
+  if (!password) return new Uint8Array(0);
+  if (plugin === 'mysql_native_password') { // SHA1(pw) XOR SHA1(nonce + SHA1(SHA1(pw)))
+    const h1 = await sha('SHA-1', password);
+    return xor(h1, await sha('SHA-1', nonce, await sha('SHA-1', h1)));
+  }
+  if (plugin === 'caching_sha2_password') { // SHA256(pw) XOR SHA256(SHA256(SHA256(pw)) + nonce)
+    const h1 = await sha('SHA-256', password);
+    return xor(h1, await sha('SHA-256', await sha('SHA-256', h1), nonce));
+  }
+  if (plugin === 'mysql_clear_password') return enc.encode(`${password}\0`);
+  throw new Error(`unsupported authentication method ${plugin}`);
+}
+
+/** Packets of the MySQL protocol: 3 bytes length (little endian), 1 byte sequence number, payload. */
+class MysqlPackets {
+  constructor(conn) { this.conn = conn; this.reader = new Reader(conn); this.seq = 0; }
+  async read() {
+    let out = new Uint8Array(0);
+    for (;;) { // payloads of 16 MiB - 1 continue in the next packet
+      await this.reader.fill(4);
+      const b = this.reader.buf;
+      const len = b[0] | (b[1] << 8) | (b[2] << 16);
+      this.seq = (b[3] + 1) & 255;
+      await this.reader.fill(4 + len);
+      const part = this.reader.buf.slice(4, 4 + len);
+      this.reader.buf = this.reader.buf.subarray(4 + len);
+      const next = new Uint8Array(out.length + part.length);
+      next.set(out); next.set(part, out.length);
+      out = next;
+      if (len < 0xffffff) return out;
+    }
+  }
+  send(payload, seq = this.seq) {
+    const p = typeof payload === 'string' ? enc.encode(payload) : payload;
+    const out = new Uint8Array(4 + p.length);
+    out[0] = p.length & 255; out[1] = (p.length >> 8) & 255; out[2] = (p.length >> 16) & 255; out[3] = seq & 255;
+    out.set(p, 4);
+    this.conn.send(out);
+    this.seq = (seq + 1) & 255;
+  }
+}
+
+/** A cursor over a packet: little-endian integers, length-encoded integers and strings, NUL-terminated strings. */
+class Cursor {
+  constructor(bytes) { this.b = bytes; this.p = 0; }
+  u8() { return this.b[this.p++]; }
+  u16() { const v = this.b[this.p] | (this.b[this.p + 1] << 8); this.p += 2; return v; }
+  u32() { const v = (this.b[this.p] | (this.b[this.p + 1] << 8) | (this.b[this.p + 2] << 16)) + this.b[this.p + 3] * 0x1000000; this.p += 4; return v; }
+  lenenc() {
+    const f = this.u8();
+    if (f < 0xfb) return f;
+    if (f === 0xfb) return null;
+    if (f === 0xfc) return this.u16();
+    if (f === 0xfd) { const v = this.b[this.p] | (this.b[this.p + 1] << 8) | (this.b[this.p + 2] << 16); this.p += 3; return v; }
+    const lo = this.u32(), hi = this.u32();
+    return hi * 0x100000000 + lo;
+  }
+  bytes(n) { const v = this.b.subarray(this.p, this.p + n); this.p += n; return v; }
+  str(n) { return dec.decode(this.bytes(n)); }
+  lenencBytes() { const n = this.lenenc(); return n === null ? null : this.bytes(n); }
+  lenencStr() { const b = this.lenencBytes(); return b === null ? null : dec.decode(b); }
+  cstr() { const end = this.b.indexOf(0, this.p); const e = end < 0 ? this.b.length : end; const v = dec.decode(this.b.subarray(this.p, e)); this.p = e + 1; return v; }
+  rest() { return this.b.subarray(this.p); }
+  get done() { return this.p >= this.b.length; }
+}
+
+const le32 = (v) => new Uint8Array([v & 255, (v >> 8) & 255, (v >> 16) & 255, (v >>> 24) & 255]);
+const concat = (...parts) => { const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0)); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; } return out; };
+const mysqlError = (packet) => {
+  const c = new Cursor(packet); c.u8();
+  const code = c.u16();
+  let state = '';
+  if (c.b[c.p] === 0x23) { c.u8(); state = c.str(5); }
+  return new MysqlError(code, state, dec.decode(c.rest()));
+};
+
+async function rsaEncrypt(pem, data) {
+  const der = Uint8Array.from(atob(pem.replace(/-----[^-]+-----|\s+/g, '')), (ch) => ch.charCodeAt(0));
+  const key = await crypto.subtle.importKey('spki', der, { name: 'RSA-OAEP', hash: 'SHA-1' }, false, ['encrypt']);
+  return new Uint8Array(await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, data));
+}
+
+/**
+ * Connect to MySQL or MariaDB through the relay.
+ * options: { relay, host, port = 3306, database, user, password, ssl: 'disable'|'prefer'|'require', insecure }
+ */
+export async function openMysql({ relay, host, port = 3306, database, user, password = '', ssl = 'prefer', insecure = false }) {
+  const conn = await Suite.relay.connect(relay, { host, port: Number(port) || 3306 });
+  const io = new MysqlPackets(conn);
+  let tls = false;
+  let server = '';
+  try {
+    const hello = new Cursor(await io.read());
+    if (hello.b[0] === 0xff) throw mysqlError(hello.b);
+    const protocol = hello.u8();
+    if (protocol !== 10) throw new Error(`unsupported MySQL protocol ${protocol}`);
+    server = hello.cstr();
+    hello.u32(); // connection id
+    let nonce = hello.bytes(8);
+    hello.u8();
+    let caps = hello.u16();
+    let plugin = 'mysql_native_password';
+    if (!hello.done) {
+      hello.u8(); hello.u16(); // charset, status
+      caps |= hello.u16() << 16;
+      const dataLen = hello.u8();
+      hello.bytes(10);
+      if (caps & CLIENT.SECURE_CONNECTION) { nonce = concat(nonce, hello.bytes(Math.max(13, dataLen - 8) - 1)); hello.u8(); } // (the last byte is a NUL)
+      if (caps & CLIENT.PLUGIN_AUTH) plugin = hello.cstr() || plugin;
+    }
+    let flags = CLIENT.LONG_PASSWORD | CLIENT.FOUND_ROWS | CLIENT.LONG_FLAG | CLIENT.PROTOCOL_41 | CLIENT.TRANSACTIONS | CLIENT.SECURE_CONNECTION
+      | CLIENT.MULTI_STATEMENTS | CLIENT.MULTI_RESULTS | CLIENT.PLUGIN_AUTH | (database ? CLIENT.CONNECT_WITH_DB : 0);
+    flags &= caps | CLIENT.MULTI_STATEMENTS | CLIENT.MULTI_RESULTS;
+    const head = (f) => concat(le32(f), le32(16 * 1024 * 1024), new Uint8Array([45]), new Uint8Array(23)); // utf8mb4
+    if (ssl !== 'disable') {
+      if (caps & CLIENT.SSL) {
+        flags |= CLIENT.SSL;
+        io.send(head(flags));
+        await conn.startTls(insecure);
+        tls = true;
+      } else if (ssl === 'require') throw new Error('the server does not support SSL');
+    }
+    const auth = await mysqlScramble(plugin, password, nonce);
+    io.send(concat(head(flags), enc.encode(`${user}\0`), new Uint8Array([auth.length]), auth, database ? enc.encode(`${database}\0`) : new Uint8Array(0), enc.encode(`${plugin}\0`)));
+    for (;;) {
+      const packet = await io.read();
+      if (packet[0] === 0x00) break; // OK
+      if (packet[0] === 0xff) throw mysqlError(packet);
+      if (packet[0] === 0xfe) { // switch to another authentication method
+        const c = new Cursor(packet); c.u8();
+        plugin = c.cstr();
+        nonce = c.rest();
+        if (nonce.length && nonce[nonce.length - 1] === 0) nonce = nonce.subarray(0, nonce.length - 1);
+        io.send(await mysqlScramble(plugin, password, nonce));
+        continue;
+      }
+      if (packet[0] === 0x01) { // caching_sha2_password: more data
+        if (packet[1] === 0x03) continue; // fast authentication worked; the OK follows
+        if (packet[1] === 0x04) { // full authentication: the password in clear over TLS, otherwise RSA-encrypted
+          if (tls) io.send(enc.encode(`${password}\0`));
+          else {
+            io.send(new Uint8Array([0x02])); // ask for the public key
+            const key = await io.read();
+            const pem = dec.decode(key[0] === 0x01 ? key.subarray(1) : key);
+            io.send(await rsaEncrypt(pem, xor(enc.encode(`${password}\0`), nonce)));
+          }
+          continue;
+        }
+        if (/^-----BEGIN/.test(dec.decode(packet.subarray(1, 12)))) continue;
+      }
+      throw new Error('unexpected answer of the server during authentication');
+    }
+  } catch (e) { conn.close(); throw e; }
+
+  let busy = Promise.resolve();
+  const quote = (id) => `\`${String(id).replace(/`/g, '``')}\``;
+  const driver = {
+    kind: 'mysql',
+    server,
+    notices: [],
+    /** COM_QUERY with several statements: every statement gives a result. Calls are serialised. */
+    query(sql) {
+      const run = async () => {
+        io.send(concat(new Uint8Array([0x03]), enc.encode(sql)), 0);
+        const results = [];
+        for (;;) {
+          const first = await io.read();
+          let more = false;
+          if (first[0] === 0xff) { const e = mysqlError(first); e.results = results; throw e; }
+          if (first[0] === 0x00) {
+            const c = new Cursor(first); c.u8();
+            const affected = c.lenenc(); c.lenenc();
+            const status = c.u16();
+            const command = (sql.trim().split(/\s+/)[0] || '').toUpperCase();
+            results.push({ columns: [], rows: [], command, rowCount: affected });
+            more = !!(status & SERVER_MORE_RESULTS);
+          } else {
+            const count = new Cursor(first).lenenc();
+            const columns = [];
+            for (let i = 0; i < count; i++) {
+              const c = new Cursor(await io.read());
+              c.lenencStr(); c.lenencStr(); c.lenencStr(); c.lenencStr();
+              const name = c.lenencStr();
+              c.lenencStr(); c.lenenc();
+              const charset = c.u16(); c.u32();
+              const type = c.u8();
+              columns.push({ name, type: MYSQL_TYPES[type] || String(type), numeric: MYSQL_NUMERIC.has(type), mysqlType: type, binary: charset === 63 && type >= 249 && type <= 252 });
+            }
+            await io.read(); // EOF after the column definitions
+            const rows = [];
+            for (;;) {
+              const packet = await io.read();
+              if (packet[0] === 0xfe && packet.length < 9) { more = !!(new Cursor(packet.subarray(3)).u16() & SERVER_MORE_RESULTS); break; }
+              if (packet[0] === 0xff) { const e = mysqlError(packet); e.results = results; throw e; }
+              const c = new Cursor(packet);
+              rows.push(columns.map((col) => {
+                const b = c.lenencBytes();
+                if (b === null) return null;
+                if (col.binary) return `x'${[...b].map((x) => x.toString(16).padStart(2, '0')).join('')}'`;
+                const text = dec.decode(b);
+                if (col.numeric && col.mysqlType !== 0 && col.mysqlType !== 246 && !(col.mysqlType === 8 && !Number.isSafeInteger(Number(text)))) return Number(text);
+                return text;
+              }));
+            }
+            results.push({ columns, rows, command: 'SELECT', rowCount: rows.length });
+          }
+          if (!more) break;
+        }
+        return results;
+      };
+      const p = busy.then(run, run);
+      busy = p.catch(() => {});
+      return p;
+    },
+    async schema() {
+      const [rows] = await driver.query(`SELECT c.TABLE_SCHEMA, c.TABLE_NAME, t.TABLE_TYPE, c.COLUMN_NAME, c.COLUMN_TYPE, c.IS_NULLABLE, c.COLUMN_KEY
+        FROM information_schema.COLUMNS c JOIN information_schema.TABLES t ON t.TABLE_SCHEMA = c.TABLE_SCHEMA AND t.TABLE_NAME = c.TABLE_NAME
+        WHERE c.TABLE_SCHEMA = DATABASE() ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION`);
+      const map = new Map();
+      for (const [, name, type, column, dataType, nullable, key] of rows.rows) {
+        if (!map.has(name)) map.set(name, { schema: '', name, type: /VIEW/i.test(type) ? 'view' : 'table', columns: [] }); // (the connection's database: no prefix)
+        map.get(name).columns.push({ name: column, type: dataType, pk: key === 'PRI', notnull: nullable === 'NO' });
+      }
+      return [...map.values()];
+    },
+    async foreignKeys() {
+      try {
+        const [rows] = await driver.query(`SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_SCHEMA, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
+          FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL`);
+        return rows.rows.map(([schema, table, column, refSchema, refTable, refColumn]) => ({ schema, table, column, refSchema, refTable, refColumn }));
+      } catch (e) { return []; }
+    },
+    rowKey(table) { return table.columns.filter((c) => c.pk).map((c) => c.name); },
+    quote,
+    literal: (v) => (v === null || v === undefined ? 'NULL' : typeof v === 'number' || typeof v === 'boolean' ? String(v)
+      : `'${String(v).replace(/\\/g, '\\\\').replace(/'/g, "''").replace(/\0/g, '\\0')}'`),
+    async close() { try { io.send(new Uint8Array([0x01]), 0); } catch (e) { /* closed */ } conn.close(); },
   };
   return driver;
 }

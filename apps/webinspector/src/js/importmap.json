@@ -1,5 +1,6 @@
 {
   "imports": {
-    "app/analyze": "analyze.js"
+    "app/analyze": "analyze.js",
+    "app/a11y": "a11y.js"
   }
 }

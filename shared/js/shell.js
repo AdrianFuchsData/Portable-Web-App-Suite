@@ -96,26 +96,118 @@
   });
 
   const THEMES = ['auto', 'light', 'dark'];
-  const THEME_ICON = { auto: '◐', light: '☀', dark: '☾' };
+  const THEME_ICON = { auto: 'sun-moon', light: 'sun', dark: 'moon' };
+
+  // The title bar can be hidden (a small button at the top right brings it back), and on narrow screens the app's toolbar row can be
+  // collapsed; both are remembered for all apps.
+  const HEADER_KEY = 'suite.headerHidden', TOOLBAR_KEY = 'suite.toolbarCollapsed';
+  const flag = (key) => { try { return localStorage.getItem(key) === '1'; } catch (e) { return false; } };
+  const setFlag = (key, on) => { try { if (on) localStorage.setItem(key, '1'); else localStorage.removeItem(key); } catch (e) { /* storage blocked */ } };
+  let headerHidden = flag(HEADER_KEY), toolbarCollapsed = flag(TOOLBAR_KEY);
+  function setHeaderHidden(on) {
+    headerHidden = !!on;
+    setFlag(HEADER_KEY, headerHidden);
+    refresh();
+    requestAnimationFrame(() => { measure(); window.dispatchEvent(new Event('resize')); const b = document.querySelector(headerHidden ? '[data-testid=show-header]' : '[data-testid=hide-header]'); if (b) b.focus(); });
+  }
+  function setToolbarCollapsed(on) {
+    toolbarCollapsed = !!on;
+    setFlag(TOOLBAR_KEY, toolbarCollapsed);
+    refresh();
+    requestAnimationFrame(() => { measure(); window.dispatchEvent(new Event('resize')); });
+  }
+  window.addEventListener('storage', (e) => {
+    if (e.key === HEADER_KEY && flag(HEADER_KEY) !== headerHidden) { headerHidden = flag(HEADER_KEY); refresh(); }
+    if (e.key === TOOLBAR_KEY && flag(TOOLBAR_KEY) !== toolbarCollapsed) { toolbarCollapsed = flag(TOOLBAR_KEY); refresh(); }
+  });
+
+  // Served by the relay (it adds <meta name="suite-pwa"> and a manifest to the page): the service worker keeps the pages for when the
+  // relay does not run, and the browser can install the suite or an app; the header then offers "Install as an app".
+  let installPrompt = null;
+  const pwaMeta = document.querySelector('meta[name=suite-pwa]');
+  if (pwaMeta && 'serviceWorker' in navigator && window.isSecureContext) {
+    navigator.serviceWorker.register(pwaMeta.content).catch((e) => console.warn('service worker:', e && e.message));
+  }
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; refresh(); });
+  window.addEventListener('appinstalled', () => { installPrompt = null; refresh(); });
+  async function install() {
+    const prompt = installPrompt;
+    if (!prompt) return;
+    installPrompt = null;
+    refresh();
+    try { await prompt.prompt(); await prompt.userChoice; } catch (e) { /* dismissed */ }
+  }
 
   function Header() {
+    if (headerHidden) {
+      return html`<button type="button" class="suite-show-header pico secondary" data-testid="show-header" title=${Suite.t('shell.showHeader')}
+        aria-label=${Suite.t('shell.showHeader')} onClick=${() => setHeaderHidden(false)}>${Suite.icon('panel-top-open')}</button>`;
+    }
     const theme = storedTheme();
     const next = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
     const other = Suite.i18n.languages.find((l) => l !== Suite.i18n.language);
-    return html`<header class="suite-header pico">
+    return html`<header class=${`suite-header pico${toolbarCollapsed ? ' toolbar-collapsed' : ''}`}>
       <h1 data-testid="app-title">${Suite.t(app.title)}${aboutInfo().modified ? html` <small class="suite-modified-badge" data-testid="modified-badge" title=${aboutInfo().modified}>${Suite.t('shell.modifiedShort')}</small>` : null}</h1>
       ${app.toolbar ? app.toolbar() : null}
       <span class="suite-spacer"></span>
       ${headerItems.map((Item) => html`<${Item} />`)}
+      ${installPrompt ? html`<button class="secondary" data-testid="install" title=${Suite.t('shell.install')} onClick=${install}>${Suite.icon('monitor-down')} <span class="suite-install-label">${Suite.t('shell.install')}</span></button>` : null}
       <button class="secondary outline suite-palette-button" data-testid="palette-button" title=${Suite.t('palette.open')} aria-label=${Suite.t('palette.open')}
-              onClick=${() => Suite.palette.open()}>⌘</button>
+              onClick=${() => Suite.palette.open()}>${Suite.icon('command')}</button>
       <button class="secondary outline" data-testid="theme" title=${`${Suite.t('shell.theme')}: ${Suite.t(`theme.${theme}`)}`}
-              onClick=${() => setTheme(next)}>${THEME_ICON[theme]}</button>
+              onClick=${() => setTheme(next)}>${Suite.icon(THEME_ICON[theme])}</button>
       <button class="secondary outline" data-testid="language" title=${Suite.t('shell.language')}
               onClick=${() => Suite.i18n.setLanguage(other)}>${other.toUpperCase()}</button>
       <button class="secondary outline" data-testid="about" title=${Suite.t('shell.about')}
               onClick=${() => { state.about = true; refresh(); }}>?</button>
+      ${app.toolbar ? html`<button class="secondary outline suite-toolbar-toggle" data-testid="toggle-toolbar" aria-expanded=${!toolbarCollapsed}
+              title=${Suite.t(toolbarCollapsed ? 'shell.showToolbar' : 'shell.hideToolbar')} onClick=${() => setToolbarCollapsed(!toolbarCollapsed)}>${Suite.icon(toolbarCollapsed ? 'chevron-down' : 'chevron-up')}</button>` : null}
+      <button class="secondary outline" data-testid="hide-header" title=${Suite.t('shell.hideHeader')}
+              onClick=${() => setHeaderHidden(true)}>${Suite.icon('panel-top-close')}</button>
     </header>`;
+  }
+
+  // ---- context menu: Suite.shell.contextMenu(event, items) at the pointer (a right click, or a long press on touch screens).
+  // items: [{ label, icon, shortcut, run, disabled, testid } | '-'] (falsy entries are left out). Arrow keys, Home/End, Enter and
+  // Escape work; a click elsewhere, scrolling or leaving the window closes it.
+  let menu = null; // { x, y, items, focus }
+  function contextMenu(e, items) {
+    if (e && e.preventDefault) e.preventDefault();
+    const list = items.filter(Boolean).filter((it, i, a) => it !== '-' || (i > 0 && i < a.length - 1 && a[i - 1] !== '-'));
+    if (!list.length) return;
+    menu = { x: e.clientX, y: e.clientY, items: list, opened: performance.now() };
+    refresh();
+  }
+  function closeMenu() { if (menu) { menu = null; refresh(); } }
+  const menuItems = () => [...document.querySelectorAll('.suite-context-menu [role=menuitem]:not([disabled])')];
+  document.addEventListener('pointerdown', (e) => { if (menu && !e.target.closest('.suite-context-menu')) closeMenu(); }, true);
+  window.addEventListener('blur', closeMenu);
+  window.addEventListener('resize', closeMenu);
+  // (scrolling right after opening comes from the app itself, e.g. a list that shows the chosen item: the menu stays)
+  document.addEventListener('scroll', () => { if (menu && performance.now() - menu.opened > 400) closeMenu(); }, true);
+  function ContextMenu() {
+    if (!menu) return null;
+    const place = (el) => {
+      if (!el || el.dataset.placed) return;
+      el.dataset.placed = '1';
+      const r = el.getBoundingClientRect();
+      el.style.left = `${Math.max(4, Math.min(menu.x, window.innerWidth - r.width - 4))}px`;
+      el.style.top = `${Math.max(4, Math.min(menu.y, window.innerHeight - r.height - 4))}px`;
+      const first = menuItems()[0];
+      if (first) first.focus();
+    };
+    const keys = (e) => {
+      const all = menuItems(), i = all.indexOf(document.activeElement);
+      const go = (n) => { e.preventDefault(); if (all.length) all[(n + all.length) % all.length].focus(); };
+      if (e.key === 'ArrowDown') go(i + 1); else if (e.key === 'ArrowUp') go(i - 1); else if (e.key === 'Home') go(0); else if (e.key === 'End') go(all.length - 1);
+      else if (e.key === 'Escape' || e.key === 'Tab') { e.preventDefault(); closeMenu(); }
+    };
+    return html`<ul class="suite-context-menu pico" role="menu" data-testid="context-menu" ref=${place} style=${`left:${menu.x}px;top:${menu.y}px`} onKeyDown=${keys}
+      onContextMenu=${(e) => e.preventDefault()}>
+      ${menu.items.map((it) => (it === '-' ? html`<li role="separator"></li>` : html`<li role="none">
+        <button type="button" role="menuitem" data-testid=${it.testid || null} disabled=${!!it.disabled} onClick=${() => { closeMenu(); it.run(); }}>
+          <span class="suite-cm-icon">${it.icon ? Suite.icon(it.icon) : null}</span><span class="suite-cm-label">${it.label}</span>${it.shortcut ? html`<kbd>${it.shortcut}</kbd>` : null}</button></li>`))}
+    </ul>`;
   }
 
   function Dialogs() {
@@ -174,7 +266,7 @@
     const lang = Suite.i18n.language === 'de' ? 'de' : 'en';
     const open = (e) => { if (e.target.open && !data) loadLicences().then(setData, (err) => toast(Suite.i18n.describe(err), 'error')); };
     return html`<details class="suite-licence" data-testid="licence" onToggle=${open}>
-      <summary>⚖ ${Suite.t('shell.licence')}</summary>
+      <summary>${Suite.icon('scale')} ${Suite.t('shell.licence')}</summary>
       <p data-testid="licence-summary">${info.copyright} · ${Suite.t('shell.licensedUnder', info.license)}<br />
         <small>${Suite.t('shell.source')}: <a href=${info.source} target="_blank" rel="noopener noreferrer">${info.source}</a></small></p>
       ${data ? html`
@@ -207,7 +299,7 @@
       } catch (e) { toast(Suite.i18n.describe(e), 'error'); }
     };
     return html`<details class="suite-examples" data-testid="examples">
-      <summary>📂 ${Suite.t('shell.examples')}</summary>
+      <summary>${Suite.icon('folder-open')} ${Suite.t('shell.examples')}</summary>
       <ul>${shown.map((x) => html`<li><button class="secondary outline" data-testid="example" data-name=${x.name} onClick=${() => open(x)}>${x.name}</button> <small>${x.title}</small></li>`)}</ul>
     </details>`;
   }
@@ -229,7 +321,7 @@
     for (const r of rows) { if (!groups.length || groups[groups.length - 1].name !== r.group) groups.push({ name: r.group, rows: [] }); groups[groups.length - 1].rows.push(r); }
     const keys = (combo) => combo.split(/(?<=[^+])\+(?=.)/).map((k, i) => html`${i ? '+' : ''}<kbd>${k}</kbd>`);
     return html`<details class="suite-shortcuts" data-testid="shortcuts" open>
-      <summary>⌨ ${Suite.t('shell.shortcuts')}</summary>
+      <summary>${Suite.icon('keyboard')} ${Suite.t('shell.shortcuts')}</summary>
       ${groups.map((g) => html`${g.name ? html`<h4>${g.name}</h4>` : null}<table><tbody>${g.rows.map((r) => html`<tr data-testid="shortcut">
         <td>${r.keys.map((k, i) => html`${i ? html`<span class="suite-or"> / </span>` : null}${keys(k)}`)}</td><td>${r.text}</td></tr>`)}</tbody></table>`)}
     </details>`;
@@ -283,11 +375,12 @@
       <main class="suite-main" data-testid="main">${app.main ? app.main() : null}</main>
       <div class="suite-toasts pico" aria-live="polite">${state.toasts.map((t) => html`<div class=${`suite-toast ${t.kind}`} data-testid="toast" key=${t.id}>${t.message}</div>`)}</div>
       <${Dialogs} />
+      <${ContextMenu} />
       ${Suite.palette ? html`<${Suite.palette.Palette} />` : null}`;
   }
 
   function refresh() {
-    if (container) render(html`<${Shell} key=${Suite.i18n.language} />`, container);
+    if (container) render(html`<${Shell} />`, container);
     measure();
   }
 
@@ -341,9 +434,9 @@
       onOpen(picked);
     };
     return html`<select class="suite-recent" data-testid="recent" aria-label=${Suite.t('shell.recent')} title=${Suite.t('shell.recent')} onChange=${pick}>
-      <option value="">🕘 ${Suite.t('shell.recent')}</option>
+      <option value="">${Suite.t('shell.recent')}</option>
       ${list.length ? list.map((r, i) => html`<option value=${i}>${r.name}</option>`) : html`<option disabled>${Suite.t('shell.noRecent')}</option>`}
-      ${list.length ? html`<option value="clear">✕ ${Suite.t('shell.clearRecent')}</option>` : null}
+      ${list.length ? html`<option value="clear">${Suite.t('shell.clearRecent')}</option>` : null}
     </select>`;
   }
 
@@ -389,7 +482,7 @@
   const headerItems = [];
   function addHeaderItem(component) { headerItems.push(component); refresh(); }
 
-  Suite.shell = { get appId() { return app && app.id; }, mount, refresh, toast, banner, confirm, setDirty, setTheme, backdrop, Recent, setFileName, closeAbout, addHeaderItem, html };
+  Suite.shell = { get appId() { return app && app.id; }, contextMenu, closeMenu, get menuOpen() { return !!menu; }, get headerHidden() { return headerHidden; }, setHeaderHidden, setToolbarCollapsed, mount, refresh, toast, banner, confirm, setDirty, setTheme, backdrop, Recent, setFileName, closeAbout, addHeaderItem, html };
 })(window.Suite = window.Suite || {});
 
 /*
@@ -427,7 +520,7 @@
       'prefs.unencrypted': 'The JSON file will contain passwords and other credentials in readable form: anyone who gets the file can use them. Use a KeePass database instead, or leave them out.',
       'prefs.ack': 'I understand: write them unencrypted', 'prefs.ackNeeded': 'Confirm that the credentials may be written unencrypted, choose KeePass, or leave them out.',
       'prefs.importedData': '{0} entries imported (save the connection file to keep them). Settings take effect after a reload.',
-      'prefs.group.general': 'General (theme, language, spelling, symbols, …)', 'prefs.group.texteditor': 'Text editor', 'prefs.group.hexeditor': 'Hex editor', 'prefs.group.archive': 'Archive manager', 'prefs.group.mediaplayer': 'Media player', 'prefs.group.audioeditor': 'Audio editor', 'prefs.group.videoeditor': 'Video editor', 'prefs.group.imageeditor': 'Image editor', 'prefs.group.diagram': 'Diagram editor', 'prefs.group.keepass': 'KeePass', 'prefs.group.spreadsheet': 'Spreadsheet', 'prefs.group.document': 'Document', 'prefs.group.presentation': 'Presentation', 'prefs.group.reveal': 'Web slides', 'prefs.group.pdfviewer': 'PDF viewer', 'prefs.group.calendar': 'Calendar', 'prefs.group.mail': 'Mail', 'prefs.group.dbtool': 'Database tool', 'prefs.group.ssh': 'SSH', 'prefs.group.ftp': 'FTP/SFTP', 'prefs.group.http': 'HTTP analyzer', 'prefs.group.webinspector': 'Web inspector', 'prefs.group.barcode': 'Barcode', 'prefs.group.notebook': 'Python notebook', 'prefs.group.overview': 'Overview',
+      'prefs.group.general': 'General (theme, language, spelling, symbols, …)', 'prefs.group.texteditor': 'Text editor', 'prefs.group.hexeditor': 'Hex editor', 'prefs.group.archive': 'Archive manager', 'prefs.group.mediaplayer': 'Media player', 'prefs.group.audioeditor': 'Audio editor', 'prefs.group.videoeditor': 'Video editor', 'prefs.group.imageeditor': 'Image editor', 'prefs.group.diagram': 'Diagram editor', 'prefs.group.keepass': 'KeePass', 'prefs.group.authenticator': 'Authenticator', 'prefs.group.spreadsheet': 'Spreadsheet', 'prefs.group.document': 'Document', 'prefs.group.presentation': 'Presentation', 'prefs.group.reveal': 'Web slides', 'prefs.group.pdfviewer': 'PDF viewer', 'prefs.group.calendar': 'Calendar', 'prefs.group.mail': 'Mail', 'prefs.group.dbtool': 'Database tool', 'prefs.group.ssh': 'SSH', 'prefs.group.ftp': 'FTP/SFTP', 'prefs.group.http': 'HTTP analyzer', 'prefs.group.webinspector': 'Web inspector', 'prefs.group.barcode': 'Barcode', 'prefs.group.notebook': 'Python notebook', 'prefs.group.overview': 'Overview',
     },
     de: {
       'prefs.author': 'Ihr Name (für Kommentare)', 'prefs.title': 'Einstellungen', 'prefs.hint': 'Design, Sprache und die Einstellungen der Anwendungen als Datei (für einen anderen Rechner oder Browser).',
@@ -442,7 +535,7 @@
       'prefs.unencrypted': 'Die JSON-Datei enthält Passwörter und andere Zugangsdaten lesbar: Wer die Datei erhält, kann sie verwenden. Wählen Sie stattdessen eine KeePass-Datenbank, oder lassen Sie sie weg.',
       'prefs.ack': 'Verstanden: unverschlüsselt schreiben', 'prefs.ackNeeded': 'Bestätigen Sie, dass die Zugangsdaten unverschlüsselt geschrieben werden dürfen, wählen Sie KeePass, oder lassen Sie sie weg.',
       'prefs.importedData': '{0} Einträge importiert (speichern Sie die Verbindungsdatei, um sie zu behalten). Einstellungen wirken nach dem Neuladen.',
-      'prefs.group.general': 'Allgemein (Design, Sprache, Rechtschreibung, Symbole, …)', 'prefs.group.texteditor': 'Texteditor', 'prefs.group.hexeditor': 'Hex-Editor', 'prefs.group.archive': 'Archivmanager', 'prefs.group.mediaplayer': 'Medienplayer', 'prefs.group.audioeditor': 'Audio-Editor', 'prefs.group.videoeditor': 'Video-Editor', 'prefs.group.imageeditor': 'Bildbearbeitung', 'prefs.group.diagram': 'Diagramm-Editor', 'prefs.group.keepass': 'KeePass', 'prefs.group.spreadsheet': 'Tabellenkalkulation', 'prefs.group.document': 'Dokument', 'prefs.group.presentation': 'Präsentation', 'prefs.group.reveal': 'Web-Folien', 'prefs.group.pdfviewer': 'PDF-Betrachter', 'prefs.group.calendar': 'Kalender', 'prefs.group.mail': 'Mail', 'prefs.group.dbtool': 'Datenbank-Werkzeug', 'prefs.group.ssh': 'SSH', 'prefs.group.ftp': 'FTP/SFTP', 'prefs.group.http': 'HTTP-Analyse', 'prefs.group.webinspector': 'Web-Inspektor', 'prefs.group.barcode': 'Barcode', 'prefs.group.notebook': 'Python-Notebook', 'prefs.group.overview': 'Übersicht',
+      'prefs.group.general': 'Allgemein (Design, Sprache, Rechtschreibung, Symbole, …)', 'prefs.group.texteditor': 'Texteditor', 'prefs.group.hexeditor': 'Hex-Editor', 'prefs.group.archive': 'Archivmanager', 'prefs.group.mediaplayer': 'Medienplayer', 'prefs.group.audioeditor': 'Audio-Editor', 'prefs.group.videoeditor': 'Video-Editor', 'prefs.group.imageeditor': 'Bildbearbeitung', 'prefs.group.diagram': 'Diagramm-Editor', 'prefs.group.keepass': 'KeePass', 'prefs.group.authenticator': 'Authenticator', 'prefs.group.spreadsheet': 'Tabellenkalkulation', 'prefs.group.document': 'Dokument', 'prefs.group.presentation': 'Präsentation', 'prefs.group.reveal': 'Web-Folien', 'prefs.group.pdfviewer': 'PDF-Betrachter', 'prefs.group.calendar': 'Kalender', 'prefs.group.mail': 'Mail', 'prefs.group.dbtool': 'Datenbank-Werkzeug', 'prefs.group.ssh': 'SSH', 'prefs.group.ftp': 'FTP/SFTP', 'prefs.group.http': 'HTTP-Analyse', 'prefs.group.webinspector': 'Web-Inspektor', 'prefs.group.barcode': 'Barcode', 'prefs.group.notebook': 'Python-Notebook', 'prefs.group.overview': 'Übersicht',
     },
   });
 
@@ -486,7 +579,7 @@
   // from sources the applications register (shared/js/appdata.js):
   //   Suite.preferences.register({ id, label(), sensitive, available(), write(store), count(store), read(store) -> number })
 
-  const APPS = ['texteditor', 'hexeditor', 'archive', 'mediaplayer', 'audioeditor', 'videoeditor', 'imageeditor', 'diagram', 'keepass', 'spreadsheet',
+  const APPS = ['texteditor', 'hexeditor', 'archive', 'mediaplayer', 'audioeditor', 'videoeditor', 'imageeditor', 'diagram', 'keepass', 'authenticator', 'spreadsheet',
     'document', 'presentation', 'reveal', 'pdfviewer', 'calendar', 'mail', 'dbtool', 'ssh', 'ftp', 'http', 'webinspector', 'barcode', 'notebook', 'overview'];
   const groupOf = (key) => {
     const m = /^suite\.([a-z]+)(?:\.|$)/.exec(key) || /^([a-z]+)\.prefs$/.exec(key);
@@ -608,7 +701,7 @@
     const items = () => html`<fieldset class="suite-prefs-items" data-testid="prefs-items"><legend>${Suite.t(form.mode === 'export' ? 'prefs.include' : 'prefs.take')}</legend>
       ${Object.keys(form.groups).sort((a, b) => (a === 'general' ? -1 : b === 'general' ? 1 : groupLabel(a).localeCompare(groupLabel(b))))
         .map((g) => box('chosen', g, groupLabel(g), html` <small>(${Object.keys(form.groups[g]).length})</small>`))}
-      ${(form.available || form.offered).map((src) => box('chosenSources', src.id, src.label(), src.sensitive ? html` <small class="suite-prefs-secret">🔑 ${Suite.t('prefs.credentials')}</small>` : null))}
+      ${(form.available || form.offered).map((src) => box('chosenSources', src.id, src.label(), src.sensitive ? html` <small class="suite-prefs-secret">${Suite.icon('key-round')} ${Suite.t('prefs.credentials')}</small>` : null))}
       ${form.others && form.others.length ? html`<small>${Suite.t('prefs.others', form.others.map(groupLabel).join(', '))}</small>` : null}
     </fieldset>`;
     const unencryptedSecrets = form && form.mode === 'export' && form.kind === 'json' && form.available.some((src) => src.sensitive && form.chosenSources.has(src.id));
@@ -627,7 +720,7 @@
           ${form.kind === 'kdbx' ? html`
             <label>${Suite.t('prefs.password')}<input type="password" data-testid="prefs-password" autocomplete="new-password" value=${form.password} onInput=${(e) => update({ password: e.target.value })} /></label>
             <label>${Suite.t('prefs.repeat')}<input type="password" data-testid="prefs-repeat" autocomplete="new-password" value=${form.repeat} onInput=${(e) => update({ repeat: e.target.value })} /></label>` : null}
-          ${unencryptedSecrets ? html`<div class="suite-prefs-warning" data-testid="prefs-warning" role="alert">⚠ ${Suite.t('prefs.unencrypted')}
+          ${unencryptedSecrets ? html`<div class="suite-prefs-warning" data-testid="prefs-warning" role="alert">${Suite.icon('triangle-alert')} ${Suite.t('prefs.unencrypted')}
             <label><input type="checkbox" data-testid="prefs-ack" checked=${form.ack} onChange=${(e) => update({ ack: e.target.checked })} />${Suite.t('prefs.ack')}</label></div>` : null}` : null}
         ${error ? html`<small class="suite-prefs-error" data-testid="prefs-error" role="alert">${error}</small>` : null}
         <div role="group"><button type="button" class="secondary outline" onClick=${() => setForm(null)}>${Suite.t('prefs.cancel')}</button>
@@ -638,7 +731,7 @@
   const authorSetting = () => { try { return localStorage.getItem('suite.author') || ''; } catch (e) { return ''; } };
   function Section() {
     return html`<details class="suite-prefs" data-testid="prefs">
-      <summary>⚙ ${Suite.t('prefs.title')}</summary>
+      <summary>${Suite.icon('settings')} ${Suite.t('prefs.title')}</summary>
       <p><small>${Suite.t('prefs.hint')}</small></p>
       <${Transfer} />
       ${Suite.symbols && Suite.symbols.available() ? html`<fieldset class="suite-prefs-symbols" data-testid="prefs-symbols">
@@ -723,7 +816,7 @@
     const root = document.getElementById('app') || document.body;
     for (const el of root.querySelectorAll('button, [role=tab], a[href="#"], select')) {
       if (el.closest('dialog, .suite-palette, [data-palette-skip]') || el.disabled || el.closest('[aria-hidden=true]')) continue;
-      if (['theme', 'language', 'about', 'palette-button'].includes(el.dataset.testid)) continue;
+      if (['theme', 'language', 'about', 'palette-button', 'hide-header', 'show-header', 'toggle-toolbar'].includes(el.dataset.testid)) continue;
       if (el.tagName === 'SELECT') {
         const first = el.options[0];
         const name = clean(el.getAttribute('aria-label') || el.getAttribute('title') || (first && first.value === '' ? first.textContent : ''));
@@ -805,6 +898,8 @@
   }, true);
 
   Suite.palette = { open, close, register: (provider) => providers.push(provider), Palette, collect, get isOpen() { return state.open; } };
+  // the title bar (its button is left out of the palette like the other shell buttons; hidden, it has no buttons at all)
+  providers.push(() => [{ label: Suite.t(Suite.shell.headerHidden ? 'shell.showHeader' : 'shell.hideHeader'), run: () => Suite.shell.setHeaderHidden(!Suite.shell.headerHidden) }]);
 })(window.Suite = window.Suite || {});
 
 /*
@@ -931,7 +1026,7 @@
       try { await createArchive(chosen); setFiles(null); Suite.shell.closeAbout(); } catch (e) { Suite.shell.toast(Suite.i18n.describe(e), 'error'); }
     };
     return html`<details class="suite-prefs suite-open-files" data-testid="open-files">
-      <summary>📦 ${Suite.t('of.title')}</summary>
+      <summary>${Suite.icon('package')} ${Suite.t('of.title')}</summary>
       <button class="secondary outline" data-testid="open-files-start" onClick=${start}>${Suite.t('of.create')}</button>
       ${files ? html`<div class="suite-prefs-form" data-testid="open-files-form">
         ${files.length ? html`<fieldset class="suite-prefs-items"><small>${Suite.t('of.hint')}</small>
@@ -1145,7 +1240,7 @@
         <fieldset class="suite-prefs-items"><legend>${Suite.t('ws.settings')}</legend>
           <label class="suite-prefs-item"><input type="checkbox" data-testid="workspace-settings" checked=${form.settings} onChange=${() => update({ settings: !form.settings })} />${Suite.t(overview() ? 'ws.settingsAll' : 'ws.settingsOf')}</label>
           ${form.sources.map((src) => html`<label class="suite-prefs-item"><input type="checkbox" data-testid=${`workspace-source-${src.id}`} checked=${form.chosenSources.has(src.id)}
-            onChange=${() => toggleSource(src.id)} />${src.label()}${src.sensitive ? html` <small class="suite-prefs-secret">🔑 ${Suite.t('prefs.credentials')}</small>` : null}</label>`)}</fieldset>
+            onChange=${() => toggleSource(src.id)} />${src.label()}${src.sensitive ? html` <small class="suite-prefs-secret">${Suite.icon('key-round')} ${Suite.t('prefs.credentials')}</small>` : null}</label>`)}</fieldset>
         ${(form.settings || form.chosenSources.size) && P().canKdbx() ? html`${pw('password', 'workspace-password', Suite.t('ws.password'), 'new-password')}
           ${form.password ? pw('repeat', 'workspace-repeat', Suite.t('prefs.repeat'), 'new-password') : null}` : null}`;
     };
@@ -1158,13 +1253,13 @@
           ${form.mine.map((f) => html`<small class="suite-prefs-item" data-testid="workspace-entry">${f.path}</small>`)}
           ${others ? html`<small data-testid="workspace-others">${Suite.t('ws.others', others)}</small>` : null}
           ${form.ws.settings ? html`<label class="suite-prefs-item"><input type="checkbox" data-testid="workspace-settings" checked=${form.settings}
-            onChange=${() => update({ settings: !form.settings })} />${Suite.t('ws.applySettings')}${form.ws.kdbx ? html` <small class="suite-prefs-secret">🔒 KeePass</small>` : null}</label>` : null}
+            onChange=${() => update({ settings: !form.settings })} />${Suite.t('ws.applySettings')}${form.ws.kdbx ? html` <small class="suite-prefs-secret">${Suite.icon('lock')} KeePass</small>` : null}</label>` : null}
         </fieldset>
         ${form.settings && form.ws.kdbx ? pw('password', 'workspace-password', Suite.t('ws.unlock'), 'current-password') : null}`;
     };
 
     return html`<details class="suite-prefs suite-workspace" data-testid="workspace">
-      <summary>🗂 ${Suite.t('ws.title')}</summary>
+      <summary>${Suite.icon('folder-tree')} ${Suite.t('ws.title')}</summary>
       <p><small>${Suite.t('ws.hint')}</small></p>
       <div role="group">
         <button class="secondary outline" data-testid="workspace-save" onClick=${startSave}>${Suite.t('ws.save')}</button>

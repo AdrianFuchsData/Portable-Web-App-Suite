@@ -29,6 +29,38 @@ Größen. ⟳ dreht alle Seiten um 90 Grad (nur die Ansicht; die Datei bleibt un
 🔍 oder `Strg+F` öffnet die Suchleiste. Der Betrachter hebt alle Treffer hervor und zeigt „1 von 3 Treffern“. **Weiter**
 und **Zurück** wechseln zwischen den Treffern; **Groß-/Kleinschreibung** unterscheidet Groß- und Kleinbuchstaben.
 
+## Text
+
+Wählen Sie Text auf einer Seite mit der Maus (oder per Berührung) aus und kopieren Sie ihn mit `Strg+C`. **🛠 Text und Export** kopiert außerdem
+den Text der aktuellen Seite oder des ganzen Dokuments auf einmal oder speichert ihn als Textdatei (`.txt`, eine Zeile je Zeile der Seite, eine
+Leerzeile zwischen den Seiten). Eingescannte Seiten sind Bilder und enthalten keinen Text.
+
+## Seiten als Bilder
+
+**🛠 Text und Export → Seiten als Bilder (PNG, JPEG)…** speichert die aktuelle Seite, die (in der Seitenleiste) ausgewählten Seiten oder alle
+Seiten als Bilder. Wählen Sie PNG (scharf, verlustfrei, größer) oder JPEG (kleiner, für Fotos und Scans) und die Auflösung: 150 dpi passen für
+den Bildschirm, 300 dpi zum Drucken. Eine Seite wird ein Bild (`name-001.png`), mehrere Seiten ein ZIP mit einem Bild je Seite. Ausgefüllte
+Formularfelder erscheinen in den Bildern.
+
+## Dokument verkleinern
+
+**🛠 Text und Export → Verkleinern (komprimieren)…** macht große PDFs kleiner, typischerweise Scans und Dokumente mit Fotos. Wählen Sie eine Stufe:
+**Bildschirm** (96 dpi, starke JPEG-Kompression, die kleinste Datei), **E-Book** (150 dpi) oder **Druck** (300 dpi, leichte Kompression). Bilder,
+die größer sind, als die Stufe für eine A4-Seite braucht, werden verkleinert und als JPEG gespeichert; Text, Schriften und Zeichnungen bleiben
+unverändert und scharf. Unkomprimierte Teile der Datei werden gepackt, Reste früherer Bearbeitungen entfernt. Die Meldung zeigt die Größe vorher
+und nachher; lässt sich das Dokument nicht merklich verkleinern, bleibt es, wie es ist. `Strg+Z` macht es bis zum Speichern rückgängig.
+Transparenzmasken, CMYK- und Schwarz-Weiß-Bilder bleiben unverändert.
+
+## Schwärzen
+
+**🛠 Text und Export → Schwärzen…** entfernt vertrauliche Inhalte endgültig. Ziehen Sie einen Kasten über alles, was verschwinden muss (ein
+Klick auf einen Kasten entfernt ihn wieder), oder geben Sie ein Wort oder einen Namen ein und klicken Sie **Markieren**, um es überall im
+Dokument zu umrahmen. **Endgültig entfernen** macht dann jede Seite mit Kästen zu einem Bild der Seite mit schwarzen Kästen – was darunter lag,
+auch der Text, ist weg, und der Text dieser Seiten lässt sich nicht mehr auswählen oder finden. Das Dokument wird aus seinen Seiten neu
+aufgebaut, nichts Verborgenes bleibt übrig; Inhaltsverzeichnis, Formularfelder und Metadaten (Autor, Titel, …) bleiben nicht erhalten. Bis zum
+Speichern holt **Seiten → Rückgängig** das Original zurück. Anders als schwarze Rechtecke als Kommentar können andere das nicht rückgängig
+machen.
+
 ## Formulare und Kommentare
 
 Formularfelder lassen sich direkt ausfüllen. Die Liste **Kommentieren** wechselt den Modus:

@@ -10,12 +10,14 @@ import {
 import { readDrawio, writeDrawio, writeModel, readModel, drawioFromSvg, drawioFromPng, pngWithDrawio, readExcalidraw } from '@app/drawio.js';
 import { layout } from '@app/layout.js';
 import { parseMermaid, sizeFor } from '@app/mermaid.js';
+import { parsePlantUml, isPlantUml } from '@app/plantuml.js';
+import { TEMPLATES } from '@app/templates.js';
 import 'app/spell-dom'; // spelling selector in the header, marks in text fields (shared/js/spell-dom.js)
 
 const { html } = Suite.shell;
 const t = Suite.t;
 const APP = 'diagram';
-const OPEN_TYPES = [{ description: 'Diagrams', accept: { 'application/octet-stream': ['.drawio', '.xml', '.svg', '.png', '.excalidraw', '.json', '.mmd', '.mermaid'] } }];
+const OPEN_TYPES = [{ description: 'Diagrams', accept: { 'application/octet-stream': ['.drawio', '.xml', '.svg', '.png', '.excalidraw', '.json', '.mmd', '.mermaid', '.puml', '.plantuml', '.pu', '.iuml', '.wsd'] } }];
 const GRID = 10;
 
 Suite.i18n.register({
@@ -23,7 +25,15 @@ Suite.i18n.register({
     'app.title': 'Diagram editor',
     'dg.new': 'New', 'dg.open': 'Open', 'dg.save': 'Save', 'dg.saveAs': 'Save as', 'dg.exportSvg': 'Export SVG', 'dg.exportPng': 'Export PNG', 'dg.print': 'Print / PDF (all pages)', 'dg.emptyPrint': 'The diagram is empty.',
     'dg.autoLayout': 'Automatic layout', 'dg.layoutTB': 'top to bottom', 'dg.layoutLR': 'left to right', 'dg.layoutBT': 'bottom to top', 'dg.layoutRL': 'right to left',
-    'dg.mermaid': 'Insert Mermaid…', 'dg.mermaidHint': 'A Mermaid flowchart (flowchart TD / graph LR …); it is laid out automatically.', 'dg.insert': 'Insert',
+    'dg.mermaid': 'Insert Mermaid / PlantUML…', 'dg.mermaidHint': 'A Mermaid flowchart (flowchart TD / graph LR …) or a PlantUML diagram (@startuml … @enduml: class, use case, component, state, activity, sequence); it is laid out automatically.',
+    'dg.example': 'Insert an example…', 'dg.templates': 'Templates…', 'dg.templatesShort': 'Templates', 'dg.tplNew': 'New diagram', 'dg.tplInsert': 'Add to this page',
+    'dg.tpl.flowchart': 'Flowchart', 'dg.tpl.flowchart.hint': 'Steps, decisions and a loop', 'dg.tpl.orgchart': 'Organisation chart', 'dg.tpl.orgchart.hint': 'Management, departments, teams',
+    'dg.tpl.sequence': 'Sequence diagram', 'dg.tpl.sequence.hint': 'Messages between participants (UML)', 'dg.tpl.class': 'Class diagram', 'dg.tpl.class.hint': 'Classes, inheritance, associations (UML)',
+    'dg.tpl.usecase': 'Use case diagram', 'dg.tpl.usecase.hint': 'Actors and what they do (UML)', 'dg.tpl.state': 'State diagram', 'dg.tpl.state.hint': 'States and transitions (UML)',
+    'dg.tpl.activity': 'Activity diagram', 'dg.tpl.activity.hint': 'A process with branches and parallel steps (UML)', 'dg.tpl.er': 'Entity relationship', 'dg.tpl.er.hint': 'Tables, keys, cardinalities',
+    'dg.tpl.network': 'Network', 'dg.tpl.network.hint': 'Internet, firewall, DMZ, LAN', 'dg.tpl.bpmn': 'Business process (BPMN)', 'dg.tpl.bpmn.hint': 'Pool, tasks, gateway, events',
+    'dg.tpl.mindmap': 'Mind map', 'dg.tpl.mindmap.hint': 'A topic with branches', 'dg.tpl.swot': 'SWOT analysis', 'dg.tpl.swot.hint': 'Strengths, weaknesses, opportunities, threats',
+    'dg.tpl.timeline': 'Timeline', 'dg.tpl.timeline.hint': 'Phases along a line', 'dg.insert': 'Insert',
     'dg.mermaidError': 'The text cannot be read: {0}', 'dg.cancel': 'Cancel', 'dg.laidOut': '{0} shapes arranged.',
     'dg.undo': 'Undo', 'dg.redo': 'Redo', 'dg.delete': 'Delete', 'dg.duplicate': 'Duplicate', 'dg.toFront': 'To front', 'dg.toBack': 'To back',
     'dg.select': 'Select (V)', 'dg.hand': 'Pan (H, or hold Space)', 'dg.connector': 'Connector (A)', 'dg.textTool': 'Text (T)', 'dg.shapes': 'Shapes',
@@ -55,7 +65,15 @@ Suite.i18n.register({
     'app.title': 'Diagrammeditor',
     'dg.new': 'Neu', 'dg.open': 'Öffnen', 'dg.save': 'Speichern', 'dg.saveAs': 'Speichern unter', 'dg.exportSvg': 'SVG exportieren', 'dg.exportPng': 'PNG exportieren', 'dg.print': 'Drucken / PDF (alle Seiten)', 'dg.emptyPrint': 'Das Diagramm ist leer.',
     'dg.autoLayout': 'Automatisch anordnen', 'dg.layoutTB': 'von oben nach unten', 'dg.layoutLR': 'von links nach rechts', 'dg.layoutBT': 'von unten nach oben', 'dg.layoutRL': 'von rechts nach links',
-    'dg.mermaid': 'Mermaid einfügen…', 'dg.mermaidHint': 'Ein Mermaid-Flussdiagramm (flowchart TD / graph LR …); es wird automatisch angeordnet.', 'dg.insert': 'Einfügen',
+    'dg.mermaid': 'Mermaid / PlantUML einfügen…', 'dg.mermaidHint': 'Ein Mermaid-Flussdiagramm (flowchart TD / graph LR …) oder ein PlantUML-Diagramm (@startuml … @enduml: Klassen, Anwendungsfälle, Komponenten, Zustände, Aktivitäten, Sequenzen); es wird automatisch angeordnet.',
+    'dg.example': 'Ein Beispiel einfügen…', 'dg.templates': 'Vorlagen…', 'dg.templatesShort': 'Vorlagen', 'dg.tplNew': 'Neues Diagramm', 'dg.tplInsert': 'Zu dieser Seite hinzufügen',
+    'dg.tpl.flowchart': 'Flussdiagramm', 'dg.tpl.flowchart.hint': 'Schritte, Entscheidungen und eine Schleife', 'dg.tpl.orgchart': 'Organigramm', 'dg.tpl.orgchart.hint': 'Geschäftsführung, Abteilungen, Teams',
+    'dg.tpl.sequence': 'Sequenzdiagramm', 'dg.tpl.sequence.hint': 'Nachrichten zwischen Beteiligten (UML)', 'dg.tpl.class': 'Klassendiagramm', 'dg.tpl.class.hint': 'Klassen, Vererbung, Assoziationen (UML)',
+    'dg.tpl.usecase': 'Anwendungsfalldiagramm', 'dg.tpl.usecase.hint': 'Akteure und was sie tun (UML)', 'dg.tpl.state': 'Zustandsdiagramm', 'dg.tpl.state.hint': 'Zustände und Übergänge (UML)',
+    'dg.tpl.activity': 'Aktivitätsdiagramm', 'dg.tpl.activity.hint': 'Ein Ablauf mit Verzweigungen und parallelen Schritten (UML)', 'dg.tpl.er': 'Entity-Relationship', 'dg.tpl.er.hint': 'Tabellen, Schlüssel, Kardinalitäten',
+    'dg.tpl.network': 'Netzwerk', 'dg.tpl.network.hint': 'Internet, Firewall, DMZ, LAN', 'dg.tpl.bpmn': 'Geschäftsprozess (BPMN)', 'dg.tpl.bpmn.hint': 'Pool, Aufgaben, Gateway, Ereignisse',
+    'dg.tpl.mindmap': 'Mindmap', 'dg.tpl.mindmap.hint': 'Ein Thema mit Ästen', 'dg.tpl.swot': 'SWOT-Analyse', 'dg.tpl.swot.hint': 'Stärken, Schwächen, Chancen, Risiken',
+    'dg.tpl.timeline': 'Zeitleiste', 'dg.tpl.timeline.hint': 'Phasen entlang einer Linie', 'dg.insert': 'Einfügen',
     'dg.mermaidError': 'Der Text kann nicht gelesen werden: {0}', 'dg.cancel': 'Abbrechen', 'dg.laidOut': '{0} Formen angeordnet.',
     'dg.undo': 'Rückgängig', 'dg.redo': 'Wiederholen', 'dg.delete': 'Löschen', 'dg.duplicate': 'Duplizieren', 'dg.toFront': 'Nach vorne', 'dg.toBack': 'Nach hinten',
     'dg.select': 'Auswählen (V)', 'dg.hand': 'Verschieben (H oder Leertaste halten)', 'dg.connector': 'Verbinder (A)', 'dg.textTool': 'Text (T)', 'dg.shapes': 'Formen',
@@ -630,13 +648,12 @@ function routeBackEdges(shapes, edges, direction) {
   }
 }
 
-/** Shapes and edges of a Mermaid flowchart, laid out at (x, y). */
-function fromMermaid(text, origin = { x: 40, y: 40 }) {
-  const g = parseMermaid(text);
+/** Shapes and edges of a graph ({ direction, nodes, edges } from Mermaid or PlantUML), laid out at (x, y). */
+function fromGraph(g, origin = { x: 40, y: 40 }) {
   const ids = new Map();
   const shapes = g.nodes.map((n) => {
-    const { w, h } = sizeFor(n.type, n.text);
-    const s = makeShape(n.type, 0, 0, w, h, { text: n.text });
+    const size = sizeFor(n.type, n.text);
+    const s = makeShape(n.type, 0, 0, n.w || size.w, n.h || size.h, { text: n.text, ...(n.style ? { style: n.style } : {}) });
     ids.set(n.id, s.id);
     return s;
   });
@@ -649,20 +666,93 @@ function fromMermaid(text, origin = { x: 40, y: 40 }) {
   return { shapes, edges, direction: g.direction };
 }
 
+/** Move placed shapes and edges (free ends and routing points too) by dx, dy. */
+function shiftPart(part, dx, dy) {
+  for (const s of part.shapes) { s.x += dx; s.y += dy; }
+  for (const e of part.edges) {
+    for (const end of [e.from, e.to]) if (!end.id) { end.x += dx; end.y += dy; }
+    if (e.waypoints) for (const w of e.waypoints) { w.x += dx; w.y += dy; }
+  }
+  return part;
+}
+
+/** Shapes and edges of a Mermaid flowchart or a PlantUML diagram (@startuml …), placed at origin. */
+function fromText(text, origin = { x: 40, y: 40 }) {
+  if (isPlantUml(text)) {
+    const g = parsePlantUml(text);
+    if (g.kind === 'graph') return fromGraph(g, origin);
+    const b = pageBounds({ shapes: g.shapes, edges: [] });
+    return shiftPart({ shapes: g.shapes, edges: g.edges }, origin.x - b.x, origin.y - b.y);
+  }
+  return fromGraph(parseMermaid(text), origin);
+}
+
+/** Where a new part goes: below what is on the page already. */
+function freeOrigin() {
+  const p = page();
+  const b = p.shapes.length ? pageBounds(p) : null;
+  return b ? { x: Math.round(b.x / GRID) * GRID, y: Math.round((b.y + b.h + 60) / GRID) * GRID } : { x: 40, y: 40 };
+}
+
 function insertMermaid(text) {
   let part;
   try {
-    const p = page();
-    const b = p.shapes.length ? pageBounds(p) : null;
-    part = fromMermaid(text, b ? { x: Math.round(b.x / GRID) * GRID, y: Math.round((b.y + b.h + 60) / GRID) * GRID } : { x: 40, y: 40 });
+    part = fromText(text, freeOrigin());
   } catch (e) { Suite.shell.toast(t('dg.mermaidError', e.message), 'error'); return false; }
+  insertPart(part);
+  return true;
+}
+
+function insertPart(part) {
   record();
   page().shapes.push(...part.shapes);
   page().edges.push(...part.edges);
   app.selection = new Set(part.shapes.map((s) => s.id));
   changed();
   requestAnimationFrame(fit);
-  return true;
+}
+
+// ---- templates -----------------------------------------------------------------------------------------
+
+/** The shapes and edges of a template, placed at origin. */
+function templatePart(tpl, origin) {
+  if (tpl.build) {
+    const part = tpl.build();
+    const b = pageBounds({ shapes: part.shapes, edges: [] });
+    return shiftPart(part, origin.x - b.x, origin.y - b.y);
+  }
+  return fromText(tpl.mermaid || tpl.plantuml, origin);
+}
+
+async function useTemplate(id, asNew) {
+  const tpl = TEMPLATES.find((x) => x.id === id);
+  if (!tpl) return;
+  if (asNew) {
+    if (app.dirty && !(await Suite.shell.confirm(t('dg.discard')))) return;
+    const doc = newDoc();
+    const part = templatePart(tpl, { x: 40, y: 40 });
+    doc.pages[0].shapes = part.shapes;
+    doc.pages[0].edges = part.edges;
+    setDoc(doc, `${t(`dg.tpl.${id}`)}.drawio`);
+  } else insertPart(templatePart(tpl, freeOrigin()));
+}
+
+function TemplatesDialog() {
+  const d = app.templates;
+  if (!d) return null;
+  const close = () => { app.templates = null; render(); };
+  const go = (asNew) => { close(); useTemplate(d.id, asNew); };
+  return html`<dialog open class="pico" data-testid="templates-dialog"><article class="dg-templates">
+    <header><strong>${t('dg.templates').replace('…', '')}</strong></header>
+    <div class="dg-template-list" role="listbox" aria-label=${t('dg.templates')}>
+      ${TEMPLATES.map((tpl) => html`<button type="button" role="option" aria-selected=${d.id === tpl.id ? 'true' : 'false'} class=${d.id === tpl.id ? '' : 'secondary outline'}
+        data-testid=${`template-${tpl.id}`} onClick=${() => { d.id = tpl.id; render(); }} onDblClick=${() => go(!page().shapes.length)}>
+        <span class="dg-template-icon">${Suite.icon(tpl.icon)}</span><strong>${t(`dg.tpl.${tpl.id}`)}</strong><small>${t(`dg.tpl.${tpl.id}.hint`)}</small></button>`)}
+    </div>
+    <footer><button class="secondary" onClick=${close}>${t('dg.cancel')}</button>
+      <button class="secondary" data-testid="template-insert" disabled=${!d.id} onClick=${() => go(false)}>${t('dg.tplInsert')}</button>
+      <button data-testid="template-new" disabled=${!d.id} onClick=${() => go(true)}>${t('dg.tplNew')}</button></footer>
+  </article></dialog>`;
 }
 
 function MermaidDialog() {
@@ -672,7 +762,10 @@ function MermaidDialog() {
   return html`<dialog open class="pico" data-testid="mermaid-dialog"><article class="dg-mermaid">
     <header><strong>${t('dg.mermaid').replace('…', '')}</strong></header>
     <small>${t('dg.mermaidHint')}</small>
-    <textarea rows="12" data-testid="mermaid-text" spellcheck="false" onInput=${(e) => { d.text = e.target.value; }}>${d.text}</textarea>
+    <select data-testid="text-example" aria-label=${t('dg.example')} onChange=${(e) => { const tpl = TEMPLATES.find((x) => x.id === e.target.value); e.target.value = ''; if (tpl) { d.text = tpl.mermaid || tpl.plantuml; render(); } }}>
+      <option value="">${t('dg.example')}</option>
+      ${TEMPLATES.filter((x) => x.mermaid || x.plantuml).map((x) => html`<option value=${x.id}>${t(`dg.tpl.${x.id}`)} (${x.mermaid ? 'Mermaid' : 'PlantUML'})</option>`)}</select>
+    <textarea rows="12" data-testid="mermaid-text" spellcheck="false" value=${d.text} onInput=${(e) => { d.text = e.target.value; }}></textarea>
     <footer><button class="secondary" onClick=${close}>${t('dg.cancel')}</button>
       <button data-testid="mermaid-insert" onClick=${() => { if (insertMermaid(d.text)) close(); }}>${t('dg.insert')}</button></footer>
   </article></dialog>`;
@@ -700,8 +793,9 @@ async function parseFile(file) {
     return readDrawio(xml);
   }
   if (/^\s*\{/.test(text)) return readExcalidraw(text);
-  if (/\.(mmd|mermaid)$/.test(name) || /^\s*(%%[^\n]*\n\s*)*(flowchart|graph)\b/.test(text)) {
-    const part = fromMermaid(text);
+  const puml = isPlantUml(text) || /\.(puml|plantuml|pu|iuml|wsd)$/.test(name);
+  if (puml || /\.(mmd|mermaid)$/.test(name) || /^\s*(%%[^\n]*\n\s*)*(flowchart|graph)\b/.test(text)) {
+    const part = fromText(puml && !isPlantUml(text) ? `@startuml\n${text}\n@enduml` : text);
     const doc = newDoc();
     doc.pages[0].shapes = part.shapes;
     doc.pages[0].edges = part.edges;
@@ -934,7 +1028,8 @@ function onPointerDown(e) {
     app.drag = { kind: 'move', start: p, orig, moved: false };
   } else {
     if (!e.shiftKey) app.selection = new Set();
-    app.drag = { kind: 'band', start: p, cur: p };
+    // a finger on the empty canvas moves the view (as on a phone's map); a selection rectangle is drawn with the mouse or a pen
+    app.drag = e.pointerType === 'touch' ? { kind: 'pan', x: e.clientX, y: e.clientY, view: { ...app.view } } : { kind: 'band', start: p, cur: p };
   }
   render();
 }
@@ -1408,17 +1503,17 @@ function Elements() {
     const open = parent && !app.collapsed.has(it.id);
     const sel = rowSelected(it);
     const click = (e) => { app.treeFocus = it.id; selectItems([it], e.ctrlKey || e.metaKey ? 'toggle' : e.shiftKey ? 'add' : 'replace'); };
-    const icon = it.kind === 'layer' ? '◫' : it.kind === 'group' ? '▣' : it.kind === 'edge' ? '⟶' : '▭';
+    const icon = Suite.icon(it.kind === 'layer' ? 'layers' : it.kind === 'group' ? 'group' : it.kind === 'edge' ? 'move-right' : 'square');
     const count = it.kind === 'group' ? groupMembers(page(), it.id).length : it.kind === 'layer' ? it.children.length : null;
     const li = html`<li role="treeitem" aria-level=${depth + 1} aria-selected=${sel ? 'true' : 'false'} aria-expanded=${parent ? String(open) : null}
         tabindex=${app.treeFocus === it.id ? 0 : -1} class=${`dg-tree-row dg-tree-${it.kind}${sel ? ' selected' : ''}${it.locked ? ' locked' : ''}${it.hidden ? ' hidden' : ''}`}
         data-testid="tree-item" data-kind=${it.kind} data-id=${it.id}
         style=${`padding-left:${0.3 + depth * 0.9}rem`} onClick=${click} onDblClick=${() => { app.treeEdit = it.id; render(); }}>
-      ${parent ? html`<span class="dg-tree-toggle" data-testid="tree-toggle" aria-hidden="true" onClick=${(ev) => { ev.stopPropagation(); if (open) app.collapsed.add(it.id); else app.collapsed.delete(it.id); render(); }}>${open ? '▾' : '▸'}</span>` : html`<span class="dg-tree-toggle"></span>`}
+      ${parent ? html`<span class="dg-tree-toggle" data-testid="tree-toggle" aria-hidden="true" onClick=${(ev) => { ev.stopPropagation(); if (open) app.collapsed.add(it.id); else app.collapsed.delete(it.id); render(); }}>${open ? Suite.icon('chevron-down') : Suite.icon('chevron-right')}</span>` : html`<span class="dg-tree-toggle"></span>`}
       <span class="dg-tree-icon" aria-hidden="true">${icon}</span>
       ${app.treeEdit === it.id ? html`<${TreeLabelEditor} it=${it} />` : html`<span class="dg-tree-name" data-testid="tree-name">${it.label}</span>`}
       ${count != null ? html`<small class="dg-tree-count">${count}</small>` : null}
-      ${it.locked ? html`<span aria-label=${t('dg.lock')}>🔒</span>` : null}
+      ${it.locked ? html`<span aria-label=${t('dg.lock')}>${Suite.icon('lock')}</span>` : null}
     </li>`;
     return [li, ...(open ? it.children.flatMap((c) => row(c, depth + 1)) : [])];
   };
@@ -1431,13 +1526,13 @@ function Elements() {
 }
 
 function Library() {
-  const tools = [['select', '↖', 'dg.select'], ['hand', '✋', 'dg.hand'], ['edge', '⟶', 'dg.connector']];
+  const tools = [['select', Suite.icon('mouse-pointer-2'), 'dg.select'], ['hand', Suite.icon('hand'), 'dg.hand'], ['edge', Suite.icon('move-right'), 'dg.connector']];
   const tab = app.sidebar || 'shapes';
   return html`<aside class=${`dg-library${tab === 'elements' ? ' elements' : ''}`} data-testid="library">
     <div class="dg-tools">${tools.map(([id, icon, label]) => html`<button class=${app.tool === id ? '' : 'secondary outline'} title=${t(label)} aria-pressed=${app.tool === id}
       data-testid=${`tool-${id}`} onClick=${() => { app.tool = id; render(); }}>${icon}</button>`)}</div>
     <div class="dg-side-tabs" role="tablist">
-      ${[['shapes', 'dg.shapesTab', '◇'], ['elements', 'dg.elements', '☰']].map(([id, label, icon]) => html`<button role="tab" aria-selected=${tab === id ? 'true' : 'false'} class=${tab === id ? '' : 'secondary outline'}
+      ${[['shapes', 'dg.shapesTab', Suite.icon('shapes')], ['elements', 'dg.elements', Suite.icon('list-tree')]].map(([id, label, icon]) => html`<button role="tab" aria-selected=${tab === id ? 'true' : 'false'} class=${tab === id ? '' : 'secondary outline'}
         title=${t(label)} aria-label=${t(label)} data-testid=${`sidebar-${id}`} onClick=${() => { app.sidebar = id; render(); }}>${icon}${tab === 'elements' ? html` <span>${t(label)}</span>` : null}</button>`)}
     </div>
     ${tab === 'elements' ? html`<${Elements} />` : html`<${ShapePalette} />`}
@@ -1473,7 +1568,7 @@ function Format() {
       <select data-testid="auto-layout" aria-label=${t('dg.autoLayout')} onChange=${(e) => { const v = e.target.value; e.target.value = ''; if (v) autoLayout(v); }}>
         <option value="">${t('dg.autoLayout')}…</option>${['TB', 'LR', 'BT', 'RL'].map((d) => html`<option value=${d}>${t(`dg.layout${d}`)}</option>`)}</select>
       <button class="secondary outline" data-testid="mermaid" onClick=${() => { app.mermaid = { text: 'flowchart TD\n  A[Start] --> B{OK?}\n  B -->|yes| C([Done])\n  B -->|no| A' }; render(); }}>${t('dg.mermaid')}</button>
-      ${lockedCount() ? html`<button class="secondary outline" data-testid="unlock-all" onClick=${unlockAll}>🔓 ${t('dg.unlockAll', lockedCount())}</button>` : null}
+      ${lockedCount() ? html`<button class="secondary outline" data-testid="unlock-all" onClick=${unlockAll}>${Suite.icon('lock-open')} ${t('dg.unlockAll', lockedCount())}</button>` : null}
       <${Layers} />
     </aside>`;
   }
@@ -1508,15 +1603,15 @@ function Format() {
     ${shapes.length ? html`<div class="dg-buttons">
       <button class=${st.bold ? '' : 'secondary outline'} title=${t('dg.bold')} data-testid="fmt-bold" onClick=${() => setStyle('bold', !st.bold)}><b>B</b></button>
       <button class=${st.italic ? '' : 'secondary outline'} title=${t('dg.italic')} data-testid="fmt-italic" onClick=${() => setStyle('italic', !st.italic)}><i>I</i></button>
-      ${['left', 'center', 'right'].map((a) => html`<button class=${st.align === a ? '' : 'secondary outline'} title=${t('dg.align')} data-testid=${`fmt-align-${a}`} onClick=${() => setStyle('align', a)}>${{ left: '⇤', center: '↔', right: '⇥' }[a]}</button>`)}
-      ${['top', 'middle', 'bottom'].map((a) => html`<button class=${st.valign === a ? '' : 'secondary outline'} title=${t('dg.align')} data-testid=${`fmt-valign-${a}`} onClick=${() => setStyle('valign', a)}>${{ top: '⤒', middle: '↕', bottom: '⤓' }[a]}</button>`)}
+      ${['left', 'center', 'right'].map((a) => html`<button class=${st.align === a ? '' : 'secondary outline'} title=${t('dg.align')} data-testid=${`fmt-align-${a}`} onClick=${() => setStyle('align', a)}>${{ left: Suite.icon('align-left'), center: Suite.icon('align-center'), right: Suite.icon('align-right') }[a]}</button>`)}
+      ${['top', 'middle', 'bottom'].map((a) => html`<button class=${st.valign === a ? '' : 'secondary outline'} title=${t('dg.align')} data-testid=${`fmt-valign-${a}`} onClick=${() => setStyle('valign', a)}>${{ top: Suite.icon('align-vertical-justify-start'), middle: Suite.icon('align-vertical-justify-center'), bottom: Suite.icon('align-vertical-justify-end') }[a]}</button>`)}
     </div>` : null}
     ${s ? html`<strong>${t('dg.geometry')}</strong><div class="dg-row dg-geom">${num('X', 'x', s, 'fmt-x')}${num('Y', 'y', s, 'fmt-y')}</div><div class="dg-row dg-geom">${num('dg.width', 'w', s, 'fmt-w')}${num('H', 'h', s, 'fmt-h')}</div>` : null}
     ${shapes.length ? html`<div class="dg-row dg-rotation">
       <label>${t('dg.rotation')}<input type="number" min="-360" max="360" step="1" key=${`rot-${shapes.map((x) => x.id).join()}-${shapes[0].rotation || 0}`} defaultValue=${Math.round((shapes[0].rotation || 0) * 10) / 10}
         data-testid="fmt-rotation" onChange=${(e) => setRotation(+e.target.value || 0)} /></label>
-      <button class="secondary outline" title=${t('dg.rotateLeft')} aria-label=${t('dg.rotateLeft')} data-testid="rotate-left" onClick=${() => rotateSelection(-90)}>⟲</button>
-      <button class="secondary outline" title=${t('dg.rotateRight')} aria-label=${t('dg.rotateRight')} data-testid="rotate-right" onClick=${() => rotateSelection(90)}>⟳</button>
+      <button class="secondary outline" title=${t('dg.rotateLeft')} aria-label=${t('dg.rotateLeft')} data-testid="rotate-left" onClick=${() => rotateSelection(-90)}>${Suite.icon('rotate-ccw')}</button>
+      <button class="secondary outline" title=${t('dg.rotateRight')} aria-label=${t('dg.rotateRight')} data-testid="rotate-right" onClick=${() => rotateSelection(90)}>${Suite.icon('rotate-cw')}</button>
     </div>` : null}
     <strong>${t('dg.arrange')}</strong>
     <div class="dg-buttons">
@@ -1526,16 +1621,16 @@ function Format() {
       <button class="secondary outline" data-testid="delete" onClick=${deleteSelection}>${t('dg.delete')}</button>
       ${shapes.length + edges.length > 1 ? html`<button class="secondary outline" data-testid="group" onClick=${group}>${t('dg.group').replace(/ \(.*/, '')}</button>` : null}
       ${[...shapes, ...edges].some((o) => o.group) ? html`<button class="secondary outline" data-testid="ungroup" onClick=${ungroup}>${t('dg.ungroup').replace(/ \(.*/, '')}</button>` : null}
-      <button class="secondary outline" data-testid="lock" onClick=${lockSelection}>🔒 ${t('dg.lock').replace(/ \(.*/, '')}</button>
+      <button class="secondary outline" data-testid="lock" onClick=${lockSelection}>${Suite.icon('lock')} ${t('dg.lock').replace(/ \(.*/, '')}</button>
     </div>
     ${layersOf(page()).length > 1 ? html`<label>${t('dg.moveToLayer')}<select data-testid="move-to-layer" onChange=${(e) => moveToLayer(e.target.value)}>
       ${layersOf(page()).map((l) => html`<option value=${l.id} selected=${layerOf(page(), first).id === l.id}>${l.name}</option>`)}</select></label>` : null}
     ${shapes.length > 1 ? html`<select data-testid="auto-layout" aria-label=${t('dg.autoLayout')} onChange=${(e) => { const v = e.target.value; e.target.value = ''; if (v) autoLayout(v); }}>
       <option value="">${t('dg.autoLayout')}…</option>${['TB', 'LR', 'BT', 'RL'].map((d) => html`<option value=${d}>${t(`dg.layout${d}`)}</option>`)}</select>` : null}
     ${shapes.length > 1 ? html`<div class="dg-buttons">
-      ${[['left', '⇤'], ['center', '↔'], ['right', '⇥'], ['top', '⤒'], ['middle', '↕'], ['bottom', '⤓']].map(([k, icon]) => html`<button class="secondary outline" title=${t(`dg.align${k[0].toUpperCase()}${k.slice(1)}`)} data-testid=${`align-${k}`} onClick=${() => align(k)}>${icon}</button>`)}
-      ${shapes.length > 2 ? html`<button class="secondary outline" title=${t('dg.distH')} data-testid="dist-h" onClick=${() => distribute(true)}>⟷</button>
-        <button class="secondary outline" title=${t('dg.distV')} data-testid="dist-v" onClick=${() => distribute(false)}>↕︎</button>` : null}
+      ${[['left', Suite.icon('align-horizontal-justify-start')], ['center', Suite.icon('align-horizontal-justify-center')], ['right', Suite.icon('align-horizontal-justify-end')], ['top', Suite.icon('align-vertical-justify-start')], ['middle', Suite.icon('align-vertical-justify-center')], ['bottom', Suite.icon('align-vertical-justify-end')]].map(([k, icon]) => html`<button class="secondary outline" title=${t(`dg.align${k[0].toUpperCase()}${k.slice(1)}`)} data-testid=${`align-${k}`} onClick=${() => align(k)}>${icon}</button>`)}
+      ${shapes.length > 2 ? html`<button class="secondary outline" title=${t('dg.distH')} data-testid="dist-h" onClick=${() => distribute(true)}>${Suite.icon('align-horizontal-distribute-center')}</button>
+        <button class="secondary outline" title=${t('dg.distV')} data-testid="dist-v" onClick=${() => distribute(false)}>${Suite.icon('align-vertical-distribute-center')}</button>` : null}
     </div>` : null}
   </aside>`;
 }
@@ -1555,10 +1650,10 @@ function Layers() {
             onKeyDown=${(e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') { app.renamingLayer = null; render(); } }}
             onBlur=${(e) => { if (app.renamingLayer !== l.id) return; app.renamingLayer = null; if (e.target.value && e.target.value !== l.name) setLayer(l, { name: e.target.value }); else render(); }} />`
         : html`<span class="dg-layer-name" data-testid="layer-name" onDblClick=${() => { app.renamingLayer = l.id; render(); }}>${l.name}</span>`}
-      <button class=${l.visible === false ? 'secondary outline' : 'secondary'} title=${t('dg.layerVisible')} aria-pressed=${l.visible !== false} data-testid="layer-visible" onClick=${() => setLayer(l, { visible: l.visible === false })}>👁</button>
-      <button class=${l.locked ? 'secondary' : 'secondary outline'} title=${t('dg.layerLocked')} aria-pressed=${!!l.locked} data-testid="layer-locked" onClick=${() => setLayer(l, { locked: !l.locked })}>🔒</button>
-      <button class="secondary outline" title=${t('dg.layerUp')} data-testid="layer-up" disabled=${l === ls[ls.length - 1]} onClick=${() => moveLayer(l, 1)}>▲</button>
-      <button class="secondary outline" title=${t('dg.layerDown')} data-testid="layer-down" disabled=${l === ls[0]} onClick=${() => moveLayer(l, -1)}>▼</button>
+      <button class=${l.visible === false ? 'secondary outline' : 'secondary'} title=${t('dg.layerVisible')} aria-pressed=${l.visible !== false} data-testid="layer-visible" onClick=${() => setLayer(l, { visible: l.visible === false })}>${Suite.icon('eye')}</button>
+      <button class=${l.locked ? 'secondary' : 'secondary outline'} title=${t('dg.layerLocked')} aria-pressed=${!!l.locked} data-testid="layer-locked" onClick=${() => setLayer(l, { locked: !l.locked })}>${Suite.icon('lock')}</button>
+      <button class="secondary outline" title=${t('dg.layerUp')} data-testid="layer-up" disabled=${l === ls[ls.length - 1]} onClick=${() => moveLayer(l, 1)}>${Suite.icon('chevron-up')}</button>
+      <button class="secondary outline" title=${t('dg.layerDown')} data-testid="layer-down" disabled=${l === ls[0]} onClick=${() => moveLayer(l, -1)}>${Suite.icon('chevron-down')}</button>
       ${ls.length > 1 ? html`<button class="secondary outline" title=${t('dg.deleteLayer')} data-testid="layer-delete" onClick=${() => deleteLayer(l)}>×</button>` : null}
     </li>`)}</ul>
     <button class="secondary outline" data-testid="add-layer" onClick=${addLayer}>+ ${t('dg.addLayer')}</button>
@@ -1587,22 +1682,23 @@ function Toolbar() {
   return html`<nav class="dg-toolbar" role="toolbar">
     <button class="secondary" data-testid="new" onClick=${newDiagram}>${t('dg.new')}</button>
     <button class="secondary" data-testid="open" onClick=${openDiagram}>${t('dg.open')}</button>
+    <button class="secondary outline" data-testid="templates" title=${t('dg.templates')} onClick=${() => { app.templates = { id: null }; render(); }}>${Suite.icon('clipboard')} ${t('dg.templatesShort')}</button>
     <${Suite.shell.Recent} app=${APP} before=${() => !app.dirty || Suite.shell.confirm(t('dg.discard'))} onOpen=${(p) => openPicked(p)} />
     <button class=${app.dirty ? '' : 'secondary'} data-testid="save" onClick=${() => save()}>${t('dg.save')}</button>
     <button class="secondary outline" data-testid="save-as" onClick=${() => save(true)}>${t('dg.saveAs')}</button>
     <button class="secondary outline" data-testid="export-svg" onClick=${exportSvg}>SVG</button>
     <button class="secondary outline" data-testid="export-png" onClick=${() => exportPng()}>PNG</button>
-    <button class="secondary outline" data-testid="print" title=${t('dg.print')} onClick=${printDiagram}>🖨</button>
+    <button class="secondary outline" data-testid="print" title=${t('dg.print')} onClick=${printDiagram}>${Suite.icon('printer')}</button>
     <span class="dg-sep"></span>
-    <button class="secondary outline" title="${t('dg.undo')} (Ctrl+Z)" data-testid="undo" onClick=${undo}>↶</button>
-    <button class="secondary outline" title="${t('dg.redo')} (Ctrl+Y)" data-testid="redo" onClick=${redo}>↷</button>
-    <button class="secondary outline dg-panels-toggle" data-testid="toggle-panels" onClick=${() => { app.panels = !app.panels; render(); }}>☰ ${t('dg.panels')}</button>
+    <button class="secondary outline" title="${t('dg.undo')} (Ctrl+Z)" data-testid="undo" onClick=${undo}>${Suite.icon('undo-2')}</button>
+    <button class="secondary outline" title="${t('dg.redo')} (Ctrl+Y)" data-testid="redo" onClick=${redo}>${Suite.icon('redo-2')}</button>
+    <button class="secondary outline dg-panels-toggle" data-testid="toggle-panels" onClick=${() => { app.panels = !app.panels; render(); }}>${Suite.icon('menu')} ${t('dg.panels')}</button>
   </nav>`;
 }
 
 function Main() {
   Suite.shell.setFileName(`${app.name}${app.dirty ? ' •' : ''}`);
-  return html`<div class=${`dg-layout ${app.panels ? 'panels-open' : ''}`}><${Library} /><${Canvas} /><${Format} /><${Pages} /><${MermaidDialog} />${app.panels ? Suite.shell.backdrop(() => { app.panels = false; render(); }) : null}</div>`;
+  return html`<div class=${`dg-layout ${app.panels ? 'panels-open' : ''}`}><${Library} /><${Canvas} /><${Format} /><${Pages} /><${MermaidDialog} /><${TemplatesDialog} />${app.panels ? Suite.shell.backdrop(() => { app.panels = false; render(); }) : null}</div>`;
 }
 
 Suite.shell.mount({ id: APP, title: 'app.title', version: '%%BUILD_VERSION%%', toolbar: () => html`<${Toolbar} />`, main: () => html`<${Main} />` });
@@ -1666,5 +1762,5 @@ Suite.openFiles.register(async () => {
 });
 
 // for tests
-window.DG = { app, page, setDoc, readDrawio, writeDrawio, exportSvgText, render, parseMermaid, autoLayout, group, ungroup, lockSelection, unlockAll, rotateSelection, setRotation, selectItems, readExcalidraw };
+window.DG = { app, page, parsePlantUml, fromText, useTemplate, TEMPLATES, setDoc, readDrawio, writeDrawio, exportSvgText, render, parseMermaid, autoLayout, group, ungroup, lockSelection, unlockAll, rotateSelection, setRotation, selectItems, readExcalidraw };
 document.body.dataset.ready = 'true';

@@ -862,14 +862,14 @@ function Toolbar() {
     <button class="secondary outline" data-testid="import" onClick=${async () => importFiles(await pickFiles())}>${t('ve.import')}</button>
     <button data-testid="export" onClick=${openExport}>${t('ve.export')}</button>
     <span class="ve-sep"></span>
-    <button class="secondary outline" title=${t('ve.undo')} data-testid="undo" disabled=${!state.history.length} onClick=${undo}>↶</button>
-    <button class="secondary outline" title=${t('ve.redo')} data-testid="redo" disabled=${!state.future.length} onClick=${redo}>↷</button>
-    <button class="secondary outline" title=${t('ve.split')} data-testid="split" onClick=${split}>✂</button>
-    <button class="secondary outline" title=${t('ve.delete')} data-testid="delete" disabled=${!sel} onClick=${() => deleteSelected(false)}>🗑</button>
-    <button class="secondary outline" title=${t('ve.ripple')} data-testid="ripple" disabled=${!sel} onClick=${() => deleteSelected(true)}>⇤🗑</button>
+    <button class="secondary outline" title=${t('ve.undo')} data-testid="undo" disabled=${!state.history.length} onClick=${undo}>${Suite.icon('undo-2')}</button>
+    <button class="secondary outline" title=${t('ve.redo')} data-testid="redo" disabled=${!state.future.length} onClick=${redo}>${Suite.icon('redo-2')}</button>
+    <button class="secondary outline" title=${t('ve.split')} data-testid="split" onClick=${split}>${Suite.icon('scissors')}</button>
+    <button class="secondary outline" title=${t('ve.delete')} data-testid="delete" disabled=${!sel} onClick=${() => deleteSelected(false)}>${Suite.icon('trash-2')}</button>
+    <button class="secondary outline" title=${t('ve.ripple')} data-testid="ripple" disabled=${!sel} onClick=${() => deleteSelected(true)}>${Suite.icon('arrow-left-to-line')}${Suite.icon('trash-2')}</button>
     <button class="secondary outline" title=${t('ve.addTitle')} data-testid="add-title" onClick=${addTitle}>T ${t('ve.title')}</button>
     <button class="secondary outline" title=${t('ve.exportSubtitles')} data-testid="export-srt" disabled=${!state.project.clips.some((c) => c.kind === 'text')} onClick=${exportSubtitles}>CC</button>
-    <button class="secondary outline" title=${t('ve.snapshot')} data-testid="snapshot" onClick=${snapshotPng}>📷</button>
+    <button class="secondary outline" title=${t('ve.snapshot')} data-testid="snapshot" onClick=${snapshotPng}>${Suite.icon('camera')}</button>
   </nav>`;
 }
 
@@ -881,10 +881,10 @@ function MediaBin() {
     <ul class="ve-media">${list.map((s) => html`<li data-testid="media" class=${s.missing ? 'missing' : ''} draggable=${!s.missing}
         onDragStart=${(e) => { e.dataTransfer.setData('application/x-ve-source', s.id); e.dataTransfer.effectAllowed = 'copy'; }}
         onDblClick=${() => !s.missing && addSource(s)}>
-      <div class="ve-thumb" style=${s.thumb ? `background-image:url(${s.thumb})` : ''}>${s.thumb ? '' : s.kind === 'audio' ? '♪' : s.kind === 'image' ? '🖼' : '🎞'}</div>
+      <div class="ve-thumb" style=${s.thumb ? `background-image:url(${s.thumb})` : ''}>${s.thumb ? '' : s.kind === 'audio' ? Suite.icon('music') : s.kind === 'image' ? Suite.icon('image') : Suite.icon('film')}</div>
       <div class="ve-media-info"><span class="ve-media-name" title=${s.name}>${s.name}</span>
         <small>${s.missing ? html`<b>${t('ve.missing')}</b>` : `${Number.isFinite(s.duration) ? fmt(s.duration) : ''}${s.width ? ` · ${s.width}×${s.height}` : ''}`}
-          ${!s.missing && s.canDecode === false ? html` <span title=${t('ve.noExport')}>⚠</span>` : null}</small></div>
+          ${!s.missing && s.canDecode === false ? html` <span title=${t('ve.noExport')}>${Suite.icon('triangle-alert')}</span>` : null}</small></div>
       <div class="ve-media-actions">
         ${s.missing ? html`<button class="secondary outline" data-testid="locate" onClick=${() => locate(s)}>${t('ve.locate')}</button>`
           : html`<button class="secondary outline" title=${t('ve.add')} data-testid="add-media" onClick=${() => addSource(s)}>＋</button>`}
@@ -899,12 +899,12 @@ function Preview() {
     <div class="ve-canvas-wrap"><canvas data-testid="preview-canvas" ref=${(el) => { if (el && previewCanvas !== el) { previewCanvas = el; requestCompose(); } }}
       style=${`aspect-ratio:${state.project.width}/${state.project.height}`}></canvas></div>
     <div class="ve-transport">
-      <button class="secondary outline" title=${t('ve.toStart')} data-testid="to-start" onClick=${() => seek(0)}>⏮</button>
-      <button class="secondary outline" title=${t('ve.prevFrame')} data-testid="prev-frame" onClick=${() => seek(state.time - frame())}>◀</button>
-      ${state.playing ? html`<button title=${t('ve.pause')} data-testid="pause" onClick=${stop}>⏸</button>`
-        : html`<button title=${t('ve.play')} data-testid="play" disabled=${!total} onClick=${play}>▶</button>`}
-      <button class="secondary outline" title=${t('ve.nextFrame')} data-testid="next-frame" onClick=${() => seek(state.time + frame())}>▶|</button>
-      <button class="secondary outline" title=${t('ve.toEnd')} data-testid="to-end" onClick=${() => seek(total)}>⏭</button>
+      <button class="secondary outline" title=${t('ve.toStart')} data-testid="to-start" onClick=${() => seek(0)}>${Suite.icon('skip-back')}</button>
+      <button class="secondary outline" title=${t('ve.prevFrame')} data-testid="prev-frame" onClick=${() => seek(state.time - frame())}>${Suite.icon('step-back')}</button>
+      ${state.playing ? html`<button title=${t('ve.pause')} data-testid="pause" onClick=${stop}>${Suite.icon('pause')}</button>`
+        : html`<button title=${t('ve.play')} data-testid="play" disabled=${!total} onClick=${play}>${Suite.icon('play')}</button>`}
+      <button class="secondary outline" title=${t('ve.nextFrame')} data-testid="next-frame" onClick=${() => seek(state.time + frame())}>${Suite.icon('play')}|</button>
+      <button class="secondary outline" title=${t('ve.toEnd')} data-testid="to-end" onClick=${() => seek(total)}>${Suite.icon('skip-forward')}</button>
       <span class="ve-clock" data-testid="clock">${fmt(state.time)} / ${fmt(total)}</span>
     </div>
   </section>`;
@@ -931,7 +931,7 @@ function KeyField({ c, prop, label, testid, factor = 1, min, max, clamp = (v) =>
   return html`<div class="ve-keyfield">
     <${NumberField} label=${label} testid=${testid} value=${value} min=${min} max=${max} rekey=${keyed ? Math.round(state.time * 1000) : ''} onCommit=${set} />
     <button type="button" class=${`ve-key ${atKey ? 'on' : keyed ? 'some' : ''}`} data-testid=${`key-${prop}`} aria-pressed=${String(!!atKey)}
-      title=${t(atKey ? 've.keyRemove' : 've.keyAdd')} aria-label=${t(atKey ? 've.keyRemove' : 've.keyAdd')} onClick=${toggle}>◆</button></div>`;
+      title=${t(atKey ? 've.keyRemove' : 've.keyAdd')} aria-label=${t(atKey ? 've.keyRemove' : 've.keyAdd')} onClick=${toggle}>${Suite.icon('diamond')}</button></div>`;
 }
 
 function Properties() {
@@ -1035,10 +1035,10 @@ function Properties() {
         <label><input type="checkbox" data-testid="title-bg-on" checked=${!!c.text.background} onChange=${(e) => updateSelected({ text: { ...c.text, background: e.target.checked ? 'rgba(0,0,0,0.6)' : '' } })} /> ${t('ve.textBg')}</label>
       </div>` : null}
     <div class="ve-buttons">
-      <button class="secondary outline" data-testid="clip-split" onClick=${split}>✂ ${t('ve.split')}</button>
-      ${audible ? html`<button class="secondary outline" data-testid="clip-edit-audio" title=${t('ve.editAudioHint')} onClick=${() => editInAudioEditor(c)}>🎚 ${t('ve.editAudio')}</button>` : null}
+      <button class="secondary outline" data-testid="clip-split" onClick=${split}>${Suite.icon('scissors')} ${t('ve.split')}</button>
+      ${audible ? html`<button class="secondary outline" data-testid="clip-edit-audio" title=${t('ve.editAudioHint')} onClick=${() => editInAudioEditor(c)}>${Suite.icon('sliders-horizontal')} ${t('ve.editAudio')}</button>` : null}
       ${audible ? html`<button class="secondary outline" data-testid="clip-normalize" title=${t('ve.normalizeHint')} onClick=${() => normalizeClip(c).catch(fail)}>${t('ve.normalize')}</button>` : null}
-      ${c.kind === 'video' ? html`<button class="secondary outline" data-testid="clip-freeze" title=${t('ve.freezeHint')} onClick=${() => freezeFrame()}>❄ ${t('ve.freeze')}</button>` : null}
+      ${c.kind === 'video' ? html`<button class="secondary outline" data-testid="clip-freeze" title=${t('ve.freezeHint')} onClick=${() => freezeFrame()}>${Suite.icon('snowflake')} ${t('ve.freeze')}</button>` : null}
       <button class="secondary outline" data-testid="clip-delete" onClick=${() => deleteSelected(false)}>${t('ve.delete')}</button>
       <button class="secondary outline" data-testid="clip-ripple" onClick=${() => deleteSelected(true)}>${t('ve.ripple')}</button>
     </div>
@@ -1067,8 +1067,8 @@ function Timeline() {
       </div>
       ${p.tracks.map((tr) => html`<div class=${`ve-tl-head ${tr.kind}`} data-testid="track-head">
         <span>${tr.name}</span>
-        ${tr.kind === 'video' ? html`<button class=${`secondary ${tr.hidden ? '' : 'outline'}`} title=${t('ve.hide')} data-testid="track-hide" aria-pressed=${tr.hidden} onClick=${() => setTrack(tr, { hidden: !tr.hidden })}>${tr.hidden ? '◌' : '👁'}</button>` : null}
-        <button class=${`secondary ${tr.mute ? '' : 'outline'}`} title=${t('ve.mute')} data-testid="track-mute" aria-pressed=${tr.mute} onClick=${() => setTrack(tr, { mute: !tr.mute })}>${tr.mute ? '🔇' : '🔊'}</button>
+        ${tr.kind === 'video' ? html`<button class=${`secondary ${tr.hidden ? '' : 'outline'}`} title=${t('ve.hide')} data-testid="track-hide" aria-pressed=${tr.hidden} onClick=${() => setTrack(tr, { hidden: !tr.hidden })}>${tr.hidden ? Suite.icon('circle-dashed') : Suite.icon('eye')}</button>` : null}
+        <button class=${`secondary ${tr.mute ? '' : 'outline'}`} title=${t('ve.mute')} data-testid="track-mute" aria-pressed=${tr.mute} onClick=${() => setTrack(tr, { mute: !tr.mute })}>${tr.mute ? Suite.icon('volume-x') : Suite.icon('volume-2')}</button>
         <button class="secondary outline ve-wide" title=${t('ve.deleteTrack')} data-testid="track-delete" disabled=${p.tracks.filter((x) => x.kind === tr.kind).length < 2} onClick=${() => deleteTrack(tr)}>×</button>
       </div>`)}
       <div class="ve-tl-add">
@@ -1099,7 +1099,7 @@ function Timeline() {
               ${s && s.peaks && (c.kind === 'audio' || c.kind === 'video') ? html`<canvas class=${`ve-wave ${c.kind}`} data-testid="waveform" ref=${(el) => drawWave(el, c, s)}></canvas>` : null}
               <span class="ve-clip-label">${c.kind === 'text' ? `T ${c.text.content}` : s ? `${c.reverse ? '◀ ' : ''}${tl.speedOf(c) !== 1 ? `${Math.round(tl.speedOf(c) * 100)} % ` : ''}${s.name}` : ''}</span>
               ${c.fadeIn > 0 ? html`<span class="ve-fade in" style=${`width:${c.fadeIn * state.pps}px`}></span>` : null}
-              ${c.keys ? [...new Set(Object.values(c.keys).flatMap((l) => (l || []).map((k) => k.t)))].map((kt) => html`<span class="ve-keymark" data-testid="keymark" style=${`left:${kt * state.pps}px`}>◆</span>`) : null}
+              ${c.keys ? [...new Set(Object.values(c.keys).flatMap((l) => (l || []).map((k) => k.t)))].map((kt) => html`<span class="ve-keymark" data-testid="keymark" style=${`left:${kt * state.pps}px`}>${Suite.icon('diamond')}</span>`) : null}
               ${c.fadeOut > 0 ? html`<span class="ve-fade out" style=${`width:${c.fadeOut * state.pps}px`}></span>` : null}
               <span class="ve-handle right" data-testid="trim-right" onPointerDown=${(e) => clipDown(e, c, 'right')}></span>
             </div>`;

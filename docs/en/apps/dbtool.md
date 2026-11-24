@@ -1,6 +1,6 @@
 # Database tool
 
-The database tool (`dbtool.html`) opens **SQLite** database files and connects to **PostgreSQL** servers: browse the schema, write and
+The database tool (`dbtool.html`) opens **SQLite** database files and connects to **PostgreSQL**, **MySQL** and **MariaDB** servers: browse the schema, write and
 run SQL, view and edit table data, export results.
 
 ## SQLite databases
@@ -12,16 +12,19 @@ run SQL, view and edit table data, export results.
 
 SQLite works completely offline.
 
-## PostgreSQL servers
+## PostgreSQL, MySQL and MariaDB servers
 
-A Postgres server is reached through the **local relay** (see the user guide, "Network functions and the relay").
+A database server is reached through the **local relay** (see the user guide, "Network functions and the relay").
 
-1. **Connect to Postgres…** opens the connection dialog: name, host, port (5432), database, user, password, SSL (prefer, require, disable;
+1. **Connect to a server…** opens the connection dialog: the **server type** (PostgreSQL or MySQL / MariaDB), name, host, port (5432 or 3306), database, user, password, SSL (prefer, require, disable;
    optionally accept self-signed certificates) and the relay address and token. **Test** checks the relay.
 2. **Connect** opens the connection; **Save connection** adds it to **Saved connections** (the password only if you tick the box).
 3. A click on a saved connection connects (or asks for the password if it was not saved); ✎ edits and × deletes a connection.
 
-Password, MD5 and SCRAM-SHA-256 authentication are supported.
+PostgreSQL: password, MD5 and SCRAM-SHA-256 authentication are supported. MySQL / MariaDB: `caching_sha2_password` (the default of
+MySQL 8; the first sign-in of a user is completed over SSL or with the server's RSA key) and `mysql_native_password` (MariaDB, older
+MySQL), also when the server switches between them. 🐬 marks MySQL connections, 🐘 Postgres ones. A MySQL connection works in the chosen
+database: its tables appear without a prefix, the editor uses the MySQL dialect (backquotes, MySQL functions in the completion).
 
 ### Saving connections
 
@@ -37,11 +40,20 @@ Saved connections and the relay settings are kept in a **connections file**. **S
 
 - **Schema** lists the tables (▦) and views (👁) of the active database; unfold a table to see its columns (🔑 = primary key, types, NOT NULL).
   ⟳ reloads the schema; it is reloaded automatically after `CREATE`, `ALTER` and `DROP`.
-- The SQL editor highlights SQL and completes keywords, table and column names (`Ctrl+Space`).
+- The SQL editor highlights SQL and completes while you type (or with `Ctrl+Space`): keywords, tables, the columns of the tables named
+  in the statement – also without a table name (`SELECT ▮ FROM people`, `WHERE a…`), with the table and type shown next to them –,
+  columns after `table.` or an alias (`p.` for `FROM people p`), and the common functions of SQLite or PostgreSQL (`upper(▮)`,
+  `strftime`, `date_trunc`, `string_agg`, …), which are inserted with their parentheses.
 - **Run** (`Ctrl+Enter`) runs the selected text, or the statement at the cursor; **Run all** (`Ctrl+Shift+Enter`) runs all statements.
 - Every statement with a result gets a result tab. The message line shows the number of changed rows, the duration or the error
   (for Postgres with SQL state code, detail and hint).
-- **CSV** and **JSON** export the shown result.
+- **CSV**, **XLSX** (Excel, LibreOffice, Google Sheets) and **JSON** export the shown result. For a browsed table they export all
+  of its rows, not only the loaded page. The XLSX file has a bold, frozen header row and an autofilter.
+- **⇪ Import** reads a CSV file (comma, semicolon or tab; UTF-8 or Windows-1252) or the first sheet of an Excel file (`.xlsx`) into
+  a **new table** (named after the file; column types – integer, real or text – are guessed from the values) or an **existing table**
+  (columns matched by name, other columns are left out and named). A preview shows the first rows; *The first row holds the column
+  names* can be switched off. Empty cells become NULL; Excel dates become `YYYY-MM-DD`. The rows are inserted in one transaction –
+  either all or none – and the table is shown afterwards. Undo (SQLite) removes the import again.
 - **⛁ ER diagram** (above the schema) draws the tables and views with their columns (🔑 primary key, → foreign key) and the
   foreign-key relations, and opens the drawing in the diagram editor (referenced tables above the referencing ones), where it
   can be arranged, edited, printed or exported.

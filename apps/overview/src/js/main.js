@@ -32,6 +32,7 @@
       'desc.imageeditor': 'Paint and edit images with layers, selections and filters.',
       'desc.diagram': 'Flowcharts and diagrams; draw.io and Excalidraw files.',
       'desc.keepass': 'Open and edit KeePass password databases (KDBX).',
+      'desc.authenticator': 'One-time passwords (TOTP, HOTP, Steam) from a KeePass database; import from QR codes and authenticator apps.',
       'desc.spreadsheet': 'Spreadsheets with formulas, sorting and filters: XLSX, ODS, CSV.',
       'desc.document': 'Text documents: DOCX, ODT, PDF export.',
       'desc.presentation': 'Slides with text, shapes and images; PPTX.',
@@ -40,7 +41,7 @@
       'desc.pdfviewer': 'Read, search and annotate PDF files.',
       'desc.calendar': 'Calendars with recurring events; iCalendar files.',
       'desc.mail': 'E-mail over IMAP/SMTP with address book (needs the relay).',
-      'desc.dbtool': 'Query and edit SQLite and PostgreSQL databases.',
+      'desc.dbtool': 'Query and edit SQLite, PostgreSQL and MySQL/MariaDB databases.',
       'desc.ftp': 'Transfer files with FTP, FTPS and SFTP (needs the relay).',
       'desc.ssh': 'Terminal sessions over SSH, file transfer (needs the relay).',
       'desc.http': 'Send HTTP requests, inspect responses, collections.',
@@ -63,6 +64,7 @@
       'desc.imageeditor': 'Bilder malen und bearbeiten, mit Ebenen, Auswahlen und Filtern.',
       'desc.diagram': 'Flussdiagramme und Diagramme; draw.io- und Excalidraw-Dateien.',
       'desc.keepass': 'KeePass-Passwortdatenbanken (KDBX) öffnen und bearbeiten.',
+      'desc.authenticator': 'Einmalpasswörter (TOTP, HOTP, Steam) aus einer KeePass-Datenbank; Import aus QR-Codes und Authenticator-Apps.',
       'desc.spreadsheet': 'Tabellen mit Formeln, Sortieren und Filtern: XLSX, ODS, CSV.',
       'desc.document': 'Textdokumente: DOCX, ODT, PDF-Export.',
       'desc.presentation': 'Folien mit Text, Formen und Bildern; PPTX.',
@@ -71,7 +73,7 @@
       'desc.pdfviewer': 'PDF-Dateien lesen, durchsuchen und kommentieren.',
       'desc.calendar': 'Kalender mit Serienterminen; iCalendar-Dateien.',
       'desc.mail': 'E-Mail über IMAP/SMTP mit Adressbuch (braucht das Relay).',
-      'desc.dbtool': 'SQLite- und PostgreSQL-Datenbanken abfragen und bearbeiten.',
+      'desc.dbtool': 'SQLite-, PostgreSQL- und MySQL/MariaDB-Datenbanken abfragen und bearbeiten.',
       'desc.ftp': 'Dateien über FTP, FTPS und SFTP übertragen (braucht das Relay).',
       'desc.ssh': 'Terminalsitzungen über SSH, Dateiübertragung (braucht das Relay).',
       'desc.http': 'HTTP-Anfragen senden, Antworten untersuchen, Sammlungen.',
@@ -82,7 +84,7 @@
 
   const CATEGORIES = [
     ['files', ['texteditor', 'hexeditor', 'archive', 'mediaplayer', 'audioeditor', 'videoeditor', 'imageeditor', 'diagram', 'barcode']],
-    ['security', ['keepass']],
+    ['security', ['keepass', 'authenticator']],
     ['office', ['spreadsheet', 'document', 'presentation', 'reveal', 'pdfviewer', 'calendar']],
     ['web', ['mail', 'dbtool', 'ftp', 'ssh', 'http', 'webinspector']],
     ['data', ['notebook']],
@@ -137,7 +139,7 @@
   }
   const fail = (e) => { console.warn(e); Suite.shell.toast(Suite.i18n.describe(e), 'error'); };
   const name = (id) => Suite.bridge.appName(id);
-  const icon = (id) => (Suite.bridge.app(id) || {}).icon || '';
+  const icon = (id) => ((Suite.bridge.app(id) || {}).icon ? Suite.icon(Suite.bridge.app(id).icon) : '');
 
   // frames live outside of Preact (re-rendering must never reload an app)
   const frames = document.createElement('div');
@@ -314,13 +316,13 @@
   function Toolbar() {
     return html`<nav class="ov-toolbar" role="toolbar">
       <button class="secondary" data-testid="open-file" onClick=${openFile}>${t('ov.openFile')}</button>
-      <button class="secondary outline" data-testid="save-all" aria-busy=${state.loading === 'all'} onClick=${saveAll}>💾 ${t('ov.saveAll')}</button>
+      <button class="secondary outline" data-testid="save-all" aria-busy=${state.loading === 'all'} onClick=${saveAll}>${Suite.icon('save')} ${t('ov.saveAll')}</button>
     </nav>`;
   }
 
   function Tabs() {
     return html`<div class="ov-tabs" role="tablist" data-testid="tabs">
-      <button role="tab" class=${state.active === null ? '' : 'secondary outline'} aria-selected=${state.active === null} data-testid="tab-home" onClick=${() => activate(null)}>▦ ${t('ov.home')}</button>
+      <button role="tab" class=${state.active === null ? '' : 'secondary outline'} aria-selected=${state.active === null} data-testid="tab-home" onClick=${() => activate(null)}>${Suite.icon('layout-grid')} ${t('ov.home')}</button>
       ${state.tabs.map((tab) => html`<span class=${`ov-tab ${state.active === tab.id ? 'active' : ''}`} data-testid="tab" data-app=${tab.app}>
         <button role="tab" class=${state.active === tab.id ? '' : 'secondary outline'} aria-selected=${state.active === tab.id} onClick=${() => activate(tab.id)}>${icon(tab.app)} ${name(tab.app)}${tab.dirty ? ' •' : ''}</button>
         <button class="secondary outline ov-tab-close" title=${t('ov.close')} aria-label=${t('ov.close')} data-testid="tab-close" onClick=${() => closeTab(tab)}>×</button>
@@ -336,8 +338,8 @@
       <p>${t(`desc.${id}`)}</p>
       <footer>
         <button data-testid="open-app" disabled=${!ok} onClick=${() => openTab(id)}>${t('ov.open')}</button>
-        <button class="secondary outline" title=${t('ov.window')} aria-label=${t('ov.window')} data-testid="open-window" disabled=${!ok} onClick=${() => openWindow(id)}>↗</button>
-        <button class="secondary outline" title=${t('ov.save')} aria-label=${t('ov.save')} data-testid="save-app" disabled=${!ok} onClick=${() => saveApp(id)}>💾</button>
+        <button class="secondary outline" title=${t('ov.window')} aria-label=${t('ov.window')} data-testid="open-window" disabled=${!ok} onClick=${() => openWindow(id)}>${Suite.icon('external-link')}</button>
+        <button class="secondary outline" title=${t('ov.save')} aria-label=${t('ov.save')} data-testid="save-app" disabled=${!ok} onClick=${() => saveApp(id)}>${Suite.icon('save')}</button>
       </footer>
     </article>`;
   }
@@ -377,6 +379,12 @@
 
   // workspace (shared/js/shell.js): a tab per saved tab with its files, in the saved order; the active one is shown at the end
   Suite.preferences.setHosted(() => state.tabs.map((tab) => tab.frame && tab.frame.contentWindow));
+  // the language of the overview is also the language of the applications in its tabs
+  Suite.i18n.onChange((lang) => {
+    for (const tab of state.tabs) {
+      try { const w = tab.frame && tab.frame.contentWindow; if (w && w.Suite && w.Suite.i18n) w.Suite.i18n.setLanguage(lang); } catch (e) { /* not ready */ }
+    }
+  });
   Suite.workspace.setHost({
     async restore(files, activeTab) {
       const groups = new Map();

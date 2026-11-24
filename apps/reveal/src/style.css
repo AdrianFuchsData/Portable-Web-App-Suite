@@ -67,3 +67,11 @@
 .rv-slides li[data-drop=into] { box-shadow: inset -4px 0 0 var(--pico-primary); background: var(--suite-selected); }
 .rv-error { color: var(--pico-del-color); font-size: .8rem; margin: .2rem 0; }
 .rv-trusted { background: #b3261e; border-color: #b3261e; color: #fff; }
+.rv-theme-dialog { max-width: min(46rem, 96vw); }
+.rv-theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 0 .8rem; }
+.rv-theme-color span { display: flex; align-items: center; gap: .4rem; }
+.rv-theme-color input[type=color] { width: 3rem; height: 2rem; padding: 0; margin: 0; }
+.rv-theme-color input.unset { opacity: .35; }
+.rv-theme-color button { width: auto; margin: 0; padding: .1rem .45rem; }
+.rv-theme-dialog footer { display: flex; flex-wrap: wrap; gap: .4rem; justify-content: flex-end; }
+.rv-theme-dialog footer > * { width: auto; margin: 0; }

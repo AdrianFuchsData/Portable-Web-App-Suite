@@ -37,6 +37,15 @@ without loading it (optionally with its address, so that relative links work).</
   relay (browsers hide <code>Set-Cookie</code> from pages). localStorage and similar storage are filled by scripts, which the preview
   does not run; the bookmarklet shows them in the real page.</li>
 </ul>
+<h3>Accessibility</h3>
+<p><strong>Accessibility</strong> → <strong>Check accessibility</strong> tests the page with <a href="https://github.com/dequelabs/axe-core">axe-core</a>, the rule set used by
+many accessibility tools (WCAG 2.x levels A and AA, plus best practices): missing alternative texts, form fields without labels, buttons
+and links without names, too little colour contrast, missing language, wrong ARIA, headings and landmarks and more. The problems are
+listed most severe first (<em>critical</em>, <em>serious</em>, <em>moderate</em>, <em>minor</em>), each with the affected elements (selector and HTML), a hint how to
+fix it and a link to the explanation. <em>To review by hand</em> lists what the rules could not decide.</p>
+<p>The check runs in an isolated frame with the page's HTML and CSS; the page's own scripts do not run (content that scripts would add is
+not checked). In German, rule titles and descriptions are German, the hints per element English. Automatic rules find only part of
+the problems – a check with a keyboard and a screen reader stays necessary.</p>
 <h2>HAR viewer</h2>
 <p>A HAR file is the network log of a browser (in the developer tools: Network → "Save all as HAR"). <strong>Open HAR file</strong> (or
 dropping it onto the window) shows all requests with method, file and host, status (errors in red), type, size, time and

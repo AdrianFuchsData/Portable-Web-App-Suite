@@ -53,7 +53,7 @@ def test_choose_dialog_lists_matching_apps(app_page, tmp_path):
     pick_row(page, page, "table.csv")
     page.click("[data-testid=open-with]")
     buttons = page.locator("[data-testid=open-with-dialog] .suite-open-with-list").first.locator("button")
-    expect(buttons).to_have_text(["📝 Text editor", "📊 Spreadsheet", "🔢 Hex editor"])
+    expect(buttons).to_have_text(["Text editor", "Spreadsheet", "Hex editor"])
     page.click("[data-testid=open-with-dialog] footer button")
     expect(page.locator("[data-testid=open-with-dialog]")).to_have_count(0)
 
@@ -131,7 +131,7 @@ def test_several_archive_files_in_text_editor_tabs(app_page, tmp_path):
     page.click("[data-testid=open-with]")
     dialog = page.locator("[data-testid=open-with-dialog]")
     expect(dialog.locator("header")).to_have_text("Open 3 files with")
-    expect(dialog.locator(".suite-open-with-list").first.locator("button")).to_have_text(["📝 Text editor", "🔢 Hex editor"])  # apps with tabs
+    expect(dialog.locator(".suite-open-with-list").first.locator("button")).to_have_text(["Text editor", "Hex editor"])  # apps with tabs
     page.click("[data-testid=open-with-dialog] footer button")
     editor = open_with(page, "texteditor", lambda: page.click("[data-testid=open-with]"))
     expect(editor.locator("[data-testid=tab-name]")).to_have_text(["a.txt", "b.md", "c.json"])  # one window, in order
@@ -149,8 +149,8 @@ def test_several_archive_files_in_text_editor_tabs(app_page, tmp_path):
     check_rows(page, ["a.txt", "b.md", "c.json", "d.bin"])
     page.click("[data-testid=open-with]")
     expect(dialog.locator("header")).to_have_text("Open 4 files with")
-    expect(dialog.locator(".suite-open-with-list").first.locator("button")).to_have_text(["🔢 Hex editor"])
-    expect(dialog.locator("details button")).to_have_text(["📝 Text editor"])
+    expect(dialog.locator(".suite-open-with-list").first.locator("button")).to_have_text(["Hex editor"])
+    expect(dialog.locator("details button")).to_have_text(["Text editor"])
     page.click("[data-testid=open-with-dialog] footer button")
     assert page.errors == [] and editor.errors == []
 

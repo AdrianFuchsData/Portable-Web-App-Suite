@@ -890,7 +890,7 @@ function infoBody(d) {
     <p data-testid="info-size">${ed.name} · ${doc.width} × ${doc.height} px · ${doc.layers.length} ${t('ie.layers')}</p>
     ${rows.length ? html`<table class="ie-meta" data-testid="meta-table"><tbody>${rows.map(([k, v]) => html`<tr><th>${k}</th><td>${v}</td></tr>`)}</tbody></table>`
       : html`<p data-testid="meta-none">${t(m ? 'ie.metaNone' : 'ie.metaUnknown')}</p>`}
-    ${e.gps ? html`<p class="ie-warn" data-testid="meta-gps">⚠ ${t('ie.metaGps')}</p>` : null}
+    ${e.gps ? html`<p class="ie-warn" data-testid="meta-gps">${Suite.icon('triangle-alert')} ${t('ie.metaGps')}</p>` : null}
     <small class="ie-hint">${t('ie.metaSaveHint')}</small>
     ${m && m.kinds.length ? html`<p><button type="button" class="secondary" data-testid="meta-strip" onClick=${() => saveWithoutMetadata().catch(fail)}>${t('ie.metaStrip')}</button></p>` : null}`;
 }
@@ -1019,10 +1019,10 @@ function Menus() {
     <summary>${t(title)}</summary>
     <ul role="menu">${items.map((item) => (item ? html`<li role="none"><a href="#" data-testid=${`cmd-${item[0].slice(3)}`} role=${item[3] === undefined ? 'menuitem' : 'menuitemcheckbox'} aria-checked=${item[3] === undefined ? undefined : String(!!item[3])}
       onClick=${(e) => { e.preventDefault(); closeMenus(); Promise.resolve(item[1]()).catch(fail); }}>
-      <span>${item[3] === undefined ? '' : item[3] ? '✓ ' : html`<span class="ie-check-space">✓ </span>`}${t(item[0])}</span>${item[2] ? html`<kbd>${item[2]}</kbd>` : null}</a></li>` : html`<li role="separator"><hr /></li>`))}</ul>
+      <span>${item[3] === undefined ? '' : item[3] ? Suite.icon('check') : html`<span class="ie-check-space">${Suite.icon('check')} </span>`}${t(item[0])}</span>${item[2] ? html`<kbd>${item[2]}</kbd>` : null}</a></li>` : html`<li role="separator"><hr /></li>`))}</ul>
   </details>`)}
     <${Suite.shell.Recent} app=${APP} before=${confirmDiscard} onOpen=${(p) => openPicked(p)} />
-    <button class="secondary outline ie-panels-toggle" data-testid="toggle-panels" onClick=${() => { ed.panels = !ed.panels; refresh(); }}>☰ ${t('ie.panels')}</button>
+    <button class="secondary outline ie-panels-toggle" data-testid="toggle-panels" onClick=${() => { ed.panels = !ed.panels; refresh(); }}>${Suite.icon('menu')} ${t('ie.panels')}</button>
   </nav>`;
 }
 
@@ -1030,11 +1030,11 @@ function Menus() {
 
 function ToolPalette() {
   return html`<div class="ie-tools" role="toolbar" data-testid="tools">${TOOLS.filter((tool) => !tool.hidden).map((tool) => html`<button class=${ed.tool === tool ? 'active' : 'secondary outline'}
-    title=${t(`tool.${tool.id}`)} aria-label=${t(`tool.${tool.id}`)} aria-pressed=${ed.tool === tool} data-testid=${`tool-${tool.id}`} onClick=${() => selectTool(tool.id)}>${tool.icon}</button>`)}
+    title=${t(`tool.${tool.id}`)} aria-label=${t(`tool.${tool.id}`)} aria-pressed=${ed.tool === tool} data-testid=${`tool-${tool.id}`} onClick=${() => selectTool(tool.id)}>${Suite.icon(tool.icon || 'circle-help')}</button>`)}
     <div class="ie-swatches" title=${t('ie.colors')}>
       <input type="color" value=${ed.colors.primary} data-testid="color-primary" title=${t('ie.foreground')} onInput=${(e) => { ed.colors.primary = e.target.value; refresh(); }} />
       <input type="color" value=${ed.colors.secondary} data-testid="color-secondary" title=${t('ie.bgColor')} onInput=${(e) => { ed.colors.secondary = e.target.value; refresh(); }} />
-      <button class="secondary outline" title=${t('ie.swap')} data-testid="swap-colors" onClick=${swapColors}>⇄</button>
+      <button class="secondary outline" title=${t('ie.swap')} data-testid="swap-colors" onClick=${swapColors}>${Suite.icon('arrow-left-right')}</button>
     </div>
   </div>`;
 }
@@ -1061,7 +1061,7 @@ function ToolOptions() {
     ${id === 'crop' ? html`<label>${t('ie.cropRatio')}<select data-testid="opt-crop-ratio" onChange=${(e) => { o.cropRatio = e.target.value; refresh(); }}>
         ${CROP_RATIOS.map((r) => html`<option value=${r} selected=${o.cropRatio === r}>${r === 'free' || r === 'original' ? t(`ie.ratio.${r}`) : r}</option>`)}</select></label>
       <small class="ie-hint" data-testid="crop-info">${ed.cropRect ? `${ed.cropRect.w} × ${ed.cropRect.h}` : t('ie.cropHint')}</small>
-      <button type="button" data-testid="crop-apply" disabled=${!ed.cropRect} onClick=${applyCrop}>⛶ ${t('ie.cropApply')}</button>` : null}
+      <button type="button" data-testid="crop-apply" disabled=${!ed.cropRect} onClick=${applyCrop}>${Suite.icon('maximize')} ${t('ie.cropApply')}</button>` : null}
     ${opaque ? html`<label>${t('ie.opacity')}: ${Math.round(o.opacity * 100)} %<input type="range" min="1" max="100" value=${Math.round(o.opacity * 100)} data-testid="opt-opacity" onInput=${(e) => { o.opacity = +e.target.value / 100; refresh(); }} /></label>` : null}
     ${id === 'clone' || id === 'heal' ? html`<small class="ie-hint" data-testid="source-hint">${t(ed.tool.source ? 'ie.sourceSet' : 'ie.sourceHint')}</small>
       <button type="button" class=${o.pickSource ? '' : 'secondary outline'} data-testid="opt-pick-source" aria-pressed=${o.pickSource} onClick=${() => { o.pickSource = !o.pickSource; refresh(); }}>⊕ ${t('ie.pickSource')}</button>
@@ -1149,8 +1149,8 @@ function TransformOptions() {
     <div class="ie-row">${field('w', t('ie.width'), tr.w)}${field('h', t('ie.height'), tr.h)}</div>
     ${field('angle', t('ie.angle'), ((tr.angle * 180) / Math.PI))}
     <div class="ie-row">
-      <button type="button" class="secondary outline" data-testid="tr-flip-x" onClick=${() => { tool.set(ed, { flipX: true }); refresh(); }}>⇋</button>
-      <button type="button" class="secondary outline" data-testid="tr-flip-y" onClick=${() => { tool.set(ed, { flipY: true }); refresh(); }}>⇵</button>
+      <button type="button" class="secondary outline" data-testid="tr-flip-x" onClick=${() => { tool.set(ed, { flipX: true }); refresh(); }}>${Suite.icon('flip-horizontal-2')}</button>
+      <button type="button" class="secondary outline" data-testid="tr-flip-y" onClick=${() => { tool.set(ed, { flipY: true }); refresh(); }}>${Suite.icon('arrow-down-up')}</button>
     </div>
     <small class="ie-hint">${t('ie.transformKeys')}</small>
     <div class="ie-row">
@@ -1170,7 +1170,7 @@ function SelectionOptions() {
   return html`<div class="ie-sel-options">
     <label>${t('ie.selMode')}<select data-testid="opt-sel-mode" onChange=${(e) => { o.selMode = e.target.value; refresh(); }}>
       ${[['free', 'ie.selFree'], ['ratio', 'ie.selRatio'], ['size', 'ie.selSize']].map(([v, l]) => html`<option value=${v} selected=${o.selMode === v}>${t(l)}</option>`)}</select></label>
-    ${o.selMode === 'ratio' ? html`<div class="ie-row">${num('opt-ratio-w', 'selRatioW', '↔')}${num('opt-ratio-h', 'selRatioH', '↕')}</div>` : null}
+    ${o.selMode === 'ratio' ? html`<div class="ie-row">${num('opt-ratio-w', 'selRatioW', Suite.icon('move-horizontal'))}${num('opt-ratio-h', 'selRatioH', Suite.icon('move-vertical'))}</div>` : null}
     ${o.selMode === 'size' ? html`<div class="ie-row">${num('opt-sel-w', 'selW', t('ie.width'))}${num('opt-sel-h', 'selH', t('ie.height'))}</div>` : null}
     <div class="ie-row ie-sel-fields">${field('x', 'X')}${field('y', 'Y')}</div>
     <div class="ie-row ie-sel-fields">${field('w', t('ie.width'))}${field('h', t('ie.height'))}</div>
@@ -1255,11 +1255,11 @@ function Layers() {
       ${BLEND_MODES.map((m) => html`<option value=${m} selected=${active.blend === m}>${m}</option>`)}</select></label>
     <div class="ie-layer-buttons">
       <button class="secondary outline" title=${t('ie.newLayer')} data-testid="layer-add" onClick=${() => { doc.addLayer(null, { index: doc.active + 1 }); changed(); }}>＋</button>
-      <button class="secondary outline" title=${t('ie.duplicate')} data-testid="layer-duplicate" onClick=${() => { doc.duplicateLayer(); changed(); }}>⧉</button>
-      <button class="secondary outline" title="↑" data-testid="layer-up" onClick=${() => { doc.moveLayer(doc.active, doc.active + 1); changed(); }}>↑</button>
-      <button class="secondary outline" title="↓" data-testid="layer-down" onClick=${() => { doc.moveLayer(doc.active, doc.active - 1); changed(); }}>↓</button>
-      <button class="secondary outline" title=${t('ie.mergeDown')} data-testid="layer-merge" disabled=${doc.active === 0} onClick=${() => { doc.mergeDown(); changed(); }}>⤓</button>
-      <button class="secondary outline" title=${t('ie.deleteLayer')} data-testid="layer-delete" disabled=${doc.layers.length < 2} onClick=${() => { doc.deleteLayer(); changed(); }}>🗑</button>
+      <button class="secondary outline" title=${t('ie.duplicate')} data-testid="layer-duplicate" onClick=${() => { doc.duplicateLayer(); changed(); }}>${Suite.icon('copy')}</button>
+      <button class="secondary outline" title="↑" data-testid="layer-up" onClick=${() => { doc.moveLayer(doc.active, doc.active + 1); changed(); }}>${Suite.icon('arrow-up')}</button>
+      <button class="secondary outline" title="↓" data-testid="layer-down" onClick=${() => { doc.moveLayer(doc.active, doc.active - 1); changed(); }}>${Suite.icon('arrow-down')}</button>
+      <button class="secondary outline" title=${t('ie.mergeDown')} data-testid="layer-merge" disabled=${doc.active === 0} onClick=${() => { doc.mergeDown(); changed(); }}>${Suite.icon('merge')}</button>
+      <button class="secondary outline" title=${t('ie.deleteLayer')} data-testid="layer-delete" disabled=${doc.layers.length < 2} onClick=${() => { doc.deleteLayer(); changed(); }}>${Suite.icon('trash-2')}</button>
     </div>
   </section>`;
 }
@@ -1562,12 +1562,12 @@ function Main() {
       <span data-testid="position"></span>
       <span data-testid="selection-info"></span>
       <button class=${doc.quickMask ? 'ie-qm active' : 'ie-qm secondary outline'} data-testid="quick-mask" aria-pressed=${String(!!doc.quickMask)}
-        title=${`${t('ie.quickMask')} (Shift+Q)`} onClick=${toggleQuickMask}>◐${doc.quickMask ? html`<span class="ie-qm-label"> ${t('ie.quickMaskOn')}</span>` : ''}</button>
+        title=${`${t('ie.quickMask')} (Shift+Q)`} onClick=${toggleQuickMask}>${Suite.icon('contrast')}${doc.quickMask ? html`<span class="ie-qm-label"> ${t('ie.quickMaskOn')}</span>` : ''}</button>
       <span class="ie-zoom">
         <button class="secondary outline" data-testid="zoom-out" onClick=${() => zoomStep(-1)}>−</button>
         <span data-testid="zoom">${Math.round(ed.view.zoom * 100)} %</span>
         <button class="secondary outline" data-testid="zoom-in" onClick=${() => zoomStep(1)}>+</button>
-        <button class="secondary outline" data-testid="zoom-fit" onClick=${fit}>⤢</button>
+        <button class="secondary outline" data-testid="zoom-fit" title=${Suite.t('common.fit')} onClick=${fit}>${Suite.icon('maximize-2')}</button>
       </span>
     </footer>
     <${Dialog} />

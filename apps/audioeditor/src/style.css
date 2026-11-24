@@ -60,3 +60,6 @@
 .ae-peq tr.active { outline: 2px solid var(--ae-cue, #ef6c00); }
 .ae-peq button { margin: 0; padding: 0 .5rem; width: auto; }
 .ae-peq-wrap { overflow-x: auto; max-width: 100%; }
+
+/* touch screens: a scroll bar that a finger can hold */
+@media (pointer: coarse) { .ae-hscroll { height: 22px; } .ae-hscroll::-webkit-scrollbar { height: 18px; } }

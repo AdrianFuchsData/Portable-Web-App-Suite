@@ -66,6 +66,11 @@ preview and in the saved presentation, also offline; only presentations that con
 - **Presentation** tab: title, theme (14 reveal.js themes), code colours, transitions, slide size (e.g. 16:9), arrow
   controls, progress bar, slide numbers, vertical centring, loop, slide number in the address, navigation mode, scrolling
   page view, automatic advance, language and custom CSS.
+- **🎨 Customise theme…** adjusts the chosen theme: colours of background, text, headings, links and selection, a background
+  picture or CSS gradient, the fonts of text, headings and code (the suite's bundled fonts and your imported fonts – the deck embeds
+  the ones it uses, so the saved file shows them everywhere), text and title size, heading weight and case. Empty fields keep the
+  theme's value; the preview changes at once, undo works as usual. **Save theme (CSS)** stores the settings as a CSS file (reveal.js
+  variables), **Load theme (CSS)…** takes them over into another deck, **Back to the theme** removes them.
 
 ## Presenting
 
@@ -73,6 +78,10 @@ preview and in the saved presentation, also offline; only presentations that con
 `Esc` overview, `S` speaker view with notes and timer, `F` full screen. **↗** presents in a new window (useful with a second
 screen), **🖨** opens the print view to save a PDF (choose “Save as PDF” in the print dialog) – with *Print / PDF with speaker notes*
 each slide is followed by a page with its notes.
+
+**🖨 → Save as PDF file** creates the PDF directly, without the print dialog: one page per slide, in the slide's size, as it looks
+in the presentation (theme, fonts, code colours). *One page per step* adds a page for every fragment step, as when presenting. The
+pages are pictures of the slides (text cannot be selected); pictures from web addresses are left out – embed them in the deck.
 
 ## Files
 

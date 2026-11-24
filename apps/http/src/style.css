@@ -121,3 +121,19 @@
 .h-ws-compose textarea { flex: 1; margin: 0; font-family: ui-monospace, monospace; font-size: .85rem; }
 .h-ws-compose div { display: flex; flex-direction: column; gap: .3rem; }
 .h-ws-compose button { margin: 0; width: auto; }
+.h-runner article { max-width: min(60rem, 96vw); width: 100%; }
+.h-run-options .h-row { display: flex; gap: .8rem; flex-wrap: wrap; }
+.h-run-options .h-row > label { flex: 1; min-width: 9rem; }
+.h-run-table { max-height: 55vh; overflow: auto; }
+.h-run-table table { font-size: .85rem; }
+.h-run-table td { vertical-align: top; }
+.h-run-good { color: #2e7d32; }
+.h-run-bad { color: #c62828; }
+.h-gql { display: grid; grid-template-columns: minmax(0, 2fr) minmax(12rem, 1fr); gap: .8rem; }
+@media (max-width: 760px) { .h-gql { grid-template-columns: 1fr; } }
+.h-gql textarea { font-family: ui-monospace, monospace; font-size: .85rem; }
+.h-gql-schema { max-height: 22rem; overflow: auto; font-size: .82rem; }
+.h-gql-schema button[data-testid=gql-load-schema] { width: auto; margin-bottom: .4rem; }
+.h-gql-fields { list-style: none; padding-left: .6rem; margin: 0; }
+.h-gql-fields li { list-style: none; }
+.h-gql-toggle { display: inline-block; width: 1.1rem; padding: 0; margin: 0; border: 0; background: none; color: inherit; }

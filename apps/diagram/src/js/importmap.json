@@ -4,6 +4,8 @@
     "@app/drawio.js": "drawio.js",
     "@app/layout.js": "layout.js",
     "@app/mermaid.js": "mermaid.js",
+    "@app/plantuml.js": "plantuml.js",
+    "@app/templates.js": "templates.js",
     "app/spell": "../../../../shared/js/spell.js",
     "app/spell-dom": "../../../../shared/js/spell-dom.js"
   }

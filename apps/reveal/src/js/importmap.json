@@ -2,6 +2,7 @@
   "imports": {
     "@app/deck.js": "deck.js",
     "@app/mermaid-svg.js": "mermaid-svg.js",
+    "@app/pdf.js": "pdf.js",
     "@diagram/mermaid.js": "../../../diagram/src/js/mermaid.js",
     "@diagram/layout.js": "../../../diagram/src/js/layout.js",
     "@diagram/model.js": "../../../diagram/src/js/model.js",

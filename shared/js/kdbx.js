@@ -220,6 +220,25 @@
       entry.times.update();
     }
 
+    /** Delete one older version (index) or the whole history (index null). */
+    deleteHistory(entry, index = null) {
+      if (!entry.history || !entry.history.length) return;
+      if (index === null) entry.removeHistory(0, entry.history.length);
+      else entry.removeHistory(index, 1);
+    }
+
+    /** Keep at most meta.historyMaxItems versions per entry (KeePass's maintenance; negative = unlimited). */
+    trimHistory() {
+      const max = this.db.meta.historyMaxItems;
+      if (typeof max !== 'number' || max < 0) return 0;
+      let removed = 0;
+      for (const e of this.root.allEntries()) {
+        const extra = (e.history || []).length - max;
+        if (extra > 0) { e.removeHistory(0, extra); removed += extra; }
+      }
+      return removed;
+    }
+
     /**
      * Deep copy of the group tree, deleted objects and the relevant metadata for undo (protected values stay
      * encrypted in memory). restore() puts a snapshot back; the snapshot must not be used afterwards.
@@ -292,6 +311,7 @@
 
     /** Serialize the database and check that the result can be decrypted again before returning it. */
     async save() {
+      this.trimHistory();
       const data = await this.db.save();
       try {
         await Kdbx.load(data.slice(0), this.db.credentials);

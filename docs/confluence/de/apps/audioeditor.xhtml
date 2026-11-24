@@ -223,7 +223,10 @@ Frequenzen besser, eine kleinere glättet. <strong>Als CSV exportieren</strong> 
 messen</strong> zeigt die Lautheit in LUFS und die Spitze.</p>
 <h2>Abspielen und Aufnehmen</h2>
 <p>▶ (oder <code>Leertaste</code>) spielt die Auswahl oder ab der Einfügemarke bis zum Ende; ⏸ hält an, ⏹ stoppt, ⏮ ⏭ springen an den
-Anfang bzw. das Ende. 🔁 wiederholt die Auswahl. Ein Klick auf das Zeitlineal setzt die Abspielposition.</p>
+Anfang bzw. das Ende. 🔁 wiederholt die Auswahl. Ein Klick auf das Zeitlineal setzt die Abspielposition. Beim Abspielen folgt die
+Ansicht der Abspielposition.</p>
+<p>Verliert der Browser die Audioausgabe (etwa wenn das Ausgabegerät wechselt; Chrome meldet dann einen Fehler des Audiogeräts), startet
+der Editor eine neue Ausgabe und spielt an derselben Stelle weiter; eine Meldung weist darauf hin.</p>
 <p>● startet die Aufnahme mit dem Mikrofon (der Browser fragt nach der Erlaubnis); die anderen Spuren werden dabei abgespielt.
 ● beendet die Aufnahme; sie wird eine neue Spur mit einem Clip, der an der Einfügemarke beginnt.</p>
 <h2>Ansicht</h2>
@@ -362,6 +365,12 @@ Anfang bzw. das Ende. 🔁 wiederholt die Auswahl. Ein Klick auf das Zeitlineal 
 </tbody>
 </table>
 <h2>Auf Smartphones und Tablets</h2>
-<p>Tippen oder Ziehen auf einer Spur setzt die Einfügemarke bzw. wählt aus; ein Clip wird an seiner (etwas höheren)
-Titelleiste verschoben. Die Spurköpfe sind schmaler, behalten aber alle Schaltflächen und Regler; die
-Werkzeugleiste lässt sich waagrecht verschieben.</p>
+<p>Auf einem Touchscreen folgen die Spuren den üblichen Gesten:</p>
+<ul>
+<li><strong>Mit einem Finger ziehen</strong> bewegt durch die Aufnahme (nach links und rechts) und durch die Spuren (nach oben und unten).</li>
+<li><strong>Zwei Finger</strong> auseinander oder zusammen zoomen um die Stelle zwischen ihnen.</li>
+<li><strong>Tippen</strong> setzt die Einfügemarke; <strong>berühren und halten</strong>, dann ziehen, wählt aus (die Auswahl folgt dem Finger, auch über Spuren hinweg).</li>
+<li>Ein Clip wird an seiner (etwas höheren) Titelleiste verschoben; Blendengriffe und Lautstärkepunkte werden wie mit der Maus gezogen.</li>
+</ul>
+<p>Die Bildlaufleiste unter den Spuren ist auf Touchscreens breiter. Die Spurköpfe sind schmaler, behalten aber alle Schaltflächen und Regler;
+die Werkzeugleiste lässt sich waagrecht verschieben.</p>

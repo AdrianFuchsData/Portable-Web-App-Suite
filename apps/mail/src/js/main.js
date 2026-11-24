@@ -21,6 +21,10 @@ Suite.i18n.register({
     'app.title': 'Mail',
     'mail.accounts': 'Accounts', 'mail.addAccount': '+ Account', 'mail.allInboxes': 'All inboxes', 'mail.disconnect': 'Disconnect', 'mail.account': 'Account', 'mail.folders': 'Folders', 'mail.files': 'Opened files', 'mail.new': 'New message',
     'mail.reply': 'Reply', 'mail.replyAll': 'Reply all', 'mail.forward': 'Forward', 'mail.delete': 'Delete', 'mail.unread': 'Unread', 'mail.read': 'Read',
+    'mail.searchScope': 'Where to search', 'mail.scopeFolder': 'This folder', 'mail.scopeList': 'This list', 'mail.scopeFolders': 'All folders', 'mail.scopeAccounts': 'All accounts',
+    'mail.foundIn': '{0} messages found in {1} folders', 'mail.searchingIn': 'Searching… {0} found in {1} folders so far',
+    'mail.mboxExport': 'Export as mbox…', 'mail.mboxExportSel': 'Export the selection as mbox…', 'mail.mboxImport': 'Import mbox into this folder…', 'mail.mboxExporting': 'Exporting', 'mail.mboxImporting': 'Importing',
+    'mail.mboxExported': '{0} messages exported.', 'mail.mboxImported': '{0} messages imported into “{1}”.', 'mail.mboxEmpty': 'The file contains no messages.', 'mail.mboxNeedsFolder': 'Open the IMAP folder to import into first.',
     'mail.flag': 'Flag', 'mail.move': 'Move…', 'mail.saveEml': 'Save as .eml', 'mail.openFile': 'Open .eml/.mbox', 'mail.contacts': 'Contacts',
     'mail.rules': 'Rules', 'mail.rulesHint': 'Applied to new messages in the inbox while the mail client is open (the first matching rule counts).',
     'mail.addRule': 'Add rule', 'mail.ruleFrom': 'From', 'mail.ruleTo': 'To', 'mail.ruleSubject': 'Subject', 'mail.contains': 'contains', 'mail.ruleMove': 'move to',
@@ -55,6 +59,10 @@ Suite.i18n.register({
     'app.title': 'E-Mail',
     'mail.accounts': 'Konten', 'mail.addAccount': '+ Konto', 'mail.allInboxes': 'Alle Posteingänge', 'mail.disconnect': 'Trennen', 'mail.account': 'Konto', 'mail.folders': 'Ordner', 'mail.files': 'Geöffnete Dateien', 'mail.new': 'Neue Nachricht',
     'mail.reply': 'Antworten', 'mail.replyAll': 'Allen antworten', 'mail.forward': 'Weiterleiten', 'mail.delete': 'Löschen', 'mail.unread': 'Ungelesen', 'mail.read': 'Gelesen',
+    'mail.searchScope': 'Wo suchen', 'mail.scopeFolder': 'Dieser Ordner', 'mail.scopeList': 'Diese Liste', 'mail.scopeFolders': 'Alle Ordner', 'mail.scopeAccounts': 'Alle Konten',
+    'mail.foundIn': '{0} Nachrichten in {1} Ordnern gefunden', 'mail.searchingIn': 'Suche läuft… bisher {0} in {1} Ordnern gefunden',
+    'mail.mboxExport': 'Als mbox exportieren…', 'mail.mboxExportSel': 'Auswahl als mbox exportieren…', 'mail.mboxImport': 'mbox in diesen Ordner importieren…', 'mail.mboxExporting': 'Exportiere', 'mail.mboxImporting': 'Importiere',
+    'mail.mboxExported': '{0} Nachrichten exportiert.', 'mail.mboxImported': '{0} Nachrichten in „{1}“ importiert.', 'mail.mboxEmpty': 'Die Datei enthält keine Nachrichten.', 'mail.mboxNeedsFolder': 'Öffnen Sie zuerst den IMAP-Ordner, in den importiert werden soll.',
     'mail.flag': 'Markieren', 'mail.move': 'Verschieben…', 'mail.saveEml': 'Als .eml speichern', 'mail.openFile': '.eml/.mbox öffnen', 'mail.contacts': 'Kontakte',
     'mail.rules': 'Regeln', 'mail.rulesHint': 'Gelten für neue Nachrichten im Posteingang, solange der Mail-Client geöffnet ist (die erste passende Regel zählt).',
     'mail.addRule': 'Regel hinzufügen', 'mail.ruleFrom': 'Von', 'mail.ruleTo': 'An', 'mail.ruleSubject': 'Betreff', 'mail.contains': 'enthält', 'mail.ruleMove': 'verschieben nach',
@@ -91,7 +99,7 @@ const state = {
   account: null, imap: null, connecting: false, passwords: {},
   folders: [], folder: null, unread: {}, total: 0, loadedFrom: 0,
   messages: [], sel: new Set(), current: null, message: null, showText: false,
-  search: '', searching: false, expanded: new Set(),
+  search: '', searching: false, expanded: new Set(), everywhere: null, searchScope: 'folder',
   threaded: (() => { try { return localStorage.getItem('suite.mail.threads') !== '0'; } catch (e) { return true; } })(),
   source: 'imap', local: null, // local: { name, items: [summary + raw] }
   view: 'list', // phone: 'folders' | 'list' | 'message'
@@ -218,7 +226,7 @@ let updating = false;
 function onImapUpdate({ exists, path }, s) {
   if (exists == null) return;
   if (state.source === 'unified') { // new mail in one of the inboxes: reload the combined list
-    if (path === inboxOf(s) && !updating) { updating = true; setTimeout(() => openUnified({ keep: true }).finally(() => { updating = false; })); }
+    if (path === inboxOf(s) && !updating && !state.everywhere) { updating = true; setTimeout(() => openUnified({ keep: true }).finally(() => { updating = false; })); }
     return;
   }
   if (s && s !== activeSession()) { // another connected account: only its unread count
@@ -268,6 +276,7 @@ async function summaries(range) {
 async function openFolder(path) {
   if (!path) return;
   state.source = 'imap';
+  state.everywhere = null;
   state.folder = path;
   state.search = '';
   Object.assign(state, { messages: [], sel: new Set(), current: null, message: null });
@@ -306,6 +315,7 @@ async function openUnified({ keep = false } = {}) {
   const prev = activeSession();
   if (prev && state.source === 'imap') prev.folder = state.folder;
   state.source = 'unified';
+  state.everywhere = null;
   state.folder = null;
   state.view = 'list';
   render();
@@ -331,23 +341,85 @@ async function unifiedTarget(uid) {
   const m = state.messages.find((x) => x.uid === uid);
   const s = m && sessions.get(m.acc);
   if (!s) throw new Error(t('mail.notConnected'));
-  await selectIn(s, inboxOf(s));
-  return { s, m, uid: m.realUid };
+  const folder = m.folder || inboxOf(s);
+  await selectIn(s, folder);
+  return { s, m, uid: m.realUid, folder };
 }
 
-/** Group uids of the combined inbox by account: [[session, [imap uids], [list uids]]]. */
-async function byAccount(uids) {
+/**
+ * Group uids of the combined list by account and folder: [[session, [imap uids], [list uids], folder]]. Iterate with forFolders(),
+ * which selects each group's folder before the callback runs.
+ */
+function byAccount(uids) {
   const groups = new Map();
   for (const uid of uids) {
-    const { s, uid: real } = await unifiedTarget(uid);
-    if (!groups.has(s)) groups.set(s, [[], []]);
-    groups.get(s)[0].push(real);
-    groups.get(s)[1].push(uid);
+    const m = state.messages.find((x) => x.uid === uid);
+    const s = m && sessions.get(m.acc);
+    if (!s) throw new Error(t('mail.notConnected'));
+    const folder = m.folder || inboxOf(s);
+    const key = `${m.acc}\n${folder}`;
+    if (!groups.has(key)) groups.set(key, [s, [], [], folder]);
+    groups.get(key)[1].push(m.realUid);
+    groups.get(key)[2].push(uid);
   }
-  return [...groups].map(([s, [real, list]]) => [s, real, list]);
+  return [...groups.values()];
+}
+async function forFolders(uids, fn) {
+  for (const [s, real, list, folder] of byAccount(uids)) { await selectIn(s, folder); await fn(s, real, list, folder); }
 }
 
-async function search(q) {
+/**
+ * Search the text of the messages in every folder of the current account (scope 'folders') or of all connected accounts
+ * ('accounts'). The results form a combined list like the combined inbox (each message remembers its account and folder).
+ */
+async function searchEverywhere(q, scope) {
+  if (!q) return;
+  const from = state.everywhere ? state.everywhere.from : { source: state.source, folder: state.folder, account: state.account && state.account.id };
+  const list = scope === 'accounts' ? [...sessions.values()] : [activeSession()].filter(Boolean);
+  if (!list.length) return;
+  const prev = activeSession();
+  if (prev && state.source === 'imap') prev.folder = state.folder;
+  const run = { q, scope, from, folders: 0, done: false };
+  Object.assign(state, { source: 'unified', everywhere: run, folder: null, messages: [], sel: new Set(), current: null, message: null, view: 'list', search: q, searching: true });
+  render();
+  const all = [];
+  for (const s of list) {
+    for (const f of s.folders.filter((x) => x.selectable !== false)) {
+      if (state.everywhere !== run) return;
+      try {
+        await selectIn(s, f.path);
+        const uids = (await s.imap.search('TEXT ', quote(q))).sort((a, b) => b - a).slice(0, 100);
+        run.folders++;
+        if (!uids.length) continue;
+        for (const m of await Promise.all((await s.imap.summaries({ uids })).map(summary))) {
+          all.push({ ...m, uid: `${s.account.id}:${f.path}:${m.uid}`, realUid: m.uid, acc: s.account.id, folder: f.path, folderName: folderLabel(f) });
+        }
+        state.messages = all.slice().sort((a, b) => b.date - a.date);
+        render();
+      } catch (e) { console.warn('search skipped', f.path, e); }
+    }
+  }
+  if (state.everywhere !== run) return;
+  state.messages = all.sort((a, b) => b.date - a.date || b.realUid - a.realUid);
+  run.done = true;
+  state.searching = false;
+  render();
+}
+
+/** Back from search results to where the search started. */
+async function endSearch() {
+  const from = state.everywhere && state.everywhere.from;
+  state.everywhere = null;
+  state.search = '';
+  if (!from || from.source === 'unified') { await openUnified(); return; }
+  const s = from.account && sessions.get(from.account);
+  if (s && s !== activeSession()) activate(s);
+  await openFolder(from.folder || (activeSession() ? inboxOf(activeSession()) : 'INBOX'));
+}
+
+async function search(q, scope = state.searchScope) {
+  if (scope !== 'folder' && state.source !== 'local' && q) { await searchEverywhere(q, scope); return; }
+  if (state.everywhere) { await endSearch(); if (!q) return; }
   state.search = q;
   if (state.source === 'local' || state.source === 'unified') { render(); return; }
   if (!q) { await openFolder(state.folder); return; }
@@ -370,6 +442,7 @@ function threadsOf(list) {
 
 /** The listed messages (search applied), flat. */
 function listedMessages() {
+  if (state.everywhere) return state.messages; // (found by the server in the text as well)
   if (state.source === 'unified') {
     const q = state.search.toLowerCase();
     return q ? state.messages.filter((m) => `${m.subject} ${mime.showAddress(m.from)}`.toLowerCase().includes(q)) : state.messages;
@@ -403,7 +476,7 @@ async function loadMessage(uid) {
   let imap = state.imap, real = uid, key = `${state.account && state.account.id}\n${state.folder}\n${uid}`;
   if (state.source === 'unified') {
     const target = await unifiedTarget(uid);
-    imap = target.s.imap; real = target.uid; key = `${target.s.account.id}\n${inboxOf(target.s)}\n${real}`;
+    imap = target.s.imap; real = target.uid; key = `${target.s.account.id}\n${target.folder}\n${real}`;
   }
   if (cache.has(key)) return cache.get(key);
   const raw = await imap.fetchRaw(real);
@@ -431,8 +504,7 @@ async function openMessage(uid) {
       const target = await unifiedTarget(uid);
       await target.s.imap.setFlags([target.uid], true, ['\\Seen']);
       s.flags = [...s.flags, '\\Seen'];
-      const inbox = inboxOf(target.s);
-      target.s.unread[inbox] = Math.max(0, (target.s.unread[inbox] || 1) - 1);
+      target.s.unread[target.folder] = Math.max(0, (target.s.unread[target.folder] || 1) - 1);
     }
   } catch (e) { fail(e); }
   render();
@@ -446,10 +518,10 @@ async function toggleFlag(flag, uids = selectedUids()) {
   const add = !msgs.every((m) => m.flags.includes(flag));
   try {
     if (state.source === 'unified') {
-      for (const [s, real] of await byAccount(uids)) {
+      await forFolders(uids, async (s, real, list, folder) => {
         await s.imap.setFlags(real, add, [flag]);
-        if (flag === '\\Seen') s.unread[inboxOf(s)] = (await s.imap.status(inboxOf(s))).unseen;
-      }
+        if (flag === '\\Seen') s.unread[folder] = (await s.imap.status(folder)).unseen;
+      });
     } else await state.imap.setFlags(uids, add, [flag]);
     for (const m of msgs) m.flags = add ? [...new Set([...m.flags, flag])] : m.flags.filter((f) => f !== flag);
     if (flag === '\\Seen') refreshUnread();
@@ -477,15 +549,15 @@ async function deleteMessages(uids = selectedUids(), { confirm = true } = {}) {
   }
   if (state.source === 'unified') { // each account moves its messages into its own trash
     try {
-      for (const [s, real] of await byAccount(uids)) {
+      await forFolders(uids, async (s, real, list, folder) => {
         const bin = s.folders.find((f) => f.special === '\\Trash');
-        if (bin) await s.imap.move(real, bin.path);
+        if (bin && bin.path !== folder) await s.imap.move(real, bin.path);
         else {
-          if (confirm && !(await Suite.shell.confirm(t('mail.deleteConfirm', real.length)))) continue;
+          if (confirm && !(await Suite.shell.confirm(t('mail.deleteConfirm', real.length)))) return;
           await s.imap.expunge(real);
         }
-        s.unread[inboxOf(s)] = (await s.imap.status(inboxOf(s))).unseen;
-      }
+        s.unread[folder] = (await s.imap.status(folder)).unseen;
+      });
       removeFromList(uids);
     } catch (e) { fail(e); }
     render();
@@ -604,6 +676,71 @@ function saveEml() {
   if (!m) return;
   const name = `${(m.parsed.subject || 'message').replace(/[\\/:*?"<>|\r\n]+/g, '_').slice(0, 80)}.eml`;
   Suite.files.download(m.raw, name, 'message/rfc822');
+}
+
+// ---- mbox export and import ---------------------------------------------------------------------------------------------
+
+function report(result) { if (result.mode === 'downloaded') Suite.shell.banner(result.message); else Suite.shell.toast(result.message); }
+
+const MBOX_TYPES = [{ description: 'mbox', accept: { 'application/mbox': ['.mbox', '.mbx'] } }];
+
+/** Export the selected messages, or all of the current folder / list, as one mbox file (with the read, answered and flagged marks). */
+async function exportMbox() {
+  const sel = selectedUids();
+  const useSel = state.sel.size > 0;
+  try {
+    let items = [];
+    if (state.source === 'local') {
+      items = (useSel ? state.local.items.filter((m) => sel.includes(m.uid)) : listedMessages()).map((m) => ({ raw: m.raw, from: m.from && m.from.address, date: m.date, flags: m.flags }));
+    } else {
+      let list = useSel ? state.messages.filter((m) => sel.includes(m.uid)) : listedMessages();
+      if (state.source === 'imap' && !useSel && !state.search && state.loadedFrom > 1) { // (only the newest messages are listed): the whole folder
+        const uids = (await state.imap.search('ALL')).sort((a, b) => a - b);
+        list = [];
+        for (let i = 0; i < uids.length; i += 200) list.push(...(await summaries({ uids: uids.slice(i, i + 200) })));
+      }
+      list = list.slice().sort((a, b) => a.date - b.date || (a.realUid ?? a.uid) - (b.realUid ?? b.uid)); // oldest first (ties: in arrival order)
+      state.progress = { done: 0, total: list.length, label: t('mail.mboxExporting') };
+      for (const m of list) {
+        const { raw } = await loadMessage(m.uid);
+        items.push({ raw, from: m.from && m.from.address, date: m.date, flags: m.flags });
+        state.progress.done++;
+        if (state.progress.done % 10 === 0) render();
+      }
+    }
+    state.progress = null;
+    if (!items.length) { render(); return; }
+    const base = state.source === 'local' ? (state.local.name || 'mail').replace(/\.[^.]+$/, '') : state.everywhere ? `${t('mail.search')} ${state.everywhere.q}` : state.source === 'unified' ? t('mail.allInboxes') : (state.folders.find((f) => f.path === state.folder) || { name: state.folder }).name;
+    const result = await Suite.files.saveAs(mime.joinMbox(items), { suggestedName: `${String(base).replace(/[\\/:*?"<>|]+/g, '_')}.mbox`, types: MBOX_TYPES, type: 'application/mbox' });
+    if (result) { report(result); Suite.shell.toast(t('mail.mboxExported', items.length)); }
+  } catch (e) { state.progress = null; fail(e); }
+  render();
+}
+
+/** Import mbox files into the current IMAP folder (each message appended with its marks and date). */
+async function importMbox() {
+  if (state.source !== 'imap' || !state.imap) { Suite.shell.toast(t('mail.mboxNeedsFolder'), 'warning'); return; }
+  const picked = await Suite.files.open({ types: MBOX_TYPES, multiple: true }).catch(fail);
+  if (!picked) return;
+  const folder = state.folder;
+  try {
+    const entries = [];
+    for (const p of picked) entries.push(...mime.splitMboxEntries(new Uint8Array(await p.file.arrayBuffer())));
+    if (!entries.length) { Suite.shell.toast(t('mail.mboxEmpty'), 'warning'); return; }
+    state.progress = { done: 0, total: entries.length, label: t('mail.mboxImporting') };
+    render();
+    for (const e of entries) {
+      const raw = new TextDecoder('latin1').decode(e.raw).replace(/\r?\n/g, '\r\n'); // (IMAP wants CRLF)
+      await state.imap.append(folder, Uint8Array.from(raw, (c) => c.charCodeAt(0)), e.flags.filter((f) => f !== '\\Deleted'), e.date || Date.now());
+      state.progress.done++;
+      if (state.progress.done % 10 === 0) render();
+    }
+    state.progress = null;
+    Suite.shell.toast(t('mail.mboxImported', entries.length, folderLabel(state.folders.find((f) => f.path === folder) || { name: folder })));
+    if (state.folder === folder) await openFolder(folder);
+    refreshUnread();
+  } catch (e) { state.progress = null; fail(e); }
+  render();
 }
 
 // ---- local files (.eml, .mbox) ---------------------------------------------------------------------------------------------
@@ -737,7 +874,7 @@ async function answerInvitation(inv, partstat) {
 function Invitation({ inv }) {
   const cancelled = inv.method === 'CANCEL' || /CANCELLED/i.test(inv.ev.status || '');
   return html`<section class="mail-invite" data-testid="invitation">
-    <strong>📅 ${cancelled ? t('mail.cancelled') : t('mail.invitation')}: ${inv.ev.summary}</strong>
+    <strong>${Suite.icon('calendar')} ${cancelled ? t('mail.cancelled') : t('mail.invitation')}: ${inv.ev.summary}</strong>
     <div><small>${t('mail.when')}:</small> <span data-testid="invite-when">${eventTime(inv.ev)}</span></div>
     ${inv.ev.location ? html`<div><small>${t('mail.where')}:</small> ${inv.ev.location}</div>` : null}
     ${inv.organizer ? html`<div><small>${t('mail.organizer')}:</small> ${mime.showAddress(inv.organizer)}</div>` : null}
@@ -766,7 +903,7 @@ function Reader() {
     <header class="mail-head">
       <h2 data-testid="subject">${p.subject || t('mail.noSubject')}</h2>
       <div><small>${t('mail.from')}:</small> <span data-testid="from">${mime.showAddress(p.from)}</span>
-        ${p.from && !known ? html` <button class="mail-link" title=${t('mail.addContact')} data-testid="add-contact" onClick=${() => addContact(p.from)}>＋👤</button>` : null}</div>
+        ${p.from && !known ? html` <button class="mail-link" title=${t('mail.addContact')} data-testid="add-contact" onClick=${() => addContact(p.from)}>＋${Suite.icon('user')}</button>` : null}</div>
       ${p.to && p.to.length ? html`<div><small>${t('mail.to')}:</small> <span data-testid="to">${p.to.map(mime.showAddress).join(', ')}</span></div>` : null}
       ${p.cc && p.cc.length ? html`<div><small>${t('mail.cc')}:</small> ${p.cc.map(mime.showAddress).join(', ')}</div>` : null}
       <div><small>${t('mail.date')}:</small> ${fmtDate(Date.parse(p.date), true)}</div>
@@ -779,9 +916,9 @@ function Reader() {
     </header>
     ${inv ? html`<${Invitation} inv=${inv} />` : null}
     ${files.length ? html`<ul class="mail-files" data-testid="attachments">${files.map((a) => html`<li>
-      <button class="secondary outline" data-testid="attachment" onClick=${() => Suite.files.download(new Uint8Array(a.content), a.filename || 'attachment', a.mimeType)}>📎 ${a.filename || 'attachment'} <small>${fmtSize(a.content.byteLength)}</small></button>
+      <button class="secondary outline" data-testid="attachment" onClick=${() => Suite.files.download(new Uint8Array(a.content), a.filename || 'attachment', a.mimeType)}>${Suite.icon('paperclip')} ${a.filename || 'attachment'} <small>${fmtSize(a.content.byteLength)}</small></button>
       <button class="secondary outline" title=${t('bridge.openWith')} aria-label=${t('bridge.openWith')} data-testid="attachment-open-with"
-        onClick=${() => Suite.bridge.openWith(a.filename || 'attachment', { exclude: 'mail', type: a.mimeType, source: p.subject || t('app.title'), data: () => new Uint8Array(a.content) })}>↗</button></li>`)}</ul>` : null}
+        onClick=${() => Suite.bridge.openWith(a.filename || 'attachment', { exclude: 'mail', type: a.mimeType, source: p.subject || t('app.title'), data: () => new Uint8Array(a.content) })}>${Suite.icon('external-link')}</button></li>`)}</ul>` : null}
     ${shown ? html`
       ${shown.blocked ? html`<p class="mail-note" data-testid="remote-blocked">${t('mail.remoteBlocked')}</p>` : null}
       <iframe class="mail-html" data-testid="body-html" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" srcdoc=${shown.doc} title=${p.subject || ''}></iframe>`
@@ -846,7 +983,7 @@ function ContactsDialog() {
     <table class="mail-contacts"><tbody>${list.map((c) => html`<tr data-testid="contact">
       <td><a href="#" onClick=${(ev) => { ev.preventDefault(); b.editing = { ...c }; render(); }}>${c.name}</a><br /><small>${c.emails.join(', ')}</small></td>
       <td class="mail-actions">
-        <button class="secondary outline" data-testid="contact-write" disabled=${!c.emails.length} onClick=${() => { state.book = null; openCompose({ to: [{ name: c.name, address: c.emails[0] }] }); }}>✉</button>
+        <button class="secondary outline" data-testid="contact-write" disabled=${!c.emails.length} onClick=${() => { state.book = null; openCompose({ to: [{ name: c.name, address: c.emails[0] }] }); }}>${Suite.icon('mail')}</button>
         <button class="secondary outline" data-testid="contact-delete" onClick=${async () => { if (await Suite.shell.confirm(t('mail.deleteContact', c.name))) { setContacts(contacts().filter((x) => x.id !== c.id)); } }}>×</button></td>
     </tr>`)}</tbody></table>
   </article></dialog>`;
@@ -1106,9 +1243,9 @@ function HtmlEditor() {
       <button type="button" class="secondary outline" title="Underline" onMouseDown=${(e) => { e.preventDefault(); exec('underline'); }}><u>U</u></button>
       <button type="button" class="secondary outline" title="List" onMouseDown=${(e) => { e.preventDefault(); exec('insertUnorderedList'); }}>••</button>
       <button type="button" class="secondary outline" title="Numbered list" onMouseDown=${(e) => { e.preventDefault(); exec('insertOrderedList'); }}>1.</button>
-      <button type="button" class="secondary outline" title="Quote" onMouseDown=${(e) => { e.preventDefault(); exec('formatBlock', 'blockquote'); }}>❝</button>
-      <button type="button" class="secondary outline" title=${t('mail.link')} onMouseDown=${(e) => { e.preventDefault(); const url = prompt(t('mail.link'), 'https://'); if (url) exec('createLink', url); }}>🔗</button>
-      <button type="button" class="secondary outline" title="Clear formatting" onMouseDown=${(e) => { e.preventDefault(); exec('removeFormat'); }}>⌫</button>
+      <button type="button" class="secondary outline" title="Quote" onMouseDown=${(e) => { e.preventDefault(); exec('formatBlock', 'blockquote'); }}>${Suite.icon('quote')}</button>
+      <button type="button" class="secondary outline" title=${t('mail.link')} onMouseDown=${(e) => { e.preventDefault(); const url = prompt(t('mail.link'), 'https://'); if (url) exec('createLink', url); }}>${Suite.icon('link')}</button>
+      <button type="button" class="secondary outline" title="Clear formatting" onMouseDown=${(e) => { e.preventDefault(); exec('removeFormat'); }}>${Suite.icon('remove-formatting')}</button>
     </div>
     <div class="mail-editor" contenteditable="true" data-testid="compose-html"
       ref=${(el) => { if (el && editorRef.el !== el) { editorRef.el = el; el.innerHTML = c.html; } }}
@@ -1156,11 +1293,11 @@ function Compose() {
     </div>
     <div class="mail-buttons mail-compose-opts">
       <label><input type="checkbox" role="switch" data-testid="compose-mode" checked=${c.mode === 'html'} onChange=${(e) => setMode(e.target.checked)} /> ${t('mail.html')}</label>
-      <button type="button" class="secondary outline" data-testid="compose-attach" onClick=${pickAttachments}>📎 ${t('mail.attach')}</button>
+      <button type="button" class="secondary outline" data-testid="compose-attach" onClick=${pickAttachments}>${Suite.icon('paperclip')} ${t('mail.attach')}</button>
     </div>
-    ${c.attachments.length ? html`<ul class="mail-files" data-testid="compose-attachments">${c.attachments.map((a, i) => html`<li><span>📎 ${a.name} <small>${fmtSize(a.bytes.length)}</small></span>
+    ${c.attachments.length ? html`<ul class="mail-files" data-testid="compose-attachments">${c.attachments.map((a, i) => html`<li><span>${Suite.icon('paperclip')} ${a.name} <small>${fmtSize(a.bytes.length)}</small></span>
       <button class="secondary outline" title=${t('bridge.openWith')} aria-label=${t('bridge.openWith')} data-testid="compose-attachment-open-with"
-        onClick=${() => Suite.bridge.openWith(a.name, { exclude: 'mail', type: a.type, source: c.subject || t('app.title'), data: () => a.bytes, save: async (bytes) => { a.bytes = bytes; render(); } })}>↗</button>
+        onClick=${() => Suite.bridge.openWith(a.name, { exclude: 'mail', type: a.type, source: c.subject || t('app.title'), data: () => a.bytes, save: async (bytes) => { a.bytes = bytes; render(); } })}>${Suite.icon('external-link')}</button>
       <button class="secondary outline" title=${t('mail.delete')} onClick=${() => { c.attachments.splice(i, 1); render(); }}>×</button></li>`)}</ul>` : null}
     ${c.mode === 'html' ? html`<${HtmlEditor} />` : html`<textarea class="mail-textarea" data-testid="compose-text" key="text" onInput=${(e) => { c.text = e.target.value; }} ref=${(el) => { if (el && !el.dataset.init) { el.dataset.init = '1'; el.value = c.text; } }}></textarea>`}
     <footer class="mail-buttons">
@@ -1335,19 +1472,19 @@ function Sidebar() {
     <div class="mail-side-head"><strong>${t('mail.accounts')}</strong>
       <button class="secondary outline" data-testid="add-account" onClick=${() => { state.dialog = { kind: 'account', account: newAccount() }; render(); }}>${t('mail.addAccount')}</button></div>
     ${sessions.size > 1 ? html`<ul class="mail-folders mail-unified"><li data-testid="all-inboxes" class=${state.source === 'unified' ? 'active' : ''}>
-      <a href="#" onClick=${(e) => { e.preventDefault(); openUnified(); }}>📥 ${t('mail.allInboxes')}</a>
+      <a href="#" onClick=${(e) => { e.preventDefault(); openUnified(); }}>${Suite.icon('inbox')} ${t('mail.allInboxes')}</a>
       ${[...sessions.values()].reduce((n, s) => n + (s.unread[inboxOf(s)] || 0), 0) ? html`<span class="mail-badge" data-testid="unread">${[...sessions.values()].reduce((n, s) => n + (s.unread[inboxOf(s)] || 0), 0)}</span>` : null}</li></ul>` : null}
     <ul class="mail-accounts">${data.connections().map((a) => html`<li data-testid="account" data-connected=${sessions.has(a.id) ? 'true' : 'false'} class=${`${state.account && state.account.id === a.id && state.source !== 'unified' ? 'active' : ''} ${sessions.has(a.id) ? 'connected' : ''}`}>
-      <a href="#" onClick=${(e) => { e.preventDefault(); connect(a); }}>${state.connecting === a.id ? html`<span aria-busy="true"></span>` : sessions.has(a.id) ? '●' : '✉'} ${a.name || a.email}
+      <a href="#" onClick=${(e) => { e.preventDefault(); connect(a); }}>${state.connecting === a.id ? html`<span aria-busy="true"></span>` : sessions.has(a.id) ? Suite.icon('mail-check') : Suite.icon('mail')} ${a.name || a.email}
         ${sessions.has(a.id) && sessions.get(a.id).unread[inboxOf(sessions.get(a.id))] ? html` <span class="mail-badge" data-testid="account-unread">${sessions.get(a.id).unread[inboxOf(sessions.get(a.id))]}</span>` : null}</a>
-      ${sessions.has(a.id) ? html`<button class="secondary outline" title=${t('mail.disconnect')} data-testid="disconnect-account" onClick=${() => disconnect(a.id)}>⏏</button>` : null}
-      <button class="secondary outline" title="✎" data-testid="edit-account" onClick=${() => { state.dialog = { kind: 'account', account: { ...newAccount(), ...a, rules: (a.rules || []).map((r) => ({ ...r })), templates: [...(a.templates || [])], savePassword: !!a.password } }; render(); }}>✎</button>
+      ${sessions.has(a.id) ? html`<button class="secondary outline" title=${t('mail.disconnect')} data-testid="disconnect-account" onClick=${() => disconnect(a.id)}>${Suite.icon('eject')}</button>` : null}
+      <button class="secondary outline" title="✎" data-testid="edit-account" onClick=${() => { state.dialog = { kind: 'account', account: { ...newAccount(), ...a, rules: (a.rules || []).map((r) => ({ ...r })), templates: [...(a.templates || [])], savePassword: !!a.password } }; render(); }}>${Suite.icon('pencil')}</button>
       <button class="secondary outline" data-testid="delete-account" onClick=${async () => { if (await Suite.shell.confirm(t('mail.deleteAccount', a.name || a.email))) { if (sessions.has(a.id)) await disconnect(a.id); data.deleteConnection(a.id); } }}>×</button></li>`)}</ul>
     ${state.imap ? html`
       <div class="mail-side-head"><strong>${t('mail.folders')}${sessions.size > 1 ? html` <small data-testid="folders-account">${state.account.name || state.account.email}</small>` : null}</strong>
         <span>
           <button class="secondary outline" title=${t('mail.newFolder')} data-testid="folder-new" onClick=${() => folderAction('new')}>＋</button>
-          ${current && !current.special ? html`<button class="secondary outline" title=${t('mail.renameFolder')} data-testid="folder-rename" onClick=${() => folderAction('rename')}>✎</button>
+          ${current && !current.special ? html`<button class="secondary outline" title=${t('mail.renameFolder')} data-testid="folder-rename" onClick=${() => folderAction('rename')}>${Suite.icon('pencil')}</button>
             <button class="secondary outline" title=${t('mail.deleteFolder')} data-testid="folder-delete" onClick=${() => folderAction('delete')}>×</button>` : null}
         </span></div>
       <ul class="mail-folders">${state.folders.map((f) => html`<li data-testid="folder" data-path=${f.path}
@@ -1359,7 +1496,7 @@ function Sidebar() {
         <a href="#" onClick=${(e) => { e.preventDefault(); if (f.selectable) openFolder(f.path); }}>${folderLabel(f)}</a>
         ${state.unread[f.path] ? html`<span class="mail-badge" data-testid="unread">${state.unread[f.path]}</span>` : null}</li>`)}</ul>` : null}
     ${state.local ? html`<div class="mail-side-head"><strong>${t('mail.files')}</strong></div>
-      <ul class="mail-folders"><li class=${state.source === 'local' ? 'active' : ''} data-testid="local-folder"><a href="#" onClick=${(e) => { e.preventDefault(); Object.assign(state, { source: 'local', sel: new Set(), current: null, message: null, view: 'list' }); render(); }}>📄 ${state.local.name}</a>
+      <ul class="mail-folders"><li class=${state.source === 'local' ? 'active' : ''} data-testid="local-folder"><a href="#" onClick=${(e) => { e.preventDefault(); Object.assign(state, { source: 'local', sel: new Set(), current: null, message: null, view: 'list' }); render(); }}>${Suite.icon('file')} ${state.local.name}</a>
         <span class="mail-badge">${state.local.items.length}</span></li></ul>` : null}
     <${data.Bar} />
     <details><summary>${t('appdata.relay')}</summary><${data.RelayFields} /></details>
@@ -1385,12 +1522,19 @@ function MessageList() {
   return html`<section class="mail-list" data-testid="message-list">
     <form class="mail-search" role="search" onSubmit=${(e) => { e.preventDefault(); search(e.target.elements.q.value.trim()); }}>
       <button type="button" class=${`secondary ${state.threaded ? '' : 'outline'}`} data-testid="threads" aria-pressed=${state.threaded} title=${t('mail.threads')}
-        onClick=${() => { state.threaded = !state.threaded; try { localStorage.setItem('suite.mail.threads', state.threaded ? '1' : '0'); } catch (e) { /* blocked */ } render(); }}>🧵</button>
+        onClick=${() => { state.threaded = !state.threaded; try { localStorage.setItem('suite.mail.threads', state.threaded ? '1' : '0'); } catch (e) { /* blocked */ } render(); }}>${Suite.icon('spool')}</button>
       ${state.source === 'imap' && state.account && (state.account.rules || []).some((r) => r.contains) ? html`<button type="button" class="secondary outline" data-testid="apply-rules" title=${t('mail.applyRules')}
-        onClick=${() => applyRules(listedMessages(), { force: true })}>⚙</button>` : null}
-      <input type="search" name="q" placeholder=${t('mail.search')} data-testid="search" key=${`${state.source}${state.folder}`} defaultValue=${state.search}
-        onInput=${(e) => { if (state.source === 'local') search(e.target.value); else if (!e.target.value && state.search) search(''); }} />
+        onClick=${() => applyRules(listedMessages(), { force: true })}>${Suite.icon('settings')}</button>` : null}
+      <input type="search" name="q" placeholder=${t('mail.search')} data-testid="search" key=${`${state.source}${state.folder}${state.everywhere ? 'e' : ''}`} defaultValue=${state.search}
+        onInput=${(e) => { if (state.source === 'local') search(e.target.value, 'folder'); else if (!e.target.value && state.search) search('', 'folder'); }} />
+      ${state.source !== 'local' && sessions.size ? html`<select class="mail-scope" data-testid="search-scope" aria-label=${t('mail.searchScope')} onChange=${(e) => { state.searchScope = e.target.value; const q = e.target.form.elements.q.value.trim(); if (q) search(q); else render(); }}>
+        <option value="folder" selected=${state.searchScope === 'folder'}>${t(state.source === 'unified' && !state.everywhere ? 'mail.scopeList' : 'mail.scopeFolder')}</option>
+        <option value="folders" selected=${state.searchScope === 'folders'}>${t('mail.scopeFolders')}</option>
+        ${sessions.size > 1 ? html`<option value="accounts" selected=${state.searchScope === 'accounts'}>${t('mail.scopeAccounts')}</option>` : null}</select>` : null}
     </form>
+    ${state.progress ? html`<p class="mail-found" data-testid="mbox-progress">${state.progress.label} <progress value=${state.progress.done} max=${state.progress.total}></progress> ${state.progress.done}/${state.progress.total}</p>` : null}
+    ${state.everywhere ? html`<p class="mail-found" data-testid="search-info">${t(state.everywhere.done ? 'mail.foundIn' : 'mail.searchingIn', state.messages.length, state.everywhere.folders)}
+      <button type="button" class="secondary outline" data-testid="search-close" onClick=${endSearch}>×</button></p>` : null}
     ${!connectedOrLocal ? html`<p class="mail-hint" data-testid="not-connected">${state.connecting ? t('mail.connecting') : t('mail.notConnected')}</p>`
       : state.searching ? html`<p aria-busy="true"></p>`
       : !list.length ? html`<p class="mail-hint">${t('mail.noMessages')}</p>` : null}
@@ -1404,10 +1548,10 @@ function MessageList() {
           class=${`${unread || (head && !open && thread.unread) ? 'unread' : ''} ${state.current === m.uid ? 'current' : ''} ${state.sel.has(m.uid) ? 'selected' : ''} ${depth ? 'mail-reply' : ''}`}
           onClick=${(e) => click(e, m)}
           onDragStart=${(e) => { const uids = state.sel.has(m.uid) ? [...state.sel] : [m.uid]; e.dataTransfer.setData('application/x-mail-uids', JSON.stringify(uids)); }}>
-        <span class="mail-who" data-testid="message-from">${acc ? html`<span class="mail-acc" data-testid="message-account" title=${acc.account.email}>${acc.account.name || acc.account.email}</span> ` : null}${who}</span>
-        <span class="mail-date">${m.flags.includes('\\Flagged') ? html`<span class="mail-flag" data-testid="flagged">★</span>` : null}${m.flags.includes('\\Answered') ? '↩ ' : ''}${m.attachment ? '📎 ' : ''}${fmtDate(m.date)}</span>
+        <span class="mail-who" data-testid="message-from">${acc && (sessions.size > 1 || !state.everywhere) ? html`<span class="mail-acc" data-testid="message-account" title=${acc.account.email}>${acc.account.name || acc.account.email}</span> ` : null}${m.folderName ? html`<span class="mail-acc mail-folder-tag" data-testid="message-folder">${m.folderName}</span> ` : null}${who}</span>
+        <span class="mail-date">${m.flags.includes('\\Flagged') ? html`<span class="mail-flag" data-testid="flagged">${Suite.icon('star')}</span>` : null}${m.flags.includes('\\Answered') ? Suite.icon('corner-down-left') : ''}${m.attachment ? Suite.icon('paperclip') : ''}${fmtDate(m.date)}</span>
         <span class="mail-subj" data-testid="message-subject">${head ? html`<button class="mail-thread-toggle" data-testid="thread-toggle" aria-expanded=${open}
-            title=${t('mail.threadCount', thread.count)} onClick=${(e) => { e.stopPropagation(); if (state.expanded.has(thread.id)) state.expanded.delete(thread.id); else state.expanded.add(thread.id); if (open && thread.rows.some((r) => r.m.uid === state.current)) { state.current = null; state.message = null; } render(); }}>${open ? '▾' : '▸'} ${thread.count}</button> ` : null}${m.subject || t('mail.noSubject')}</span>
+            title=${t('mail.threadCount', thread.count)} onClick=${(e) => { e.stopPropagation(); if (state.expanded.has(thread.id)) state.expanded.delete(thread.id); else state.expanded.add(thread.id); if (open && thread.rows.some((r) => r.m.uid === state.current)) { state.current = null; state.message = null; } render(); }}>${open ? Suite.icon('chevron-down') : Suite.icon('chevron-right')} ${thread.count}</button> ` : null}${m.subject || t('mail.noSubject')}</span>
       </li>`;
     })}</ul>
     ${state.source === 'imap' && !state.search && state.loadedFrom > 1 ? html`<button class="secondary outline mail-more" data-testid="load-more" onClick=${loadMore}>${t('mail.loadMore')}</button>` : null}
@@ -1420,23 +1564,26 @@ function Toolbar() {
   const canMove = state.imap && has && state.source !== 'unified';
   const cur = state.messages.find((m) => m.uid === state.current);
   return html`<nav class="mail-toolbar" role="toolbar">
-    ${state.view !== 'folders' ? html`<button class="secondary outline mail-phone" data-testid="back" title=${t('mail.back')} onClick=${() => { state.view = state.view === 'message' ? 'list' : 'folders'; render(); }}>←</button>` : null}
-    <button data-testid="new-message" onClick=${() => openCompose()}>✉ <span class="mail-label">${t('mail.new')}</span></button>
+    ${state.view !== 'folders' ? html`<button class="secondary outline mail-phone" data-testid="back" title=${t('mail.back')} onClick=${() => { state.view = state.view === 'message' ? 'list' : 'folders'; render(); }}>${Suite.icon('arrow-left')}</button>` : null}
+    <button data-testid="new-message" title=${t('mail.new')} onClick=${() => openCompose()}>${Suite.icon('mail')} <span class="mail-label">${t('mail.new')}</span></button>
     ${templatesOf().length ? html`<select class="mail-templates-pick" data-testid="templates" title=${t('mail.newFromTemplate')}
       onChange=${(e) => { const tpl = templatesOf()[Number(e.target.value)]; e.target.value = ''; if (tpl) newFromTemplate(tpl); }}>
-      <option value="">📋 ${t('mail.templates')}</option>${templatesOf().map((tpl, i) => html`<option value=${i}>${tpl.name}</option>`)}</select>` : null}
-    <button class="secondary outline" data-testid="reply" disabled=${!state.message} onClick=${() => replyTo(false)} title=${t('mail.reply')}>↩ <span class="mail-label">${t('mail.reply')}</span></button>
-    <button class="secondary outline" data-testid="reply-all" disabled=${!state.message} onClick=${() => replyTo(true)} title=${t('mail.replyAll')}>⇇ <span class="mail-label">${t('mail.replyAll')}</span></button>
-    <button class="secondary outline" data-testid="forward" disabled=${!state.message} onClick=${forward} title=${t('mail.forward')}>↪ <span class="mail-label">${t('mail.forward')}</span></button>
-    <button class="secondary outline" data-testid="delete" disabled=${!has} onClick=${() => deleteMessages()} title=${t('mail.delete')}>🗑 <span class="mail-label">${t('mail.delete')}</span></button>
-    <button class="secondary outline" data-testid="toggle-read" disabled=${!has || !imap} onClick=${() => toggleFlag('\\Seen')} title=${cur && cur.flags.includes('\\Seen') ? t('mail.unread') : t('mail.read')}>✉̸</button>
-    <button class="secondary outline" data-testid="toggle-flag" disabled=${!has || !imap} onClick=${() => toggleFlag('\\Flagged')} title=${t('mail.flag')}>★</button>
-    <button class="secondary outline" data-testid="move" disabled=${!canMove} onClick=${() => { state.dialog = { kind: 'move', uids: selectedUids() }; render(); }} title=${t('mail.move')}>📁</button>
-    <button class="secondary outline" data-testid="refresh" disabled=${!imap} onClick=${() => { if (state.source === 'unified') openUnified({ keep: true }); else { openFolder(state.folder); refreshUnread(); } }} title=${t('mail.refresh')}>⟳</button>
+      <option value="">${t('mail.templates')}</option>${templatesOf().map((tpl, i) => html`<option value=${i}>${tpl.name}</option>`)}</select>` : null}
+    <button class="secondary outline" data-testid="reply" disabled=${!state.message} onClick=${() => replyTo(false)} title=${t('mail.reply')}>${Suite.icon('corner-down-left')} <span class="mail-label">${t('mail.reply')}</span></button>
+    <button class="secondary outline" data-testid="reply-all" disabled=${!state.message} onClick=${() => replyTo(true)} title=${t('mail.replyAll')}>${Suite.icon('reply-all')} <span class="mail-label">${t('mail.replyAll')}</span></button>
+    <button class="secondary outline" data-testid="forward" disabled=${!state.message} onClick=${forward} title=${t('mail.forward')}>${Suite.icon('corner-up-right')} <span class="mail-label">${t('mail.forward')}</span></button>
+    <button class="secondary outline" data-testid="delete" disabled=${!has} onClick=${() => deleteMessages()} title=${t('mail.delete')}>${Suite.icon('trash-2')} <span class="mail-label">${t('mail.delete')}</span></button>
+    <button class="secondary outline" data-testid="toggle-read" disabled=${!has || !imap} onClick=${() => toggleFlag('\\Seen')} title=${cur && cur.flags.includes('\\Seen') ? t('mail.unread') : t('mail.read')}>${Suite.icon('mail')}̸</button>
+    <button class="secondary outline" data-testid="toggle-flag" disabled=${!has || !imap} onClick=${() => toggleFlag('\\Flagged')} title=${t('mail.flag')}>${Suite.icon('star')}</button>
+    <button class="secondary outline" data-testid="move" disabled=${!canMove} onClick=${() => { state.dialog = { kind: 'move', uids: selectedUids() }; render(); }} title=${t('mail.move')}>${Suite.icon('folder')}</button>
+    <button class="secondary outline" data-testid="refresh" disabled=${!imap} onClick=${() => { if (state.source === 'unified') openUnified({ keep: true }); else { openFolder(state.folder); refreshUnread(); } }} title=${t('mail.refresh')}>${Suite.icon('rotate-cw')}</button>
     <span class="mail-spacer"></span>
-    <button class="secondary outline" data-testid="open-file" onClick=${pickFiles} title=${t('mail.openFile')}>📂 <span class="mail-label">${t('mail.openFile')}</span></button>
-    <button class="secondary outline" data-testid="open-contacts" onClick=${() => { state.book = { filter: '', editing: null }; render(); }} title=${t('mail.contacts')}>👤 <span class="mail-label">${t('mail.contacts')}</span></button>
-    <button class="secondary outline mail-phone" data-testid="toggle-panels" onClick=${() => { state.view = state.view === 'folders' ? 'list' : 'folders'; render(); }}>☰</button>
+    <button class="secondary outline" data-testid="open-file" onClick=${pickFiles} title=${t('mail.openFile')}>${Suite.icon('folder-open')} <span class="mail-label">${t('mail.openFile')}</span></button>
+    <select class="mail-mbox" data-testid="mbox-menu" aria-label="mbox" disabled=${!(state.source === 'local' || imap)} onChange=${(e) => { const v = e.target.value; e.target.value = ''; if (v === 'export') exportMbox(); else if (v === 'import') importMbox(); }}>
+      <option value="">mbox</option><option value="export">${t(state.sel.size ? 'mail.mboxExportSel' : 'mail.mboxExport')}</option>
+      ${state.source === 'imap' ? html`<option value="import">${t('mail.mboxImport')}</option>` : null}</select>
+    <button class="secondary outline" data-testid="open-contacts" onClick=${() => { state.book = { filter: '', editing: null }; render(); }} title=${t('mail.contacts')}>${Suite.icon('user')} <span class="mail-label">${t('mail.contacts')}</span></button>
+    <button class="secondary outline mail-phone" data-testid="toggle-panels" title=${Suite.t('common.panels')} onClick=${() => { state.view = state.view === 'folders' ? 'list' : 'folders'; render(); }}>${Suite.icon('menu')}</button>
   </nav>`;
 }
 
@@ -1472,5 +1619,5 @@ document.addEventListener('keydown', (e) => {
 Suite.bridge.receive((picked) => openFiles([picked]), { app: 'mail' }); // files opened from other apps ("Open with…")
 
 // for tests
-window.MAIL = { state, data, mime, invitationReply, connect, disconnect, openUnified, sessions, get imap() { return state.imap; } };
+window.MAIL = { state, data, exportMbox, importMbox, searchEverywhere, endSearch, mime, invitationReply, connect, disconnect, openUnified, sessions, get imap() { return state.imap; } };
 document.body.dataset.ready = 'true';

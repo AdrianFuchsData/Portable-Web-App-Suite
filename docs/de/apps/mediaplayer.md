@@ -66,6 +66,10 @@ Browser).
 und **Lautstärke angleichen**, das laute und leise Stellen ausgleicht. Er wirkt bei lokalen Dateien; Stream-URLs werden unverändert
 abgespielt (der Browser erlaubt nicht, ihren Ton zu bearbeiten).
 
+**Darstellung**: Die Auswahl neben 🎚 zeigt den Klang einer lokalen Audiodatei während der Wiedergabe anstelle des Covers: ein **Spektrum**
+(Balken von tiefen bis zu hohen Tönen), die **Wellenform** (wie ein Oszilloskop) oder einen **Kreis** aus Balken. Wie der Equalizer wirkt
+sie nur bei lokalen Dateien.
+
 Lautstärke, Stummschaltung, Geschwindigkeit, Zufallswiedergabe, Wiederholen und die Anzeige der Wiedergabeliste werden in diesem
 Browser gespeichert. Medientasten der Tastatur und die Wiedergabe-Benachrichtigung unter Android funktionieren ebenfalls.
 

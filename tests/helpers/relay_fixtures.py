@@ -28,11 +28,13 @@ RELAYS_V2 = {
     "python": (RELAYS["python"][0], {"port": "--port", "token": "--token", "users": "--users", "bind": "--bind", "hosts": "--host",
                                      "base_path": "--base-path", "trusted_proxy": "--trusted-proxy", "proxy_user_header": "--proxy-user-header",
                                      "session_hours": "--session-hours", "tls": ("--tls-cert", "--tls-key"), "cafile": "--cafile",
-                                     "serve": "--serve", "upstream_proxy": "--upstream-proxy", "no_proxy": "--no-proxy", "origins": "--origin"}),
+                                     "serve": "--serve", "upstream_proxy": "--upstream-proxy", "no_proxy": "--no-proxy", "origins": "--origin",
+                                     "insecure_transport": "--insecure-transport"}),
     "powershell": (RELAYS["powershell"][0], {"port": "-Port", "token": "-Token", "users": "-Users", "bind": "-Bind", "hosts": "-HostName",
                                              "base_path": "-BasePath", "trusted_proxy": "-TrustedProxy", "proxy_user_header": "-ProxyUserHeader",
                                              "session_hours": "-SessionHours", "tls": ("-TlsCert", "-TlsKey"), "cafile": "-CaFile",
-                                             "serve": "-Serve", "upstream_proxy": "-UpstreamProxy", "no_proxy": "-NoProxy", "origins": "-Origin"}),
+                                             "serve": "-Serve", "upstream_proxy": "-UpstreamProxy", "no_proxy": "-NoProxy", "origins": "-Origin",
+                                             "insecure_transport": "-InsecureTransport"}),
 }
 
 
@@ -43,7 +45,9 @@ def start_relay(impl, expect_failure=False, **options):
     args = []
     for name, value in {"port": "0", **options}.items():
         flag = flags[name]
-        if name == "tls":
+        if value is True:  # (a switch)
+            args += [flag]
+        elif name == "tls":
             args += [flag[0], str(value[0]), flag[1], str(value[1])]
         elif isinstance(value, (list, tuple)):
             # PowerShell takes arrays as one comma-separated argument, Python repeats the option

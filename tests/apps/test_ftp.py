@@ -129,7 +129,7 @@ def test_ftp_browse_download_upload_and_manage(app_page, relay, ftp_server, tmp_
     assert page.title() == "FTP/SFTP client"
     relay_setup(page, relay)
     quick_connect(page, "ftp", port)
-    expect(names(page)).to_have_text(["📁 docs", "📄 hello.txt"], timeout=20000)
+    expect(names(page)).to_have_text(["docs", "hello.txt"], timeout=20000)
     expect(page.locator("[data-testid=remote-path]")).to_have_value("/")
 
     page.locator("[data-testid=entry]", has_text="hello.txt").click()
@@ -143,7 +143,7 @@ def test_ftp_browse_download_upload_and_manage(app_page, relay, ftp_server, tmp_
     with page.expect_file_chooser() as chooser:
         page.click("[data-testid=upload-files]")
     chooser.value.set_files(str(big))
-    expect(names(page)).to_have_text(["📁 docs", "📄 big.bin", "📄 hello.txt"], timeout=20000)
+    expect(names(page)).to_have_text(["docs", "big.bin", "hello.txt"], timeout=20000)
     assert (root / "big.bin").read_bytes() == big.read_bytes()
 
     page.click("[data-testid=remote-mkdir]")
@@ -159,7 +159,7 @@ def test_ftp_browse_download_upload_and_manage(app_page, relay, ftp_server, tmp_
     page.locator("[data-testid=entry]", has_text="docs").click()
     page.click("[data-testid=remote-delete]")
     page.click("[data-testid=confirm-ok]")
-    expect(names(page)).to_have_text(["📁 new", "📄 big.bin", "📄 hi.txt"])
+    expect(names(page)).to_have_text(["new", "big.bin", "hi.txt"])
     assert sorted(os.listdir(root)) == ["big.bin", "hi.txt", "new"]  # the folder was deleted recursively
 
     page.locator("[data-testid=entry]", has_text="new").dblclick()
@@ -211,7 +211,7 @@ def test_ftps(app_page, relay, ftp_server, protocol):
     page = app_page("ftp", init_script=NO_PICKERS)
     relay_setup(page, relay)
     quick_connect(page, protocol, port, host="localhost")  # the test certificate is for "localhost"
-    expect(names(page)).to_have_text(["📁 docs", "📄 hello.txt"], timeout=20000)
+    expect(names(page)).to_have_text(["docs", "hello.txt"], timeout=20000)
     page.locator("[data-testid=entry]", has_text="hello.txt").click()
     with page.expect_download() as d:
         page.click("[data-testid=download-selected]")
@@ -240,7 +240,7 @@ def test_sftp(app_page, relay, sshd, tmp_path, request):
     expect(page.locator("[data-testid=remote-path]")).not_to_have_value("", timeout=30000)
     page.fill("[data-testid=remote-path]", folder)
     page.press("[data-testid=remote-path]", "Enter")
-    expect(names(page)).to_have_text(["📄 x.txt"])
+    expect(names(page)).to_have_text(["x.txt"])
     page.locator("[data-testid=entry]").dblclick()  # double-click downloads a file
     page.wait_for_event("download")
     # chunked upload that resumes after the part the server has (writeAt), and a chunked download (readAt)
@@ -315,18 +315,18 @@ def test_local_folder_transfers(browser, dist_server, http_relay, ftp_server):
       const w = await (await local.getFileHandle('mine.txt', { create: true })).createWritable(); await w.write('local content'); await w.close(); }""")
     relay_setup(page, relay)
     quick_connect(page, "ftp", port)
-    expect(names(page)).to_have_text(["📁 docs", "📄 hello.txt"], timeout=20000)
+    expect(names(page)).to_have_text(["docs", "hello.txt"], timeout=20000)
     page.click("[data-testid=choose-folder]")
-    expect(names(page, "local-list")).to_have_text(["📄 mine.txt"])
+    expect(names(page, "local-list")).to_have_text(["mine.txt"])
 
     page.locator("[data-testid=local-list] [data-testid=entry]").click()
     page.click("[data-testid=upload-selected]")
-    expect(names(page)).to_have_text(["📁 docs", "📄 hello.txt", "📄 mine.txt"], timeout=20000)
+    expect(names(page)).to_have_text(["docs", "hello.txt", "mine.txt"], timeout=20000)
     assert (root / "mine.txt").read_text() == "local content"
 
     page.locator("[data-testid=remote-list] [data-testid=entry]", has_text="docs").click()
     page.click("[data-testid=download-selected]")  # folders are downloaded recursively
-    expect(names(page, "local-list")).to_have_text(["📁 docs", "📄 mine.txt"], timeout=20000)
+    expect(names(page, "local-list")).to_have_text(["docs", "mine.txt"], timeout=20000)
     text = page.evaluate("""async () => { const local = await (await navigator.storage.getDirectory()).getDirectoryHandle('local');
       return (await (await (await local.getDirectoryHandle('docs')).getFileHandle('a.txt')).getFile()).text(); }""")
     assert text == "A"
@@ -351,7 +351,7 @@ def test_saved_site(app_page, relay, ftp_server):
     relay_setup(page, relay)
     page.evaluate("([port]) => FTP.data.saveConnection({ name: 'My FTP', protocol: 'ftp', host: '127.0.0.1', port, username: 'anna', password: 'secret' })", [port])
     page.locator("[data-testid=site] a").click()
-    expect(names(page)).to_have_text(["📁 docs", "📄 hello.txt"], timeout=20000)
+    expect(names(page)).to_have_text(["docs", "hello.txt"], timeout=20000)
 
 
 def test_german_interface(app_page):
@@ -364,7 +364,7 @@ def test_mobile_layout(app_page, relay, ftp_server):
     page = app_page("ftp", mobile=True, init_script=NO_PICKERS)
     relay_setup(page, relay)
     quick_connect(page, "ftp", port)
-    expect(names(page)).to_have_text(["📁 docs", "📄 hello.txt"], timeout=20000)
+    expect(names(page)).to_have_text(["docs", "hello.txt"], timeout=20000)
     expect(page.locator("[data-testid=sidebar]")).to_be_hidden()
     assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     assert page.errors == []
@@ -378,7 +378,7 @@ def test_resume_interrupted_download_and_upload(app_page, relay, ftp_server, tmp
     page = app_page("ftp", init_script=NO_PICKERS)
     relay_setup(page, relay)
     quick_connect(page, "ftp", port)
-    expect(names(page)).to_have_text(["📁 docs", "📄 big.bin", "📄 hello.txt"], timeout=20000)
+    expect(names(page)).to_have_text(["docs", "big.bin", "hello.txt"], timeout=20000)
     page.locator("[data-testid=remote-list] [data-testid=entry]", has_text="big.bin").dblclick()
     job = page.locator("[data-testid=job]").last
     expect(job).to_have_attribute("data-status", "failed", timeout=20000)

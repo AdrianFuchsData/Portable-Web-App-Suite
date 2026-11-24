@@ -41,6 +41,15 @@ funktionieren).</p>
   nur über das Relay sichtbar (Browser verbergen <code>Set-Cookie</code> vor Seiten). localStorage und ähnliche Speicher werden von
   Skripten befüllt, die die Vorschau nicht ausführt; das Bookmarklet zeigt sie in der echten Seite.</li>
 </ul>
+<h3>Barrierefreiheit</h3>
+<p><strong>Barrierefreiheit</strong> → <strong>Barrierefreiheit prüfen</strong> testet die Seite mit <a href="https://github.com/dequelabs/axe-core">axe-core</a>, dem Regelwerk vieler
+Prüfwerkzeuge (WCAG 2.x Stufen A und AA sowie bewährte Verfahren): fehlende Alternativtexte, Formularfelder ohne Beschriftung, Schaltflächen und Links
+ohne Namen, zu geringer Farbkontrast, fehlende Sprachangabe, falsches ARIA, Überschriften und Landmarks und mehr. Die Probleme stehen nach Schwere
+geordnet (<em>kritisch</em>, <em>schwer</em>, <em>mittel</em>, <em>gering</em>), jeweils mit den betroffenen Elementen (Selektor und HTML), einem Hinweis zur Behebung und einem Link
+zur Erklärung. <em>Von Hand zu prüfen</em> listet, was die Regeln nicht entscheiden konnten.</p>
+<p>Die Prüfung läuft in einem abgeschotteten Frame mit HTML und CSS der Seite; die Skripte der Seite laufen nicht (Inhalte, die Skripte hinzufügen würden,
+werden nicht geprüft). Auf Deutsch sind Regeltitel und Beschreibungen deutsch, die Hinweise je Element englisch. Automatische Regeln finden nur einen
+Teil der Probleme – eine Prüfung mit Tastatur und Screenreader bleibt nötig.</p>
 <h2>HAR-Betrachter</h2>
 <p>Eine HAR-Datei ist das Netzwerkprotokoll eines Browsers (in den Entwicklerwerkzeugen: Netzwerk → „Alle als HAR
 speichern“). <strong>HAR-Datei öffnen</strong> (oder Ziehen auf das Fenster) zeigt alle Anfragen mit Methode, Datei und Host, Status

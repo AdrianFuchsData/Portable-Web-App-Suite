@@ -68,3 +68,8 @@
 .db-history li:hover { background: var(--suite-selected); }
 .db-history li.failed code { text-decoration: underline wavy var(--pico-del-color, #c62828); }
 .db-history code { background: none; padding: 0; font-size: inherit; }
+.db-import { max-width: min(52rem, 96vw); }
+.db-import-preview { overflow: auto; max-height: 14rem; margin-bottom: .6rem; }
+.db-import-preview table { font-size: .8rem; margin: 0; }
+.db-import-preview th, .db-import-preview td { padding: .2rem .4rem; white-space: nowrap; }
+.db-warn { color: #e65100; font-size: .85rem; }

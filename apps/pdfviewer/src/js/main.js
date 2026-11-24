@@ -27,6 +27,15 @@ Suite.i18n.register({
     "pv.sigSigner": "Signer", "pv.sigIssuer": "Issued by", "pv.sigValidity": "Certificate valid", "pv.sigSelfSigned": "self-signed certificate", "pv.sigExpired": "the certificate has expired",
     "pv.sigReason": "Reason", "pv.sigLocation": "Location", "pv.sigDate": "Signed on", "pv.sigChain": "Certificate chain", "pv.sigTrust": "Whether the certificate is trustworthy is not checked: there is no store of trusted root certificates offline. Compare the certificate with the signer if in doubt.",
     "pv.sigError": "The signature cannot be checked: {0}", "pv.sigLinkOk": "signature of the issuer verified", "pv.sigLinkBad": "issuer signature NOT valid", "pv.sigLinkMissing": "issuer certificate not included",
+    "pv.redact": "Black out (redact)…", "pv.redactHint": "Drag over what must disappear; a click on a box removes it.", "pv.redactText": "Text to black out everywhere", "pv.redactMark": "Mark", "pv.redactFound": "{0} places marked.",
+    "pv.redactCount": "{0} boxes", "pv.redactApply": "Remove for good", "pv.redactNone": "Mark something first.", "pv.redactRemove": "Remove this box",
+    "pv.redactConfirm": "The {0} pages with boxes become pictures: what is under the boxes is removed for good, their text can no longer be selected or found. The outline, form fields and metadata of the document are not kept. Continue?", "pv.redacted": "{0} pages redacted. Save the document (undo is possible until then).",
+    "pv.exportImages": "Pages as pictures (PNG, JPEG)…", "pv.imgPages": "Pages", "pv.imgCurrent": "This page ({0})", "pv.imgSelected": "The selected pages ({0})", "pv.imgAll": "All pages ({0})", "pv.imgFormat": "Format", "pv.imgDpi": "Resolution",
+    "pv.imgHint": "One page is saved as a picture, several pages together in a ZIP. 150 dpi suits the screen, 300 dpi printing.", "pv.imgExport": "Export",
+    "pv.compress": "Make smaller (compress)…", "pv.compress_screen": "Screen – 96 dpi, strong JPEG compression (smallest)", "pv.compress_ebook": "E-book – 150 dpi, medium compression", "pv.compress_print": "Print – 300 dpi, light compression",
+    "pv.compressHint": "Larger pictures are scaled down and stored as JPEG, text and drawings stay sharp. Undo with Ctrl+Z until saved.", "pv.compressGo": "Compress",
+    "pv.compressed": "Compressed: {0} → {1} (−{2} %, {3} pictures)", "pv.compressNone": "The document ({0}) cannot be made noticeably smaller.",
+    "pv.tools": "Text and export", "pv.copyPageText": "Copy the text of this page", "pv.copyAllText": "Copy all text", "pv.saveText": "Save the text as a file (.txt)…", "pv.textCopied": "{0} characters copied.", "pv.noText": "There is no text in this document (scanned pages are pictures).",
     "pv.previous": "Previous page", "pv.next": "Next page", "pv.page": "Page", "pv.of": "of {0}",
     "pv.zoomIn": "Zoom in", "pv.zoomOut": "Zoom out", "pv.auto": "Automatic", "pv.pageFit": "Whole page", "pv.pageWidth": "Page width",
     "pv.rotate": "Rotate", "pv.find": "Find", "pv.findNext": "Next", "pv.findPrevious": "Previous", "pv.matchCase": "Match case",
@@ -57,6 +66,15 @@ Suite.i18n.register({
     "pv.sigSigner": "Unterzeichner", "pv.sigIssuer": "Ausgestellt von", "pv.sigValidity": "Zertifikat gültig", "pv.sigSelfSigned": "selbst signiertes Zertifikat", "pv.sigExpired": "das Zertifikat ist abgelaufen",
     "pv.sigReason": "Grund", "pv.sigLocation": "Ort", "pv.sigDate": "Signiert am", "pv.sigChain": "Zertifikatskette", "pv.sigTrust": "Ob das Zertifikat vertrauenswürdig ist, wird nicht geprüft: offline gibt es keinen Speicher vertrauenswürdiger Stammzertifikate. Vergleichen Sie im Zweifel das Zertifikat mit dem Unterzeichner.",
     "pv.sigError": "Die Signatur kann nicht geprüft werden: {0}", "pv.sigLinkOk": "Signatur des Ausstellers geprüft", "pv.sigLinkBad": "Signatur des Ausstellers NICHT gültig", "pv.sigLinkMissing": "Zertifikat des Ausstellers nicht enthalten",
+    "pv.redact": "Schwärzen…", "pv.redactHint": "Ziehen Sie über das, was verschwinden muss; ein Klick auf einen Kasten entfernt ihn.", "pv.redactText": "Text, der überall geschwärzt wird", "pv.redactMark": "Markieren", "pv.redactFound": "{0} Stellen markiert.",
+    "pv.redactCount": "{0} Kästen", "pv.redactApply": "Endgültig entfernen", "pv.redactNone": "Markieren Sie zuerst etwas.", "pv.redactRemove": "Diesen Kasten entfernen",
+    "pv.redactConfirm": "Die {0} Seiten mit Kästen werden zu Bildern: Was unter den Kästen liegt, wird endgültig entfernt, ihr Text lässt sich nicht mehr auswählen oder finden. Inhaltsverzeichnis, Formularfelder und Metadaten des Dokuments bleiben nicht erhalten. Fortfahren?", "pv.redacted": "{0} Seiten geschwärzt. Speichern Sie das Dokument (bis dahin lässt es sich rückgängig machen).",
+    "pv.exportImages": "Seiten als Bilder (PNG, JPEG)…", "pv.imgPages": "Seiten", "pv.imgCurrent": "Diese Seite ({0})", "pv.imgSelected": "Die ausgewählten Seiten ({0})", "pv.imgAll": "Alle Seiten ({0})", "pv.imgFormat": "Format", "pv.imgDpi": "Auflösung",
+    "pv.imgHint": "Eine Seite wird als Bild gespeichert, mehrere Seiten zusammen in einem ZIP. 150 dpi passen für den Bildschirm, 300 dpi zum Drucken.", "pv.imgExport": "Exportieren",
+    "pv.compress": "Verkleinern (komprimieren)…", "pv.compress_screen": "Bildschirm – 96 dpi, starke JPEG-Kompression (am kleinsten)", "pv.compress_ebook": "E-Book – 150 dpi, mittlere Kompression", "pv.compress_print": "Druck – 300 dpi, leichte Kompression",
+    "pv.compressHint": "Größere Bilder werden verkleinert und als JPEG gespeichert, Text und Zeichnungen bleiben scharf. Bis zum Speichern mit Strg+Z rückgängig zu machen.", "pv.compressGo": "Komprimieren",
+    "pv.compressed": "Komprimiert: {0} → {1} (−{2} %, {3} Bilder)", "pv.compressNone": "Das Dokument ({0}) lässt sich nicht merklich verkleinern.",
+    "pv.tools": "Text und Export", "pv.copyPageText": "Den Text dieser Seite kopieren", "pv.copyAllText": "Den ganzen Text kopieren", "pv.saveText": "Den Text als Datei speichern (.txt)…", "pv.textCopied": "{0} Zeichen kopiert.", "pv.noText": "In diesem Dokument gibt es keinen Text (eingescannte Seiten sind Bilder).",
     "pv.previous": "Vorherige Seite", "pv.next": "Nächste Seite", "pv.page": "Seite", "pv.of": "von {0}",
     "pv.zoomIn": "Vergrößern", "pv.zoomOut": "Verkleinern", "pv.auto": "Automatisch", "pv.pageFit": "Ganze Seite", "pv.pageWidth": "Seitenbreite",
     "pv.rotate": "Drehen", "pv.find": "Suchen", "pv.findNext": "Weiter", "pv.findPrevious": "Zurück", "pv.matchCase": "Groß-/Kleinschreibung",
@@ -119,6 +137,7 @@ const state = {
   signing: null, // { typed } while the signature dialog is open
   placing: null, // { png, ratio } while waiting for the click that places the signature
   signatures: [], // digital signatures of the opened file (signatures.js)
+  redact: null, // { marks: { [page]: [{ x, y, w, h }] } (PDF points, unrotated page) } while redacting
 };
 
 let renderQueued = false;
@@ -524,17 +543,17 @@ function SignatureBar() {
   const who = list.length > 1 ? `${last.name} (${t("pv.sigCount", list.length)})` : last.name;
   return html`<button class=${`pv-sigbar ${bad ? "bad" : changed ? "warn" : "ok"}`} data-testid="signature-bar" data-state=${bad ? "bad" : changed ? "changed" : "ok"}
       onClick=${() => { state.sidebar = true; state.sidebarTab = "signatures"; render(); }}>
-    ${bad ? "❌" : changed ? "⚠️" : "✅"} ${t(bad ? "pv.sigInvalid" : changed ? "pv.sigChanged" : "pv.sigValid", who)} <small>${t("pv.sigDetails")} ›</small></button>`;
+    ${bad ? Suite.icon('x') : changed ? Suite.icon('triangle-alert') : Suite.icon('circle-check')} ${t(bad ? "pv.sigInvalid" : changed ? "pv.sigChanged" : "pv.sigValid", who)} <small>${t("pv.sigDetails")} ›</small></button>`;
 }
 
 function Signatures() {
-  const row = (ok, good, badText) => html`<li class=${ok ? "ok" : "bad"}>${ok ? "✅" : "❌"} ${ok ? good : badText}</li>`;
+  const row = (ok, good, badText) => html`<li class=${ok ? "ok" : "bad"}>${ok ? Suite.icon('circle-check') : Suite.icon('x')} ${ok ? good : badText}</li>`;
   return html`<div class="pv-signatures" data-testid="signatures">${state.signatures.map((s) => html`<section data-testid="signature" data-valid=${sigOk(s) ? "true" : "false"}>
-    <strong>✍ ${s.name}</strong>
-    ${s.error ? html`<p class="pv-sig-error">❌ ${t("pv.sigError", s.error)}</p>` : html`<ul>
+    <strong>${Suite.icon('pen-line')} ${s.name}</strong>
+    ${s.error ? html`<p class="pv-sig-error">${Suite.icon('x')} ${t("pv.sigError", s.error)}</p>` : html`<ul>
       ${row(s.integrity, t("pv.sigIntegrity"), t("pv.sigIntegrityBad"))}
       ${row(s.signature, t("pv.sigSignatureOk"), t("pv.sigSignatureBad"))}
-      <li class=${s.coversAll ? "ok" : "warn"} data-testid="signature-coverage">${s.coversAll ? "✅" : "⚠️"} ${s.coversAll ? t("pv.sigCoversAll") : t("pv.sigAppended", s.appended)}</li></ul>`}
+      <li class=${s.coversAll ? "ok" : "warn"} data-testid="signature-coverage">${s.coversAll ? Suite.icon('circle-check') : Suite.icon('triangle-alert')} ${s.coversAll ? t("pv.sigCoversAll") : t("pv.sigAppended", s.appended)}</li></ul>`}
     <dl>
       ${s.date ? html`<dt>${t("pv.sigDate")}</dt><dd>${fmtDate(s.date)}</dd>` : null}
       ${s.reason ? html`<dt>${t("pv.sigReason")}</dt><dd data-testid="signature-reason">${s.reason}</dd>` : null}
@@ -555,7 +574,7 @@ function Sidebar() {
     <div class="pv-tabs">
       <button class=${state.sidebarTab === "thumbnails" ? "" : "secondary outline"} onClick=${() => { state.sidebarTab = "thumbnails"; render(); }}>${t("pv.thumbnails")}</button>
       <button class=${state.sidebarTab === "outline" ? "" : "secondary outline"} data-testid="outline-tab" onClick=${() => { state.sidebarTab = "outline"; render(); }}>${t("pv.outline")}</button>
-      ${state.signatures.length ? html`<button class=${state.sidebarTab === "signatures" ? "" : "secondary outline"} data-testid="signatures-tab" onClick=${() => { state.sidebarTab = "signatures"; render(); }}>✍</button>` : null}
+      ${state.signatures.length ? html`<button class=${state.sidebarTab === "signatures" ? "" : "secondary outline"} data-testid="signatures-tab" title=${Suite.t('common.signatures')} onClick=${() => { state.sidebarTab = "signatures"; render(); }}>${Suite.icon('pen-line')}</button>` : null}
     </div>
     ${state.sidebarTab === "signatures" && state.signatures.length ? html`<${Signatures} />` : state.sidebarTab === "thumbnails" ? html`<${Thumbnails} />`
       : html`<nav class="pv-outline">${state.outline && state.outline.length ? html`<${OutlineItems} items=${state.outline} />` : html`<p>${t("pv.noOutline")}</p>`}</nav>`}
@@ -566,15 +585,306 @@ function Sidebar() {
 
 const SCALES = [["auto", "pv.auto"], ["page-fit", "pv.pageFit"], ["page-width", "pv.pageWidth"], ["0.5", "50 %"], ["0.75", "75 %"], ["1", "100 %"], ["1.25", "125 %"], ["1.5", "150 %"], ["2", "200 %"], ["3", "300 %"], ["4", "400 %"]];
 
+// ---- redaction: black boxes that really remove what is under them (the page becomes a picture; pages.js redact) ----------------
+
+const REDACT_DPI = 200;
+
+/** A rectangle in PDF points as viewport (CSS or canvas) coordinates [x1, y1, x2, y2]. */
+function toViewport(viewport, r) {
+  const [x1, y1] = viewport.convertToViewportPoint(r.x, r.y), [x2, y2] = viewport.convertToViewportPoint(r.x + r.w, r.y + r.h);
+  return [x1, y1, x2, y2];
+}
+
+function startRedact() {
+  if (state.placing) stopPlacing();
+  if (state.editMode !== AnnotationEditorType.NONE) setEditMode(AnnotationEditorType.NONE);
+  state.redact = { marks: {} };
+  container.classList.add("pv-redacting");
+  render();
+  drawRedactions();
+}
+
+function stopRedact() { state.redact = null; container.classList.remove("pv-redacting"); drawRedactions(); render(); }
+
+/** The black boxes as overlays on the shown pages (re-drawn when pages are rendered or zoomed). */
+function drawRedactions() {
+  for (const old of container.querySelectorAll(".pv-redaction")) old.remove();
+  if (!state.redact) return;
+  for (const [n, list] of Object.entries(state.redact.marks)) {
+    const view = viewer.getPageView(+n - 1);
+    const host = view && view.div;
+    if (!host) continue;
+    list.forEach((r, i) => {
+      const [x1, y1, x2, y2] = toViewport(view.viewport, r);
+      const el = document.createElement("div");
+      el.className = "pv-redaction";
+      el.dataset.testid = "redaction";
+      el.title = t("pv.redactRemove");
+      Object.assign(el.style, { left: `${Math.min(x1, x2)}px`, top: `${Math.min(y1, y2)}px`, width: `${Math.abs(x2 - x1)}px`, height: `${Math.abs(y2 - y1)}px` });
+      el.addEventListener("pointerdown", (e) => { e.stopPropagation(); e.preventDefault(); list.splice(i, 1); drawRedactions(); render(); });
+      host.appendChild(el);
+    });
+  }
+}
+eventBus.on("pagerendered", () => drawRedactions());
+eventBus.on("scalechanging", () => setTimeout(drawRedactions));
+
+let redactDrag = null;
+container.addEventListener("pointerdown", (e) => {
+  if (!state.redact || e.button > 0) return;
+  const pageEl = e.target.closest(".page");
+  if (!pageEl || e.target.classList.contains("pv-redaction")) return;
+  e.preventDefault();
+  const box = pageEl.getBoundingClientRect();
+  const ghost = document.createElement("div");
+  ghost.className = "pv-redaction pv-redaction-new";
+  pageEl.appendChild(ghost);
+  redactDrag = { pageEl, box, x0: e.clientX - box.left, y0: e.clientY - box.top, ghost };
+  container.setPointerCapture(e.pointerId);
+}, true);
+container.addEventListener("pointermove", (e) => {
+  const d = redactDrag;
+  if (!d) return;
+  const x = e.clientX - d.box.left, y = e.clientY - d.box.top;
+  Object.assign(d.ghost.style, { left: `${Math.min(x, d.x0)}px`, top: `${Math.min(y, d.y0)}px`, width: `${Math.abs(x - d.x0)}px`, height: `${Math.abs(y - d.y0)}px` });
+});
+container.addEventListener("pointerup", (e) => {
+  const d = redactDrag;
+  if (!d) return;
+  redactDrag = null;
+  d.ghost.remove();
+  const x = e.clientX - d.box.left, y = e.clientY - d.box.top;
+  if (Math.abs(x - d.x0) < 3 || Math.abs(y - d.y0) < 3) return;
+  const n = +d.pageEl.dataset.pageNumber;
+  const view = viewer.getPageView(n - 1);
+  const [ax, ay] = view.viewport.convertToPdfPoint(d.x0, d.y0), [bx, by] = view.viewport.convertToPdfPoint(x, y);
+  addRedaction(n, { x: Math.min(ax, bx), y: Math.min(ay, by), w: Math.abs(bx - ax), h: Math.abs(by - ay) });
+});
+
+function addRedaction(n, rect) {
+  (state.redact.marks[n] = state.redact.marks[n] || []).push(rect);
+  drawRedactions();
+  render();
+}
+
+/** Mark every occurrence of a text (case ignored) on all pages, from the positions of the text items. */
+async function redactText(query) {
+  const q = query.trim().toLowerCase();
+  if (!q || !state.redact) return 0;
+  let count = 0;
+  for (let n = 1; n <= state.pages; n++) {
+    const content = await (await state.doc.getPage(n)).getTextContent();
+    for (const item of content.items) {
+      const str = (item.str || "").toLowerCase();
+      if (!str || !item.width) continue;
+      for (let at = str.indexOf(q); at >= 0; at = str.indexOf(q, at + q.length)) {
+        const [, , , d, e, f] = item.transform;
+        const h = Math.abs(item.height || d || 10);
+        const per = item.width / str.length;
+        addRedaction(n, { x: e + per * at - 1, y: f - h * 0.25, w: per * q.length + 2, h: h * 1.3 });
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
+const redactionCount = () => (state.redact ? Object.values(state.redact.marks).reduce((n, l) => n + l.length, 0) : 0);
+
+/** Render each page with boxes at 200 dpi, black them out and rebuild the PDF (undoable). */
+async function applyRedactions() {
+  const marks = Object.entries(state.redact.marks).filter(([, l]) => l.length);
+  if (!marks.length) { Suite.shell.toast(t("pv.redactNone"), "warning"); return; }
+  if (!(await Suite.shell.confirm(t("pv.redactConfirm", marks.length)))) return;
+  const images = new Map();
+  try {
+    for (const [n, list] of marks) {
+      const page = await state.doc.getPage(+n);
+      const base = page.getViewport({ scale: 1 });
+      const viewport = page.getViewport({ scale: REDACT_DPI / 72 });
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.ceil(viewport.width); canvas.height = Math.ceil(viewport.height);
+      const g = canvas.getContext("2d");
+      g.fillStyle = "#fff"; g.fillRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvasContext: g, viewport, annotationMode: AnnotationMode.ENABLE_FORMS }).promise;
+      g.fillStyle = "#000";
+      for (const r of list) {
+        const [x1, y1, x2, y2] = toViewport(viewport, r);
+        g.fillRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
+      }
+      const blob = await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.92));
+      images.set(+n - 1, { jpeg: new Uint8Array(await blob.arrayBuffer()), width: base.width, height: base.height });
+    }
+  } catch (e) { Suite.shell.toast(Suite.i18n.describe(e), "error"); return; }
+  stopRedact();
+  changePages((b) => pages.redact(b, images), { message: t("pv.redacted", images.size) });
+}
+
+function RedactBar() {
+  if (!state.redact) return null;
+  const n = redactionCount();
+  return html`<form class="pv-findbar pv-redactbar" data-testid="redact-bar" onSubmit=${async (e) => { e.preventDefault(); const q = e.target.elements.q.value; const c = await redactText(q); Suite.shell.toast(t("pv.redactFound", c), c ? "success" : "warning"); }}>
+    <span>${Suite.icon('square')} ${t("pv.redactHint")}</span>
+    <input name="q" data-testid="redact-text" placeholder=${t("pv.redactText")} />
+    <button type="submit" class="secondary" data-testid="redact-find">${t("pv.redactMark")}</button>
+    <strong data-testid="redact-count">${t("pv.redactCount", n)}</strong>
+    <button type="button" data-testid="redact-apply" disabled=${!n || state.busy} onClick=${() => applyRedactions()}>${t("pv.redactApply")}</button>
+    <button type="button" class="secondary outline" data-testid="redact-cancel" onClick=${stopRedact}>×</button>
+  </form>`;
+}
+
+// ---- export pages as pictures (PNG or JPEG at a resolution; several pages in a ZIP) -------------------------------------------
+
+function openExportImages() {
+  const sel = state.selected.size ? [...state.selected].sort((a, b) => a - b) : null;
+  state.dialog = { kind: "images", format: "png", dpi: 150, which: sel ? "selected" : "current", selected: sel };
+  render();
+}
+
+async function exportImages(d) {
+  const list = d.which === "all" ? Array.from({ length: state.pages }, (_, i) => i + 1) : d.which === "selected" && d.selected ? d.selected : [state.page];
+  const stem = (state.name || "document.pdf").replace(/\.pdf$/i, "");
+  const ext = d.format === "png" ? "png" : "jpg", mime = d.format === "png" ? "image/png" : "image/jpeg";
+  const width = String(state.pages).length < 3 ? 3 : String(state.pages).length;
+  state.busy = true;
+  render();
+  try {
+    const files = {};
+    let single = null;
+    for (const n of list) {
+      const page = await state.doc.getPage(n);
+      const viewport = page.getViewport({ scale: d.dpi / 72 });
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.ceil(viewport.width); canvas.height = Math.ceil(viewport.height);
+      const g = canvas.getContext("2d");
+      g.fillStyle = "#fff"; g.fillRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvasContext: g, viewport, annotationMode: AnnotationMode.ENABLE_STORAGE, printAnnotationStorage: state.doc.annotationStorage }).promise;
+      const blob = await new Promise((res) => canvas.toBlob(res, mime, 0.9));
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      const name = `${stem}-${String(n).padStart(width, "0")}.${ext}`;
+      if (list.length === 1) single = { name, bytes };
+      else files[name] = [bytes, { level: 0 }];
+    }
+    const out = single || { name: `${stem}-${d.format}.zip`, bytes: (await import("fflate")).zipSync(files) };
+    const type = single ? mime : "application/zip";
+    const result = await Suite.files.saveAs(out.bytes, { suggestedName: out.name, types: [{ description: single ? d.format.toUpperCase() : "ZIP", accept: { [type]: [single ? `.${ext}` : ".zip"] } }], type });
+    if (result) report(result);
+  } catch (e) { Suite.shell.toast(Suite.i18n.describe(e), "error"); } finally { state.busy = false; render(); }
+}
+
+function ImagesDialog() {
+  const d = state.dialog;
+  if (!d || d.kind !== "images") return null;
+  const close = () => { state.dialog = null; render(); };
+  return html`<dialog open data-testid="images-dialog"><article>
+    <header><strong>${t("pv.exportImages").replace("…", "")}</strong></header>
+    <form onSubmit=${(e) => { e.preventDefault(); close(); exportImages(d); }}>
+      <label>${t("pv.imgPages")}<select data-testid="images-which" onChange=${(e) => { d.which = e.target.value; }}>
+        <option value="current" selected=${d.which === "current"}>${t("pv.imgCurrent", state.page)}</option>
+        ${d.selected ? html`<option value="selected" selected=${d.which === "selected"}>${t("pv.imgSelected", d.selected.length)}</option>` : null}
+        <option value="all" selected=${d.which === "all"}>${t("pv.imgAll", state.pages)}</option></select></label>
+      <div class="pv-row">
+        <label>${t("pv.imgFormat")}<select data-testid="images-format" onChange=${(e) => { d.format = e.target.value; }}>
+          <option value="png" selected=${d.format === "png"}>PNG</option><option value="jpeg" selected=${d.format === "jpeg"}>JPEG</option></select></label>
+        <label>${t("pv.imgDpi")}<select data-testid="images-dpi" onChange=${(e) => { d.dpi = +e.target.value; }}>
+          ${[72, 96, 150, 200, 300].map((v) => html`<option value=${v} selected=${d.dpi === v}>${v} dpi</option>`)}</select></label>
+      </div>
+      <small>${t("pv.imgHint")}</small>
+      <footer><button type="button" class="secondary" onClick=${close}>${t("common.cancel")}</button><button type="submit" data-testid="images-ok">${t("pv.imgExport")}</button></footer>
+    </form></article></dialog>`;
+}
+
+// ---- compress: smaller pictures, compressed streams, unused objects dropped --------------------------------------------------
+
+const COMPRESS_LEVELS = { screen: { dpi: 96, quality: 0.6 }, ebook: { dpi: 150, quality: 0.75 }, print: { dpi: 300, quality: 0.85 } };
+
+function sizeText(n) {
+  const units = ["B", "KB", "MB", "GB"];
+  let i = 0;
+  while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+  return `${i ? n.toLocaleString(Suite.i18n.language === "de" ? "de-AT" : "en-GB", { maximumFractionDigits: 1 }) : n} ${units[i]}`;
+}
+
+async function compressDocument(level) {
+  if (!state.doc || state.busy) return;
+  state.busy = true;
+  render();
+  let before, result;
+  try {
+    before = await documentBytes();
+    result = await pages.compress(before, COMPRESS_LEVELS[level] || COMPRESS_LEVELS.ebook);
+  } catch (e) {
+    console.warn(e);
+    Suite.shell.toast(e instanceof pages.EncryptedError ? t("pv.encrypted") : Suite.i18n.describe(e), "error");
+    return;
+  } finally { state.busy = false; render(); }
+  const a = before.length, b = result.bytes.length;
+  if (b >= a * 0.98) { Suite.shell.toast(t("pv.compressNone", sizeText(a)), "warning"); return; }
+  await changePages(() => result.bytes, { message: t("pv.compressed", sizeText(a), sizeText(b), Math.round((1 - b / a) * 100), result.images) });
+}
+
+function CompressDialog() {
+  const d = state.dialog;
+  if (!d || d.kind !== "compress") return null;
+  const close = () => { state.dialog = null; render(); };
+  return html`<dialog open data-testid="compress-dialog"><article>
+    <header><strong>${t("pv.compress").replace("…", "")}</strong></header>
+    <form onSubmit=${(e) => { e.preventDefault(); close(); compressDocument(d.level); }}>
+      ${Object.keys(COMPRESS_LEVELS).map((k) => html`<label><input type="radio" name="level" value=${k} data-testid=${`compress-${k}`} checked=${d.level === k} onChange=${() => { d.level = k; }} /> ${t(`pv.compress_${k}`)}</label>`)}
+      <small>${t("pv.compressHint")}</small>
+      <footer><button type="button" class="secondary" onClick=${close}>${t("common.cancel")}</button><button type="submit" data-testid="compress-ok">${t("pv.compressGo")}</button></footer>
+    </form></article></dialog>`;
+}
+
+// ---- text: copy the page's or the document's text, save it as .txt (lines from PDF.js's text content) ------------------------
+
+/** The text of a page (1-based), line breaks where PDF.js marks the end of a line. */
+async function pageText(n) {
+  const page = await state.doc.getPage(n);
+  const content = await page.getTextContent();
+  let out = "";
+  for (const item of content.items) {
+    if (!("str" in item)) continue;
+    out += item.str;
+    if (item.hasEOL) out += "\n";
+  }
+  return out.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+async function documentText() {
+  const parts = [];
+  for (let n = 1; n <= state.pages; n++) parts.push(await pageText(n));
+  return parts.join("\n\n\f");
+}
+
+async function textAction(action) {
+  if (!state.doc) return;
+  try {
+    if (action === "copyPageText" || action === "copyAllText") {
+      const text = action === "copyPageText" ? await pageText(state.page) : (await documentText()).replace(/\f/g, "");
+      if (!text.trim()) { Suite.shell.toast(t("pv.noText"), "warning"); return; }
+      await navigator.clipboard.writeText(text);
+      Suite.shell.toast(t("pv.textCopied", text.length.toLocaleString()));
+    }
+    if (action === "saveText") {
+      const text = await documentText();
+      if (!text.replace(/\f/g, "").trim()) { Suite.shell.toast(t("pv.noText"), "warning"); return; }
+      const stem = (state.name || "document.pdf").replace(/\.pdf$/i, "");
+      const result = await Suite.files.saveAs(new TextEncoder().encode(text.replace(/\f/g, "\n")), { suggestedName: `${stem}.txt`, types: [{ description: "Text", accept: { "text/plain": [".txt"] } }], type: "text/plain" });
+      if (result) report(result);
+    }
+  } catch (e) { Suite.shell.toast(Suite.i18n.describe(e), "error"); }
+}
+
 function Toolbar() {
   const has = !!state.doc;
   const scaleKnown = SCALES.some(([v]) => v === state.scaleValue);
   return html`<nav class="pv-toolbar" role="toolbar">
-    <button class="secondary outline" data-testid="sidebar-toggle" title=${t("pv.sidebar")} disabled=${!has} onClick=${() => { state.sidebar = !state.sidebar; render(); }}>☰</button>
+    <button class="secondary outline" data-testid="sidebar-toggle" title=${t("pv.sidebar")} disabled=${!has} onClick=${() => { state.sidebar = !state.sidebar; render(); }}>${Suite.icon('menu')}</button>
     <button class="secondary" data-testid="open" title="${t("pv.open")} (Ctrl+O)" onClick=${openFile}>${t("pv.open")}</button>
     <${Suite.shell.Recent} app=${APP} onOpen=${(p) => openPicked([p])} />
     <button class=${state.dirty ? "" : "secondary"} data-testid="save" disabled=${!has} title="${t("pv.save")} (Ctrl+S)" onClick=${() => save(false)}>${t("pv.save")}</button>
-    <button class="secondary outline" data-testid="print" disabled=${!has} title=${t("pv.print")} onClick=${print}>🖨</button>
+    <button class="secondary outline" data-testid="print" disabled=${!has} title=${t("pv.print")} onClick=${print}>${Suite.icon('printer')}</button>
     <span class="pv-group">
       <button class="secondary outline" data-testid="prev" disabled=${!has || state.page <= 1} title=${t("pv.previous")} onClick=${() => goto(state.page - 1)}>‹</button>
       <input class="pv-page" data-testid="page" aria-label=${t("pv.page")} inputmode="numeric" value=${has ? state.page : ""} disabled=${!has}
@@ -590,25 +900,30 @@ function Toolbar() {
       </select>
       <button class="secondary outline" data-testid="zoom-in" disabled=${!has} title=${t("pv.zoomIn")} onClick=${() => zoom(1.25)}>+</button>
     </span>
-    <button class="secondary outline" data-testid="rotate" disabled=${!has} title=${t("pv.rotate")} onClick=${rotate}>⟳</button>
+    <button class="secondary outline" data-testid="rotate" disabled=${!has} title=${t("pv.rotate")} onClick=${rotate}>${Suite.icon('rotate-cw')}</button>
     <select data-testid="pages-menu" aria-label=${t("pv.pages")} disabled=${!has || state.busy} aria-busy=${state.busy}
         onChange=${(e) => { const v = e.target.value; e.target.value = ""; if (v) pageAction(v); }}>
-      <option value="">📄 ${t("pv.pages")}${state.selected.size ? ` (${state.selected.size})` : ""}</option>
+      <option value="">${t("pv.pages")}${state.selected.size ? ` (${state.selected.size})` : ""}</option>
       <optgroup label=${state.selected.size ? t("pv.pagesHint", state.selected.size) : `${t("pv.page")} ${state.page}`}>
         ${["rotateLeft", "rotateRight", "moveUp", "moveDown", "moveTo", "deletePages", "extract", "insertPdf"].map((a) => html`<option value=${a}>${t(`pv.${a}`)}</option>`)}
       </optgroup>
       <option value="appendPdf">${t("pv.appendPdf")}</option>
       <option value="selectAll">${t("pv.selectAll")}</option>
       ${state.selected.size ? html`<option value="selectNone">${t("pv.selectNone")}</option>` : null}
-      ${state.history.length ? html`<option value="undo">↶ ${t("pv.undo")}</option>` : null}
+      ${state.history.length ? html`<option value="undo">${t("pv.undo")}</option>` : null}
     </select>
-    <button class=${state.findOpen ? "" : "secondary outline"} data-testid="find" disabled=${!has} title="${t("pv.find")} (Ctrl+F)" onClick=${() => { state.findOpen = !state.findOpen; render(); setTimeout(() => { const i = document.querySelector("[data-testid=find-input]"); if (i) i.focus(); }); }}>🔍</button>
+    <select data-testid="tools-menu" aria-label=${t("pv.tools")} disabled=${!has || state.busy}
+        onChange=${(e) => { const v = e.target.value; e.target.value = ""; if (v === "redact") startRedact(); else if (v === "exportImages") openExportImages(); else if (v === "compress") { state.dialog = { kind: "compress", level: "ebook" }; render(); } else if (v) textAction(v); }}>
+      <option value="">${t("pv.tools")}</option>
+      ${["copyPageText", "copyAllText", "saveText", "exportImages", "compress", "redact"].map((a) => html`<option value=${a}>${t(`pv.${a}`)}</option>`)}
+    </select>
+    <button class=${state.findOpen ? "" : "secondary outline"} data-testid="find" disabled=${!has} title="${t("pv.find")} (Ctrl+F)" onClick=${() => { state.findOpen = !state.findOpen; render(); setTimeout(() => { const i = document.querySelector("[data-testid=find-input]"); if (i) i.focus(); }); }}>${Suite.icon('search')}</button>
     <select data-testid="edit-mode" aria-label=${t("pv.edit")} disabled=${!has} onChange=${(e) => setEditMode(+e.target.value)}>
       ${[[AnnotationEditorType.NONE, "pv.editNone"], [AnnotationEditorType.HIGHLIGHT, "pv.editHighlight"], [AnnotationEditorType.FREETEXT, "pv.editText"], [AnnotationEditorType.INK, "pv.editInk"]]
         .map(([mode, label]) => html`<option value=${mode} selected=${mode === state.editMode}>${t(label)}</option>`)}
     </select>
     <button class=${state.placing ? "" : "secondary outline"} data-testid="sign" disabled=${!has || state.busy} title=${t("pv.sign")}
-      onClick=${() => { if (state.placing) { stopPlacing(); return; } pad.strokes = []; state.signing = { typed: "" }; render(); }}>✍</button>
+      onClick=${() => { if (state.placing) { stopPlacing(); return; } pad.strokes = []; state.signing = { typed: "" }; render(); }}>${Suite.icon('pen-line')}</button>
   </nav>`;
 }
 
@@ -655,7 +970,7 @@ function ViewerHost() {
 }
 
 function Main() {
-  return html`<div class="pv-layout"><${FindBar} /><${SignatureBar} /><div class="pv-body"><${Sidebar} />${state.sidebar && state.doc ? Suite.shell.backdrop(() => { state.sidebar = false; render(); }) : null}<${ViewerHost} /></div><${PasswordDialog} /><${MoveDialog} /><${SignDialog} /></div>`;
+  return html`<div class="pv-layout"><${FindBar} /><${RedactBar} /><${SignatureBar} /><div class="pv-body"><${Sidebar} />${state.sidebar && state.doc ? Suite.shell.backdrop(() => { state.sidebar = false; render(); }) : null}<${ViewerHost} /></div><${PasswordDialog} /><${MoveDialog} /><${ImagesDialog} /><${CompressDialog} /><${SignDialog} /></div>`;
 }
 
 Suite.shell.mount({ id: APP, title: "app.title", version: "%%BUILD_VERSION%%", toolbar: () => html`<${Toolbar} />`, main: () => html`<${Main} />` });
@@ -678,5 +993,5 @@ Suite.openFiles.register(async () => (state.doc ? [{ name: state.name || 'docume
 
 // for tests
 window.PV_SIG = { verifySignatures };
-window.PV = { state, viewer, eventBus, openBytes, save, goto, setEditMode, find, pageAction, pages, documentBytes };
+window.PV = { compressDocument, openExportImages, exportImages, startRedact, addRedaction, redactText, applyRedactions, pageText, documentText, textAction, state, viewer, eventBus, openBytes, save, goto, setEditMode, find, pageAction, pages, documentBytes };
 document.body.dataset.ready = "true";

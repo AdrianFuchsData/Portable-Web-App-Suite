@@ -180,7 +180,7 @@ export function createWidgets({ kernel, render, appendOutput }) {
             }, Math.max(20, s.interval || 100)));
             render();
           };
-          return html`<${Labelled} s=${s} id=${key}><button class="nb-w-button outline" ...${common} aria-label=${t(playing ? 'w.pause' : 'w.play')} title=${t(playing ? 'w.pause' : 'w.play')} data-testid="widget-play" onClick=${toggle}>${playing ? '⏸' : '▶'}</button>
+          return html`<${Labelled} s=${s} id=${key}><button class="nb-w-button outline" ...${common} aria-label=${t(playing ? 'w.pause' : 'w.play')} title=${t(playing ? 'w.pause' : 'w.play')} data-testid="widget-play" onClick=${toggle}>${playing ? Suite.icon('pause') : Suite.icon('play')}</button>
             <output class="nb-w-readout">${s.value}</output></${Labelled}>`;
         }
         case 'Box': case 'HBox': case 'VBox': case 'GridBox':

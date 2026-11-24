@@ -47,6 +47,11 @@ Bereich), sodass Tokens und Passwörter verschlüsselt gespeichert werden könne
 <code>to.be.ok</code>, <code>to.be.json</code>), <code>pm.test()</code> und <code>pm.expect()</code> mit den üblichen Prüfungen (<code>to.equal</code>, <code>to.eql</code>, <code>to.include</code>,
 <code>to.have.property</code>, <code>to.be.above</code>/<code>below</code>, <code>to.match</code>, <code>to.be.oneOf</code>, <code>to.be.true</code>, <code>to.exist</code>, <code>to.be.empty</code>, <code>.not</code>, …). Skripte laufen
 abgeschottet von der Suite (kein Zugriff auf ihren Speicher, Dateien oder Passwörter) und werden nach fünf Sekunden beendet.</p>
+<h2>GraphQL</h2>
+<p>Wählen Sie <strong>GraphQL</strong> als Body: Schreiben Sie die <strong>Abfrage</strong> (auch Mutationen) und bei Bedarf die <strong>Variablen</strong> als JSON – <code>{{Variablen}}</code> der Umgebung
+gelten in beiden. Die Anfrage geht als <code>POST</code> mit einem JSON-Body <code>{"query", "variables", "operationName"}</code> hinaus (der Name einer benannten Operation wird
+eingetragen). <strong>Schema laden</strong> fragt den Server nach seinem Schema (Introspection) und listet Abfragen, Mutationen und ihre Felder mit Argumenten und Typen;
+▸ klappt die Felder eines Typs auf, ein Klick auf ein Feld fügt es an der Schreibmarke ein. Sammlungen speichern GraphQL-Bodys im Format von Postman.</p>
 <h2>WebSocket</h2>
 <p>Eine URL, die mit <code>ws://</code> oder <code>wss://</code> beginnt, macht die Anfrage zu einer WebSocket-Verbindung: <strong>Verbinden</strong> öffnet sie, die untere
 Hälfte zeigt die Nachrichten (↑ gesendet, ↓ empfangen, mit Uhrzeit; binäre Nachrichten hexadezimal) und ein Feld zum Schreiben
@@ -66,11 +71,22 @@ speichern Sie sie (als Postman-Sammlung).</p>
 <li><strong>Verlauf</strong> listet die in dieser Sitzung gesendeten Anfragen; ein Klick übernimmt eine in die Sammlung.</li>
 </ul>
 <p>Rückgängig (↶, <code>Strg+Z</code>) und Wiederholen (↷, <code>Strg+Y</code>) wirken auf alle Änderungen der Sammlung: Anfragen, Ordner, URL, Header, Body, Anmeldung. Tippen in ein Feld zählt als ein Schritt.</p>
-<h2>cURL</h2>
+<h2>Eine Sammlung ausführen</h2>
+<p><strong>▶▶ Sammlung ausführen</strong> sendet die Anfragen der ganzen Sammlung oder eines Ordners nacheinander, mit ihren Skripten vor der Anfrage und Tests – wie
+der Collection Runner von Postman. Variablen, die ein Skript setzt (etwa ein Token aus einer Anmeldung), gelten für die folgenden Anfragen. Wählen Sie
+die Zahl der <strong>Durchläufe</strong> und eine <strong>Pause</strong> zwischen den Anfragen oder eine <strong>Datendatei</strong>: eine CSV-Datei (erste Zeile = Namen) oder ein JSON-Array
+von Objekten, eine Zeile je Durchlauf; ihre Spalten stehen als <code>{{Variablen}}</code> und in Skripten als <code>pm.iterationData.get('name')</code> bereit
+(<code>pm.info.iteration</code> zählt ab 0). <em>Beim ersten Fehler anhalten</em> beendet den Lauf bei einem fehlgeschlagenen Test, einem Fehler oder – bei Anfragen ohne
+Tests – einem Status ab 400. Die Tabelle zeigt Status, Zeit und jeden Test; <strong>Ergebnisse speichern (JSON)</strong> bewahrt einen Bericht auf, <strong>Neuer Lauf</strong>
+beginnt von vorn.</p>
+<h2>cURL und Code</h2>
 <ul>
 <li><strong>cURL importieren…</strong> macht aus einem <code>curl</code>-Befehl (z. B. „Als cURL kopieren“ aus den Entwicklerwerkzeugen des Browsers) eine Anfrage: Methode,
   URL, Header, Daten, Formularfelder, <code>-u</code>-Benutzer und mehr.</li>
-<li><strong>cURL</strong> neben den Reitern zeigt die aktuelle Anfrage als <code>curl</code>-Befehl (mit aufgelösten Variablen) zum Kopieren.</li>
+<li><strong>Code</strong> neben den Reitern zeigt die aktuelle Anfrage (mit aufgelösten Variablen) als Code zum Kopieren oder Speichern als Datei: <strong>cURL</strong>, <strong>wget</strong>,
+  <strong>HTTPie</strong>, <strong>JavaScript</strong> (fetch, im Browser oder <strong>Node.js</strong>), <strong>Python</strong> (requests), <strong>PowerShell</strong> (Invoke-WebRequest), <strong>Go</strong> (net/http), <strong>Java</strong>
+  (HttpClient), <strong>C#</strong> (HttpClient) und <strong>PHP</strong> (cURL). Text-Bodys stehen im Code; ein binärer Body wird aus einer Datei <code>body.bin</code> gelesen. Die zuletzt
+  gewählte Sprache bleibt eingestellt.</li>
 </ul>
 <h2>Tastenkürzel</h2>
 <p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>

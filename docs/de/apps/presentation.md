@@ -99,6 +99,18 @@ Nummerierungsarten).
   ausgerichtet und angeordnet. **Gruppierung aufheben** (`Strg+Umschalt+G`) trennt sie wieder. Gruppen bleiben in PowerPoint-Dateien erhalten (auch
   in PowerPoint erstellte; eine Gruppe in einer Gruppe wird Teil der äußeren).
 
+### Kontextmenü
+
+Ein Rechtsklick (auf einem Touchscreen: berühren und halten) öffnet das Menü der Anwendung:
+
+- auf einem **Element**: Text bearbeiten, Diagramm bearbeiten, Ausschneiden, Kopieren, Einfügen, Duplizieren, Löschen, nach vorne /
+  nach hinten, Gruppieren / Gruppierung aufheben und Ausrichten (das Element wird zuerst ausgewählt);
+- auf der **leeren Folie**: Einfügen, Alles auswählen und die Folienaktionen;
+- auf einer **Folienminiatur**: neue Folie, Duplizieren, Löschen, nach oben oder unten, in der Vorführung ausblenden (oder wieder zeigen).
+
+Die Pfeiltasten bewegen durch das Menü, `Eingabe` führt einen Eintrag aus, `Escape` schließt es. Während ein Text bearbeitet wird,
+öffnet sich das Menü des Browsers (mit seinen Rechtschreibvorschlägen).
+
 ## Rechtschreibung
 
 Mit einer im Auswahlfeld **ABC** der Kopfzeile gewählten Sprache werden unbekannte Wörter im bearbeiteten Text und in den Sprechernotizen

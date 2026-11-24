@@ -1,6 +1,6 @@
 <!-- Generated from docs/de/apps/dbtool.md by tools/build_docs.py - do not edit. Confluence page title: Datenbankwerkzeug -->
 <ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
-<p>Das Datenbankwerkzeug (<code>dbtool.html</code>) öffnet <strong>SQLite</strong>-Datenbankdateien und verbindet sich mit <strong>PostgreSQL</strong>-Servern: Schema durchsuchen,
+<p>Das Datenbankwerkzeug (<code>dbtool.html</code>) öffnet <strong>SQLite</strong>-Datenbankdateien und verbindet sich mit <strong>PostgreSQL</strong>-, <strong>MySQL</strong>- und <strong>MariaDB</strong>-Servern: Schema durchsuchen,
 SQL schreiben und ausführen, Tabellendaten ansehen und bearbeiten, Ergebnisse exportieren.</p>
 <h2>SQLite-Datenbanken</h2>
 <ul>
@@ -10,17 +10,21 @@ SQL schreiben und ausführen, Tabellendaten ansehen und bearbeiten, Ergebnisse e
   Datei, in Firefox und unter Android als Download (ersetzen Sie die ursprüngliche Datei damit). Geänderte Datenbanken sind mit • markiert.</li>
 </ul>
 <p>SQLite funktioniert vollständig offline.</p>
-<h2>PostgreSQL-Server</h2>
-<p>Ein Postgres-Server wird über das <strong>lokale Relay</strong> erreicht (siehe Benutzerhandbuch, „Netzwerkfunktionen und das Relay“).</p>
+<h2>PostgreSQL-, MySQL- und MariaDB-Server</h2>
+<p>Ein Datenbankserver wird über das <strong>lokale Relay</strong> erreicht (siehe Benutzerhandbuch, „Netzwerkfunktionen und das Relay“).</p>
 <ol>
-<li><strong>Mit Postgres verbinden…</strong> öffnet den Verbindungsdialog: Name, Host, Port (5432), Datenbank, Benutzer, Passwort, SSL (bevorzugen,
+<li><strong>Mit einem Server verbinden…</strong> öffnet den Verbindungsdialog: den <strong>Servertyp</strong> (PostgreSQL oder MySQL / MariaDB), Name, Host, Port (5432 oder 3306), Datenbank, Benutzer, Passwort, SSL (bevorzugen,
    erforderlich, aus; optional selbst signierte Zertifikate akzeptieren) sowie Adresse und Token des Relays. <strong>Testen</strong> prüft das Relay.</li>
 <li><strong>Verbinden</strong> öffnet die Verbindung; <strong>Verbindung speichern</strong> fügt sie den <strong>Gespeicherten Verbindungen</strong> hinzu (das Passwort nur, wenn das
    Kästchen angehakt ist).</li>
 <li>Ein Klick auf eine gespeicherte Verbindung verbindet (oder fragt nach dem Passwort, wenn es nicht gespeichert wurde); ✎ bearbeitet und
    × löscht eine Verbindung.</li>
 </ol>
-<p>Unterstützt werden Passwort-, MD5- und SCRAM-SHA-256-Anmeldung.</p>
+<p>PostgreSQL: Unterstützt werden Passwort-, MD5- und SCRAM-SHA-256-Anmeldung. MySQL / MariaDB: <code>caching_sha2_password</code> (Vorgabe von MySQL 8; die
+erste Anmeldung eines Benutzers wird über SSL oder mit dem RSA-Schlüssel des Servers abgeschlossen) und <code>mysql_native_password</code> (MariaDB, ältere
+MySQL-Versionen), auch wenn der Server zwischen ihnen wechselt. 🐬 kennzeichnet MySQL-Verbindungen, 🐘 Postgres-Verbindungen. Eine MySQL-Verbindung
+arbeitet in der gewählten Datenbank: Ihre Tabellen erscheinen ohne Präfix, der Editor verwendet den MySQL-Dialekt (Backticks, MySQL-Funktionen in der
+Vervollständigung).</p>
 <h3>Verbindungen speichern</h3>
 <p>Gespeicherte Verbindungen und die Relay-Einstellungen liegen in einer <strong>Verbindungsdatei</strong>. <strong>Speichern</strong> im Bereich „Verbindungen“ fragt nach
 dem Format:</p>
@@ -35,12 +39,22 @@ der Suite enthalten.</p>
 <ul>
 <li><strong>Schema</strong> listet die Tabellen (▦) und Sichten (👁) der aktiven Datenbank; aufgeklappt zeigt eine Tabelle ihre Spalten (🔑 = Primärschlüssel,
   Typen, NOT NULL). ⟳ lädt das Schema neu; nach <code>CREATE</code>, <code>ALTER</code> und <code>DROP</code> geschieht das automatisch.</li>
-<li>Der SQL-Editor hebt SQL hervor und ergänzt Schlüsselwörter, Tabellen- und Spaltennamen (<code>Strg+Leertaste</code>).</li>
+<li>Der SQL-Editor hebt SQL hervor und ergänzt beim Tippen (oder mit <code>Strg+Leertaste</code>): Schlüsselwörter, Tabellen, die Spalten der in der Anweisung
+  genannten Tabellen – auch ohne Tabellennamen (<code>SELECT ▮ FROM people</code>, <code>WHERE a…</code>), mit Tabelle und Typ daneben –, Spalten nach <code>tabelle.</code> oder
+  einem Alias (<code>p.</code> bei <code>FROM people p</code>) und die gängigen Funktionen von SQLite oder PostgreSQL (<code>upper(▮)</code>, <code>strftime</code>, <code>date_trunc</code>,
+  <code>string_agg</code>, …), die mit ihren Klammern eingefügt werden.</li>
 <li><strong>Ausführen</strong> (<code>Strg+Eingabe</code>) führt den markierten Text oder die Anweisung an der Schreibmarke aus; <strong>Alles ausführen</strong>
   (<code>Strg+Umschalt+Eingabe</code>) führt alle Anweisungen aus.</li>
 <li>Jede Anweisung mit Ergebnis erhält einen Ergebnis-Reiter. Die Meldungszeile zeigt die Zahl der geänderten Zeilen, die Dauer oder den Fehler
   (bei Postgres mit SQL-State-Code, Detail und Hinweis).</li>
-<li><strong>CSV</strong> und <strong>JSON</strong> exportieren das angezeigte Ergebnis.</li>
+<li><strong>CSV</strong>, <strong>XLSX</strong> (Excel, LibreOffice, Google Tabellen) und <strong>JSON</strong> exportieren das angezeigte Ergebnis. Bei einer durchgesehenen
+  Tabelle exportieren sie alle Zeilen, nicht nur die geladene Seite. Die XLSX-Datei hat eine fette, fixierte Kopfzeile und einen Autofilter.</li>
+<li><strong>⇪ Importieren</strong> liest eine CSV-Datei (Komma, Strichpunkt oder Tabulator; UTF-8 oder Windows-1252) oder das erste Blatt einer Excel-Datei
+  (<code>.xlsx</code>) in eine <strong>neue Tabelle</strong> (benannt nach der Datei; die Spaltentypen – ganze Zahl, Kommazahl oder Text – werden aus den Werten
+  geschätzt) oder eine <strong>vorhandene Tabelle</strong> (Spalten nach Namen zugeordnet, andere Spalten werden ausgelassen und genannt). Eine Vorschau zeigt
+  die ersten Zeilen; <em>Die erste Zeile enthält die Spaltennamen</em> lässt sich ausschalten. Leere Zellen werden NULL; Excel-Daten werden zu
+  <code>JJJJ-MM-TT</code>. Die Zeilen werden in einer Transaktion eingefügt – alle oder keine –, danach wird die Tabelle angezeigt. Rückgängig (SQLite)
+  entfernt den Import wieder.</li>
 <li><strong>⛁ ER-Diagramm</strong> (über dem Schema) zeichnet die Tabellen und Sichten mit ihren Spalten (🔑 Primärschlüssel, → Fremdschlüssel) und
   die Fremdschlüssel-Beziehungen und öffnet die Zeichnung im Diagrammeditor (referenzierte Tabellen über den referenzierenden), wo sie
   angeordnet, bearbeitet, gedruckt oder exportiert werden kann.</li>

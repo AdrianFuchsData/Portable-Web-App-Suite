@@ -61,3 +61,12 @@
 .ftp-sync-options { display: flex; flex-wrap: wrap; gap: .4rem 1rem; align-items: center; margin-bottom: .5rem; font-size: .85rem; }
 .ftp-sync-options label { margin: 0; display: flex; gap: .3rem; align-items: center; }
 .ftp-sync tr[data-status=same] td { color: var(--pico-muted-color); }
+.ftp-mode { font-family: ui-monospace, monospace; font-size: .8rem; }
+.ftp-perms th, .ftp-perms td { text-align: center; padding: .2rem .5rem; }
+.ftp-perms input { margin: 0; }
+.ftp-preview article, .ftp-edit article { max-width: min(60rem, 96vw); width: 100%; }
+.ftp-preview img, .ftp-preview video { max-width: 100%; max-height: 65vh; display: block; margin: 0 auto; }
+.ftp-preview audio { width: 100%; }
+.ftp-preview pre { max-height: 60vh; overflow: auto; font-size: .8rem; white-space: pre-wrap; word-break: break-all; }
+.ftp-edit textarea { width: 100%; min-height: 55vh; font-family: ui-monospace, monospace; font-size: .85rem; white-space: pre; }
+.ftp-error { color: #c62828; }

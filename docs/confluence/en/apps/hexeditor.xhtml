@@ -71,9 +71,29 @@ not printable). <strong>Bytes per row</strong> chooses 8, 16 or 32 bytes, or ada
 floating point numbers (32 and 64 bit) and the UTF-8 character. <strong>Little endian</strong> switches the byte order.</p>
 <p><strong>Byte value (hex)</strong> writes the bytes you enter at the cursor (for example <code>FF</code> or <code>48 65 6C</code>). This is the easiest way
 to edit on phones and tablets.</p>
+<h2>Structure</h2>
+<p>The <strong>Structure</strong> tab (next to the data inspector) shows how a file is built when its format is known: PNG, JPEG, GIF, BMP,
+WAV and other RIFF files, ZIP (also Office documents, JAR, …), ELF (Linux programs and libraries) and PE (Windows <code>.exe</code>
+and <code>.dll</code>). Every part is listed with its offset (hex), size and meaning – e.g. the chunks of a PNG with width, height and
+colour type, the files of a ZIP with method and sizes, the sections of a program. A click on a part selects its bytes; while
+the tab is open the parts are tinted in alternating colours in the hex view. Damaged files are shown as far as they can be
+read.</p>
+<h2>Marks: bookmarks and coloured ranges</h2>
+<p><code>Ctrl+F2</code> sets (or removes) a <strong>bookmark</strong> on the byte at the cursor – it gets a blue frame; <code>F2</code> and <code>Shift+F2</code> jump to the
+next and previous mark. To <strong>colour</strong> a part of the file, select it, open the <strong>Marks</strong> tab, pick a colour, optionally type a
+label (e.g. "header") and click <strong>Colour the selection</strong>. The tab lists all marks of the file with their offset (and length);
+a click jumps there or selects the range again, ✎ renames, × removes. Marks move along when bytes are inserted or deleted
+(and back with undo); a mark whose bytes are all deleted goes away. Each open file has its own marks; they are not saved in
+the file.</p>
 <h2>Checksums</h2>
 <p><strong>#</strong> shows the checksums of the selection, or of the whole file when nothing is selected: CRC-32, Adler-32, MD5,
 SHA-1, SHA-256 and SHA-512 (hexadecimal). ⧉ copies a value, for example to compare it with a published checksum.</p>
+<h2>Statistics</h2>
+<p><strong>📊</strong> analyses the selection (or the whole file): the <strong>entropy</strong> in bits per byte (0 = always the same byte, 8 = completely
+random) with a hint what it suggests – above 7.5 the data is compressed or encrypted, text lies around 4 to 5 –, the share of
+zero bytes and of printable text, a <strong>histogram</strong> of how often each byte value 00–FF occurs (logarithmic to see rare values)
+and the most frequent values. For larger data a curve shows the <strong>entropy along the file</strong>: compressed or encrypted parts
+stand out as plateaus near the dashed line; a click on the curve jumps there.</p>
 <h2>Comparing two files</h2>
 <p><strong>⇆</strong> opens a second file and compares it byte by byte with the current one (at the same offsets). Its bytes are shown
 in an additional column next to the hexadecimal column (instead of the text column), both scroll together, and
@@ -168,6 +188,14 @@ comparison; <strong>×</strong> (or ⇆ again) ends it.</p>
 <tr>
 <td><code>Ctrl+G</code></td>
 <td>Go to offset</td>
+</tr>
+<tr>
+<td><code>Ctrl+F2</code></td>
+<td>Bookmark on/off</td>
+</tr>
+<tr>
+<td><code>F2</code> / <code>Shift+F2</code></td>
+<td>Next / previous mark</td>
 </tr>
 <tr>
 <td><code>←</code> / <code>→</code> / <code>↑</code> / <code>↓</code></td>

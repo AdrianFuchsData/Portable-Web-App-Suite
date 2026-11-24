@@ -3,12 +3,15 @@
  * Schema browser, SQL editor with schema-aware completion, result grids, table browsing with editing, CSV/JSON export.
  */
 import { EditorView, basicSetup } from 'codemirror';
+import { suiteSearch } from 'app/cm-search';
 import { keymap } from '@codemirror/view';
 import { Compartment, Prec } from '@codemirror/state';
-import { sql, SQLite, PostgreSQL } from '@codemirror/lang-sql';
+import { sql, SQLite, PostgreSQL, MySQL } from '@codemirror/lang-sql';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { openSqlite, openPostgres } from '@app/drivers.js';
+import { openSqlite, openPostgres, openMysql } from '@app/drivers.js';
 import { erDiagram } from '@app/er.js';
+import { writeXlsx, readTable, columnTypes } from '@app/table-io.js';
+import { sqlExtras } from '@app/completion.js';
 import 'app/cm-symbols'; // emoji and symbols insert through the editor (shared/js/cm-symbols.js)
 import { indentKeys } from 'app/cm-indent'; // Tab indents, Ctrl+Alt+I inserts a tab character (shared/js/cm-indent.js)
 
@@ -22,8 +25,12 @@ const SQLITE_TYPES = [{ description: 'SQLite', accept: { 'application/vnd.sqlite
 Suite.i18n.register({
   en: {
     'app.title': 'Database tool',
-    'db.newSqlite': 'New SQLite', 'db.openSqlite': 'Open SQLite…', 'db.saveDb': 'Save database', 'db.connect': 'Connect to Postgres…', 'db.run': 'Run',
-    'db.runAll': 'Run all', 'db.export': 'Export', 'db.sessions': 'Open databases', 'db.saved': 'Saved connections', 'db.schema': 'Schema', 'db.noSession': 'Open or create a SQLite database, or connect to a Postgres server.',
+    'db.newSqlite': 'New SQLite', 'db.openSqlite': 'Open SQLite…', 'db.saveDb': 'Save database', 'db.connect': 'Connect to a server…', 'db.serverTitle': 'Database server', 'db.serverKind': 'Server type', 'db.run': 'Run',
+    'db.import': 'Import', 'db.importHint': 'Import a CSV or Excel file (.xlsx) into a table', 'db.importTitle': 'Import “{0}”', 'db.importRows': '{0} rows', 'db.importHeader': 'The first row holds the column names',
+    'db.importNew': 'New table', 'db.importExisting': 'Existing table', 'db.importName': 'Table name', 'db.importTable': 'Table', 'db.importOk': 'Import',
+    'db.importUnknown': 'Columns without a matching column in the table are left out: {0}', 'db.importNoColumns': 'No column of the file matches a column of the table.',
+    'db.imported': '{0} rows imported into “{1}”.', 'db.importEmpty': 'The file contains no rows.', 'db.importUnreadable': '“{0}” cannot be read: {1}', 'db.exported': '{0} rows exported.',
+    'db.runAll': 'Run all', 'db.export': 'Export', 'db.sessions': 'Open databases', 'db.saved': 'Saved connections', 'db.schema': 'Schema', 'db.noSession': 'Open or create a SQLite database, or connect to a PostgreSQL, MySQL or MariaDB server.',
     'db.close': 'Close', 'db.refresh': 'Refresh', 'db.rows': '{0} row(s)', 'db.shown': 'showing the first {0} of {1} rows', 'db.affected': '{0}: {1} row(s) affected', 'db.done': 'Done in {0} ms',
     'db.noResult': 'No result.', 'db.name': 'Name', 'db.host': 'Host', 'db.port': 'Port', 'db.database': 'Database', 'db.user': 'User', 'db.password': 'Password',
     'db.savePassword': 'Save the password with the connection', 'db.ssl': 'SSL', 'db.sslPrefer': 'prefer', 'db.sslRequire': 'require', 'db.sslDisable': 'disable',
@@ -38,8 +45,12 @@ Suite.i18n.register({
   },
   de: {
     'app.title': 'Datenbankwerkzeug',
-    'db.newSqlite': 'Neue SQLite', 'db.openSqlite': 'SQLite öffnen…', 'db.saveDb': 'Datenbank speichern', 'db.connect': 'Mit Postgres verbinden…', 'db.run': 'Ausführen',
-    'db.runAll': 'Alles ausführen', 'db.export': 'Exportieren', 'db.sessions': 'Offene Datenbanken', 'db.saved': 'Gespeicherte Verbindungen', 'db.schema': 'Schema', 'db.noSession': 'Öffnen oder erstellen Sie eine SQLite-Datenbank oder verbinden Sie sich mit einem Postgres-Server.',
+    'db.newSqlite': 'Neue SQLite', 'db.openSqlite': 'SQLite öffnen…', 'db.saveDb': 'Datenbank speichern', 'db.connect': 'Mit einem Server verbinden…', 'db.serverTitle': 'Datenbankserver', 'db.serverKind': 'Servertyp', 'db.run': 'Ausführen',
+    'db.import': 'Importieren', 'db.importHint': 'Eine CSV- oder Excel-Datei (.xlsx) in eine Tabelle importieren', 'db.importTitle': '„{0}“ importieren', 'db.importRows': '{0} Zeilen', 'db.importHeader': 'Die erste Zeile enthält die Spaltennamen',
+    'db.importNew': 'Neue Tabelle', 'db.importExisting': 'Vorhandene Tabelle', 'db.importName': 'Tabellenname', 'db.importTable': 'Tabelle', 'db.importOk': 'Importieren',
+    'db.importUnknown': 'Spalten ohne passende Spalte in der Tabelle werden ausgelassen: {0}', 'db.importNoColumns': 'Keine Spalte der Datei passt zu einer Spalte der Tabelle.',
+    'db.imported': '{0} Zeilen in „{1}“ importiert.', 'db.importEmpty': 'Die Datei enthält keine Zeilen.', 'db.importUnreadable': '„{0}“ kann nicht gelesen werden: {1}', 'db.exported': '{0} Zeilen exportiert.',
+    'db.runAll': 'Alles ausführen', 'db.export': 'Exportieren', 'db.sessions': 'Offene Datenbanken', 'db.saved': 'Gespeicherte Verbindungen', 'db.schema': 'Schema', 'db.noSession': 'Öffnen oder erstellen Sie eine SQLite-Datenbank oder verbinden Sie sich mit einem PostgreSQL-, MySQL- oder MariaDB-Server.',
     'db.close': 'Schließen', 'db.refresh': 'Aktualisieren', 'db.rows': '{0} Zeile(n)', 'db.shown': 'die ersten {0} von {1} Zeilen werden angezeigt', 'db.affected': '{0}: {1} Zeile(n) betroffen', 'db.done': 'Fertig in {0} ms',
     'db.noResult': 'Kein Ergebnis.', 'db.name': 'Name', 'db.host': 'Host', 'db.port': 'Port', 'db.database': 'Datenbank', 'db.user': 'Benutzer', 'db.password': 'Passwort',
     'db.savePassword': 'Passwort mit der Verbindung speichern', 'db.ssl': 'SSL', 'db.sslPrefer': 'bevorzugen', 'db.sslRequire': 'erforderlich', 'db.sslDisable': 'aus',
@@ -80,9 +91,9 @@ const dark = () => document.documentElement.dataset.theme === 'dark' || (!docume
 const editor = new EditorView({
   doc: '',
   extensions: [
-    basicSetup,
+    basicSetup, suiteSearch(),
     indentKeys(),
-    language.of(sql({ dialect: SQLite })),
+    language.of([sql({ dialect: SQLite }), sqlExtras(SQLite, 'sqlite', () => session() && session().schema)]),
     theme.of(dark() ? oneDark : []),
     Prec.highest(keymap.of([
       { key: 'Mod-Enter', run: () => { runCurrent(); return true; } },
@@ -96,7 +107,8 @@ editor.dom.dataset.testid = 'editor';
 function configureEditor(s) {
   const schema = {};
   for (const tbl of (s && s.schema) || []) schema[tbl.schema && tbl.schema !== 'main' && tbl.schema !== 'public' ? `${tbl.schema}.${tbl.name}` : tbl.name] = tbl.columns.map((c) => c.name);
-  editor.dispatch({ effects: language.reconfigure(sql({ dialect: s && s.driver.kind === 'postgres' ? PostgreSQL : SQLite, schema, upperCaseKeywords: true })) });
+  const dialect = s && s.driver.kind === 'postgres' ? PostgreSQL : s && s.driver.kind === 'mysql' ? MySQL : SQLite;
+  editor.dispatch({ effects: language.reconfigure([sql({ dialect, schema, upperCaseKeywords: true }), sqlExtras(dialect, s ? s.driver.kind : 'sqlite', () => session() && session().schema)]) });
 }
 
 function setEditorText(text) { editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: text } }); }
@@ -355,17 +367,20 @@ async function connectPostgres(c) {
   state.busy = true;
   render();
   try {
-    const driver = await openPostgres({ relay: data.relayConfig(), host: c.host, port: c.port, database: c.database, user: c.username, password: c.password, ssl: c.ssl || 'prefer', insecure: !!c.insecure });
+    const open = c.kind === 'mysql' ? openMysql : openPostgres;
+    const driver = await open({ relay: data.relayConfig(), host: c.host, port: c.port, database: c.database, user: c.username, password: c.password, ssl: c.ssl || 'prefer', insecure: !!c.insecure });
     await addSession({ name: c.name || `${c.username}@${c.host}/${c.database}`, driver });
     return true;
   } catch (e) {
-    Suite.shell.toast(e.fields ? `${e.code}: ${e.message}` : Suite.i18n.describe(e), 'error');
+    Suite.shell.toast(e.errno ? `${e.errno}${e.code && e.code !== String(e.errno) ? ` (${e.code})` : ''}: ${e.message}` : e.fields ? `${e.code}: ${e.message}` : Suite.i18n.describe(e), 'error');
     return false;
   } finally { state.busy = false; render(); }
 }
 
 // ---- browsing and editing tables ------------------------------------------------------------------------------
 
+const KIND_ICON = { sqlite: 'database', postgres: 'database-zap', mysql: 'database-backup' };
+const DEFAULT_PORT = { postgres: 5432, mysql: 3306 };
 const qualified = (s, tbl) => (s.driver.kind === 'postgres' ? `${s.driver.quote(tbl.schema)}.${s.driver.quote(tbl.name)}` : s.driver.quote(tbl.name));
 
 async function browse(tbl, { offset = 0 } = {}) {
@@ -442,19 +457,134 @@ async function insertRow(tbl, values) {
 
 function visibleColumns(res) { return res.columns.map((c, i) => ({ c, i })).slice(res.browse ? res.browse.hidden : 0); }
 
-function exportResult(res, format) {
+/** Export a result (a browsed table: all its rows, not only the loaded page) as CSV, JSON or XLSX. */
+async function exportResult(res, format) {
   const cols = visibleColumns(res);
-  let text, type, ext;
+  let header = cols.map(({ c }) => c.name);
+  let rows = res.rows.map((r) => cols.map(({ i }) => r[i]));
+  const base = res.browse ? res.browse.table.name : 'result';
+  if (res.browse) {
+    const s = session();
+    try {
+      const tbl = res.browse.table;
+      const [full] = await s.driver.query(`SELECT * FROM ${qualified(s, tbl)}${res.browse.key.length ? ` ORDER BY ${res.browse.key.map((k) => s.driver.quote(k)).join(', ')}` : ''};`);
+      if (full) { header = full.columns.map((c) => c.name); rows = full.rows; }
+    } catch (e) { Suite.shell.toast(e.message, 'error'); return; }
+  }
+  let bytes, type, ext;
   if (format === 'csv') {
-    const cell = (v) => (v === null ? '' : /[",\n\r]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
-    text = [cols.map(({ c }) => cell(c.name)).join(','), ...res.rows.map((r) => cols.map(({ i }) => cell(r[i])).join(','))].join('\r\n') + '\r\n';
+    bytes = new TextEncoder().encode(`﻿${Suite.csv.stringify([header, ...rows.map((r) => r.map((v) => (v === null ? '' : v)))])}`);
     type = 'text/csv'; ext = 'csv';
+  } else if (format === 'xlsx') {
+    bytes = writeXlsx(base, header, rows);
+    type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'; ext = 'xlsx';
   } else {
-    text = JSON.stringify(res.rows.map((r) => Object.fromEntries(cols.map(({ c, i }) => [c.name, r[i]]))), null, 2);
+    bytes = new TextEncoder().encode(JSON.stringify(rows.map((r) => Object.fromEntries(header.map((h, i) => [h, r[i]]))), null, 2));
     type = 'application/json'; ext = 'json';
   }
-  const base = res.browse ? res.browse.table.name : 'result';
-  Suite.files.download(new TextEncoder().encode(format === 'csv' ? `﻿${text}` : text), `${base}.${ext}`, type);
+  Suite.files.download(bytes, `${base}.${ext}`, type);
+  Suite.shell.toast(t('db.exported', rows.length));
+}
+
+// ---- import (CSV, TSV, XLSX) into a new or an existing table -------------------------------------------------------
+
+const IMPORT_TYPES = [{ description: 'CSV / XLSX', accept: { 'text/csv': ['.csv', '.tsv', '.txt'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }];
+const tableName = (file) => file.replace(/\.[^.]+$/, '').replace(/[^\p{L}\p{N}_]+/gu, '_').replace(/^_+|_+$/g, '').replace(/^(\d)/, '_$1') || 'imported';
+
+async function chooseImport() {
+  const s = session();
+  if (!s) return;
+  const picked = await Suite.files.open({ types: IMPORT_TYPES }).catch((e) => { Suite.shell.toast(Suite.i18n.describe(e), 'error'); });
+  if (!picked) return;
+  try {
+    const rows = readTable(new Uint8Array(await picked[0].file.arrayBuffer()), picked[0].file.name);
+    if (!rows.length) { Suite.shell.toast(t('db.importEmpty'), 'warning'); return; }
+    const tables = (session().schema || []).filter((x) => x.type === 'table');
+    state.dialog = { kind: 'import', file: picked[0].file.name, rows, header: true, mode: 'new', name: tableName(picked[0].file.name), target: tables[0] ? tables[0].name : '', error: '' };
+    render();
+  } catch (e) { Suite.shell.toast(t('db.importUnreadable', picked[0].file.name, e.message), 'error'); }
+}
+
+/** The plan of an import: { columns: [{ name, type, index }], body, table (existing or null), unknown (file columns without a target) }. */
+function importPlan(d) {
+  const width = Math.max(...d.rows.map((r) => r.length));
+  const names = Array.from({ length: width }, (_, i) => (d.header && d.rows[0][i] != null && String(d.rows[0][i]).trim() ? String(d.rows[0][i]).trim() : `column${i + 1}`));
+  const body = d.header ? d.rows.slice(1) : d.rows;
+  const types = columnTypes(body);
+  if (d.mode === 'new') return { columns: names.map((name, index) => ({ name, type: types[index], index })), body, table: null, unknown: [] };
+  const table = (session().schema || []).find((x) => x.type === 'table' && x.name === d.target);
+  if (!table) return { columns: [], body, table: null, unknown: names };
+  const columns = [], unknown = [];
+  names.forEach((name, index) => {
+    const col = d.header ? table.columns.find((c) => c.name.toLowerCase() === name.toLowerCase()) : table.columns[index];
+    if (col) columns.push({ name: col.name, type: /int|real|float|double|num|dec/i.test(col.type) ? 'real' : 'text', index }); else unknown.push(name);
+  });
+  return { columns, body, table, unknown };
+}
+
+const SQL_TYPES = { sqlite: { integer: 'INTEGER', real: 'REAL', text: 'TEXT' }, postgres: { integer: 'bigint', real: 'double precision', text: 'text' }, mysql: { integer: 'BIGINT', real: 'DOUBLE', text: 'TEXT' } };
+
+async function runImport() {
+  const d = state.dialog;
+  const s = session();
+  const plan = importPlan(d);
+  if (!plan.columns.length) { d.error = t('db.importNoColumns'); render(); return; }
+  const types = SQL_TYPES[s.driver.kind] || SQL_TYPES.sqlite;
+  const name = d.mode === 'new' ? d.name.trim() : plan.table.name;
+  const target = d.mode === 'new' ? qualified(s, { schema: s.driver.kind === 'postgres' ? 'public' : 'main', name }) : qualified(s, plan.table);
+  const value = (v, type) => {
+    if (v === null || v === undefined || v === '') return 'NULL';
+    if (typeof v === 'boolean') return v ? '1' : '0';
+    if ((type === 'integer' || type === 'real') && /^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i.test(String(v).trim())) return String(v).trim();
+    return s.driver.literal(String(v));
+  };
+  const before = sqliteSnapshot(s);
+  state.busy = true; d.error = ''; render();
+  try {
+    await s.driver.query('BEGIN;');
+    if (d.mode === 'new') await s.driver.query(`CREATE TABLE ${target} (${plan.columns.map((c) => `${s.driver.quote(c.name)} ${types[c.type]}`).join(', ')});`);
+    const cols = plan.columns.map((c) => s.driver.quote(c.name)).join(', ');
+    for (let i = 0; i < plan.body.length; i += 200) {
+      const chunk = plan.body.slice(i, i + 200).map((r) => `(${plan.columns.map((c) => value(r[c.index], c.type)).join(', ')})`);
+      await s.driver.query(`INSERT INTO ${target} (${cols}) VALUES ${chunk.join(', ')};`);
+    }
+    await s.driver.query('COMMIT;');
+    if (before) pushUndo(s, { bytes: before, label: 'IMPORT' });
+    if (s.driver.kind === 'sqlite') { s.dirty = true; updateDirty(); }
+    state.dialog = null;
+    state.busy = false;
+    Suite.shell.toast(t('db.imported', plan.body.length, name));
+    await refreshSchema(s);
+    const tbl = (session().schema || []).find((x) => x.name === name);
+    if (tbl) await browse(tbl);
+  } catch (e) {
+    try { await s.driver.query('ROLLBACK;'); } catch (x) { /* not in a transaction */ }
+    d.error = e.message;
+  } finally { state.busy = false; render(); }
+}
+
+function ImportDialog() {
+  const d = state.dialog;
+  const plan = importPlan(d);
+  const preview = plan.body.slice(0, 5);
+  const tables = (session().schema || []).filter((x) => x.type === 'table');
+  return html`<dialog open data-testid="import-dialog"><article class="db-dialog db-import">
+    <header><strong>${t('db.importTitle', d.file)}</strong></header>
+    <p><small>${t('db.importRows', plan.body.length)}</small></p>
+    <label class="db-check"><input type="checkbox" checked=${d.header} data-testid="import-header" onChange=${(e) => { d.header = e.target.checked; render(); }} /> ${t('db.importHeader')}</label>
+    <div class="db-row">
+      <label><input type="radio" name="mode" checked=${d.mode === 'new'} data-testid="import-new" onChange=${() => { d.mode = 'new'; render(); }} /> ${t('db.importNew')}</label>
+      <label><input type="radio" name="mode" checked=${d.mode === 'existing'} disabled=${!tables.length} data-testid="import-existing" onChange=${() => { d.mode = 'existing'; render(); }} /> ${t('db.importExisting')}</label>
+    </div>
+    ${d.mode === 'new' ? html`<label>${t('db.importName')}<input data-testid="import-name" value=${d.name} onInput=${(e) => { d.name = e.target.value; }} /></label>`
+      : html`<label>${t('db.importTable')}<select data-testid="import-table" onChange=${(e) => { d.target = e.target.value; render(); }}>${tables.map((x) => html`<option value=${x.name} selected=${x.name === d.target}>${x.name}</option>`)}</select></label>`}
+    <div class="db-import-preview"><table data-testid="import-preview"><thead><tr>${plan.columns.map((c) => html`<th>${c.name}<br /><small>${d.mode === 'new' ? (SQL_TYPES[session().driver.kind] || SQL_TYPES.sqlite)[c.type] : ''}</small></th>`)}</tr></thead>
+      <tbody>${preview.map((r) => html`<tr>${plan.columns.map((c) => html`<td>${r[c.index] === null || r[c.index] === undefined ? '' : String(r[c.index])}</td>`)}</tr>`)}</tbody></table></div>
+    ${plan.unknown.length ? html`<p class="db-warn" data-testid="import-unknown">${t('db.importUnknown', plan.unknown.join(', '))}</p>` : null}
+    ${d.error ? html`<p class="db-error" data-testid="import-error">${d.error}</p>` : null}
+    <footer><button type="button" class="secondary" onClick=${() => { state.dialog = null; render(); }}>${t('db.cancel')}</button>
+      <button type="button" data-testid="import-ok" aria-busy=${state.busy} disabled=${state.busy || !plan.columns.length || (d.mode === 'new' && !d.name.trim())} onClick=${runImport}>${t('db.importOk')}</button></footer>
+  </article></dialog>`;
 }
 
 // ---- UI ----------------------------------------------------------------------------------------------------------
@@ -463,20 +593,22 @@ function Toolbar() {
   const s = session();
   const res = state.results[state.resultTab];
   return html`<nav class="db-toolbar" role="toolbar">
-    <button class="secondary outline db-only-phone" data-testid="toggle-panels" onClick=${() => { state.panels = !state.panels; render(); }}>☰</button>
+    <button class="secondary outline db-only-phone" data-testid="toggle-panels" title=${Suite.t('common.panels')} onClick=${() => { state.panels = !state.panels; render(); }}>${Suite.icon('menu')}</button>
     <button class="secondary" data-testid="new-sqlite" onClick=${newSqlite}>${t('db.newSqlite')}</button>
     <button class="secondary" data-testid="open-sqlite" onClick=${openSqliteFile}>${t('db.openSqlite')}</button>
     <${Suite.shell.Recent} app=${APP} onOpen=${(p) => openPicked(p)} />
     ${s && s.driver.kind === 'sqlite' ? html`<button class=${s.dirty ? '' : 'secondary outline'} data-testid="save-db" onClick=${() => saveDb()}>${t('db.saveDb')}</button>` : null}
-    <button class="secondary outline" data-testid="connect" onClick=${() => { state.dialog = { kind: 'pg', c: { name: '', host: 'localhost', port: 5432, database: '', username: '', password: '', ssl: 'prefer', insecure: false, savePassword: false } }; render(); }}>${t('db.connect')}</button>
-    ${s ? html`<button class="secondary outline" title="${t('db.undo')} (Ctrl+Z)" data-testid="undo" disabled=${!(s.undo && s.undo.length) || state.busy} onClick=${() => undoStep(false)}>↶</button>
-      <button class="secondary outline" title="${t('db.redo')} (Ctrl+Y)" data-testid="redo" disabled=${!(s.redo && s.redo.length) || state.busy} onClick=${() => undoStep(true)}>↷</button>` : null}
+    <button class="secondary outline" data-testid="connect" onClick=${() => { state.dialog = { kind: 'pg', c: { kind: 'postgres', name: '', host: 'localhost', port: 5432, database: '', username: '', password: '', ssl: 'prefer', insecure: false, savePassword: false } }; render(); }}>${t('db.connect')}</button>
+    ${s ? html`<button class="secondary outline" title="${t('db.undo')} (Ctrl+Z)" data-testid="undo" disabled=${!(s.undo && s.undo.length) || state.busy} onClick=${() => undoStep(false)}>${Suite.icon('undo-2')}</button>
+      <button class="secondary outline" title="${t('db.redo')} (Ctrl+Y)" data-testid="redo" disabled=${!(s.redo && s.redo.length) || state.busy} onClick=${() => undoStep(true)}>${Suite.icon('redo-2')}</button>` : null}
     <span class="db-sep"></span>
-    <button data-testid="run" disabled=${!s || state.busy} title="Ctrl+Enter" aria-busy=${state.busy} onClick=${runCurrent}>▶ ${t('db.run')}</button>
+    <button data-testid="run" disabled=${!s || state.busy} title="Ctrl+Enter" aria-busy=${state.busy} onClick=${runCurrent}>${Suite.icon('play')} ${t('db.run')}</button>
     <button class="secondary outline" data-testid="run-all" disabled=${!s || state.busy} title="Ctrl+Shift+Enter" onClick=${runAll}>${t('db.runAll')}</button>
     <button class="secondary outline" data-testid="explain" disabled=${!s || state.busy} title=${t('db.explainTitle')} onClick=${explainCurrent}>${t('db.explain')}</button>
     ${res && res.columns.length ? html`<button class="secondary outline" data-testid="export-csv" onClick=${() => exportResult(res, 'csv')}>CSV</button>
+      <button class="secondary outline" data-testid="export-xlsx" onClick=${() => exportResult(res, 'xlsx')}>XLSX</button>
       <button class="secondary outline" data-testid="export-json" onClick=${() => exportResult(res, 'json')}>JSON</button>` : null}
+    <button class="secondary outline" data-testid="import-data" disabled=${!s || state.busy} title=${t('db.importHint')} onClick=${chooseImport}>${Suite.icon('import')} ${t('db.import')}</button>
   </nav>`;
 }
 
@@ -489,18 +621,18 @@ function Sidebar() {
     <section>
       <strong>${t('db.sessions')}</strong>
       <ul class="db-sessions">${state.sessions.map((x) => html`<li class=${x.id === state.active ? 'active' : ''} data-testid="session">
-        <span class="db-session-name" onClick=${() => { state.panels = false; activate(x); }}>${x.driver.kind === 'sqlite' ? '🗄' : '🐘'} ${x.name}${x.dirty ? ' •' : ''}</span>
+        <span class="db-session-name" onClick=${() => { state.panels = false; activate(x); }}>${Suite.icon(KIND_ICON[x.driver.kind] || 'database')} ${x.name}${x.dirty ? ' •' : ''}</span>
         <button class="secondary outline" title=${t('db.close')} data-testid="close-session" onClick=${() => closeSession(x)}>×</button></li>`)}</ul>
     </section>
     ${s ? html`<section class="db-schema" data-testid="schema">
       <div class="db-schema-head"><strong>${t('db.schema')}</strong>
-        <button class="secondary outline" title=${t('db.erTitle')} data-testid="er-diagram" onClick=${() => { state.panels = false; openErDiagram(); }}>⛁ ${t('db.er')}</button>
-        <button class="secondary outline" title=${t('db.refresh')} data-testid="refresh-schema" onClick=${() => refreshSchema()}>⟳</button></div>
+        <button class="secondary outline" title=${t('db.erTitle')} data-testid="er-diagram" onClick=${() => { state.panels = false; openErDiagram(); }}>${Suite.icon('database')} ${t('db.er')}</button>
+        <button class="secondary outline" title=${t('db.refresh')} data-testid="refresh-schema" onClick=${() => refreshSchema()}>${Suite.icon('rotate-cw')}</button></div>
       <input type="search" placeholder=${t('db.filter')} value=${state.filter} onInput=${(e) => { state.filter = e.target.value; render(); }} />
       <ul class="db-tree">${tables.map((tbl) => html`<li data-testid="table">
-        <details><summary><span class="db-table-name" data-testid="table-name">${tbl.type === 'view' ? '👁' : '▦'} ${tbl.schema && !['main', 'public'].includes(tbl.schema) ? `${tbl.schema}.` : ''}${tbl.name}</span>
+        <details><summary><span class="db-table-name" data-testid="table-name">${tbl.type === 'view' ? Suite.icon('eye') : Suite.icon('table')} ${tbl.schema && !['main', 'public'].includes(tbl.schema) ? `${tbl.schema}.` : ''}${tbl.name}</span>
           <button class="secondary outline" data-testid="browse" onClick=${(e) => { e.preventDefault(); state.panels = false; browse(tbl); }}>${t('db.browse')}</button></summary>
-          <ul>${tbl.columns.map((c) => html`<li class="db-col">${c.pk ? '🔑 ' : ''}${c.name} <small>${c.type}${c.notnull ? ' NOT NULL' : ''}</small></li>`)}</ul>
+          <ul>${tbl.columns.map((c) => html`<li class="db-col">${c.pk ? Suite.icon('key-round') : ''}${c.name} <small>${c.type}${c.notnull ? ' NOT NULL' : ''}</small></li>`)}</ul>
         </details></li>`)}</ul>
     </section>` : null}
     ${history.length ? html`<section class="db-history" data-testid="history">
@@ -512,8 +644,8 @@ function Sidebar() {
     <section class="db-saved">
       <strong>${t('db.saved')}</strong>
       <ul>${conns.map((c) => html`<li data-testid="saved-connection">
-        <a href="#" onClick=${(e) => { e.preventDefault(); state.panels = false; if (c.password) connectPostgres(c); else { state.dialog = { kind: 'pg', c: { ...c, savePassword: false } }; render(); } }}>🐘 ${c.name}</a>
-        <button class="secondary outline" title=${t('db.edit')} data-testid="edit-connection" onClick=${() => { state.dialog = { kind: 'pg', c: { ...c, savePassword: !!c.password } }; render(); }}>✎</button>
+        <a href="#" onClick=${(e) => { e.preventDefault(); state.panels = false; if (c.password) connectPostgres(c); else { state.dialog = { kind: 'pg', c: { ...c, savePassword: false } }; render(); } }}>${Suite.icon(KIND_ICON[c.kind || 'postgres'])} ${c.name}</a>
+        <button class="secondary outline" title=${t('db.edit')} data-testid="edit-connection" onClick=${() => { state.dialog = { kind: 'pg', c: { ...c, savePassword: !!c.password } }; render(); }}>${Suite.icon('pencil')}</button>
         <button class="secondary outline" title=${t('db.delete')} data-testid="delete-connection" onClick=${async () => { if (await Suite.shell.confirm(t('db.deleteConfirm', c.name))) data.deleteConnection(c.id); }}>×</button></li>`)}</ul>
       <${data.Bar} />
     </section>
@@ -582,13 +714,15 @@ function PgDialog() {
     const stored = { ...c };
     delete stored.savePassword;
     if (!c.savePassword) stored.password = '';
-    stored.url = `postgres://${c.host}:${c.port}/${c.database}`;
+    stored.url = `${c.kind === 'mysql' ? 'mysql' : 'postgres'}://${c.host}:${c.port}/${c.database}`;
     stored.name = c.name || `${c.username}@${c.host}/${c.database}`;
     c.id = data.saveConnection(stored);
   };
   return html`<dialog open data-testid="pg-dialog"><article class="db-dialog">
-    <header><strong>Postgres</strong></header>
+    <header><strong>${t('db.serverTitle')}</strong></header>
     <form onSubmit=${async (e) => { e.preventDefault(); if (await connectPostgres(c)) { state.dialog = null; render(); } }}>
+      <label>${t('db.serverKind')}<select data-testid="pg-kind" onChange=${(e) => { const kind = e.target.value; if (c.port === DEFAULT_PORT[c.kind || 'postgres']) c.port = DEFAULT_PORT[kind]; c.kind = kind; render(); }}>
+        <option value="postgres" selected=${(c.kind || 'postgres') === 'postgres'}>PostgreSQL</option><option value="mysql" selected=${c.kind === 'mysql'}>MySQL / MariaDB</option></select></label>
       ${field('name', 'db.name')}
       <div class="db-row">${field('host', 'db.host')}${field('port', 'db.port', 'number')}</div>
       <div class="db-row">${field('database', 'db.database')}${field('username', 'db.user', 'text', { autocomplete: 'username' })}</div>
@@ -614,7 +748,7 @@ function InsertDialog() {
   return html`<dialog open data-testid="insert-dialog"><article class="db-dialog">
     <header><strong>${t('db.addRow')}: ${d.table.name}</strong></header>
     <form onSubmit=${(e) => { e.preventDefault(); insertRow(d.table, d.values); }}>
-      ${d.table.columns.map((c) => html`<label>${c.name} <small>${c.type}${c.pk ? ' 🔑' : ''}</small>
+      ${d.table.columns.map((c) => html`<label>${c.name} <small>${c.type}${c.pk ? Suite.icon('key-round') : ''}</small>
         <input data-testid=${`insert-${c.name}`} placeholder=${c.notnull ? '' : t('db.null')} onInput=${(e) => { d.values[c.name] = e.target.value === '' ? undefined : e.target.value; }} /></label>`)}
       ${d.error ? html`<p class="db-error" data-testid="insert-error">${d.error}</p>` : null}
       <footer><button type="button" class="secondary" onClick=${() => { state.dialog = null; render(); }}>${t('db.cancel')}</button><button type="submit" data-testid="insert-ok">${t('db.insert')}</button></footer>
@@ -632,6 +766,7 @@ function Main() {
     </div>
     ${state.dialog && state.dialog.kind === 'pg' ? html`<${PgDialog} />` : null}
     ${state.dialog && state.dialog.kind === 'insert' ? html`<${InsertDialog} />` : null}
+    ${state.dialog && state.dialog.kind === 'import' ? html`<${ImportDialog} />` : null}
     <${data.Dialog} />
   </div>`;
 }
@@ -655,5 +790,5 @@ Suite.openFiles.register(() => state.sessions.filter((s) => s.driver.kind === 's
   .map((s) => ({ name: s.fileName || (/\.(sqlite3?|db)$/i.test(s.name) ? s.name : `${s.name}.sqlite`), bytes: s.driver.export(), dirty: !!s.dirty })));
 
 // for tests
-window.DB = { erDiagram, state, undoStep, editor, execute, setEditorText, session, data, explainCurrent, get history() { return history; } };
+window.DB = { exportResult, chooseImport, erDiagram, state, undoStep, editor, execute, setEditorText, session, data, explainCurrent, get history() { return history; } };
 document.body.dataset.ready = 'true';

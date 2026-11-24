@@ -3,6 +3,7 @@
  * encodings and line endings. CodeMirror 6 (ES modules) inside the shared app shell (Suite.shell).
  */
 import { EditorView, basicSetup } from "codemirror";
+import { suiteSearch } from "app/cm-search";
 import { keymap, highlightWhitespace } from "@codemirror/view";
 import { EditorState, Compartment, Prec, Annotation, Transaction } from "@codemirror/state";
 import { undo, redo, undoDepth, redoDepth } from "@codemirror/commands";
@@ -10,9 +11,12 @@ import { indentUnit } from "@codemirror/language";
 import { openSearchPanel, gotoLine, selectNextOccurrence } from "@codemirror/search";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { LANGUAGES, languageFor, languageExtension } from "app/languages";
-import { TOOLS, apply as applyTool, kindOf, ToolError, SQL_DIALECTS, SQL_DEFAULTS } from "app/tools";
+import { TOOLS, apply as applyTool, kindOf, ToolError, SQL_DIALECTS, SQL_DEFAULTS, CHECKS, checkSyntax } from "app/tools";
+import { linter, lintGutter, forEachDiagnostic, nextDiagnostic } from "@codemirror/lint";
 import { MergeView, unifiedMergeView, getChunks, goToNextChunk, goToPreviousChunk } from "@codemirror/merge";
 import { lineDiff } from "app/linediff";
+import { createPreview, toHtml as markdownHtml } from "app/preview";
+import { bookmarks, bookmarkLines, bookmarkedText, changesRemovingLines, toggleBookmark, clearBookmarks, jumpBookmark } from "app/bookmarks";
 import "app/spell-dom"; // spelling selector in the header, marks in text fields (shared/js/spell-dom.js)
 import { spellChecking } from "app/cm-spell";
 import "app/cm-symbols"; // emoji and symbols insert through the editor (shared/js/cm-symbols.js)
@@ -44,7 +48,15 @@ Suite.i18n.register({
     "te.findAll": "Find in files", "te.findAllPlaceholder": "Search in all open files", "te.inOpen": "Open files", "te.inFolder": "Folder…",
     "te.matchCase": "Match case", "te.regex": "Regular expression", "te.matches": "{0} match(es) in {1} file(s)", "te.noMatches": "No matches.",
     "te.badRegex": "Invalid regular expression: {0}", "te.searching": "Searching… {0} files", "te.tooMany": "Only the first {0} matches are shown.",
+    "te.checkSyntax": "Check syntax (JSON, XML, YAML)", "te.checkNone": "{0} has no syntax check (JSON, XML and YAML have).", "te.checkOk": "The {0} is correct.", "te.checkError": "Line {0}, column {1}: {2}",
+    "te.tool.xmlMinify": "Minify XML", "te.tool.yamlFormat": "Format YAML", "te.tool.jsonToYaml": "JSON → YAML", "te.tool.yamlToJson": "YAML → JSON", "te.toolBadYaml": "This is not valid YAML: {0}",
+    "te.tool.shuffle": "Shuffle lines", "te.tool.numberLines": "Number lines…", "te.tool.affix": "Add text before/after lines…", "te.tool.keepMatching": "Keep lines containing…", "te.tool.removeMatching": "Remove lines containing…", "te.tool.hardWrap": "Wrap lines at a width…",
+    "te.lt.start": "Start at", "te.lt.separator": "After the number", "te.lt.pad": "Leading zeros", "te.lt.prefix": "Before each line", "te.lt.suffix": "After each line", "te.lt.skipEmpty": "Leave empty lines alone", "te.lt.pattern": "Text", "te.lt.regex": "Regular expression", "te.lt.case": "Match case", "te.lt.width": "Width (characters)", "te.lt.apply": "Apply",
+    "te.toolNoPattern": "Enter the text to look for.", "te.toolBadRegex": "The regular expression is not valid: {0}",
+    "te.group.bookmarks": "Bookmarks", "te.bmToggle": "Bookmark on/off (Ctrl+F2)", "te.bmNext": "Next bookmark (F2)", "te.bmPrev": "Previous bookmark (Shift+F2)", "te.bmClear": "Remove all bookmarks (Ctrl+Shift+F2)", "te.bmCopy": "Copy bookmarked lines", "te.bmRemove": "Remove bookmarked lines", "te.bmKeep": "Keep only bookmarked lines",
+    "te.bmNone": "There are no bookmarks (Ctrl+F2 or a click in the margin sets one).", "te.bmCopied": "{0} lines copied.", "te.bmHint": "Bookmarks: F2 next, Shift+F2 previous",
     "te.split": "Split view (the same document twice)",
+    "te.preview": "Markdown preview beside the text", "te.previewShort": "Preview", "te.saveHtml": "Save the preview as an HTML file",
     "te.tools": "Tools", "te.group.lines": "Lines", "te.group.case": "Case", "te.group.encode": "Encode / decode", "te.group.format": "Format",
     "te.tool.sortAsc": "Sort lines A→Z", "te.tool.sortDesc": "Sort lines Z→A", "te.tool.sortLength": "Sort lines by length", "te.tool.reverse": "Reverse line order",
     "te.tool.unique": "Remove duplicate lines", "te.tool.removeEmpty": "Remove empty lines", "te.tool.trimTrailing": "Trim trailing whitespace",
@@ -81,7 +93,15 @@ Suite.i18n.register({
     "te.findAll": "In Dateien suchen", "te.findAllPlaceholder": "In allen geöffneten Dateien suchen", "te.inOpen": "Geöffnete Dateien", "te.inFolder": "Ordner…",
     "te.matchCase": "Groß-/Kleinschreibung", "te.regex": "Regulärer Ausdruck", "te.matches": "{0} Treffer in {1} Datei(en)", "te.noMatches": "Keine Treffer.",
     "te.badRegex": "Ungültiger regulärer Ausdruck: {0}", "te.searching": "Suche… {0} Dateien", "te.tooMany": "Nur die ersten {0} Treffer werden angezeigt.",
+    "te.checkSyntax": "Syntax prüfen (JSON, XML, YAML)", "te.checkNone": "Für {0} gibt es keine Syntaxprüfung (JSON, XML und YAML haben eine).", "te.checkOk": "Das {0} ist korrekt.", "te.checkError": "Zeile {0}, Spalte {1}: {2}",
+    "te.tool.xmlMinify": "XML verkleinern", "te.tool.yamlFormat": "YAML formatieren", "te.tool.jsonToYaml": "JSON → YAML", "te.tool.yamlToJson": "YAML → JSON", "te.toolBadYaml": "Das ist kein gültiges YAML: {0}",
+    "te.tool.shuffle": "Zeilen mischen", "te.tool.numberLines": "Zeilen nummerieren…", "te.tool.affix": "Text vor/nach Zeilen einfügen…", "te.tool.keepMatching": "Zeilen behalten, die enthalten…", "te.tool.removeMatching": "Zeilen entfernen, die enthalten…", "te.tool.hardWrap": "Zeilen bei einer Breite umbrechen…",
+    "te.lt.start": "Beginnen bei", "te.lt.separator": "Nach der Nummer", "te.lt.pad": "Führende Nullen", "te.lt.prefix": "Vor jeder Zeile", "te.lt.suffix": "Nach jeder Zeile", "te.lt.skipEmpty": "Leere Zeilen auslassen", "te.lt.pattern": "Text", "te.lt.regex": "Regulärer Ausdruck", "te.lt.case": "Groß-/Kleinschreibung beachten", "te.lt.width": "Breite (Zeichen)", "te.lt.apply": "Anwenden",
+    "te.toolNoPattern": "Geben Sie den gesuchten Text ein.", "te.toolBadRegex": "Der reguläre Ausdruck ist ungültig: {0}",
+    "te.group.bookmarks": "Lesezeichen", "te.bmToggle": "Lesezeichen ein/aus (Strg+F2)", "te.bmNext": "Nächstes Lesezeichen (F2)", "te.bmPrev": "Voriges Lesezeichen (Umschalt+F2)", "te.bmClear": "Alle Lesezeichen entfernen (Strg+Umschalt+F2)", "te.bmCopy": "Zeilen mit Lesezeichen kopieren", "te.bmRemove": "Zeilen mit Lesezeichen entfernen", "te.bmKeep": "Nur Zeilen mit Lesezeichen behalten",
+    "te.bmNone": "Es gibt keine Lesezeichen (Strg+F2 oder ein Klick in den Rand setzt eines).", "te.bmCopied": "{0} Zeilen kopiert.", "te.bmHint": "Lesezeichen: F2 nächstes, Umschalt+F2 voriges",
     "te.split": "Geteilte Ansicht (dasselbe Dokument zweimal)",
+    "te.preview": "Markdown-Vorschau neben dem Text", "te.previewShort": "Vorschau", "te.saveHtml": "Die Vorschau als HTML-Datei speichern",
     "te.tools": "Werkzeuge", "te.group.lines": "Zeilen", "te.group.case": "Groß/klein", "te.group.encode": "Kodieren / dekodieren", "te.group.format": "Formatieren",
     "te.tool.sortAsc": "Zeilen sortieren A→Z", "te.tool.sortDesc": "Zeilen sortieren Z→A", "te.tool.sortLength": "Zeilen nach Länge sortieren", "te.tool.reverse": "Zeilenfolge umkehren",
     "te.tool.unique": "Doppelte Zeilen entfernen", "te.tool.removeEmpty": "Leere Zeilen entfernen", "te.tool.trimTrailing": "Leerzeichen am Zeilenende entfernen",
@@ -126,7 +146,7 @@ const darkMode = () => {
 
 // ---- documents ----------------------------------------------------------------------------------
 
-const compartments = { language: new Compartment(), wrap: new Compartment(), theme: new Compartment(), whitespace: new Compartment(), font: new Compartment(), indent: new Compartment() };
+const compartments = { lint: new Compartment(), language: new Compartment(), wrap: new Compartment(), theme: new Compartment(), whitespace: new Compartment(), font: new Compartment(), indent: new Compartment() };
 
 // ---- indentation ----------------------------------------------------------------------------------
 // "s2", "s4", "s8": spaces; "t2", "t4", "t8": tab characters shown that wide
@@ -191,12 +211,14 @@ function createState(text, languageId, indent = prefs.indent) {
         { key: "Alt-w", run: () => { closeDocument(active); return true; } },
         { key: "Mod-g", run: gotoLine, preventDefault: true },
         { key: "Mod-d", run: selectNextOccurrence, preventDefault: true },
+        { key: "Mod-Shift-m", run: () => { togglePreview(); return true; }, preventDefault: true },
       ])),
-      basicSetup, editorLabel(), spelling(), swatches(), // includes multiple selections (Ctrl+click), rectangular selection (Alt+drag), search, undo, ...
+      bookmarks(), basicSetup, suiteSearch(), editorLabel(), spelling(), swatches(), // includes multiple selections (Ctrl+click), rectangular selection (Alt+drag), search, undo, ...
       indentKeys(), // Tab indents (Esc, then Tab, or Ctrl+M moves the focus on)
       EditorState.allowMultipleSelections.of(true),
       compartments.indent.of(indentExtension(INDENTS.includes(indent) ? indent : "s4")),
       compartments.language.of(languageExtension(languageId)),
+      compartments.lint.of(lintFor(languageId)),
       compartments.wrap.of(s.wrap),
       compartments.theme.of(s.theme),
       compartments.whitespace.of(s.whitespace),
@@ -223,8 +245,8 @@ function onUpdate(update) {
   const doc = currentDoc();
   if (!doc || update.view !== view) return;
   doc.state = update.state;
-  if (update.docChanged) updateDirtyFlag();
-  if (update.docChanged || update.selectionSet) scheduleRender();
+  if (update.docChanged) { updateDirtyFlag(); refreshPreview(); }
+  if (update.docChanged || update.selectionSet || update.transactions.some((tr) => tr.effects.length)) scheduleRender(); // (effects: e.g. bookmarks)
 }
 
 /** Bring the settings (wrap, theme, font, whitespace) of the shown state up to date. */
@@ -264,7 +286,7 @@ function buildSplit() {
         { key: "Mod-Shift-z", run: () => redo(view), preventDefault: true },
         { key: "Mod-s", run: () => { save(); return true; }, preventDefault: true },
       ])),
-      basicSetup, editorLabel(), spelling(), swatches(), indentKeys(), EditorState.allowMultipleSelections.of(true), compartments.indent.of(indentExtension((doc && doc.indent) || prefs.indent)),
+      basicSetup, suiteSearch(), editorLabel(), spelling(), swatches(), indentKeys(), EditorState.allowMultipleSelections.of(true), compartments.indent.of(indentExtension((doc && doc.indent) || prefs.indent)),
       languageExtension(doc ? doc.language : "text"), s.wrap, s.theme, s.whitespace, s.font,
     ],
   });
@@ -279,7 +301,42 @@ function buildSplit() {
   scheduleRender();
 }
 
+// ---- Markdown preview (js/preview.js): beside the editor, updated while typing, scrolled along ------------------------------
+
+let preview = null;
+const isDark = () => document.documentElement.dataset.theme === "dark" || (document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+
+function refreshPreview() {
+  const doc = currentDoc();
+  if (preview && doc) preview.update(view.state.doc.toString(), isDark(), doc.name);
+}
+
+function togglePreview() {
+  if (preview) { preview.destroy(); preview = null; scheduleRender(); view.focus(); return; }
+  if (split) toggleSplit();
+  preview = createPreview();
+  refreshPreview();
+  scheduleRender();
+}
+
+/** The editor's scroll position (as a fraction) for the preview. */
+function syncPreviewScroll() {
+  if (!preview || !view) return;
+  const el = view.scrollDOM;
+  const max = el.scrollHeight - el.clientHeight;
+  preview.scrollTo(max > 0 ? el.scrollTop / max : 0);
+}
+
+async function saveHtml() {
+  const doc = currentDoc();
+  if (!doc) return;
+  const bytes = new TextEncoder().encode(markdownHtml(view.state.doc.toString(), { title: doc.name.replace(/\.[^.]+$/, "") }));
+  const result = await Suite.files.saveAs(bytes, { suggestedName: `${doc.name.replace(/\.[^.]+$/, "")}.html`, types: [{ description: "HTML", accept: { "text/html": [".html"] } }], type: "text/html" });
+  if (result) report(result);
+}
+
 function toggleSplit() {
+  if (!split && preview) togglePreview();
   if (split) { split.view.destroy(); split = null; scheduleRender(); view.focus(); return; }
   buildSplit();
 }
@@ -290,6 +347,7 @@ function activate(index) {
   if (old && view) old.state = view.state;
   active = index;
   view.setState(docs[index].state);
+  refreshPreview();
   applySettings(); // also rebuilds the split view for the new document
   view.focus();
   Suite.shell.refresh();
@@ -396,10 +454,49 @@ async function closeDocument(index) {
   updateDirtyFlag();
 }
 
+// ---- syntax check (JSON, XML, YAML): errors marked while typing; "Check syntax" reports them -----------------------------------
+
+/** The live check for a language (an empty extension for languages without one). */
+function lintFor(languageId) {
+  if (!CHECKS[languageId]) return [];
+  return [lintGutter(), linter((v) => checkSyntax(languageId, v.state.doc.toString()).map((d) => ({ ...d, severity: "error" })), { delay: 400 })];
+}
+
+// ---- bookmarks (js/bookmarks.js) ------------------------------------------------------------------------------------------------
+
+async function bookmarkAction(id) {
+  if (!view) return;
+  const lines = bookmarkLines(view.state);
+  if (id === "bmToggle") { view.dispatch({ effects: toggleBookmark.of(view.state.selection.main.head) }); view.focus(); return; }
+  if (id === "bmNext" || id === "bmPrev") { if (!jumpBookmark(view, id === "bmNext" ? 1 : -1)) Suite.shell.toast(t("te.bmNone"), "warning"); view.focus(); return; }
+  if (!lines.length) { Suite.shell.toast(t("te.bmNone"), "warning"); return; }
+  if (id === "bmClear") { view.dispatch({ effects: clearBookmarks.of(null) }); view.focus(); return; }
+  if (id === "bmCopy") {
+    const text = bookmarkedText(view.state).join("\n");
+    try { await navigator.clipboard.writeText(text); Suite.shell.toast(t("te.bmCopied", lines.length)); } catch (e) { Suite.shell.toast(String(e.message || e), "error"); }
+    return;
+  }
+  view.dispatch({ changes: changesRemovingLines(view.state, id === "bmKeep"), userEvent: "input.tool" });
+  view.focus();
+}
+
+function checkCurrent() {
+  const doc = currentDoc();
+  if (!doc) return;
+  if (!CHECKS[doc.language]) { Suite.shell.toast(t("te.checkNone", LANGUAGES[doc.language] ? LANGUAGES[doc.language].label : doc.language), "warning"); return; }
+  const errors = checkSyntax(doc.language, view.state.doc.toString());
+  if (!errors.length) { Suite.shell.toast(t("te.checkOk", LANGUAGES[doc.language].label), "success"); return; }
+  const e = errors[0];
+  const line = view.state.doc.lineAt(e.from);
+  view.dispatch({ selection: { anchor: e.from }, scrollIntoView: true });
+  view.focus();
+  Suite.shell.toast(t("te.checkError", line.number, e.from - line.from + 1, e.message), "error");
+}
+
 function setLanguage(id) {
   const doc = currentDoc();
   doc.language = id;
-  view.dispatch({ effects: compartments.language.reconfigure(languageExtension(id)) });
+  view.dispatch({ effects: [compartments.language.reconfigure(languageExtension(id)), compartments.lint.reconfigure(lintFor(id))] });
   Suite.shell.refresh();
 }
 
@@ -463,6 +560,11 @@ function runTool(id, options = null) {
     scheduleRender();
     return;
   }
+  if (tool && tool.options && tool.options !== "sql" && !options) {
+    lineDialog = { id, kind: tool.options, options: { start: 1, separator: ". ", pad: false, prefix: "", suffix: "", skipEmpty: true, pattern: "", regex: false, caseSensitive: false, width: 80, ...((prefs.lineTools || {})[tool.options] || {}) } };
+    scheduleRender();
+    return;
+  }
   const state = view.state;
   const sel = state.selection.main;
   const { from, to } = toolRange(id);
@@ -487,24 +589,28 @@ function Toolbar() {
     </select>` : null}
     <button data-testid="save" class=${dirty ? "" : "secondary"} title="${t("te.save")} (Ctrl+S)" onClick=${save}>${t("te.save")}</button>
     <button class="secondary" data-testid="save-as" title="${t("te.saveAs")} (Ctrl+Shift+S)" onClick=${saveAs}>${t("te.saveAs")}</button>
-    <button class="secondary outline" data-testid="undo" title="${t("te.undo")} (Ctrl+Z)" disabled=${!view || !undoDepth(view.state)} onClick=${() => { undo(view); view.focus(); }}>↶</button>
-    <button class="secondary outline" data-testid="redo" title="${t("te.redo")} (Ctrl+Y)" disabled=${!view || !redoDepth(view.state)} onClick=${() => { redo(view); view.focus(); }}>↷</button>
-    <button class="secondary outline" data-testid="find" title="${t("te.find")} (Ctrl+F)" onClick=${() => { openSearchPanel(view); }}>🔍</button>
-    <button class=${finder ? "" : "secondary outline"} data-testid="find-all-open" title="${t("te.findAll")} (Ctrl+Shift+F)" onClick=${() => { if (finder) { finder = null; scheduleRender(); } else openFinder(); }}>🔍🗂</button>
-    <button class="secondary outline" data-testid="goto" title="${t("te.goto")} (Ctrl+G)" onClick=${() => { gotoLine(view); }}>↧</button>
-    <button class=${split ? "" : "secondary outline"} data-testid="split-view" title=${t("te.split")} aria-pressed=${!!split} onClick=${toggleSplit}>◫</button>
-    <button class=${compare || comparePick ? "" : "secondary outline"} data-testid="compare-start" title=${t("te.compare")} onClick=${() => { if (compare) endCompare(); else { comparePick = !comparePick; scheduleRender(); } }}>⇔</button>
-    <select data-testid="tools" aria-label=${t("te.tools")} onChange=${(e) => { const id = e.target.value; e.target.value = ""; if (id) runTool(id); }}>
-      <option value="">🛠 ${t("te.tools")}</option>
+    <button class="secondary outline" data-testid="undo" title="${t("te.undo")} (Ctrl+Z)" disabled=${!view || !undoDepth(view.state)} onClick=${() => { undo(view); view.focus(); }}>${Suite.icon('undo-2')}</button>
+    <button class="secondary outline" data-testid="redo" title="${t("te.redo")} (Ctrl+Y)" disabled=${!view || !redoDepth(view.state)} onClick=${() => { redo(view); view.focus(); }}>${Suite.icon('redo-2')}</button>
+    <button class="secondary outline" data-testid="find" title="${t("te.find")} (Ctrl+F)" onClick=${() => { openSearchPanel(view); }}>${Suite.icon('search')}</button>
+    <button class=${finder ? "" : "secondary outline"} data-testid="find-all-open" title="${t("te.findAll")} (Ctrl+Shift+F)" onClick=${() => { if (finder) { finder = null; scheduleRender(); } else openFinder(); }}>${Suite.icon('search')}${Suite.icon('folder-tree')}</button>
+    <button class="secondary outline" data-testid="goto" title="${t("te.goto")} (Ctrl+G)" onClick=${() => { gotoLine(view); }}>${Suite.icon('arrow-down-to-line')}</button>
+    <button class=${split ? "" : "secondary outline"} data-testid="split-view" title=${t("te.split")} aria-pressed=${!!split} onClick=${toggleSplit}>${Suite.icon('columns-2')}</button>
+    ${(doc && doc.language === "markdown") || preview ? html`<button class=${preview ? "" : "secondary outline"} data-testid="preview-toggle" title="${t("te.preview")} (Ctrl+Shift+M)" aria-pressed=${!!preview} onClick=${togglePreview}>${Suite.icon('eye')} ${t("te.previewShort")}</button>` : null}
+    ${preview ? html`<button class="secondary outline" data-testid="save-html" title=${t("te.saveHtml")} onClick=${() => saveHtml().catch((e) => Suite.shell.toast(String(e.message || e), "error"))}>${Suite.icon('download')} HTML</button>` : null}
+    <button class=${compare || comparePick ? "" : "secondary outline"} data-testid="compare-start" title=${t("te.compare")} onClick=${() => { if (compare) endCompare(); else { comparePick = !comparePick; scheduleRender(); } }}>${Suite.icon('arrow-left-right')}</button>
+    <select data-testid="tools" aria-label=${t("te.tools")} onChange=${(e) => { const id = e.target.value; e.target.value = ""; if (id === "checkSyntax") checkCurrent(); else if (id.startsWith("bm")) bookmarkAction(id); else if (id) runTool(id); }}>
+      <option value="">${t("te.tools")}</option>
+      <option value="checkSyntax">${t("te.checkSyntax")}</option>
+      <optgroup label=${t("te.group.bookmarks")}>${["bmToggle", "bmNext", "bmPrev", "bmClear", "bmCopy", "bmRemove", "bmKeep"].map((x) => html`<option value=${x}>${t(`te.${x}`)}</option>`)}</optgroup>
       ${["lines", "case", "encode", "format"].map((g) => html`<optgroup label=${t(`te.group.${g}`)}>${TOOLS.filter((x) => x.group === g).map((x) => html`<option value=${x.id}>${t(`te.tool.${x.id}`)}</option>`)}</optgroup>`)}
     </select>
-    <button class=${prefs.wrap ? "" : "secondary outline"} data-testid="wrap" title=${t("te.wrap")} aria-pressed=${prefs.wrap} onClick=${() => setPref("wrap", !prefs.wrap)}>↩</button>
+    <button class=${prefs.wrap ? "" : "secondary outline"} data-testid="wrap" title=${t("te.wrap")} aria-pressed=${prefs.wrap} onClick=${() => setPref("wrap", !prefs.wrap)}>${Suite.icon('corner-down-left')}</button>
     <button class=${prefs.whitespace ? "" : "secondary outline"} data-testid="whitespace" title=${t("te.whitespace")} aria-pressed=${prefs.whitespace} onClick=${() => setPref("whitespace", !prefs.whitespace)}>·</button>
     <button class="secondary outline" data-testid="zoom-out" title=${t("te.zoomOut")} onClick=${() => setPref("fontSize", Math.max(8, prefs.fontSize - 1))}>A−</button>
     <button class="secondary outline" data-testid="zoom-in" title=${t("te.zoomIn")} onClick=${() => setPref("fontSize", Math.min(40, prefs.fontSize + 1))}>A+</button>
-    ${Suite.fonts && Suite.fonts.families("monospace").length ? html`<select class="te-font" data-testid="font" title=${t("te.font")} aria-label=${t("te.font")} onChange=${(e) => setPref("font", e.target.value)}>
-      <option value="" selected=${!prefs.font}>${t("te.systemFont")}</option>
-      ${[...new Set([...(prefs.font ? [prefs.font] : []), ...Suite.fonts.families("monospace").map((f) => f.name)])].map((f) => html`<option value=${f} selected=${prefs.font === f}>${f}</option>`)}</select>` : null}
+    ${Suite.fonts && Suite.fonts.families("monospace").length ? html`<select class="te-font" data-testid="font" title=${t("te.font")} aria-label=${t("te.font")} value=${prefs.font || ""} onChange=${(e) => setPref("font", e.target.value)}>
+      <option key="" value="" selected=${!prefs.font}>${t("te.systemFont")}</option>
+      ${/* (a stable order: the chosen font stays in its place, a font that is no longer available is added at the end) */ [...new Set([...Suite.fonts.families("monospace").map((f) => f.name), ...(prefs.font ? [prefs.font] : [])])].map((f) => html`<option key=${f} value=${f} selected=${prefs.font === f}>${f}</option>`)}</select>` : null}
   </nav>`;
 }
 
@@ -528,6 +634,7 @@ function StatusBar() {
     <span data-testid="position">${t("te.line", line.number, head - line.from + 1)}</span>
     ${selected ? html`<span data-testid="selected">${t("te.selected", selected)}</span>` : null}
     ${sel.ranges.length > 1 ? html`<span data-testid="cursors">${t("te.cursors", sel.ranges.length)}</span>` : null}
+    ${bookmarkLines(view.state).length ? html`<span data-testid="bookmark-count" title=${t("te.bmHint")}>${Suite.icon('bookmark')} ${bookmarkLines(view.state).length}</span>` : null}
     <span class="suite-spacer"></span>
     <select data-testid="lang-select" aria-label=${t("te.language")} value=${doc.language} onChange=${(e) => setLanguage(e.target.value)}>
       ${Object.entries(LANGUAGES).map(([id, l]) => html`<option value=${id} selected=${id === doc.language}>${l.label}</option>`)}
@@ -663,7 +770,7 @@ function FindAll() {
         onInput=${(e) => { f.query = e.target.value; scheduleFind(); }} onKeyDown=${(e) => { if (e.key === "Escape") { finder = null; scheduleRender(); view.focus(); } }} />
       ${chip("matchCase", "te.matchCase", "find-all-case")}${chip("regex", "te.regex", "find-all-regex")}
       <button type="button" class=${f.folder ? "secondary outline" : ""} data-testid="find-in-open" onClick=${() => { f.folder = null; runFind(); }}>${t("te.inOpen")}</button>
-      ${typeof window.showDirectoryPicker === "function" ? html`<button type="button" class=${f.folder ? "" : "secondary outline"} data-testid="find-in-folder" onClick=${pickFolder}>📁 ${f.folder ? f.folder.name : t("te.inFolder")}</button>` : null}
+      ${typeof window.showDirectoryPicker === "function" ? html`<button type="button" class=${f.folder ? "" : "secondary outline"} data-testid="find-in-folder" onClick=${pickFolder}>${Suite.icon('folder')} ${f.folder ? f.folder.name : t("te.inFolder")}</button>` : null}
       <button type="button" class="secondary outline" data-testid="find-all-close" onClick=${() => { finder = null; scheduleRender(); }}>×</button>
     </div>
     <p class="te-find-all-summary" data-testid="find-all-summary">${f.error || (f.busy ? t("te.searching", f.busy) : f.query ? (f.count ? t("te.matches", f.count, f.results.length) : t("te.noMatches")) : "")}${f.count >= MAX_MATCHES ? ` ${t("te.tooMany", MAX_MATCHES)}` : ""}</p>
@@ -685,7 +792,7 @@ function startCompare(name, text) {
   if (!doc || !view) return;
   doc.state = view.state;
   const s = settingExtensions();
-  const common = [basicSetup, editorLabel(), languageExtension(doc.language), s.wrap, s.theme, s.font];
+  const common = [basicSetup, suiteSearch(), editorLabel(), languageExtension(doc.language), s.wrap, s.theme, s.font];
   const host = document.createElement("div");
   host.className = "te-compare-host";
   if (narrow()) {
@@ -743,8 +850,8 @@ function CompareBar() {
   const go = (fn) => { const v = compareView(); fn(v); v.focus(); };
   return html`<div class="te-compare-bar" data-testid="compare-bar">
     <strong data-testid="diff-count">${n ? t("te.differences", n) : t("te.noDifferences")}</strong>
-    <button class="secondary outline" data-testid="diff-prev" title=${t("te.prevDiff")} disabled=${!n} onClick=${() => go(goToPreviousChunk)}>↑</button>
-    <button class="secondary outline" data-testid="diff-next" title=${t("te.nextDiff")} disabled=${!n} onClick=${() => go(goToNextChunk)}>↓</button>
+    <button class="secondary outline" data-testid="diff-prev" title=${t("te.prevDiff")} disabled=${!n} onClick=${() => go(goToPreviousChunk)}>${Suite.icon('arrow-up')}</button>
+    <button class="secondary outline" data-testid="diff-next" title=${t("te.nextDiff")} disabled=${!n} onClick=${() => go(goToNextChunk)}>${Suite.icon('arrow-down')}</button>
     <small>${compare.merge ? t("te.compareHint", compare.name, doc ? doc.name : "") : ""}</small>
     <button data-testid="compare-done" onClick=${endCompare}>${t("te.endCompare")}</button>
   </div>`;
@@ -757,10 +864,44 @@ function EditorHost() {
   }
   const ref = (el) => {
     if (!el || !view) return;
-    const want = split ? [view.dom, split.host] : [view.dom];
+    const want = split ? [view.dom, split.host] : preview ? [view.dom, preview.host] : [view.dom];
     if (el.children.length !== want.length || want.some((c, i) => el.children[i] !== c)) { el.replaceChildren(...want); view.requestMeasure(); }
   };
-  return html`<div class=${`te-editor ${split ? "te-split" : ""}`} ref=${ref}></div>`;
+  return html`<div class=${`te-editor ${split || preview ? "te-split" : ""}`} ref=${ref}></div>`;
+}
+
+/** Options of the line tools that need some (numbering, prefix/suffix, filter, wrap width), with a preview. */
+let lineDialog = null;
+function LineDialog() {
+  if (!lineDialog || !view) return null;
+  const d = lineDialog, o = d.options;
+  const set = (key, number = false) => (e) => { o[key] = e.target.type === "checkbox" ? e.target.checked : number ? Number(e.target.value) : e.target.value; scheduleRender(); };
+  const close = () => { lineDialog = null; scheduleRender(); view.focus(); };
+  const run = () => {
+    prefs.lineTools = { ...(prefs.lineTools || {}), [d.kind]: { ...o } };
+    savePrefs();
+    lineDialog = null;
+    runTool(d.id, o);
+    scheduleRender();
+  };
+  const { from, to } = toolRange(d.id);
+  let preview;
+  try { preview = applyTool(d.id, view.state.sliceDoc(from, Math.min(to, from + 3000)), o).split("\n").slice(0, 12).join("\n"); } catch (e) { preview = e instanceof ToolError ? t(e.key, e.detail) : String(e); }
+  const text = (key, label) => html`<label>${label}<input data-testid=${`lt-${key}`} value=${o[key]} onInput=${set(key)} /></label>`;
+  const check = (key, label) => html`<label><input type="checkbox" data-testid=${`lt-${key}`} checked=${o[key]} onChange=${set(key)} /> ${label}</label>`;
+  const body = d.kind === "number" ? html`<div class="te-sql-options">
+      <label>${t("te.lt.start")}<input type="number" data-testid="lt-start" value=${o.start} onInput=${set("start", true)} /></label>
+      ${text("separator", t("te.lt.separator"))}${check("pad", t("te.lt.pad"))}</div>`
+    : d.kind === "affix" ? html`<div class="te-sql-options">${text("prefix", t("te.lt.prefix"))}${text("suffix", t("te.lt.suffix"))}${check("skipEmpty", t("te.lt.skipEmpty"))}</div>`
+      : d.kind === "pattern" ? html`<div class="te-sql-options">${text("pattern", t("te.lt.pattern"))}${check("regex", t("te.lt.regex"))}${check("caseSensitive", t("te.lt.case"))}</div>`
+        : html`<div class="te-sql-options"><label>${t("te.lt.width")}<input type="number" min="10" max="1000" data-testid="lt-width" value=${o.width} onInput=${set("width", true)} /></label></div>`;
+  return html`<dialog open data-testid="line-dialog" class="te-sql-dialog" aria-label=${t(`te.tool.${d.id}`)}><article>
+    <header><strong>${t(`te.tool.${d.id}`).replace("…", "")}</strong> <small>${t(view.state.selection.main.empty ? "te.sql.scopeDocument" : "te.sql.scopeSelection")}</small></header>
+    ${body}
+    <p class="te-sql-preview-label">${t("te.sql.preview")}</p>
+    <pre class="te-sql-preview" data-testid="lt-preview">${preview}</pre>
+    <footer><button class="secondary" data-testid="lt-cancel" onClick=${close}>${t("te.sql.cancel")}</button><button data-testid="lt-ok" onClick=${run}>${t("te.lt.apply")}</button></footer>
+  </article></dialog>`;
 }
 
 /** Options of "Format SQL" with a preview of the result (sql-formatter, see js/tools.js). */
@@ -798,16 +939,17 @@ function SqlDialog() {
 }
 
 function Main() {
-  return html`<div class=${`te-layout ${finder ? "finding" : ""}`}><${Tabs} /><${CompareBar} /><div class="te-work"><${EditorHost} /><${FindAll} /></div><${StatusBar} /><${SqlDialog} /></div>`;
+  return html`<div class=${`te-layout ${finder ? "finding" : ""}`}><${Tabs} /><${CompareBar} /><div class="te-work"><${EditorHost} /><${FindAll} /></div><${StatusBar} /><${SqlDialog} /><${LineDialog} /></div>`;
 }
 
 // ---- start --------------------------------------------------------------------------------------
 
 view = new EditorView({ state: createState("", "text"), dispatch: (tr) => { view.update([tr]); if (split && split.view) forward(tr, split.view); } });
+view.scrollDOM.addEventListener("scroll", syncPreviewScroll, { passive: true });
 Suite.shell.mount({ id: APP, title: "app.title", version: "%%BUILD_VERSION%%", toolbar: () => html`<${Toolbar} />`, main: () => html`<${Main} />` });
 newDocument();
 Suite.files.dropZone(document.body, (picked) => openPicked(picked));
-new MutationObserver(applySettings).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+new MutationObserver(() => { applySettings(); refreshPreview(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applySettings);
 loadRecent();
 
@@ -840,5 +982,5 @@ Suite.autosave.register({
   },
 });
 
-window.TE.app = { toggleSplit, get split() { return split; }, openFinder, get finder() { return finder; }, startCompare, endCompare, get compare() { return compare; }, docs, get active() { return active; }, get view() { return view; }, openPicked, save, saveAs, closeDocument, activate, newDocument, isDirty, prefs, runTool };
+window.TE.app = { bookmarkLines: () => bookmarkLines(view.state), bookmarkAction, checkCurrent, checkSyntax, togglePreview, get preview() { return preview; }, toggleSplit, get split() { return split; }, openFinder, get finder() { return finder; }, startCompare, endCompare, get compare() { return compare; }, docs, get active() { return active; }, get view() { return view; }, openPicked, save, saveAs, closeDocument, activate, newDocument, isDirty, prefs, runTool };
 document.body.dataset.ready = "true";

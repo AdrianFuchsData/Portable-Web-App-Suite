@@ -93,7 +93,8 @@ Installation aufgenommen, jede andere Datei beim ersten Laden; Anfragen werden a
 (stale-while-revalidate, Query-Strings ignoriert). Über einen Datei-Handler geöffnete Dateien kommen in `window.launchQueue` an;
 `Suite.bridge.receive` gibt die erste (Anwendungen mit Tabs: alle) mit ihrem echten `FileSystemFileHandle` an die App weiter (Speichern schreibt also zurück).
 `.webmanifest` als `application/manifest+json` ausliefern. Test: `tests/apps/test_pwa.py` (Ausgabe, Neuladen offline und die
-weiterleitende Startseite in Chromium, die Launch Queue mit einem Stub).
+weiterleitende Startseite in Chromium, die Launch Queue mit einem Stub). Der `--serve`-Modus des Relays bietet dasselbe ohne
+Build-Schritt (siehe *PWA* im Abschnitt zum Relay; `tests/apps/test_pwa_relay.py`).
 
 ### Releases und das öffentliche Repository
 
@@ -132,6 +133,11 @@ GitHub-Release (`gh release create … --notes-file`): was sich seit der vorigen
 - Emoji- und Symboldaten: `tools/build_symbols.py` nach dem Einbinden von `vendor/symbols.esm.json` (das Ergebnis ist eingecheckt).
   Neben den Unicode-Gruppen schreibt es die Gruppe `spaces` (Tabulator, geschützte, schmale, Halbgeviert-, Geviert- und breitenlose Leerzeichen,
   weiches Trennzeichen), die `symbols.js` mit Beschriftungen zeigt (`VISIBLE`).
+
+- Symbole (Icons): `tools/vendor_icons.py` schreibt `vendor/icons/icons.json` (das innere SVG jedes Icons, nach Namen), `LICENSE.txt` und
+  `lock.json` aus dem npm-Paket `lucide-static` (feste Version, gegen den Integritätswert geprüft; ISC). Nur die verwendeten Icons bleiben:
+  die Namen in `tools/icon_symbols.py` (`SYMBOLS`), seine Liste `EXTRA` und jeder Name im Code (`Suite.icon('…')`, `Suite.icons.svg('…')`,
+  `icon: '…'`, Icon-Tabellen). `tests/shared/test_icons.py` schlägt fehl, wenn ein verwendeter Name fehlt.
 
 - Schriften: `tools/vendor_fonts.py` schreibt `vendor/fonts/` aus den Fontsource-Paketen (jsDelivr; alle OFL-1.1, Versionen in `lock.json`,
   Lizenztexte in `licenses/`): `fonts.css` (`@font-face`-Regeln mit den WOFF2-Daten als `data:`-URLs – 400/700, normal/kursiv, Teilmengen latin
@@ -212,6 +218,26 @@ nach der Sprache des Dokuments, das Notebook nach dem Zelltyp. Die Textverarbeit
 `tests/apps/test_spelling.py` (deutsche Komposita und Vorschläge im Texteditor, eigene Wörter, Code-Modus, Textarea-Spiegel und
 contenteditable in der E-Mail mit Menü, Ignorieren und Umschalt, die zwischen Apps geteilte Einstellung, eine `.oxt` in ISO-8859-1 aus der
 Kopfzeile, das Menü am Smartphone), Rechtschreibung in Zellen in `test_notebook.py`, der Bereich in `test_document.py`.
+
+### Suche in den Code-Editoren
+
+`shared/js/cm-search.js` (`suiteSearch()`, im Texteditor, Notebook, Datenbank-Werkzeug und in der HTTP-Analyse neben `basicSetup`)
+gibt der Suche von CodeMirror ein eigenes Panel (`search({ top: true, createPanel })`) im Layout der Suite statt des Standardformulars von
+CodeMirror: ein Suchfeld, Umschaltflächen für Groß-/Kleinschreibung, ganzes Wort und regulären Ausdruck, voriger/nächster/alle auswählen,
+die Zahl der Treffer (mit dem Cursor der Abfrage bis 10.000 gezählt; „n von m“, wenn die Auswahl ein Treffer ist) und in bearbeitbaren
+Dokumenten eine Zeile zum Ersetzen. Es setzt bei jeder Änderung `setSearchQuery` und folgt Änderungen der Abfrage durch Befehle (etwa
+`Strg+D`, `F3`), sodass die Suchtasten und die Hervorhebung von CodeMirror bleiben. Stile: `.suite-cm-search` in `suite.css`.
+
+### Symbole (Icons)
+
+`shared/js/icons.js` (jede Anwendung, vor `shell.js`, mit den Daten als Textelement `#suite-icons`): `Suite.icon(name, { size, label,
+class })` liefert ein Inline-SVG (Preact-Element) in der aktuellen Textfarbe, 1,15 em hoch (`.suite-icon` in `suite.css`), `aria-hidden`,
+sofern kein Label angegeben ist; `Suite.icons.svg(name)` liefert dasselbe als Markup für DOM-Code (Referentenkonsole, Speicher- und
+„Öffnen mit“-Dialog). Die Oberfläche verwendete vorher Emoji und Symbolzeichen, die in jedem Browser und jeder Schrift anders aussehen oder
+fehlen; `tools/icon_symbols.py` listet die Symbole an Textstellen der htm-Vorlagen (Text zwischen Tags und String-Literale, die nur aus
+einem Symbol bestehen, in einem `${…}` dort) und hat sie (`--write`) durch `${Suite.icon('…')}` ersetzt (in `<option>`-Elementen, die keine
+Bilder zeigen können, wurde das Symbol entfernt). Icon-Tabellen (Anwendungs-Icons in `bridge.js`, die Werkzeuge der Bildbearbeitung, die
+Diagrammvorlagen) enthalten Icon-Namen. Symbole in Fließtext (Pfeile wie „JSON → YAML“, ✓ in Meldungen) und in Dokumenten bleiben Zeichen.
 
 ### Schriften
 
@@ -464,6 +490,21 @@ Mehrere Cursor nutzen die eingebaute Unterstützung von CodeMirror (`allowMultip
 Rechteckauswahl mit `Alt+Ziehen`, `selectNextOccurrence`). Ein Dokument gilt als geändert, wenn sein Text vom zuletzt
 gespeicherten abweicht (`Text.eq`). Ansichtseinstellungen liegen in `localStorage` (`texteditor.prefs`), Dateiinhalte nie.
 
+Markdown-Vorschau (`js/preview.js`): marked (GFM) gestaltet das Dokument, DOMPurify entfernt Skripte, Ereignis-Handler, Stile, Frames und
+Formulare, und ein `afterSanitizeAttributes`-Hook entfernt Bildquellen außer `data:`/`blob:` (sie können unter der Offline-CSP nicht laden);
+die Seite kommt in `<iframe sandbox="allow-same-origin" srcdoc>` (ohne `allow-scripts`), 150 ms nach der letzten Änderung, und behält ihren
+Scroll-Anteil über Aktualisierungen; die Scroll-Position des Editors wird als Anteil gespiegelt.
+
+Syntaxprüfungen (`tools.js` `CHECKS`): JSON mit `JSON.parse` für die Meldung und einem kleinen rekursiv absteigenden Scanner für die Position
+(Browser melden sie nicht mehr einheitlich), XML mit `DOMParser` (Zeile/Spalte aus dem `parsererror`-Text von Chromium oder Firefox), YAML mit
+js-yaml `loadAll` (`mark.position`). Ein `@codemirror/lint`-Linter je Dokument (in einem Compartment, das der Sprache folgt) zeigt sie mit
+einer Lint-Spalte; die YAML-Werkzeuge nutzen js-yaml `load`/`dump`.
+
+Lesezeichen (`js/bookmarks.js`): ein `StateField` mit einem `RangeSet` aus Randmarken an Zeilenanfängen, Teil des Zustands jedes Dokuments;
+die Marken werden mit `MapMode.TrackAfter` und `startSide 1` abgebildet, ein Lesezeichen verschwindet also nur mit seiner eigenen Zeile und
+bleibt bei ihr, wenn davor Text eingefügt wird (Rückgängig stellt es wieder her); eine Zeilendekoration färbt die Zeile ein. Zeilen mit
+Lesezeichen entfernen oder behalten löscht Läufe benachbarter Zeilen in einer Transaktion, die übrigen Lesezeichen wandern also mit.
+
 Tests: `tests/apps/test_texteditor.py` (Sprachen, Kodierungen hin und zurück, Umwandlung, Registerkarten, Suchen/Ersetzen,
 Gehe zu Zeile, mehrere Cursor, Einstellungen, deutsche Oberfläche, Smartphone-Layout, Zurückschreiben mit der File System
 Access API, Textwerkzeuge auf Dokument und Auswahl, Kodierer/Formatierer, ungültige Eingaben, SQL-Formatierung (Optionen, Vorschau, gespeicherte
@@ -478,6 +519,9 @@ statt der Auswahl; `.git` und Binärdateien übersprungen)).
 | Datei | Inhalt |
 |---|---|
 | `js/buffer.js` | `HE.ByteBuffer`: Bytes in einem wachsenden `Uint8Array` mit den Operationen Ersetzen, Einfügen und Entfernen; jede Operation liefert ihre Umkehrung, daraus entsteht Rückgängig/Wiederholen (die beiden Halbbytes eines getippten Bytes sind ein Schritt). `find()` sucht vorwärts/rückwärts, `HE.parseHex()` liest hexadezimale Eingaben, `HE.inspect()` deutet Bytes für den Dateninspektor (`DataView`, `BigInt`). |
+| `js/structures.js` | `HE.structures.parse()`: Formaterkennung an der Signatur und Feldbäume `{ name, offset, size, value, children }` für PNG (Chunks, IHDR), JPEG (Segmente, SOF, der Scan bis zur nächsten Marke), GIF (Blöcke), BMP (Kopfdaten), RIFF (Chunks, `fmt `), ZIP (lokale Kopfdaten über das vom Endsatz aus gefundene zentrale Verzeichnis), ELF (32/64 Bit, beide Byte-Reihenfolgen; Programm- und Abschnittskopfdaten mit Namen aus `.shstrtab`) und PE (DOS-, COFF- und optionaler Kopf, Abschnittstabelle). Lesen mit Grenzprüfung, höchstens 2000 Einträge je Liste; ein Parserfehler lässt die bis dahin gefundenen Felder stehen. Die Ansicht färbt Bytes nach dem obersten Feld ein (binäre Suche je sichtbarem Byte). |
+| `js/buffer.js` (Marken) | `buffer.marks` (Lesezeichen und eingefärbte Bereiche, Ende ausschließlich) gehören zum Puffer, jeder Tab hat also eigene; `apply()` – die eine Stelle, die Bytes einfügt und entfernt, auch für Rückgängig/Wiederholen – ruft `shiftMarks(offset, ±n)`: Positionen nach einer Einfügung rücken weiter (ein Bereich, der sie enthält, wächst), entfernte Positionen fallen auf den Beginn der Entfernung, leere Marken entfallen. |
+| `js/checksum.js` (Statistik) | `HE.byteStats()`: Häufigkeiten der 256 Bytewerte, Shannon-Entropie `−Σ p·log2 p`, Null- und druckbare Bytes (0x20–0x7E, Tab, CR, LF), die acht häufigsten Werte und die Entropie von etwa 256 aufeinanderfolgenden Blöcken zu mindestens 512 Bytes (kleinere Blöcke können keine hohe Entropie erreichen). |
 | `js/checksum.js` | `HE.checksums()`: CRC-32 und Adler-32 (Tabelle/Schleifen), MD5 (RFC 1321, WebCrypto kennt es nicht) und SHA-1/256/512 über `crypto.subtle.digest`; `HE.differences()` zählt abweichende Bytes zweier Arrays. |
 | `js/main.js` | Oberfläche im gemeinsamen Rahmen: Tabs (`state` enthält das aktive Dokument; `docs` hält die Felder aus `DOC_KEYS` – Puffer, Name, Handle, Cursor, Auswahl, Scrollposition, Vergleich – der übrigen, getauscht von `activate()`), virtualisierte Ansicht (nur sichtbare Zeilen plus Rand werden in einen absolut positionierten Platzhalter gezeichnet; Zeilenhöhe 22 px), Tastatur- und Zeigerbehandlung, Suchleiste, Gehe-zu-Leiste, Inspektor, Statusleiste, Prüfsummendialog, Vergleich (zweite Spalte je sichtbarer Zeile, daher gemeinsames Scrollen; die Zahl der Unterschiede wird bei geänderter Pufferversion neu gezählt, nächster/vorheriger Unterschied wird ab dem Cursor gesucht). |
 
@@ -494,6 +538,26 @@ Dateien angezeigt, Schließen mit Nachfrage), Prüfsummen gegen Pythons `hashlib
 Vergleich mit Navigation und Neuzählung nach Bearbeiten).
 
 ### PDF-Betrachter (`apps/pdfviewer`)
+
+Schwärzen: Kästen werden je Seite in PDF-Punkten gehalten und als Überlagerung gezeichnet (neu bei `pagerendered`/Zoom); Textmarken entstehen
+aus Transformation, Breite und Höhe der Texteinträge (der Zeichenanteil des Treffers). Anwenden zeichnet jede betroffene Seite mit PDF.js in
+200 dpi (samt Formularen), füllt die Kästen schwarz, kodiert JPEG und ruft `pages.redact`, das ein NEUES pdf-lib-Dokument baut: unveränderte
+Seiten über `copyPages`, geschwärzte als Bildseite gleicher Größe. Geschrieben werden nur Objekte, auf die die neuen Seiten verweisen; von
+einer geschwärzten Seite bleibt also kein Inhaltsstrom, kein Schrifttext und kein Bild (Inhaltsverzeichnis, AcroForm und Info des Katalogs
+gehen verloren).
+
+Textexport: `pageText` verbindet die `str` der Einträge aus `getTextContent()` von PDF.js und bricht die Zeile, wo ein Eintrag `hasEOL` hat; Seiten trennt eine Leerzeile.
+
+Seiten als Bilder: Jede Seite wird von PDF.js im Maßstab dpi/72 auf eine weiße Leinwand gerendert (`ENABLE_STORAGE` mit dem
+Annotation-Speicher, damit Formularwerte erscheinen), mit `canvas.toBlob` kodiert (JPEG-Qualität 0,9); mehrere Seiten packt fflate
+nacheinander in ein ZIP (`level: 0`, die Bilder sind schon komprimiert).
+
+Komprimieren (`pages.compress`, Low-Level-API von pdf-lib): Objekte, die vom Trailer (Root, Info, Encrypt) aus nicht erreichbar sind, werden
+gelöscht; Bild-XObjects mit 8 Bit je Komponente in DeviceRGB, DeviceGray oder ICCBased (N 1 oder 3), ungefiltert, mit FlateDecode
+(PNG-Prädiktoren ≥ 10 werden rückgängig gemacht) oder DCTDecode, werden dekodiert (`createImageBitmap`), auf höchstens dpi × 11,7 Pixel an der
+längsten Seite skaliert und als JPEG (DeviceRGB) neu kodiert – nur wenn das kleiner ist. Masken (Ziele von `SMask`/`Mask`), Bildmasken,
+`Decode`-Arrays und Farbschlüsselmasken werden übersprungen. Ungefilterte andere Streams bekommen FlateDecode (fflate Stufe 9). Gespeichert wird
+mit `useObjectStreams`. Die Oberfläche übernimmt das Ergebnis nur, wenn es mindestens 2 % kleiner ist, über `changePages` (rückgängig machbar).
 
 Signaturen (`js/signatures.js`, ohne Bibliotheken): `findSignatures` durchsucht die Rohdaten nach `/ByteRange [0 a b c]`; `/Contents` ist die
 Hex-Zeichenkette in der Lücke zwischen den beiden Bereichen, die übrigen Schlüssel (`/Name`, `/M`, `/Reason`, `/Location`, `/SubFilter`)
@@ -555,6 +619,26 @@ Klasse) und `KP.entropy(password)` (Schätzung über den Zeichenvorrat) bereit.
   (XML-Schlüsseldatei v2, `.keyx`).
 - Automatisches Sperren nach 15 Minuten ohne Zeiger- oder Tastaturaktivität, ausgelassen bei ungespeicherten Änderungen;
   die Zwischenablage wird 30 Sekunden nach dem Kopieren geleert.
+- Einmalpasswörter: `shared/js/otp.js` (`Suite.otp`, übernommen aus dem Web Authenticator, EUPL-1.2) enthält das Token-Modell
+  (`createToken` prüft Art, Base32-Schlüssel, Algorithmus, Stellen, Intervall, Zähler), Lesen/Schreiben von `otpauth://`, das KeeOtp-Format,
+  die Codeberechnung mit HOTP von OTPAuth (Steam: 10 Stellen, abgebildet auf die 26 Zeichen von Steam) und die Abbildung auf KeePass:
+  `readToken` versucht `otp` (URI, KeeOtp oder ein bloßer Schlüssel), `TimeOtp-Secret[-Base32|-Hex|-Base64]`/`-Length`/`-Period`/`-Algorithm`,
+  `HmacOtp-*`, dann `TOTP Seed`/`TOTP Settings`; `writeToken` ersetzt alle durch eine geschützte `otp`-URI plus die KeePass-2-Felder, wo
+  KeePass 2 die Einstellungen unterstützt. Dazu kommen die Importe der Google-Authenticator-Übertragung (`otpauth-migration://`, ein minimaler
+  Protobuf-Leser) und von Aegis-JSON.
+- QR-Codes: `shared/js/qr.js` (`Suite.qr`, aus dem Web Authenticator) erzeugt SVG mit qrcode-generator (MIT) und dekodiert Bilder (Originalgröße,
+  dann ½ und ¼ auf weißem Hintergrund) und Kamerabilder (`getUserMedia`, alle 150 ms) mit jsQR (Apache-2.0); die CSP von KeePass erlaubt
+  `media-src blob: mediastream:` für die Kameravorschau. Die Kamera wird beendet, wenn der Dialog schließt, ein Code gelesen wurde oder die
+  Datenbank sperrt.
+- Verlauf: `Suite.kdbx.deleteHistory(entry, index|null)` verwendet `removeHistory` von kdbxweb (das Verlaufs-Grabsteine anlegt, damit
+  ein späteres Zusammenführen gelöschte Versionen nicht zurückbringt); `save()` kürzt vorher jeden Eintrag auf `meta.historyMaxItems`
+  (`trimHistory`). Der Bereich vergleicht jede Version mit der nächstneueren (`versionChanges`: Felder, Anhänge, Tags).
+- CSV (`js/csv.js`, `KP.csv`): ein Parser nach RFC 4180 (Felder in Anführungszeichen mit Trennzeichen, Anführungszeichen und
+  Zeilenumbrüchen; Trennzeichen aus der ersten Zeile erkannt); `records()` ordnet normalisierte Spaltenköpfe über eine Tabelle von
+  Spaltennamen den Feldern zu (die erste Spalte je Feld gewinnt, bekannte bedeutungslose Spalten werden ignoriert, der Rest wird zu eigenen
+  Feldern) und macht aus Base32-TOTP-Geheimnissen `otpauth://`-URIs. Der Import legt eine neue Gruppe unter der Wurzel an; ein gemeinsamer
+  erster Pfadteil, der die exportierte Wurzel benennt (`Root/…` von KeePassXC), entfällt. Der Export schreibt das Format von KeePassXC
+  plus `Tags` (ISO-Zeiten, CRLF, UTF-8).
 - Layout: drei Bereiche (Gruppen, Einträge, Editor); unter 760 px ist nur ein Bereich (`pane-groups|entries|entry`) sichtbar.
 
 Tests: `tests/apps/test_keepass.py` erstellt Datenbanken mit pykeepass und prüft jede gespeicherte Datei mit pykeepass: falsches
@@ -565,6 +649,8 @@ UUID der Stammgruppe voraussetzt) und einer anderen Datenbank (mit `importEntry`
 deutsche Oberfläche, Smartphone-Layout.
 
 ### Archivmanager (`apps/archive`)
+
+`js/search.js`: Namenssuche über jeden Pfadteil (auch nur durch Pfade bestehende Ordner; Platzhalter werden zu einem verankerten regulären Ausdruck, sonst Teilzeichenkette ohne Groß-/Kleinschreibung) und eine Inhaltssuche, die einen Eintrag nach dem anderen lädt, binäre (NUL in den ersten 8000 Bytes), verschlüsselte und Dateien über 32 MiB überspringt, UTF-8 dekodiert und je Datei bis zu 20 Treffer mit Zeile, Spalte und Umgebung sammelt (alle 20 Dateien gibt sie die Seite frei; abbrechbar). `compareEntries` paart die Dateien zweier Eintragslisten über den Pfad; unveränderte ZIP-Einträge werden über CRC-32 und Größe aus ihren Kopfdaten verglichen, alles andere über die Größe und dann Byte für Byte (nicht lesbare verschlüsselte Einträge werden als solche gemeldet); Übernehmen kopiert den anderen Eintrag (sein `load`-Abschluss behält die Daten des anderen Archivs). Aufgeteilte Archive sind rohe Stücke des kodierten Archivs (`.001`, `.002`, … – das „Split“-Format von 7-Zip, kein ZIP-Spanning); sie werden mit `showDirectoryPicker` geschrieben, wo vorhanden, sonst heruntergeladen, und beim gemeinsamen Öffnen mehrerer Teile in der Reihenfolge ihrer Nummern zusammengefügt (Lücken werden gemeldet).
 
 `js/archive.js` (ES-Modul, fflate für Deflate/Gzip) liest und schreibt die Containerformate selbst; `js/multi.js` liest die übrigen
 Formate und schreibt 7z über libarchive.js 2.0 (libarchive als WebAssembly, `vendor/libarchive`, `tools/vendor_libarchive.py`):
@@ -629,6 +715,9 @@ Integritätstest (intaktes Archiv, gespeicherter Eintrag mit geändertem Byte), 
 Ein `<video>`-Element (einmal außerhalb von Preact angelegt und in die Bühne eingehängt) spielt Audio und Video aus Blob-URLs der
 gewählten Dateien oder aus Stream-URLs; die CSP erlaubt `media-src blob: data: http: https:`. Es ist kein Decoder eingebunden: die
 Formate sind die des Browsers.
+Die Darstellung liest einen `AnalyserNode` (FFT 2048), der vor dem Ausgang im Web-Audio-Graphen des Equalizers liegt (eine lokale Datei
+läuft also über dieses Element, sobald Equalizer oder Darstellung an sind), und zeichnet je Animationsbild: das Maximum logarithmischer
+Frequenzbänder (30 Hz bis Nyquist) als Balken oder Strahlen oder das Zeitsignal.
 
 - `js/tags.js` liest Tags aus den ersten 512 KiB (ID3v2.2–2.4 mit APIC, FLAC-Vorbis-Kommentare und PICTURE, Ogg-Vorbis/Opus-Kommentare,
   RIFF-INFO- und `id3 `-Blöcke, MP4 `ilst`) und ID3v1 vom Dateiende.
@@ -843,6 +932,16 @@ ES-Module: `model.js` (Formen, Geometrie, Linienführung, Textumbruch, Verlauf),
 - **Mermaid** (`js/mermaid.js`): ein zeilenweiser Parser für Flussdiagramme (Knotenformen, Verbindungsarten, Beschriftungen, Ketten,
   `&`); unbekannte Anweisungen werden übersprungen. Die Formen erhalten ihre Größe aus der Beschriftung und werden mit dem Layout
   platziert; `.mmd`/`.mermaid`-Dateien öffnen sich als Diagramme.
+- **PlantUML** (`js/plantuml.js`): `parsePlantUml` entfernt Kommentare und `@start…/@end…`, erkennt die Art an Schlüsselwörtern
+  (Aktivität, Sequenz, Komponente, Klasse, Zustand, Anwendungsfall, in dieser Reihenfolge) und liefert entweder einen Graphen
+  (`{ direction, nodes, edges }` wie der Mermaid-Parser, angeordnet von `fromGraph` in `main.js`) oder bei Sequenzdiagrammen platzierte
+  Formen und Verbinder: Beteiligte in einer Reihe, je Nachricht eine Zeile als Verbinder mit freien Enden, Lebenslinien als gestrichelte
+  Verbinder vom unteren Anker des Beteiligten, Rahmen als ungefüllte Rechtecke dahinter. Beziehungen liest ein regulärer Ausdruck (linker
+  Knoten, Multiplizität, Spitze, Linie mit optionalem `[#Farbe]`/Richtung, Spitze, Multiplizität, rechter Knoten, Beschriftung).
+  Aktivitätsdiagramme führen eine Liste offener Enden, mit denen sich das nächste Element verbindet, und einen Stapel für
+  `if`/`while`/`repeat`/`fork`-Blöcke.
+- **Vorlagen** (`js/templates.js`): Mermaid- oder PlantUML-Text (wie ein Import gelesen) oder eine Funktion, die ab (0, 0) platzierte
+  Formen liefert; `templatePart` verschiebt sie ans Ziel (`shiftPart` verschiebt auch freie Verbinderenden und Wegpunkte).
 - **Drucken**: `printDiagram()` legt den SVG-Export jeder nicht leeren Seite in `#dg-print` (je ein Blatt mit Titel); das
   Druck-Stylesheet zeigt nur diesen Container und skaliert jedes SVG auf die Blattbreite; nach `afterprint` wird er entfernt.
 
@@ -867,7 +966,26 @@ Eine Anwendung mit klassischen Skripten auf Basis von `shared/js/ical.js`:
   numerisch verglichen und nur Termine nahe dem Bereich in Zeitpunkte umgerechnet, damit lange Serien schnell bleiben.
 - **Hin und zurück**: Ein Termin behält seine ursprüngliche Komponente; beim Schreiben werden die verwalteten Eigenschaften (UID, DTSTAMP,
   DTSTART/DTEND, SUMMARY, LOCATION, DESCRIPTION, RRULE, EXDATE, RECURRENCE-ID, CATEGORIES, STATUS, SEQUENCE, LAST-MODIFIED) neu erzeugt und alle
-  anderen (ATTENDEE, VALARM, X-Eigenschaften) übernommen. VTODO/VJOURNAL und vorhandene VTIMEZONEs bleiben erhalten.
+  anderen (ATTENDEE, VALARM, X-Eigenschaften) übernommen. VJOURNAL und vorhandene VTIMEZONEs bleiben erhalten.
+- **Aufgaben**: `ical.todos`/`todoFromComp`/`compFromTodo` behandeln VTODO genauso (verwaltet: UID, DTSTAMP, DTSTART, DUE – oder DTSTART +
+  DURATION –, COMPLETED, SUMMARY, DESCRIPTION, LOCATION, URL, STATUS, PERCENT-COMPLETE, PRIORITY, CATEGORIES, SEQUENCE, CREATED,
+  LAST-MODIFIED; RRULE, VALARM und der Rest werden übernommen). `buildCalendar(cal, events, todos)` ersetzt die VTODOs nur, wenn Aufgaben
+  übergeben werden (der Mail-Client ruft es weiter nur mit Terminen auf). Eine Aufgabe ist erledigt, wenn STATUS COMPLETED oder CANCELLED ist;
+  Fälligkeiten ohne Uhrzeit werden am Ende ihres Tages überfällig.
+- **CalDAV** (`js/caldav.js`, `CALDAV`): Anfragen laufen über `Suite.relay.http` mit Basic-Auth; Weiterleitungen verfolgt der Client mit derselben
+  Methode (urllib im Python-Relay leitet PROPFIND nicht weiter). `discover()` macht ein PROPFIND mit Depth 0 auf die angegebene URL (eine
+  Kalendersammlung wird direkt genommen), folgt `current-user-principal` → `calendar-home-set` und listet die Kalendersammlungen darin (Depth 1:
+  displayname, Apple-`calendar-color`, `supported-calendar-component-set`, `getctag`); `/.well-known/caldav` ist der Rückfall. `objects()` ist ein
+  REPORT `calendar-query` mit `getetag` und `calendar-data`. Ein entfernter Kalender merkt sich `{ accountId, url, objects: { uid → { url, etag, sig } } }`;
+  `sig` ist der Text des Objekts ohne DTSTAMP/LAST-MODIFIED, so schreibt Speichern nur Objekte mit geändertem Text per PUT (`If-Match` mit dem ETag,
+  neue mit `If-None-Match: *` unter `<Kalender>/<uid>.ics`) und löscht verschwundene UIDs per DELETE; 412 wird als Konflikt gemeldet und der Kalender
+  bleibt geändert. Konten sind Verbindungen von `Suite.appdata` (KeePass oder JSON). Tests: `tests/helpers/caldav_server.py`, ein kleiner
+  CalDAV-Server im Speicher.
+- **CSV** (`js/csv.js`, `CALCSV`; Einlesen mit dem gemeinsamen `Suite.csv`): Spaltennamen (englisch, deutsches Outlook, Google) werden Feldern
+  zugeordnet; eine Datei mit *Due Date* und ohne *Start Date* enthält Aufgaben. Die Reihenfolge von Tag und Monat bei `a/b/jjjj` wird je Datei
+  bestimmt (eine erste Zahl über 12 heißt Tag zuerst, eine zweite über 12 Monat zuerst; sonst Monat zuerst wie in US-Exporten). Ganztägige
+  CSV-Zeilen nennen den letzten Tag; das VEVENT bekommt das ausschließende DTEND (einen Tag später), der Export zieht ihn wieder ab. Der Export
+  schreibt eine UTF-8-BOM für Tabellenprogramme.
 - **Serien bearbeiten**: „Nur diesen“ schreibt ein Ausnahme-VEVENT (gleiche UID, RECURRENCE-ID = ursprünglicher Beginn) oder ein EXDATE; „Alle“
   ändert den Haupttermin (Verschiebung um denselben Versatz wie beim bearbeiteten Termin). SEQUENCE wird erhöht.
 - **Ansichten**: Monatsraster, Zeitraster mit Überlappungslayout (Spalten je Gruppe), Liste; Anlegen/Verschieben/Größe per Zeiger mit
@@ -896,7 +1014,10 @@ geschrieben und entfernt), Drucken (Seitengröße, Druck-Stylesheet).
 ### Datenbankwerkzeug (`apps/dbtool`)
 
 ES-Module `drivers.js` und `main.js`; CodeMirror mit `@codemirror/lang-sql` (Dialekt und Schema für die Vervollständigung werden je Sitzung
-neu eingestellt).
+neu eingestellt). `js/completion.js` fügt den Sprachdaten von SQL eine zweite Vervollständigungsquelle hinzu: die Spalten der Tabellen nach FROM
+(auch Kommalisten), JOIN, UPDATE, INTO und TABLE in der Anweisung an der Schreibmarke (Anweisungen an `;` außerhalb von Anführungszeichen getrennt),
+vor den Schlüsselwörtern, und Funktionslisten je Dialekt als Snippets (`name(${})`); qualifizierte Namen bleiben bei der Schema-Vervollständigung
+von lang-sql.
 
 - **SQLite**: sql.js (`vendor/sql-wasm.js`, global `initSqlJs`); die WASM-Datei ist eingebettet (`data-src`, gzip + Base64) und wird als
   `wasmBinary` übergeben, die CSP erlaubt `'wasm-unsafe-eval'`. Anweisungen laufen einzeln mit `iterateStatements`, sodass jede ihr eigenes
@@ -917,6 +1038,20 @@ neu eingestellt).
 - **Verlauf**: vom Benutzer ausgeführte Anweisungen (nicht Anzeigen oder Erklären) liegen in `localStorage` (`suite.dbtool.history`,
   200 Einträge, neueste zuerst, Doppelte nach oben verschoben, mit Datenbankname, Zeit und Erfolg). **Erklären** stellt der aktuellen
   Anweisung `EXPLAIN QUERY PLAN` (SQLite; die Zeilen `id`/`parent`/`detail` werden zu einem eingerückten Baum) bzw. `EXPLAIN` (Postgres) voran.
+
+MySQL / MariaDB (`openMysql`): Client/Server-Protokoll 4.1 über einen Relay-Tunnel – Handshake v10, optionaler SSLRequest mit anschließendem
+`startTls` des Relays, HandshakeResponse41 mit PLUGIN_AUTH, MULTI_STATEMENTS und MULTI_RESULTS (ohne DEPRECATE_EOF, Ergebnismengen enden also mit
+EOF-Paketen). Anmeldung: `mysql_native_password` (SHA-1-Scramble), `caching_sha2_password` (SHA-256-Scramble; bei „vollständige Anmeldung“ geht das
+Passwort über TLS im Klartext, sonst mit der Nonce verknüpft und RSA-OAEP/SHA-1-verschlüsselt mit dem öffentlichen Schlüssel, den der Server nach
+`0x02` schickt), Wechsel der Anmeldemethode. Textergebnisse von COM_QUERY werden bei Ganzzahl- und Gleitkommatypen zu Zahlen (DECIMAL und unsichere
+BIGINTs bleiben Text), binäre BLOBs zu `x'…'`; das Schema kommt aus `information_schema` von `DATABASE()`. Tests: `tests/helpers/mysql_fake.py`,
+ein Testserver auf SQLite mit allen Anmeldewegen und TLS.
+
+Import/Export (`js/table-io.js`): XLSX wird selbst geschrieben (ein Arbeitsblatt mit Inline-Texten, Zahlen, fetter fixierter Kopfzeile,
+Spaltenbreiten, Autofilter; gepackt mit fflate) und aus dem ersten Arbeitsblatt der Arbeitsmappe gelesen (geteilte und Inline-Texte, Zahlen,
+Wahrheitswerte; Zellen mit Datumsformat werden ISO-Daten). CSV läuft über das gemeinsame `Suite.csv`. Importtypen: ganze Zahl, Kommazahl oder Text
+je Spalte (SQLite INTEGER/REAL/TEXT, Postgres bigint/double precision/text); die Zeilen kommen mit mehrzeiligen INSERTs zu 200 in BEGIN … COMMIT
+hinein (ROLLBACK bei einem Fehler).
 
 Tests: `tests/apps/test_dbtool.py` – SQLite-Dateien aus Pythons `sqlite3` (Schema, mehrere Ergebnisse, Ausführen an der Schreibmarke, Fehler,
 Anlegen, Anzeigen, Bearbeiten, Einfügen, Löschen, rowid-Tabellen, CSV/JSON-Export, Speichern mit `sqlite3` geprüft); Postgres über beide Relays
@@ -939,6 +1074,20 @@ Schlüsselpaare erzeugt die Engine (`engine.generateKey(type, comment, passphras
 `ssh.MarshalPrivateKey(WithPassphrase)` im OpenSSH-Format, `MarshalAuthorizedKey`, `FingerprintSHA256`; Engine 0.2.0). Sitzungsprotokolle sammeln
 während der Aufzeichnung die dekodierte Ausgabe und entfernen beim Speichern die Escape-Sequenzen.
 
+Wege (Optionen von `Suite.ssh.connect`): `proxy` – das Relay verbindet sich mit dem Proxy, die Seite führt den SOCKS5- (RFC 1928/1929) oder HTTP-
+CONNECT-Handschlag selbst; die über die Antwort hinaus gelesenen Bytes werden für die Engine vor den Transport zurückgelegt – und `via` – ein
+verbundener Client, dessen `dial(host, port)` (Engine 0.5.0, ein SSH-`direct-tcpip`-Kanal als Transport: Schreiben über eine Warteschlange in einer
+Goroutine, `read()` liefert am Ende `null`) die nächste Verbindung trägt. Sprungserver sind gespeicherte Verbindungen (`jump` = deren ID), rekursiv
+verbunden (höchstens 5 Abschnitte); die Sprung-Clients werden mit dem Tab geschlossen. Proxy-Passwörter (`proxyPassword`) sind in KeePass geschützte
+Felder. Gespeicherte Befehle liegen in `data.settings.snippets` ([{id, name, command, enter}]).
+
+Portweiterleitung: Lokale Weiterleitungen nutzen den Lauschmodus des Relays (`Suite.relay.listen(relay, port, onConnection)`: ein Steuer-WebSocket
+`{"listen": {"port"}}` erhält `{"op": "accept", "id"}`, `Suite.relay.accept(relay, id)` öffnet den Tunnel zu dieser Verbindung) und `client.dial(host, port)`;
+entfernte Weiterleitungen nutzen `client.listen('127.0.0.1', port)` (SSH-`tcpip-forward`), dessen `accept()` Kanäle liefert, die mit
+`Suite.relay.connect(host, port)` verbunden werden. `pipe(a, b)` kopiert in beide Richtungen, bis eine Seite endet. Gespeicherte Weiterleitungen
+(`forwards: [{type, listenPort, host, port}]`) starten nach dem Verbinden; alle enden mit dem Tab. Die Relays lauschen nur, wenn sie an Loopback gebunden
+sind, an 127.0.0.1, Ports ≥ 1024; nicht übernommene Verbindungen werden nach 30 s geschlossen (`tests/relay/test_listen.py`, beide Implementierungen).
+
 Tests: `tests/apps/test_ssh_client.py` gegen einen lokalen OpenSSH-Server (`tests/helpers/ssh_fixtures.py`, Schlüsselanmeldung) über beide Relays:
 Terminal-Ein- und -Ausgabe (aus dem xterm-Puffer gelesen), Sitzungsende und Neu-verbinden-Schaltfläche, abgelehnter Host-Schlüssel,
 passphrasegeschützter Schlüssel, SFTP-Liste/Download/Upload/Ordner anlegen/Umbenennen/Löschen/Navigation, gespeicherte Verbindung mit
@@ -959,7 +1108,14 @@ Terminalausgabe, bekannte Host-Schlüssel gelistet und vergessen.
   (z. B. vsftpd `require_ssl_reuse=YES`), werden nicht unterstützt, weil das Relay jede TLS-Verbindung unabhängig aufbaut.
 - **SFTP** – die SSH-Engine (`client.sftp()`), Host-Schlüssel werden bestätigt und mit dem Server gespeichert. Dateien werden in Stücken zu
   1 MiB gelesen und geschrieben (`readAt`/`writeAt`, Engine 0.3.0), was Fortschritt liefert und Fortsetzen ermöglicht; `chtimes` setzt die
-  Änderungszeit.
+  Änderungszeit und `chmod` (Engine 0.4.0) die Rechte. `mode` der Engine (Go-`FileMode`) wird auf Unix-Bits abgebildet (setuid/setgid/sticky aus
+  den Bits 23/22/20).
+- **Rechte bei FTP**: aus der `ls -l`-Rechtezeichenkette von LIST-Zeilen oder der MLSD-Angabe `unix.mode` (auch `0o644` von pyftpdlib); führt FEAT
+  `unix.mode` ohne `*` (also nicht standardmäßig gesendet), schickt der Client `OPTS MLST type;size;modify;unix.mode;perm;`. Geändert wird mit
+  `SITE CHMOD`.
+- **Vorschau und Bearbeiten**: Dateien werden mit `fs.read` gelesen (Vorschau: Bilder/Medien bis 20 MB als Blob-URLs – die CSP erlaubt
+  `media-src blob:` –, Text oder eine Hex-Ansicht der ersten Bytes; Bearbeiten: UTF-8-Text ohne NUL-Bytes bis 2 MB). Speichern vergleicht die
+  entfernte Größe mit der beim Lesen (`fs.size`) und fragt bei Abweichung; CRLF-Dateien werden wieder mit CRLF geschrieben.
 
 Die lokale Seite verwendet `showDirectoryPicker()` (Verzeichnis-Handles; rekursives Hoch- und Herunterladen von Ordnern); ohne diese Schnittstelle
 kommen Dateien aus der Dateiauswahl und Downloads laufen über `Suite.files.download`. Übertragungen laufen nacheinander aus einer Warteschlange
@@ -1006,6 +1162,20 @@ Antwort-Body).
   Protokolleinträge).
 - **OpenAPI** (`openapi.js`, js-yaml aus `vendor/esm/yaml`): Lokale `$ref`s werden mit Schutz vor Zyklen aufgelöst; Beispiele stammen aus
   `example`/`default`/`enum`, `allOf`/`oneOf` sowie Typ und Format; die Sammlung wird als Postman-Sammlung gespeichert.
+
+Sammlungs-Ausführung: `execute(req, iter)` ist der mit „Senden“ gemeinsame Ablauf einer Anfrage (Skript davor → `build` mit den Variablen von
+Sammlung, Umgebung, Datenzeile und Skript → Relay oder fetch → Tests). Die Ausführung geht je Durchlauf die Anfragen des Ordners durch (WebSocket-URLs
+ausgenommen); Skripte erhalten `iterationData`, `iteration` und `iterationCount` (`pm.iterationData`, `pm.info.iteration`). Datendateien: CSV über
+`Suite.csv` (Kopfzeile) oder ein JSON-Array von Objekten (Werte, die keine Texte sind, als JSON-Text).
+
+GraphQL: Body-Art `graphql` (`{ query, variables }`, Postman v2.1 `body.graphql`); `build` löst Variablen in beiden auf, liest die Variablen als JSON und
+sendet `{query, variables, operationName}` als `application/json`. Der Schema-Explorer sendet die übliche Introspection-Abfrage über denselben Ablauf und
+zeigt `__schema` (Wurzeltypen, Felder, Argumente, umhüllte Typen als `[T]!`).
+
+Code-Erzeugung (`js/codegen.js`): ein Generator je Ziel über der gebauten Anfrage (`build` mit aufgelösten Variablen); Zeichenketten werden je Sprache
+maskiert (Shell `'…'\''…'`, JSON-Literale für JS/Python/Go/Java/C#, `'…'` mit `''` für PowerShell, PHP `'…'` mit `\'`). Eingeschränkte Header entfallen, wo
+die Bibliothek sie ablehnt (Java: Host, Content-Length, …; C#: Inhalts-Header kommen an `request.Content`). Der Test führt den Code für cURL, wget,
+PowerShell und Go gegen den Echo-Server aus.
 
 Tests: `tests/apps/test_http.py` gegen den Echo-Server der Relay-Tests über beide Relays und direkt: Abgleich Parameter/URL, Header,
 Basic-Anmeldung, Antwort-Header, JSON-/urlencoded-/Multipart-Bodies mit Umgebungsvariablen, Statusklassen, Weiterleitungen, Verlauf, direkter Modus
@@ -1393,6 +1563,12 @@ Eigene Protokoll-Clients auf den TCP-Verbindungen des Relays (`Suite.relay.conne
   RFC-2231-Dateinamen, umbrochene Kopfzeilen, `multipart/alternative`, `related` für eingefügte Bilder, `mixed`),
   Adresslisten, mbox zerlegen/zusammenfügen, vCard 2.1/3.0/4.0 lesen (unbekannte Eigenschaften bleiben erhalten) und vCard 3.0
   schreiben. Nachrichten werden mit postal-mime (`vendor/esm/mail`) gelesen.
+  mbox ist mboxrd (`>From `-Maskierung); `joinMbox` schreibt Absender und ein asctime-Datum in die `From `-Zeile und die Markierungen als
+  `Status: RO`/`X-Status: AFDT`, `splitMboxEntries` liest sie als IMAP-Markierungen zurück und entfernt diese Kopfzeilen.
+- Suche in allen Ordnern/Konten (`searchEverywhere`): `UID SEARCH TEXT` in jedem auswählbaren Ordner der gewählten Sitzungen (höchstens 100 Treffer
+  je Ordner), angezeigt als gemeinsame Liste wie der gemeinsame Posteingang; die Einträge kennen Konto und Ordner, und `byAccount`/`forFolders`
+  gruppieren Aktionen nach (Konto, Ordner) und wählen zuerst den Ordner. Der mbox-Import verwendet APPEND mit den Markierungen und dem Datum der
+  `From `-Zeile (CRLF-Zeilenenden); der Export eines ganzen Ordners holt `UID SEARCH ALL` in Teilen zu 200.
 
 Mehrere Konten: `sessions` ordnet Konto-IDs `{ account, imap, folders, unread, folder, selected }` zu; `state.account/imap/folders/unread`
 sind die der aktiven Sitzung (`activate`), ein Wechsel lässt die anderen Verbindungen offen, alle erhalten jede Minute ein NOOP.
@@ -1548,6 +1724,36 @@ Beschriftungen (Tastatur und Doppelklick, Auswählen, Rückgängig, Audacity-Exp
 Clip-Lautstärke, Überblenden überlappender Clips, Abspielen mit Blenden, Blenden in der Projektdatei, Kompressor, Limiter, Equalizer, Hallfahne,
 Tonhöhe um eine Oktave (Nulldurchgänge, Länge), Rauschminderung (>10 dB weniger Rauschen, Ton innerhalb 1,5 dB) und Effekte über das Menü.
 
+### Authenticator (`apps/authenticator`)
+
+Eine schlanke Ansicht der Einmalpasswörter einer KeePass-Datenbank, portiert vom Web Authenticator (EUPL-1.2, derselbe Autor)
+auf die Shell der Suite, `Suite.kdbx`, `Suite.otp` und `Suite.qr` (Token-Modell und Abbildung auf KeePass-Felder siehe KeePass
+oben). Einfache Skripte: `js/clock.js` und `js/main.js` (globaler `state`, gezeichnet über `Suite.shell.refresh`).
+
+- Tokens: `items()` listet die Einträge außerhalb des Papierkorbs mit `Suite.otp.hasOtpData`, liest jeden mit `readToken`
+  (Fehler erscheinen auf der Karte) und überspringt Einträge mit OTP-Einstellungen ohne Geheimnis. Neue Tokens werden zu
+  Einträgen mit `Title` und `UserName` (`addEntry`) plus `writeToken`; Änderungen legen zuerst den Verlauf des Eintrags an und
+  können den Eintrag in eine andere Gruppe verschieben. „Nur das Token entfernen“ (`removeTokenFields`) wird angeboten, wenn der
+  Eintrag mehr als Titel, Benutzername und OTP-Felder enthält.
+- Codes: `Suite.otp.generate(token, clock.now())` liefert den vorherigen, aktuellen und nächsten Code und die verbleibenden
+  Sekunden; ein auf die vollen Sekunden der Uhr ausgerichteter Zeitgeber zeichnet neu, solange eine Datenbank offen ist.
+- Uhr (`AUTH.clock`): ein Versatz zu `Date.now()`, solange sie läuft, eine feste Zeit, solange sie steht (`setOffset`, `shift`,
+  `setTime`, `stop`/`start` – läuft von der angehaltenen Zeit weiter –, `reset`, `subscribe`); nicht gespeichert.
+- Import: Das Textfeld wird mit `Suite.otp.parseImportText` gelesen (otpauth, otpauth-migration, Aegis-JSON), Dateien ebenso,
+  Bilder und Kamerabilder werden mit `Suite.qr` dekodiert und an den Text angehängt. Kandidaten werden nach `type|secret`
+  zusammengefasst; Tokens, die schon in der Datenbank sind, sind anfangs nicht angehakt. Ein `paste`-Handler am Dokument öffnet
+  den Import für `otpauth://`-Text oder Bilder; die Ablagezone öffnet ihn für abgelegte Dateien, sobald eine Datenbank offen ist.
+- Export: `toUri` des Tokens, Aussteller und Konto bei Bedarf aus dem Eintrag; QR-Codes als SVG (`Suite.qr.toSvg`, zwischengespeichert).
+- Speichern, zuletzt geöffnete Dateien, die automatische Sperre nach 10 Minuten (nicht bei ungespeicherten Änderungen) und
+  „Öffnen mit…“ (`.kdbx`, neben KeePass) funktionieren wie in der KeePass-Anwendung.
+
+Tests: `tests/apps/test_authenticator.py` – eine pykeepass-Datenbank mit TOTP- (KeePassXC-Feld `otp` und KeePass-2-Felder
+`TimeOtp-*`), HOTP- und Steam-Tokens und einem Eintrag mit Passwort: Codes verglichen mit in Python berechneten Werten nach
+RFC 6238/4226, die Uhr (Versatz, feste Zeit, Anhalten/Starten, Zurücksetzen), Suche, Hinzufügen aus einem Link mit der Vorschau,
+Bearbeiten (Verlauf), der HOTP-Zähler, nur das Token entfernen gegenüber dem Löschen des Eintrags, Import von Links, einem
+Google-Authenticator-Export und einer Aegis-Datei mit Duplikaten, ein QR-Code-Bild (segno), Export als Text und QR, Speichern
+geprüft mit pykeepass, eine neue Datenbank, automatische Sperre, deutsche Oberfläche und die Smartphone-Ansicht.
+
 ### Barcodes (`apps/barcode`)
 
 ZXing-C++ als WebAssembly (zxing-wasm 3, MIT; ZXing-C++ Apache-2.0) liest und kodiert alle Codes. `tools/vendor_zxing.py`
@@ -1563,8 +1769,13 @@ es nicht von seinem CDN lädt.
   angeboten und mit `rel="noopener noreferrer"` geöffnet.
 - Erzeugen: `writeBarcode(text, { format, options: 'ecLevel=…' })` liefert das Symbol als Bitmap (0 = dunkel, ohne Ruhezone);
   `js/render.js` zeichnet es als SVG (gleiche Zeilen zu einem Pfad zusammengefasst) und auf eine Canvas (PNG) mit Modulgröße,
-  Ruhezone, Farben und bei 1D-Codes Balkenhöhe und Text. Das Ergebnis wird zur Kontrolle mit `tryInvert` zurückgelesen
-  (EAN/UPC dürfen die Prüfziffer ergänzen).
+  Ruhezone, Farben und bei 1D-Codes Balkenhöhe. `layout()` setzt auch Textzeilen: den Inhalt (eine Zeile unter 1D-Codes; unter 2D-Codes nach
+  Zeichenzahl auf die Breite des Codes umbrochen, höchstens 12 Zeilen) und die Beschriftung (serifenlos, oben oder unten). Das Ergebnis wird
+  zur Kontrolle mit `tryInvert` zurückgelesen (EAN/UPC dürfen die Prüfziffer ergänzen).
+- Stapel (`js/batch.js`): `items()` macht aus Zeilen oder CSV-Zeilen (`Suite.csv`, gemeinsam mit dem KeePass-Import) Inhalte mit optionaler
+  Beschriftung und Dateinamen; `run()` kodiert jeden mit den Einstellungen des Generators und schreibt ein ZIP (fflate; PNG gespeichert, SVG
+  komprimiert, `errors.txt`) oder ein PDF mit pdf-lib (jeder Code als PNG, eingepasst in sein Feld eines Rasters aus Spalten × Zeilen mit
+  10 mm Seitenrand). Jedes zehnte Element gibt die Ereignisschleife für den Fortschrittsbalken frei.
 
 Tests: `tests/apps/test_barcode.py` – ein Bild mit QR-Code (segno) und EAN-13 (zxing-cpp) gemeinsam gelesen, Duplikate, Links,
 leere Bilder, vCard als .vcf und in den Generator, PNG/SVG mit zxing-cpp zurückgelesen, WLAN-Maskierung, Fehlerkorrektur,
@@ -1671,6 +1882,12 @@ eingebetteten Stilen/Bildern, Sicherheitsprüfungen, Strukturhinweise, Quelltext
 der Vorschau und zurück; direktes Laden mit CORS und eingefügte Quelltexte ohne Relay; der HAR-Betrachter (Filter, Sortierung,
 JSON-/Bildinhalte, Parameter/POST-Daten, Zeiten, cURL); das Bookmarklet auf einer HTTP-Seite (Konsole, Auswertung, Info,
 Netzwerk, Elementauswahl, Ein-/Ausblenden) und in der App; deutsche Oberfläche und Smartphone-Layout.
+
+Barrierefreiheit (`js/a11y.js`): axe-core 4.14.0 (`vendor/axe`, als Text eingebettet) läuft in einem versteckten iframe mit `sandbox="allow-scripts"`
+(undurchsichtiger Ursprung), dessen `srcdoc` das Vorschau-HTML ohne Skripte, `on*`-Handler, `javascript:`-URLs, Refresh- und CSP-Metas ist, gefolgt von
+axe und einem Starter, der `{axeResult}` an das Elternfenster schickt (geprüft gegen das Fenster des Frames). Der Frame erbt die CSP des Inspektors, die
+`Function()` verbietet; die Locale von axe übersetzt Vorlagen auf diese Weise, darum werden die deutschen Regeltexte nach dem Lauf aus `locales/de.json`
+übernommen.
 
 ### Übersicht (`apps/overview`)
 
@@ -1793,6 +2010,17 @@ unter `DIR` (aufgelöste Pfade müssen darin bleiben, keine versteckten Teile; `
 (`http(s)://127.0.0.1|localhost|[::1]|<--host>:<Port>`) bei den erlaubten Herkünften. `appdata.js` verwendet auf solchen Seiten `location.origin` als
 Standard-Relay-Adresse.
 
+**PWA** (beide Relays, mit `--serve`): Eine HTML-Datei im obersten Ordner wird mit `<link rel="manifest" href="NAME.webmanifest">`,
+`<meta name="suite-pwa" content="suite-sw.js">` und einer Themenfarbe vor `</head>` ausgeliefert, und ihr CSP-Meta-Tag bekommt
+`manifest-src 'self'` und `'self'` in `worker-src` (an eine vorhandene Direktive angefügt oder ergänzt; die Dateien auf der Platte und als
+Datei geöffnet bleiben unverändert). Das Relay erzeugt `NAME.webmanifest` zu `NAME.html` (Name aus ihrem `<title>`, die Übersicht als
+„Portable Web App Suite“, `start_url`/`id` die Seite, `display: standalone`, das SVG-Favicon der Seite als `NAME.icon.svg` vor den Suite-Symbolen) und liefert `suite-sw.js`, `suite-icon.svg` und
+`suite-icon-192.png` (in beide Relays eingebettet; `tests/relay/test_relay_pwa.py` prüft, dass beide dieselben Dateien liefern). `shell.js`
+registriert den Service Worker, wenn die Markierung da ist (nur in sicheren Kontexten: `localhost` oder HTTPS), und zeigt nach
+`beforeinstallprompt` **Als App installieren**. Der Service Worker beantwortet GET-Anfragen für `.html`, `.webmanifest`, `.png` und `.svg`
+seines Ursprungs zuerst aus dem Netz und hält jede Antwort in einem Cache, der antwortet, wenn das Relay nicht erreichbar ist; alles
+andere (die API des Relays, WebSockets) bleibt unberührt.
+
 **Vorgelagerter Proxy** (`--upstream-proxy URL|env`, `--no-proxy`): Tunnel öffnen eine TCP-Verbindung zum Proxy, senden `CONNECT host:port` (mit
 `Proxy-Authorization: Basic …` aus den Benutzerangaben der URL), lesen den Antwortkopf (Python: `readuntil`, PowerShell: Byte für Byte, damit nichts
 vom Tunnel verbraucht wird) und setzen bei Bedarf TLS darauf (`upgrade_tls`, mit STARTTLS geteilt; `SslStream`). `/http` verwendet den `ProxyHandler`
@@ -1828,6 +2056,18 @@ einmal normal und einmal mit `--mobile` aus.
 `SUITE_DIST=<Verzeichnis>` lässt `build.py` die Apps in ein anderes Verzeichnis schreiben (auch die Übersicht bettet die Apps
 von dort ein), und die Tests öffnen sie von dort – so lassen sich Änderungen bauen und testen, während ein anderer Testlauf
 `dist/` verwendet.
+
+PDF-Export (`js/pdf.js`): Die Präsentation wird mit `view: 'print'` (und `pdfSeparateFragments` für Schritte) in einem versteckten iframe gleichen
+Ursprungs gerendert; jede `.pdf-page` wird in einen `<div>`-Baum kopiert, der die Klassen ihrer Vorfahren wiederholt, mit allen `<style>`-Texten so
+umgeschrieben, dass `html`/`body`/`:root`-Selektoren auf `.suite-html`/`.suite-body` passen, in SVG-`<foreignObject>` verpackt und als `data:`-URL in
+doppelter Größe auf eine Canvas gezeichnet (eine `blob:`-URL einer `file://`-Seite macht die Canvas in Chromium unbrauchbar). Die PNGs werden pdf-lib-Seiten
+in Foliengröße (px × 0,75 pt).
+
+Design-Editor: `deck.themeVars` ordnet Editor-Schlüssel den CSS-Variablen von reveal.js zu (`THEME_VARS`: `--r-background-color`, `--r-main-color`,
+`--r-heading-font`, …); `themeCss(deck)` schreibt einen `:root`-Block (Schriften als Familien in Anführungszeichen mit Ersatz), den Hintergrund (Farbe, Bild
+oder Verlauf an `.reveal-viewport`) und `deck.themeFonts` – die `@font-face`-Regeln der gewählten Familien aus `Suite.fonts.cssFor` (mitgelieferte
+Schriften kommen aus `vendor/fonts/fonts.css`, das die App jetzt enthält). `renderPage` fügt das nach dem Design als `<style id="suite-theme">` ein.
+`themeFromCss` liest Variablen, Hintergrundbild/-verlauf und `@font-face`-Regeln zurück.
 
 ### Härtung, Fuzzing und Konformität
 
@@ -1929,6 +2169,19 @@ zwei oder drei Zeilen um; Schubladen dürfen sie nie verdecken, damit die Schalt
 immer auch schließen kann. Apps zeigen neben einer offenen Schublade `Suite.shell.backdrop(onClose)`: eine Abdunkelung unter
 der Schublade (auf breiten Bildschirmen verborgen), die sie beim Tippen schließt. Meldungen (Toasts) ignorieren den Zeiger und
 blockieren daher nie Schaltflächen.
+
+Die Titelleiste lässt sich ausblenden (`Suite.shell.setHeaderHidden`, localStorage `suite.headerHidden`): Die Shell zeigt dann nur eine
+kleine feste Schaltfläche rechts oben, die sie wieder einblendet, und die Befehlspalette hat einen Eintrag dafür. Auf schmalen
+Bildschirmen klappt die Schaltfläche `toggle-toolbar` die Zeile der Werkzeugleiste ein (`suite.toolbarCollapsed`, die Klasse
+`toolbar-collapsed` an der Kopfzeile blendet ihr `nav` aus). Beide Einstellungen gelten für die Anwendungen eines Ursprungs (ein
+`storage`-Ereignis aktualisiert andere offene Anwendungen); `--suite-top` folgt.
+
+Kontextmenüs: `Suite.shell.contextMenu(event, items)` zeigt das Menü der Shell am Zeiger (Einträge `{ label, icon, shortcut, run,
+disabled, testid }` oder `'-'`; Trenner am Rand oder doppelt entfallen). Es ist eine `role=menu`-Liste mit `role=menuitem`-
+Schaltflächen; der erste Eintrag bekommt den Fokus, Pfeiltasten/Pos1/Ende bewegen, Escape/Tab schließen, und ein Zeigerdruck
+außerhalb, Bildlauf, Größenänderung oder das Verlassen des Fensters schließen es. Touch-Browser senden `contextmenu` bei langem
+Drücken, daher dient derselbe Handler beidem. Der Präsentationseditor verwendet es auf der Bühne (Element oder leere Folie) und
+auf den Folienminiaturen.
 
 ## Dokumentation
 

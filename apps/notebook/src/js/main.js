@@ -3,6 +3,7 @@
  * and Python scripts with "# %%" cells, a console (REPL) on the same kernel, files in the Python file system, wheels.
  */
 import { EditorView, basicSetup } from 'codemirror';
+import { suiteSearch } from 'app/cm-search';
 import { keymap } from '@codemirror/view';
 import { Prec, Compartment } from '@codemirror/state';
 import { indentUnit } from '@codemirror/language';
@@ -29,7 +30,7 @@ Suite.i18n.register({
     'nb.editorLabel': 'Cell content',
     'app.title': 'Python notebook',
     'nb.new': 'New', 'nb.open': 'Open', 'nb.save': 'Save', 'nb.saveAs': 'Save as', 'nb.exportPy': 'Export .py', 'nb.code': '+ Code', 'nb.markdown': '+ Markdown', 'nb.raw': 'Raw',
-    'nb.runAll': '▶▶ Run all', 'nb.restart': '⟲ Restart', 'nb.notebook': 'Notebook', 'nb.console': 'Console', 'nb.files': 'Files', 'nb.upload': 'Upload…',
+    'nb.runAll': 'Run all', 'nb.restart': 'Restart', 'nb.notebook': 'Notebook', 'nb.console': 'Console', 'nb.files': 'Files', 'nb.upload': 'Upload…',
     'nb.wheel': 'Install wheel…', 'nb.refresh': 'Refresh', 'nb.delete': 'Delete', 'nb.deleteConfirm': 'Delete “{0}”?', 'nb.starting': 'Starting Python…',
     'nb.ready': 'Python {0} ready', 'nb.busy': 'busy', 'nb.untitled': 'Untitled', 'nb.discard': 'Discard the unsaved changes?', 'nb.run': 'Run', 'nb.moveUp': 'Move up',
     'nb.moveDown': 'Move down', 'nb.deleteCell': 'Delete cell', 'nb.slideshow': 'Slideshow', 'nb.slideType': 'Slide type', 'nb.asSlides': 'Slides', 'nb.asSlidesTitle': 'Open as reveal.js slides (Web slides)', 'nb.undo': 'Undo cell operation', 'nb.redo': 'Redo cell operation', 'nb.toMarkdown': 'Markdown', 'nb.toCode': 'Code', 'nb.consoleHint': 'Enter runs, Shift+Enter starts a new line, ↑/↓ history.',
@@ -38,19 +39,19 @@ Suite.i18n.register({
     'nb.variables': 'Variables', 'nb.noVariables': 'No variables yet.', 'nb.name': 'Name', 'nb.type': 'Type', 'nb.shape': 'Size', 'nb.value': 'Value',
     'nb.showTable': 'Show as a table', 'nb.close': 'Close',
     'nb.clearOutputs': 'Clear outputs', 'nb.panels': 'Files · Variables', 'nb.loadError': 'The file cannot be opened: {0}', 'nb.up': 'Up',
-    'nb.interrupt': '⏹ Interrupt', 'nb.interruptTitle': 'Interrupt the running cell (KeyboardInterrupt; I, I)', 'nb.stop': '⏹ Stop',
+    'nb.interrupt': 'Interrupt', 'nb.interruptTitle': 'Interrupt the running cell (KeyboardInterrupt; I, I)', 'nb.stop': 'Stop',
     'nb.stopTitle': 'Stop the running cell by restarting Python: variables are lost (I, I). Interrupting without a restart needs the notebook served by the relay (relay.py --serve).',
     'nb.stopConfirm': 'Python cannot be interrupted here (only when the notebook is served by the relay, relay.py --serve). Stop the running cell by restarting Python? All variables are lost.',
     'nb.stopOnError': 'Stop on error', 'nb.stopOnErrorTitle': 'When a cell raises an error, the cells queued after it are not run',
     'nb.skipped': 'An error occurred: {0} queued cell(s) were not run.', 'nb.copied': '{0} cell(s) copied.',
-    'nb.mount': '📦 Mount archive…', 'nb.mountTitle': 'Mount an archive of the archive manager below /mnt (changes are written back after every cell)',
+    'nb.mount': 'Mount archive…', 'nb.mountTitle': 'Mount an archive of the archive manager below /mnt (changes are written back after every cell)',
     'nb.mounted': '“{0}” is mounted at {1}.', 'nb.unmount': 'Unmount (write the changes back)', 'nb.mountClosedMark': 'closed',
     'nb.mountClosed': 'The archive “{0}” was closed in the archive manager: changes in {1} are no longer saved into it.',
     'nb.mountNone': 'No archive is open in an archive manager this notebook can reach. Open one with “📦 Mount archive…” in the Files panel.',
     'nb.mountWhich': 'Several archives are open ({0}): name one, e.g. await suite.archives.mount("{1}").', 'nb.mountCancelled': 'Mounting was not allowed.',
     'nb.mountLarge': 'The archive holds {0} – mounting copies it completely into the notebook\'s memory. Continue?', 'nb.notMounted': '“{0}” is not mounted.',
     'nb.mountsDropped': 'Python was restarted: the archives are no longer mounted ({0}).',
-    'nb.isolated': '🔓 Network and interrupt', 'nb.isolatedTitle': 'Served by the relay (cross-origin isolated): Python can open network connections through the relay (sockets, smtplib, ftplib, suite.ssh …) and running cells can be interrupted.',
+    'nb.isolated': 'Network and interrupt', 'nb.isolatedTitle': 'Served by the relay (cross-origin isolated): Python can open network connections through the relay (sockets, smtplib, ftplib, suite.ssh …) and running cells can be interrupted.',
     'nb.notIsolated': 'Opened as a file', 'nb.notIsolatedTitle': 'Opened as a file: requests works through the relay (if set), but no sockets or SSH from Python, and stopping a cell restarts Python. Open the notebook through the relay (relay.py --serve) for both.',
     'nb.hostKey': 'The server {0} presented this {1} host key:\n{2}\nCheck the fingerprint with the administrator. Trust it?',
     'nb.hostKeyChanged': 'WARNING: the host key of {0} has CHANGED (saved: {1}, now: {2}). Someone may be intercepting the connection. Trust the new key?',
@@ -71,7 +72,7 @@ Suite.i18n.register({
     'nb.editorLabel': 'Zelleninhalt',
     'app.title': 'Python-Notebook',
     'nb.new': 'Neu', 'nb.open': 'Öffnen', 'nb.save': 'Speichern', 'nb.saveAs': 'Speichern unter', 'nb.exportPy': 'Als .py exportieren', 'nb.code': '+ Code', 'nb.markdown': '+ Markdown', 'nb.raw': 'Roh',
-    'nb.runAll': '▶▶ Alle ausführen', 'nb.restart': '⟲ Neu starten', 'nb.notebook': 'Notebook', 'nb.console': 'Konsole', 'nb.files': 'Dateien', 'nb.upload': 'Hochladen…',
+    'nb.runAll': 'Alle ausführen', 'nb.restart': 'Neu starten', 'nb.notebook': 'Notebook', 'nb.console': 'Konsole', 'nb.files': 'Dateien', 'nb.upload': 'Hochladen…',
     'nb.wheel': 'Wheel installieren…', 'nb.refresh': 'Aktualisieren', 'nb.delete': 'Löschen', 'nb.deleteConfirm': '„{0}“ löschen?', 'nb.starting': 'Python startet…',
     'nb.ready': 'Python {0} bereit', 'nb.busy': 'beschäftigt', 'nb.untitled': 'Unbenannt', 'nb.discard': 'Die ungespeicherten Änderungen verwerfen?', 'nb.run': 'Ausführen', 'nb.moveUp': 'Nach oben',
     'nb.moveDown': 'Nach unten', 'nb.deleteCell': 'Zelle löschen', 'nb.slideshow': 'Folien', 'nb.slideType': 'Folientyp', 'nb.asSlides': 'Folien', 'nb.asSlidesTitle': 'Als reveal.js-Folien öffnen (Web-Folien)', 'nb.undo': 'Zellenaktion rückgängig', 'nb.redo': 'Zellenaktion wiederholen', 'nb.toMarkdown': 'Markdown', 'nb.toCode': 'Code', 'nb.consoleHint': 'Eingabe führt aus, Umschalt+Eingabe beginnt eine neue Zeile, ↑/↓ Verlauf.',
@@ -80,19 +81,19 @@ Suite.i18n.register({
     'nb.variables': 'Variablen', 'nb.noVariables': 'Noch keine Variablen.', 'nb.name': 'Name', 'nb.type': 'Typ', 'nb.shape': 'Größe', 'nb.value': 'Wert',
     'nb.showTable': 'Als Tabelle anzeigen', 'nb.close': 'Schließen',
     'nb.clearOutputs': 'Ausgaben löschen', 'nb.panels': 'Dateien · Variablen', 'nb.loadError': 'Die Datei kann nicht geöffnet werden: {0}', 'nb.up': 'Nach oben',
-    'nb.interrupt': '⏹ Unterbrechen', 'nb.interruptTitle': 'Die laufende Zelle unterbrechen (KeyboardInterrupt; I, I)', 'nb.stop': '⏹ Stoppen',
+    'nb.interrupt': 'Unterbrechen', 'nb.interruptTitle': 'Die laufende Zelle unterbrechen (KeyboardInterrupt; I, I)', 'nb.stop': 'Stoppen',
     'nb.stopTitle': 'Die laufende Zelle durch einen Neustart von Python stoppen: Variablen gehen verloren (I, I). Unterbrechen ohne Neustart geht, wenn das Notebook vom Relay bereitgestellt wird (relay.py --serve).',
     'nb.stopConfirm': 'Python lässt sich hier nicht unterbrechen (nur wenn das Notebook vom Relay bereitgestellt wird, relay.py --serve). Die laufende Zelle durch einen Neustart von Python stoppen? Alle Variablen gehen verloren.',
     'nb.stopOnError': 'Bei Fehler anhalten', 'nb.stopOnErrorTitle': 'Wenn eine Zelle einen Fehler auslöst, werden die danach eingereihten Zellen nicht ausgeführt',
     'nb.skipped': 'Ein Fehler ist aufgetreten: {0} eingereihte Zelle(n) wurden nicht ausgeführt.', 'nb.copied': '{0} Zelle(n) kopiert.',
-    'nb.mount': '📦 Archiv einbinden…', 'nb.mountTitle': 'Ein Archiv des Archivmanagers unter /mnt einbinden (Änderungen werden nach jeder Zelle zurückgeschrieben)',
+    'nb.mount': 'Archiv einbinden…', 'nb.mountTitle': 'Ein Archiv des Archivmanagers unter /mnt einbinden (Änderungen werden nach jeder Zelle zurückgeschrieben)',
     'nb.mounted': '„{0}“ ist unter {1} eingebunden.', 'nb.unmount': 'Lösen (die Änderungen zurückschreiben)', 'nb.mountClosedMark': 'geschlossen',
     'nb.mountClosed': 'Das Archiv „{0}“ wurde im Archivmanager geschlossen: Änderungen in {1} werden nicht mehr darin gespeichert.',
     'nb.mountNone': 'In keinem Archivmanager, den dieses Notebook erreicht, ist ein Archiv geöffnet. Öffnen Sie eines mit „📦 Archiv einbinden…“ im Dateibereich.',
     'nb.mountWhich': 'Mehrere Archive sind geöffnet ({0}): Nennen Sie eines, z. B. await suite.archives.mount("{1}").', 'nb.mountCancelled': 'Das Einbinden wurde nicht erlaubt.',
     'nb.mountLarge': 'Das Archiv enthält {0} – beim Einbinden wird es vollständig in den Speicher des Notebooks kopiert. Fortfahren?', 'nb.notMounted': '„{0}“ ist nicht eingebunden.',
     'nb.mountsDropped': 'Python wurde neu gestartet: Die Archive sind nicht mehr eingebunden ({0}).',
-    'nb.isolated': '🔓 Netzwerk und Unterbrechen', 'nb.isolatedTitle': 'Vom Relay bereitgestellt (cross-origin-isoliert): Python kann über das Relay Netzwerkverbindungen öffnen (Sockets, smtplib, ftplib, suite.ssh …), und laufende Zellen lassen sich unterbrechen.',
+    'nb.isolated': 'Netzwerk und Unterbrechen', 'nb.isolatedTitle': 'Vom Relay bereitgestellt (cross-origin-isoliert): Python kann über das Relay Netzwerkverbindungen öffnen (Sockets, smtplib, ftplib, suite.ssh …), und laufende Zellen lassen sich unterbrechen.',
     'nb.notIsolated': 'Als Datei geöffnet', 'nb.notIsolatedTitle': 'Als Datei geöffnet: requests funktioniert über das Relay (falls eingestellt), aber keine Sockets oder SSH aus Python, und Anhalten einer Zelle startet Python neu. Öffnen Sie das Notebook über das Relay (relay.py --serve) für beides.',
     'nb.hostKey': 'Der Server {0} hat diesen {1}-Host-Schlüssel gesendet:\n{2}\nPrüfen Sie den Fingerabdruck mit der Administration. Vertrauen?',
     'nb.hostKeyChanged': 'WARNUNG: Der Host-Schlüssel von {0} hat sich GEÄNDERT (gespeichert: {1}, jetzt: {2}). Möglicherweise wird die Verbindung abgehört. Dem neuen Schlüssel vertrauen?',
@@ -185,7 +186,7 @@ function makeEditor(doc, lang, keys, onChange, spellMode = () => 'code') {
   const language = new Compartment();
   const view = new EditorView({
     doc,
-    extensions: [Prec.highest(keymap.of(keys)), basicSetup, indentKeys(), indentUnit.of('    '), EditorView.contentAttributes.of({ 'aria-label': t('nb.editorLabel') }), spellChecking(spellMode), language.of(lang), theme.of(dark() ? oneDark : []), EditorView.lineWrapping,
+    extensions: [Prec.highest(keymap.of(keys)), basicSetup, suiteSearch(), indentKeys(), indentUnit.of('    '), EditorView.contentAttributes.of({ 'aria-label': t('nb.editorLabel') }), spellChecking(spellMode), language.of(lang), theme.of(dark() ? oneDark : []), EditorView.lineWrapping,
       EditorView.updateListener.of((u) => { if (u.docChanged && onChange) onChange(); if (u.focusChanged && u.view.hasFocus && view.onFocus) view.onFocus(); })],
   });
   themes.add(() => view.dispatch({ effects: theme.reconfigure(dark() ? oneDark : []) }));
@@ -874,7 +875,7 @@ function FsLinkDialog() {
   return html`<dialog open data-testid="fs-dialog"><article>
     <header><strong>${r.mode === 'save' ? t('nb.fsSaveTitle', r.name || '') : t('nb.fsOpenTitle')}</strong></header>
     <p><small>${t('nb.fsFrom', r.label || '?')}</small></p>
-    <p class="nb-fs-warning" data-testid="fs-warning">⚠ ${t('nb.fsWarning')}</p>
+    <p class="nb-fs-warning" data-testid="fs-warning">${Suite.icon('triangle-alert')} ${t('nb.fsWarning')}</p>
     ${body}
     ${l.error ? html`<p class="nb-stderr" data-testid="fs-error">${l.error}</p>` : null}
     <footer><button type="button" class="secondary" data-testid="fs-cancel" onClick=${cancelFsLink}>${t('nb.fsCancel')}</button>${ok}</footer>
@@ -1109,11 +1110,11 @@ function Cell({ cell }) {
       ${['-', 'slide', 'subslide', 'fragment', 'skip', 'notes'].map((v) => html`<option value=${v} selected=${((cell.metadata || {}).slideshow || {}).slide_type === v || (v === '-' && !(cell.metadata || {}).slideshow)}>${v}</option>`)}
     </select>` : null}
     <div class="nb-tools">
-      <button class="secondary outline" title=${t('nb.run')} data-testid="run-cell" onClick=${(e) => { e.stopPropagation(); runCell(cell, 'stay'); }}>▶</button>
+      <button class="secondary outline" title=${t('nb.run')} data-testid="run-cell" onClick=${(e) => { e.stopPropagation(); runCell(cell, 'stay'); }}>${Suite.icon('play')}</button>
       <button class="secondary outline" title=${cell.type === 'code' ? t('nb.toMarkdown') : t('nb.toCode')} data-testid="toggle-type" onClick=${() => setType(cell, cell.type === 'code' ? 'markdown' : 'code')}>${cell.type === 'code' ? 'M' : '{ }'}</button>
-      <button class="secondary outline" title=${t('nb.moveUp')} onClick=${() => moveCell(cell, -1)}>↑</button>
-      <button class="secondary outline" title=${t('nb.moveDown')} onClick=${() => moveCell(cell, 1)}>↓</button>
-      <button class="secondary outline" title=${t('nb.deleteCell')} data-testid="delete-cell" onClick=${() => deleteCell(cell)}>✕</button>
+      <button class="secondary outline" title=${t('nb.moveUp')} onClick=${() => moveCell(cell, -1)}>${Suite.icon('arrow-up')}</button>
+      <button class="secondary outline" title=${t('nb.moveDown')} onClick=${() => moveCell(cell, 1)}>${Suite.icon('arrow-down')}</button>
+      <button class="secondary outline" title=${t('nb.deleteCell')} data-testid="delete-cell" onClick=${() => deleteCell(cell)}>${Suite.icon('x')}</button>
     </div>
   </div>`;
 }
@@ -1147,7 +1148,7 @@ function Variables() {
     ${state.variables.length ? html`<table><thead><tr><th>${t('nb.name')}</th><th>${t('nb.type')}</th><th>${t('nb.shape')}</th><th>${t('nb.value')}</th></tr></thead>
       <tbody>${state.variables.map((v) => html`<tr data-testid="variable" class=${v.table ? 'nb-var-table' : ''} title=${v.table ? t('nb.showTable') : v.value}
         onClick=${() => { if (v.table) { state.panels = false; showTable(v.name); } }}>
-        <td><code>${v.name}</code></td><td>${v.type}${v.dtype ? html`<small> ${v.dtype}</small>` : null}</td><td>${v.shape}</td><td class="nb-var-value">${v.table ? '▦ ' : ''}${v.value}</td></tr>`)}</tbody></table>`
+        <td><code>${v.name}</code></td><td>${v.type}${v.dtype ? html`<small> ${v.dtype}</small>` : null}</td><td>${v.shape}</td><td class="nb-var-value">${v.table ? Suite.icon('table') : ''}${v.value}</td></tr>`)}</tbody></table>`
       : html`<p><small>${t('nb.noVariables')}</small></p>`}
   </section>`;
 }
@@ -1180,24 +1181,24 @@ function FileList() {
     <div class="nb-files-buttons">
       <button class="secondary outline" data-testid="upload" onClick=${() => pick(null, true, uploadFile)}>${t('nb.upload')}</button>
       <button class="secondary outline" data-testid="install-wheel" onClick=${() => pick('.whl', true, installWheel)}>${t('nb.wheel')}</button>
-      <button class="secondary outline" title=${t('nb.refresh')} onClick=${refreshFiles}>⟳</button>
-      <button class="secondary outline" data-testid="mount-archive" title=${t('nb.mountTitle')} onClick=${mountFromDialog}>${t('nb.mount')}</button>
+      <button class="secondary outline" title=${t('nb.refresh')} onClick=${refreshFiles}>${Suite.icon('rotate-cw')}</button>
+      <button class="secondary outline" data-testid="mount-archive" title=${t('nb.mountTitle')} onClick=${mountFromDialog}>${Suite.icon('package')} ${t('nb.mount')}</button>
     </div>
     ${mounts.length ? html`<ul class="nb-mounts" data-testid="mounts">${mounts.map((m) => html`<li data-testid="mount">
-      <a href="#" onClick=${(e) => { e.preventDefault(); state.cwd = m.path; refreshFiles(); }}>📦 ${m.path}</a>${m.closed ? html` <small class="nb-stderr">(${t('nb.mountClosedMark')})</small>` : null}
-      <button class="secondary outline" data-testid="unmount" title=${t('nb.unmount')} aria-label=${t('nb.unmount')} onClick=${() => unmount(m.path).catch(fail)}>⏏</button></li>`)}</ul>` : null}
+      <a href="#" onClick=${(e) => { e.preventDefault(); state.cwd = m.path; refreshFiles(); }}>${Suite.icon('package')} ${m.path}</a>${m.closed ? html` <small class="nb-stderr">(${t('nb.mountClosedMark')})</small>` : null}
+      <button class="secondary outline" data-testid="unmount" title=${t('nb.unmount')} aria-label=${t('nb.unmount')} onClick=${() => unmount(m.path).catch(fail)}>${Suite.icon('eject')}</button></li>`)}</ul>` : null}
     <ul>
-      ${state.cwd !== HOME && state.cwd !== '/' ? html`<li><a href="#" data-testid="files-up" onClick=${(e) => { e.preventDefault(); state.cwd = state.cwd.replace(/\/[^/]+$/, '') || '/'; refreshFiles(); }}>📁 ..</a></li>` : null}
+      ${state.cwd !== HOME && state.cwd !== '/' ? html`<li><a href="#" data-testid="files-up" onClick=${(e) => { e.preventDefault(); state.cwd = state.cwd.replace(/\/[^/]+$/, '') || '/'; refreshFiles(); }}>${Suite.icon('folder')} ..</a></li>` : null}
       ${state.files.map((f) => html`<li data-testid="file">
         <a href="#" data-testid="file-name" title=${f.dir ? '' : `${f.size} B`} onClick=${async (e) => {
           e.preventDefault();
           if (f.dir) { state.cwd = `${state.cwd}/${f.name}`; refreshFiles(); return; }
           try { Suite.files.download(await kernel.readFile(`${state.cwd}/${f.name}`), f.name); } catch (err) { fail(err); }
-        }}>${f.dir ? '📁' : '📄'} ${f.name}</a>
+        }}>${f.dir ? Suite.icon('folder') : Suite.icon('file')} ${f.name}</a>
         ${f.dir ? null : html`<button class="secondary outline" title=${t('bridge.openWith')} aria-label=${t('bridge.openWith')} data-testid="file-open-with" onClick=${() => {
           const path = `${state.cwd}/${f.name}`;
           Suite.bridge.openWith(f.name, { exclude: 'notebook', source: `Python: ${path}`, data: () => kernel.readFile(path), save: async (bytes) => { await kernel.writeFile(path, bytes); refreshFiles(); } });
-        }}>↗</button>`}
+        }}>${Suite.icon('external-link')}</button>`}
         <button class="secondary outline" title=${t('nb.delete')} data-testid="file-delete" onClick=${async () => { if (await Suite.shell.confirm(t('nb.deleteConfirm', f.name))) { try { await kernel.removeFile(`${state.cwd}/${f.name}`); } catch (e) { fail(e); } refreshFiles(); } }}>×</button></li>`)}
     </ul>
   </div>`;
@@ -1214,20 +1215,20 @@ function Toolbar() {
       <option value="">${t('nb.export')}…</option>
       <option value="py">${t('nb.exportPy')}</option><option value="html">${t('nb.exportHtml')}</option><option value="html-nocode">${t('nb.exportHtmlNoCode')}</option><option value="pdf">${t('nb.exportPdf')}</option></select>
     <span class="nb-sep"></span>
-    <button class="secondary outline" title="${t('nb.undo')} (Z)" data-testid="undo" disabled=${!cellHistory.canUndo} onClick=${() => cellStep(false)}>↶</button>
-    <button class="secondary outline" title="${t('nb.redo')} (Shift+Z)" data-testid="redo" disabled=${!cellHistory.canRedo} onClick=${() => cellStep(true)}>↷</button>
+    <button class="secondary outline" title="${t('nb.undo')} (Z)" data-testid="undo" disabled=${!cellHistory.canUndo} onClick=${() => cellStep(false)}>${Suite.icon('undo-2')}</button>
+    <button class="secondary outline" title="${t('nb.redo')} (Shift+Z)" data-testid="redo" disabled=${!cellHistory.canRedo} onClick=${() => cellStep(true)}>${Suite.icon('redo-2')}</button>
     <button class="secondary outline" data-testid="add-code" onClick=${() => insertCell('code', selectedIndex() + 1)}>${t('nb.code')}</button>
     <button class="secondary outline" data-testid="add-markdown" onClick=${() => insertCell('markdown', selectedIndex() + 1)}>${t('nb.markdown')}</button>
-    <button data-testid="run-all" onClick=${runAll}>${t('nb.runAll')}</button>
+    <button data-testid="run-all" onClick=${runAll}>${Suite.icon('fast-forward')} ${t('nb.runAll')}</button>
     ${state.busy || queue.length ? html`<button class="secondary" data-testid="stop" title=${kernel.canInterrupt ? t('nb.interruptTitle') : t('nb.stopTitle')}
-      onClick=${() => stop()}>${kernel.canInterrupt ? t('nb.interrupt') : t('nb.stop')}</button>` : null}
+      onClick=${() => stop()}>${Suite.icon('square')} ${kernel.canInterrupt ? t('nb.interrupt') : t('nb.stop')}</button>` : null}
     <label class="nb-check" title=${t('nb.stopOnErrorTitle')}><input type="checkbox" data-testid="stop-on-error" checked=${state.stopOnError}
       onChange=${(e) => { state.stopOnError = e.target.checked; try { localStorage.setItem('suite.notebook.stopOnError', state.stopOnError ? '1' : '0'); } catch (err) { /* storage blocked */ } render(); }} />${t('nb.stopOnError')}</label>
     <button class="secondary outline" data-testid="clear-outputs" onClick=${() => { recordCells('outputs'); for (const c of state.cells) { c.outputs = []; c.count = null; } changed(); render(); }}>${t('nb.clearOutputs')}</button>
-    <button class="secondary outline" data-testid="restart" onClick=${() => restart()}>${t('nb.restart')}</button>
+    <button class="secondary outline" data-testid="restart" onClick=${() => restart()}>${Suite.icon('rotate-ccw')} ${t('nb.restart')}</button>
     <button class=${state.slideshow ? '' : 'secondary outline'} aria-pressed=${!!state.slideshow} data-testid="slideshow" onClick=${() => { state.slideshow = !state.slideshow; render(); }}>${t('nb.slideshow')}</button>
     <button class="secondary outline" title=${t('nb.asSlidesTitle')} data-testid="as-slides"
-      onClick=${() => Suite.bridge.openIn('reveal', { name: state.name.replace(/\.py$/i, '.ipynb'), data: JSON.stringify(toNotebook()), source: state.name }).catch(fail)}>🎞️ ${t('nb.asSlides')}</button>
+      onClick=${() => Suite.bridge.openIn('reveal', { name: state.name.replace(/\.py$/i, '.ipynb'), data: JSON.stringify(toNotebook()), source: state.name }).catch(fail)}>${Suite.icon('film')} ${t('nb.asSlides')}</button>
     <button class="secondary outline nb-only-phone" data-testid="toggle-panels" onClick=${() => { state.panels = !state.panels; render(); }}>${t('nb.panels')}</button>
   </nav>`;
 }
@@ -1236,11 +1237,11 @@ function Main() {
   return html`<div class="nb-layout">
     <div class="nb-work">
       <div class="nb-tabs" role="tablist">
-        <button role="tab" class=${state.tab === 'notebook' ? '' : 'secondary outline'} data-testid="tab-notebook" onClick=${() => { state.tab = 'notebook'; render(); }}>📓 ${t('nb.notebook')}: ${state.name}${state.dirty ? ' •' : ''}</button>
+        <button role="tab" class=${state.tab === 'notebook' ? '' : 'secondary outline'} data-testid="tab-notebook" onClick=${() => { state.tab = 'notebook'; render(); }}>${Suite.icon('notebook')} ${t('nb.notebook')}: ${state.name}${state.dirty ? ' •' : ''}</button>
         <button role="tab" class=${state.tab === 'console' ? '' : 'secondary outline'} data-testid="tab-console" onClick=${() => { state.tab = 'console'; render(); }}>${t('nb.console')}</button>
         <button role="tab" class=${state.tab === 'terminal' ? '' : 'secondary outline'} data-testid="tab-terminal" onClick=${() => { state.tab = 'terminal'; render(); }}>${t('nb.terminal')}</button>
         <span class=${`nb-status ${state.busy ? 'busy' : state.ready ? 'ready' : ''}`} data-testid="status">${state.busy ? t('nb.busy') : state.status}</span>
-        <span class=${`nb-mode ${kernel.isolated ? 'isolated' : ''}`} data-testid="isolation" title=${kernel.isolated ? t('nb.isolatedTitle') : t('nb.notIsolatedTitle')}>${kernel.isolated ? t('nb.isolated') : t('nb.notIsolated')}</span>
+        <span class=${`nb-mode ${kernel.isolated ? 'isolated' : ''}`} data-testid="isolation" title=${kernel.isolated ? t('nb.isolatedTitle') : t('nb.notIsolatedTitle')}>${kernel.isolated ? html`${Suite.icon('lock-open')} ${t('nb.isolated')}` : t('nb.notIsolated')}</span>
       </div>
       ${state.tab === 'notebook' ? html`<${Notebook} />` : state.tab === 'terminal' ? html`<${TerminalTab} />` : html`<${Console} />`}
     </div>

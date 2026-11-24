@@ -49,6 +49,23 @@ can neither be loaded from nor saved into it. *Open with…* works the same way.
 - Double-click (on phones: tap) a folder to open it. ↑, `Backspace` or the path above the list go back.
 - Double-click (tap) a file to preview it: text, images, audio and video. **Download** in the preview saves the file.
 
+## Searching
+
+**🔍** (`Ctrl+F`) searches the whole archive, all folders included. Type a **name** – a part of it, or a pattern with `*` (any
+characters) and `?` (one character), e.g. `*.log` or `report-202?.pdf` – and the matching files and folders are listed as you
+type. With **In the contents** the files themselves are searched for a text (optionally a regular expression, optionally with
+matching case): every hit is shown with line, column and the text around it; the name field then limits which files are
+searched. Binary files, encrypted files and files above 32 MiB are skipped (the summary says how many); a long search can be
+stopped. A click on a result opens its folder with the file selected; a double-click shows the file. `Esc` or × ends the search.
+
+## Comparing two archives
+
+**⇔** compares the open archive with another one (of any format the archive manager reads, e.g. a ZIP with a TAR.GZ): files
+that are **only here**, **only in the other**, **different** or **the same**. ZIP files are compared by their stored checksum and
+size, other formats by content. The list shows the differences first; the selector also shows the equal files or all. **⇐ Take**
+puts the other archive's version of a changed file – or a file that is missing here – into this archive (undo with `Ctrl+Z`;
+save to keep it). A click on a name shows the file in its folder. × ends the comparison.
+
 ## Selecting
 
 Click selects one item, `Ctrl`+click adds or removes items, `Shift`+click selects a range, `Ctrl+A` selects all items of the
@@ -87,6 +104,10 @@ Undo (↶, `Ctrl+Z`) and redo (↷, `Ctrl+Y`) work for adding, renaming, deletin
 - **Save as** (`Ctrl+Shift+S`) asks for the file name and the **format** (ZIP, 7Z, TAR, TAR.GZ, TAR.BZ2, TAR.XZ, GZ). This converts an archive, for
   example a `.tar.gz` into a `.zip`. A GZ file holds exactly one file. An opened TAR.BZ2 or TAR.XZ archive is saved in its format
   again. Single `.bz2` and `.xz` files without an archive inside can neither be opened nor written.
+- **Split into parts** (in *Save as*) cuts the archive into parts of the chosen size, e.g. to send it by e-mail or to copy it to
+  a FAT32 stick (at most 4 GB per file). The parts are named `name.zip.001`, `.002`, … as 7-Zip writes them; 7-Zip and other
+  programs can join them again. In Chrome/Edge on the desktop you choose a folder for the parts, elsewhere they are downloaded one
+  by one. To open a split archive here, select **all its parts** together in the open dialog (their order does not matter).
 - **Compression** in the status bar sets the compression of new and changed files: Store, Fastest, Normal, Maximum. Unchanged
   files of an opened ZIP archive are copied as they are, so saving is fast.
 
@@ -117,6 +138,7 @@ On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the applicat
 | Keys | Function |
 |---|---|
 | `Ctrl+O` | Open |
+| `Ctrl+F` | Search (names and contents) |
 | `Ctrl+S` | Save |
 | `Ctrl+Shift+S` | Save as |
 

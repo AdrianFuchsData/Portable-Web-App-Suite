@@ -53,10 +53,35 @@ Gleitkommazahlen (32 und 64 Bit) und das UTF-8-Zeichen. **Little Endian** wechse
 **Bytewert (hex)** schreibt die eingegebenen Bytes an den Cursor (zum Beispiel `FF` oder `48 65 6C`). So bearbeiten Sie
 Bytes am einfachsten auf Smartphones und Tablets.
 
+## Struktur
+
+Der Reiter **Struktur** (neben dem Dateninspektor) zeigt den Aufbau einer Datei, wenn ihr Format bekannt ist: PNG, JPEG, GIF, BMP, WAV und
+andere RIFF-Dateien, ZIP (auch Office-Dokumente, JAR, …), ELF (Linux-Programme und -Bibliotheken) und PE (Windows-`.exe` und -`.dll`). Jeder
+Teil steht mit Offset (hex), Größe und Bedeutung in der Liste – etwa die Chunks eines PNG mit Breite, Höhe und Farbtyp, die Dateien eines ZIP
+mit Verfahren und Größen, die Abschnitte eines Programms. Ein Klick auf einen Teil wählt seine Bytes aus; solange der Reiter offen ist,
+sind die Teile in der Hex-Ansicht abwechselnd eingefärbt. Beschädigte Dateien werden gezeigt, so weit sie sich lesen lassen.
+
+## Marken: Lesezeichen und eingefärbte Bereiche
+
+`Strg+F2` setzt (oder entfernt) ein **Lesezeichen** auf dem Byte am Cursor – es erhält einen blauen Rahmen; `F2` und `Umschalt+F2` springen zur
+nächsten und vorigen Marke. Um einen Teil der Datei **einzufärben**, wählen Sie ihn aus, öffnen den Reiter **Marken**, wählen eine Farbe, geben
+wahlweise eine Bezeichnung ein (etwa „Kopf“) und klicken **Auswahl einfärben**. Der Reiter listet alle Marken der Datei mit Offset (und Länge);
+ein Klick springt dorthin oder wählt den Bereich wieder aus, ✎ benennt um, × entfernt. Marken wandern mit, wenn Bytes eingefügt oder gelöscht
+werden (und mit Rückgängig zurück); eine Marke, deren Bytes alle gelöscht sind, verschwindet. Jede geöffnete Datei hat eigene Marken; sie werden
+nicht in der Datei gespeichert.
+
 ## Prüfsummen
 
 **#** zeigt die Prüfsummen der Auswahl oder – ohne Auswahl – der ganzen Datei: CRC-32, Adler-32, MD5, SHA-1, SHA-256 und
 SHA-512 (hexadezimal). ⧉ kopiert einen Wert, etwa um ihn mit einer veröffentlichten Prüfsumme zu vergleichen.
+
+## Statistik
+
+**📊** untersucht die Auswahl (oder die ganze Datei): die **Entropie** in Bit pro Byte (0 = immer dasselbe Byte, 8 = völlig zufällig) mit
+einem Hinweis, was sie nahelegt – über 7,5 sind die Daten komprimiert oder verschlüsselt, Text liegt etwa bei 4 bis 5 –, den Anteil an
+Null-Bytes und an druckbarem Text, ein **Histogramm**, wie oft jeder Bytewert 00–FF vorkommt (logarithmisch, um seltene Werte zu sehen), und
+die häufigsten Werte. Bei größeren Daten zeigt eine Kurve die **Entropie entlang der Datei**: komprimierte oder verschlüsselte Teile fallen als
+Plateaus nahe der gestrichelten Linie auf; ein Klick auf die Kurve springt dorthin.
 
 ## Zwei Dateien vergleichen
 
@@ -98,6 +123,8 @@ Auf dem Mac verwenden Sie Cmd statt Strg. `F1` (oder `?`) zeigt diese Liste in d
 |---|---|
 | `Strg+F` | Suchen |
 | `Strg+G` | Gehe zu Adresse |
+| `Strg+F2` | Lesezeichen ein/aus |
+| `F2` / `Umschalt+F2` | Nächste / vorige Marke |
 | `←` / `→` / `↑` / `↓` | Bewegen (mit Umschalt: auswählen) |
 | `Bild↑` / `Bild↓` | Eine Seite nach oben / unten |
 | `Pos1` / `Ende` | Anfang / Ende der Zeile |

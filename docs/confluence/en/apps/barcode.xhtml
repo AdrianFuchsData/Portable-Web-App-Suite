@@ -30,11 +30,28 @@ Code 93, <strong>EAN-13</strong>, EAN-8, UPC-A, UPC-E, ITF and Codabar (1D bar c
    (L 7 %, M 15 %, Q 25 %, H 30 %). 1D codes accept only certain characters (EAN/UPC: digits with the check digit
    calculated) – an example is filled in when you switch to one; an error message explains invalid contents.</li>
 <li>Set the <strong>module size</strong> (pixels per square or bar), the <strong>quiet zone</strong> (white margin in modules; scanners need it),
-   for 1D codes the <strong>bar height</strong> and the text below the bars, and the <strong>colours</strong> or a transparent background. Keep
-   dark codes on a light background with enough contrast.</li>
+   for 1D codes the <strong>bar height</strong>, and the <strong>colours</strong> or a transparent background. Keep dark codes on a light
+   background with enough contrast.</li>
+<li>Text with the code: 1D codes show their digits below the bars (<strong>Text below the bars</strong>); for 2D codes <strong>Show the encoded
+   text below the code</strong> adds the content, wrapped to the code's width (long contents are shortened after 12 lines). A
+   <strong>Caption</strong> of your own – a name, a price, “Scan me” – goes below or above the code (<em>Caption position</em>). The text is
+   part of the SVG and PNG, so a label is ready to print.</li>
 </ol>
 <p>The preview is read back automatically: <strong>✓ readable</strong> confirms that the code can be scanned. <strong>⬇ SVG</strong> (scalable, for
 print) and <strong>⬇ PNG</strong> download the code, <strong>Copy image</strong> puts it on the clipboard, <strong>🖨 Print</strong> prints only the code.</p>
+<h2>Batch: many codes at once</h2>
+<p><strong>📑 Batch</strong> creates many codes in one go – for example labels for a shelf, tickets or inventory numbers:</p>
+<ul>
+<li>Type or paste the contents, <strong>one code per line</strong>, or <strong>open a CSV or text file</strong>. In a CSV file (comma, semicolon or tab)
+  choose the column with the <strong>content</strong> and, if you like, a column with the <strong>caption</strong> (printed with each code) and one
+  with the <strong>file name</strong>; tick whether the first row holds the column names. A file with only one column counts as a list.</li>
+<li>The <strong>format</strong> can be chosen here; size, colours, text with the code and the caption (when there is no caption column)
+  are those set under <strong>▦ Create</strong>.</li>
+<li><strong>Result</strong>: a <strong>PDF</strong> sheet of labels (A4 or Letter, columns × rows per page, codes centred in their cells), or a <strong>ZIP</strong>
+  with one <strong>PNG</strong> or <strong>SVG</strong> picture per code (named after the file name column, otherwise numbered after the content).</li>
+</ul>
+<p>Contents that the format cannot encode (letters for EAN-13, for example) are skipped and listed with their line number; a
+ZIP also contains them in <code>errors.txt</code>.</p>
 <h2>Keyboard shortcuts</h2>
 <p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
 <h3>Files</h3>

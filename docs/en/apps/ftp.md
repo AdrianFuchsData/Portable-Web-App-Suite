@@ -69,6 +69,17 @@ the sizes by default. At most 5000 files per side are compared.
 
 **New folder**, **Rename** (one selected entry) and **Delete** (selected entries; folders are deleted with their content after a confirmation).
 
+**Permissions.** When the server reports them (SFTP always, FTP with `MLSD` or Unix-style listings), the list shows the permissions of each
+entry (`rwxr-xr-x`). **🔐 Permissions** changes them for the selected entries: tick read, write and execute for owner, group and others,
+or type the octal value (`644`, `755`, …). FTP servers need to support `SITE CHMOD` (most Unix servers do; Windows servers usually not).
+
+**👁 Preview** shows the selected file without saving it: pictures, audio and video (up to 20 MB), text files (the first 256 KB) and other
+files as a hex dump of their beginning.
+
+**✎ Edit** opens a text file (up to 2 MB) in a simple editor inside the client; **Save to the server** (`Ctrl+S`) uploads it again. Line
+ends (`CRLF` or `LF`) are kept. If the file changed on the server since you opened it, you are asked before it is overwritten. For larger
+files, binary files and syntax highlighting use **Open with…** with the text or hex editor.
+
 **Open with…** opens the selected remote file in another application of the suite; saving there uploads it again (shown in the transfer queue). With **several files** selected (`Ctrl+click`), the text editor or the hex editor opens all of them in one window, each in its own tab.
 
 ## Keyboard shortcuts

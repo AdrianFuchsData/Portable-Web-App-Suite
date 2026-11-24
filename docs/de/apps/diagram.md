@@ -12,6 +12,7 @@ werden können, und er importiert **Excalidraw**-Zeichnungen.
 | SVG und PNG mit eingebettetem Diagramm (`.drawio.svg`, `.drawio.png`) | ja | **Speichern** schreibt wieder das Bild (erste Seite), Export **SVG** / **PNG** |
 | Excalidraw (`.excalidraw`) | ja (Rechtecke, Ellipsen, Rauten, Text, Pfeile, Linien, Bilder) | – |
 | Mermaid-Flussdiagramm (`.mmd`, `.mermaid`) | ja, automatisch angeordnet | – |
+| PlantUML (`.puml`, `.plantuml`, `.pu`, `.iuml`, `.wsd`) | ja, automatisch angeordnet (siehe unten) | – |
 
 Die SVG- und PNG-Exporte zeigen die aktuelle Seite als Bild und enthalten das ganze Diagramm, wie die „bearbeitbaren“ Exporte von
 draw.io: Öffnen Sie sie wieder in diesem Editor (oder in draw.io), um weiterzuarbeiten. Ein aus einem solchen Bild geöffnetes Diagramm
@@ -26,6 +27,15 @@ speichern“ als Drucker, um ein PDF zu erhalten.
 > Beschriftungen sind reiner Text (fette oder farbige Teile einer Beschriftung gehen verloren). Stileinstellungen, die der Editor nicht
 > verwendet, bleiben beim Speichern erhalten, sodass sie beim Bearbeiten mit diesem Editor nicht verloren gehen.
 
+
+## Vorlagen
+
+**📋 Vorlagen** bietet Ausgangspunkte für häufige Diagrammarten: Flussdiagramm, Organigramm, Sequenz-, Klassen-, Anwendungsfall-,
+Zustands- und Aktivitätsdiagramm (UML), Entity-Relationship, Netzwerk, Geschäftsprozess (BPMN), Mindmap, SWOT-Analyse und Zeitleiste.
+Wählen Sie eine aus und klicken Sie auf **Neues Diagramm** (ersetzt das aktuelle Diagramm – bei ungespeicherten Änderungen wird vorher
+gefragt) oder **Zu dieser Seite hinzufügen** (unter das Vorhandene gesetzt; `Strg+Z` nimmt es wieder weg). Ein Doppelklick auf eine Vorlage
+tut dasselbe: auf einer leeren Seite beginnt er ein neues Diagramm, sonst fügt er sie hinzu. Die Beispieltexte sind englisch; ändern Sie sie
+wie alle anderen Formen.
 ## Zeichnen
 
 - Die Formenleiste links fügt eine Form in der Mitte der Ansicht ein; eine Form kann auch auf die Zeichnung gezogen werden.
@@ -93,14 +103,14 @@ Alle werden als die entsprechenden draw.io-Formen und -Pfeile gespeichert.
 Gruppen (mit Namen und Verschachtelung), Drehung, Sperren und Ebenen werden in der draw.io-Datei gespeichert und von draw.io
 verstanden; Gruppen und Winkel aus Excalidraw-Dateien werden beim Öffnen übernommen.
 
-### Automatisch anordnen und Mermaid
+### Automatisch anordnen, Mermaid und PlantUML
 
 **Automatisch anordnen** (im Formatbereich, wenn nichts ausgewählt ist – oder bei mehreren ausgewählten Formen nur für diese)
 ordnet die Formen in Ebenen entlang ihrer Verbinder an: von oben nach unten, von links nach rechts, von unten nach oben oder von
 rechts nach links. Verbinder, die gegen diese Richtung zurückführen, werden seitlich herumgeführt. Rückgängig stellt die vorherige
 Anordnung wieder her.
 
-**Mermaid einfügen…** wandelt ein [Mermaid](https://mermaid.js.org)-Flussdiagramm in Formen und Verbinder um und ordnet sie an,
+**Mermaid / PlantUML einfügen…** wandelt ein [Mermaid](https://mermaid.js.org)-Flussdiagramm in Formen und Verbinder um und ordnet sie an,
 zum Beispiel:
 
 ```
@@ -116,6 +126,25 @@ Unterstützt werden die Richtung (`TD`/`TB`, `LR`, `BT`, `RL`), die Knotenformen
 `<br>`, die Verbindungen `-->`, `---`, `-.->` (gestrichelt), `==>` (dick), `<-->`, `--o`, `--x`, Beschriftungen als `-->|Text|` oder
 `-- Text -->`, Ketten und `A & B --> C`. Untergraphen, Stile und Klassen werden ignoriert; andere Mermaid-Diagrammarten (Sequenz,
 Klassen, …) lassen sich nicht importieren.
+
+Derselbe Dialog nimmt auch [PlantUML](https://plantuml.com)-Text (zwischen `@startuml` und `@enduml`); **Ein Beispiel einfügen…** setzt
+eine der Vorlagen als Text ein. Ein PlantUML-Server ist nicht nötig – die App liest den Text selbst, und es entstehen gewöhnliche, bearbeitbare
+Formen:
+
+- **Klassendiagramme:** `class`, `abstract class`, `interface`, `enum`, `entity` mit `{ Mitgliedern }` oder `Name : Mitglied` (Felder oben,
+  Methoden unter einem Trennstrich), Beziehungen `<|--` (Vererbung), `<|..` (Realisierung), `*--` (Komposition), `o--` (Aggregation), `-->`,
+  `..>`, `--`, mit Multiplizitäten (`"1" -- "*"`) und Beschriftungen (`: Text`).
+- **Anwendungsfalldiagramme:** `actor`, `:Akteur:`, `usecase`, `(Anwendungsfall)`, Aliase mit `as`, `left to right direction`.
+- **Komponentendiagramme:** `component`, `[Komponente]`, `interface`, `() "Schnittstelle"`, `node`, `database`, `cloud`, `queue`, `file`, …
+- **Zustandsdiagramme:** `state`, `[*]` als Start und Ende, `Zustand : Beschreibung`, Übergänge mit Ereignissen.
+- **Aktivitätsdiagramme** (aktuelle Syntax): `start`, `stop`, `end`, `:Aktion;` (auch über mehrere Zeilen), `if … elseif … else … endif`,
+  `while … endwhile`, `repeat … repeat while`, `fork … fork again … end fork`, `detach`/`kill`.
+- **Sequenzdiagramme:** `participant`, `actor`, `database` und die anderen Arten von Beteiligten, Nachrichten `->`, `-->` (Antwort,
+  gestrichelt), `->>`, `->x`, `<-`, Nachrichten an sich selbst, `autonumber`, `title`, `alt`/`else`/`opt`/`loop`/`par`/`group … end` als
+  Rahmen, Notizen über, links oder rechts von Beteiligten, `== Trenner ==`, `...` und `|||` für Abstand.
+
+Stile (`skinparam`, Farben), `!include`, Pakete als Container und Notizen außerhalb von Sequenzdiagrammen werden ignoriert. `.puml`-Dateien
+(auch ohne `@startuml`) öffnen sich als neues Diagramm und werden als `.drawio` gespeichert.
 
 ## Formatbereich
 
@@ -193,4 +222,4 @@ Auf dem Mac verwenden Sie Cmd statt Strg. `F1` (oder `?`) zeigt diese Liste in d
 ## Auf Smartphones und Tablets
 
 Die Formen stehen in einer Leiste unter der Zeichnung; Tippen fügt eine Form ein. **Format** öffnet den Formatbereich. Zwei Finger zoomen
-und verschieben die Ansicht.
+und verschieben die Ansicht; ein Finger auf einer leeren Stelle der Zeichnung verschiebt sie ebenfalls (ein Auswahlrechteck braucht eine Maus oder einen Stift).

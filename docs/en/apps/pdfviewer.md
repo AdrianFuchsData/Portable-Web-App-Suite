@@ -28,6 +28,37 @@ pages by 90 degrees (only the view; the file is not changed).
 🔍 or `Ctrl+F` opens the search bar. The viewer highlights all matches and shows "1 of 3 matches". **Next** and
 **Previous** move between the matches; **Match case** distinguishes upper and lower case.
 
+## Text
+
+Select text on a page with the mouse (or by touch) and copy it with `Ctrl+C`. **🛠 Text and export** also copies the text of the
+current page or of the whole document at once, or saves it as a text file (`.txt`, one line per line of the page, a blank line
+between pages). Scanned pages are pictures and contain no text.
+
+## Pages as pictures
+
+**🛠 Text and export → Pages as pictures (PNG, JPEG)…** saves the current page, the selected pages (in the page sidebar) or all
+pages as pictures. Choose PNG (sharp, lossless, larger) or JPEG (smaller, for photos and scans) and the resolution: 150 dpi suits
+the screen, 300 dpi printing. One page becomes one picture (`name-001.png`), several pages a ZIP with one picture per page.
+Filled-in form fields appear in the pictures.
+
+## Making a document smaller
+
+**🛠 Text and export → Make smaller (compress)…** shrinks large PDFs, typically scans and documents with photos. Choose a level:
+**Screen** (96 dpi, strong JPEG compression, the smallest file), **E-book** (150 dpi) or **Print** (300 dpi, light compression).
+Pictures that are larger than the level needs for an A4 page are scaled down and stored as JPEG; text, fonts and drawings are
+not touched and stay sharp. Uncompressed parts of the file are packed and leftovers of earlier edits are dropped. The message
+shows the size before and after; when the document cannot become noticeably smaller, it stays as it is. `Ctrl+Z` undoes it until
+you save. Transparency masks, CMYK and black-and-white pictures are left as they are.
+
+## Redaction (blacking out)
+
+**🛠 Text and export → Black out (redact)…** removes confidential content for good. Drag a box over everything that must
+disappear (a click on a box removes it again), or type a word or name and click **Mark** to box it everywhere in the document.
+**Remove for good** then turns every page with boxes into a picture of the page with black boxes – what was under them,
+including the text, is gone, and the text of these pages can no longer be selected or found. The document is rebuilt from its
+pages, so nothing hidden survives; its outline, form fields and metadata (author, title, …) are not kept. Until you save,
+**Pages → Undo** brings the original back. Unlike black rectangles drawn as annotations, this cannot be undone by others.
+
 ## Forms and annotations
 
 Form fields can be filled in directly. The **Annotate** list switches the mode:

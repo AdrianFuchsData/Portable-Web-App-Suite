@@ -83,6 +83,28 @@ Vorschläge (<ac:link><ri:page ri:content-title="Portable Web App Suite – Benu
 <p><strong>◫</strong> zeigt das aktuelle Dokument ein zweites Mal neben dem ersten (am Smartphone untereinander), etwa um den Anfang einer langen
 Datei zu sehen, während man ihr Ende bearbeitet. Beide Ansichten bearbeiten denselben Text und teilen einen Rückgängig-Verlauf; die
 zweite Ansicht folgt dem aktiven Reiter. Erneut ◫ schließt sie.</p>
+<h2>Lesezeichen</h2>
+<p>Markieren Sie Zeilen, zu denen Sie zurückkehren möchten: <code>Strg+F2</code> (oder ein Klick in den schmalen Rand links der Zeilennummern) setzt oder
+entfernt ein Lesezeichen ◆ in der aktuellen Zeile, die eingefärbt wird. <code>F2</code> und <code>Umschalt+F2</code> springen zum nächsten und vorigen Lesezeichen
+(am Ende wieder von vorn), <code>Strg+Umschalt+F2</code> entfernt alle. Lesezeichen wandern beim Bearbeiten mit dem Text. Die Gruppe <strong>Lesezeichen</strong> in
+<strong>🛠 Werkzeuge</strong> kopiert außerdem die Zeilen mit Lesezeichen, entfernt sie oder behält nur sie – etwa um die interessanten Zeilen einer
+Protokolldatei zu sammeln. Die Statusleiste zeigt ihre Anzahl. Jedes Dokument hat eigene Lesezeichen; sie werden nicht mit der Datei
+gespeichert.</p>
+<h2>Markdown-Vorschau</h2>
+<p>Für Markdown-Dateien (<code>.md</code>) zeigt <strong>👁 Vorschau</strong> (<code>Strg+Umschalt+M</code>) das gestaltete Dokument neben dem Text (am Smartphone darunter):
+Überschriften, Hervorhebungen, Listen, Aufgabenlisten, Tabellen, Code, Zitate und Links. Sie wird beim Tippen aktualisiert und scrollt mit
+dem Text mit. <strong>⤓ HTML</strong> speichert das gestaltete Dokument als HTML-Datei. Zur Sicherheit kann nichts im Dokument ausgeführt werden (keine
+Skripte), und Bilder aus Dateien oder dem Web werden nicht geladen – nur als <code>data:</code>-Adresse eingebettete Bilder erscheinen.</p>
+<h2>Suchen und ersetzen</h2>
+<p><code>Strg+F</code> (oder 🔍) öffnet die Suchleiste über dem Text. Geben Sie den Suchtext ein: Die Leiste zählt die Treffer (<em>2 von 7</em>), und
+die Treffer werden hervorgehoben. <strong>Eingabe</strong> oder ↓ geht zum nächsten Treffer, <strong>Umschalt+Eingabe</strong> oder ↑ zum vorherigen (auch
+<code>F3</code> / <code>Umschalt+F3</code>), <strong>Alt+Eingabe</strong> wählt alle Treffer auf einmal aus (dann ändert Tippen alle zugleich). Die Schaltflächen
+neben dem Feld schalten <strong>Groß-/Kleinschreibung beachten</strong> (Aa), <strong>Ganzes Wort</strong> und <strong>Regulärer Ausdruck</strong> (<code>.*</code>; ein ungültiger
+Ausdruck wird gemeldet) ein. Der Pfeil links blendet das <strong>Ersetzen</strong>-Feld ein: <strong>Ersetzen</strong> ändert den aktuellen Treffer und geht
+weiter, <strong>Alle ersetzen</strong> ändert jeden Treffer (mit einem regulären Ausdruck fügen <code>$1</code>, <code>$2</code> … seine Gruppen ein). <code>Escape</code>
+schließt die Leiste. <code>Strg+G</code> springt zu einer Zeile.</p>
+<p>Die anderen Code-Editoren der Suite – die Zellen des <ac:link><ri:page ri:content-title="Python-Notebook" /><ac:plain-text-link-body><![CDATA[Python-Notebooks]]></ac:plain-text-link-body></ac:link>, der SQL-Editor des
+<ac:link><ri:page ri:content-title="Datenbankwerkzeug" /><ac:plain-text-link-body><![CDATA[Datenbank-Werkzeugs]]></ac:plain-text-link-body></ac:link> und die Bodys der <ac:link><ri:page ri:content-title="HTTP-Analyse" /><ac:plain-text-link-body><![CDATA[HTTP-Analyse]]></ac:plain-text-link-body></ac:link> – haben dieselbe Suchleiste.</p>
 <h2>In Dateien suchen</h2>
 <p><strong>🔍🗂</strong> (<code>Strg+Umschalt+F</code>) durchsucht alle geöffneten Dokumente auf einmal: Treffer werden je Datei mit Zeile und Spalte
 aufgelistet; ein Klick öffnet das Dokument und markiert den Treffer. <strong>Aa</strong> beachtet Groß-/Kleinschreibung, <strong>.*</strong> behandelt den
@@ -109,7 +131,7 @@ Werkzeug lässt sich mit <code>Strg+Z</code> rückgängig machen.</p>
 <tbody>
 <tr>
 <td>Zeilen</td>
-<td>sortieren A→Z oder Z→A (Zahlen in natürlicher Reihenfolge: 9 vor 10; Groß-/Kleinschreibung egal), nach Länge sortieren, Reihenfolge umkehren, doppelte Zeilen entfernen, leere Zeilen entfernen, Leerzeichen am Ende oder an beiden Enden entfernen, Zeilen verbinden</td>
+<td>sortieren A→Z oder Z→A (Zahlen in natürlicher Reihenfolge: 9 vor 10; Groß-/Kleinschreibung egal), nach Länge sortieren, Reihenfolge umkehren, doppelte Zeilen entfernen, leere Zeilen entfernen, Leerzeichen am Ende oder an beiden Enden entfernen, Zeilen verbinden, mischen, Zeilen nummerieren…, Text vor/nach Zeilen einfügen…, Zeilen behalten oder entfernen, die einen Text oder regulären Ausdruck enthalten…, Zeilen bei einer Breite umbrechen…</td>
 </tr>
 <tr>
 <td>Groß/klein</td>
@@ -121,12 +143,19 @@ Werkzeug lässt sich mit <code>Strg+Z</code> rückgängig machen.</p>
 </tr>
 <tr>
 <td>Formatieren</td>
-<td>JSON formatieren (einrücken) oder verkleinern, XML formatieren, SQL formatieren, SQL in eine Zeile</td>
+<td>JSON formatieren (einrücken) oder verkleinern, XML formatieren oder verkleinern, YAML formatieren, JSON → YAML, YAML → JSON, SQL formatieren, SQL in eine Zeile</td>
 </tr>
 </tbody>
 </table>
 <p>Zeilenwerkzeuge arbeiten immer mit ganzen Zeilen: denen, die die Auswahl berührt. Ungültige Eingaben (etwa fehlerhaftes JSON)
 zeigen eine Meldung und lassen den Text unverändert.</p>
+<p>Werkzeuge mit <strong>…</strong> fragen zuerst nach ihren Einstellungen und zeigen eine Vorschau des Ergebnisses: <em>Zeilen nummerieren</em> (Beginn, Text nach
+der Nummer, führende Nullen), <em>Text vor/nach Zeilen</em> (etwa <code>-</code> für eine Liste oder <code>;</code> an jedem Ende; leere Zeilen lassen sich auslassen),
+Zeilen <em>behalten</em> oder <em>entfernen, die</em> einen Text <em>enthalten</em> (wahlweise als regulärer Ausdruck und mit Groß-/Kleinschreibung), Zeilen bei
+einer Breite <em>umbrechen</em> (an Leerzeichen, die Einrückung bleibt). Die Einstellungen werden gemerkt.</p>
+<p><strong>Syntaxprüfung</strong>: In JSON-, XML- und YAML-Dateien wird ein Fehler schon beim Tippen rot unterstrichen, mit einer Marke am Rand; zeigen Sie
+darauf, um die Meldung zu lesen. <strong>✓ Syntax prüfen</strong> (oben in der Werkzeugliste) meldet, ob das Dokument korrekt ist, oder springt zum ersten
+Fehler und nennt Zeile, Spalte und Problem.</p>
 <p><strong>SQL formatieren…</strong> arbeitet wie der PoorSQL-Formatierer: jede Klausel in einer eigenen Zeile, Listen und Unterabfragen
 eingerückt, Schlüsselwörter, Funktionsnamen und Datentypen in GROSSBUCHSTABEN. Ein Dialog legt die Optionen fest, mit einer
 Vorschau des Ergebnisses: Dialekt (Standard-SQL, T-SQL/SQL Server, PostgreSQL, MySQL, MariaDB, SQLite, Oracle PL/SQL, Db2,
@@ -222,6 +251,22 @@ können Sie dort ändern:</p>
 <tr>
 <td><code>Strg+Umschalt+F</code></td>
 <td>In allen geöffneten Dateien suchen</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+M</code></td>
+<td>Markdown-Vorschau ein/aus</td>
+</tr>
+<tr>
+<td><code>Strg+F2</code></td>
+<td>Lesezeichen ein/aus</td>
+</tr>
+<tr>
+<td><code>F2</code> / <code>Umschalt+F2</code></td>
+<td>Nächstes / voriges Lesezeichen</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+F2</code></td>
+<td>Alle Lesezeichen entfernen</td>
 </tr>
 <tr>
 <td><code>Strg+G</code></td>

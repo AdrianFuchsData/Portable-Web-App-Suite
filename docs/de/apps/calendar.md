@@ -12,10 +12,34 @@ Kalender, Apple Kalender und den meisten anderen Kalenderprogrammen. Mehrere Kal
   Ein Klick auf den Namen macht ihn zum Kalender für neue und importierte Termine.
 - **Termine importieren…** fügt die Termine einer `.ics`-Datei (z. B. einer per E-Mail erhaltenen Einladung) zum gewählten Kalender hinzu. Ein
   Termin mit derselben UID ersetzt den vorhandenen, sodass eine aktualisierte Einladung den Termin aktualisiert.
+- **CSV… → CSV importieren…** liest Termine oder Aufgaben aus einer CSV-Datei in den gewählten Kalender – etwa einen Export von Outlook, Google
+  Kalender oder einer Tabelle. Die Spalten werden an ihren Namen erkannt, deutsch oder englisch (*Betreff/Subject, Beginnt am/Start Date, Beginnt
+  um/Start Time, Endet am, Endet um, Ganztägiges Ereignis/All Day Event, Beschreibung, Ort, Kategorien*; für Aufgaben *Fällig am/Due Date,
+  Priorität, Status, % erledigt*). Daten dürfen als `2026-10-16`, `16.10.2026` oder `10/16/2026` geschrieben sein (die Reihenfolge von Tag und
+  Monat wird aus der Datei bestimmt), Uhrzeiten als `14:30` oder `2:30 PM`; Komma, Strichpunkt oder Tabulator trennen die Spalten. Zeilen ohne
+  lesbares Datum werden übersprungen und genannt.
+- **CSV… → Als CSV exportieren** schreibt die Termine eines Zeitraums (wiederkehrende als einzelne Termine) oder die Aufgaben der angezeigten
+  Kalender oder des gewählten, im Spaltenaufbau von Outlook und Google Kalender, mit Daten im ISO-, europäischen oder US-Format (Google).
 - 💾 speichert einen Kalender: in Chrome/Edge am Desktop direkt in seine Datei, in Firefox und unter Android als Download (ersetzen Sie die
   ursprüngliche Datei damit). **Alle speichern** (`Strg+S`) speichert jeden geänderten Kalender; geänderte Kalender sind mit • markiert.
 
-Alles in der Datei, was der Kalender nicht bearbeitet (weitere Erinnerungen, Teilnehmende, Aufgaben, weitere Eigenschaften), bleibt beim Speichern erhalten.
+### Online-Kalender (CalDAV)
+
+**☁ CalDAV…** öffnet Kalender, die auf einem Server liegen – Nextcloud, ownCloud, Radicale, Baïkal, SOGo, mailbox.org, iCloud und andere
+CalDAV-Server. Eine Browserseite kann nicht direkt mit diesen Servern sprechen, darum braucht es das **Relay** (siehe das Kapitel zum Relay im
+Benutzerhandbuch; Adresse und Anmeldung tragen Sie im Dialog unter *Relay* ein).
+
+1. **Konto hinzufügen**: ein Name, die Adresse – der Server (`https://cloud.example.org`), seine CalDAV-Adresse
+   (`https://cloud.example.org/remote.php/dav`) oder die Adresse eines Kalenders –, Benutzername und Passwort. Viele Anbieter verlangen hier ein
+   *App-Passwort* statt des normalen. Konten und Passwörter liegen in der oben angezeigten Verbindungsdatei (eine KeePass-Datenbank oder eine
+   JSON-Datei; **speichern** Sie sie, um sie zu behalten).
+2. **Kalender** fragt den Server nach Ihren Kalendern (auch über `/.well-known/caldav`); **Öffnen** lädt einen mit seinen Terminen und Aufgaben.
+   Er erscheint in der Liste mit ☁ statt 💾.
+3. Ändern Sie Termine und Aufgaben wie gewohnt. **☁** (oder **Alle speichern**) schreibt nur, was sich geändert hat: Neues wird angelegt, Geändertes
+   ersetzt, Gelöschtes entfernt. Hat inzwischen jemand anderer ein Element auf dem Server geändert, wird es nicht überschrieben: Der Kalender meldet
+   das, **⟳** lädt den aktuellen Stand neu und Sie wiederholen Ihre Änderung.
+
+Alles in der Datei, was der Kalender nicht bearbeitet (weitere Erinnerungen, Teilnehmende, Journaleinträge, weitere Eigenschaften), bleibt beim Speichern erhalten.
 
 ## Ansichten
 
@@ -25,6 +49,7 @@ Alles in der Datei, was der Kalender nicht bearbeitet (weitere Erinnerungen, Tei
 | Woche | `W` | Zeitraster der Woche mit einer Zeile für ganztägige Termine; die rote Linie ist die aktuelle Uhrzeit |
 | Tag | `D` | Zeitraster eines Tages |
 | Liste | `A` | Liste der Termine der nächsten 60 Tage |
+| Aufgaben | `X` | die Aufgaben (To-dos) der angezeigten Kalender (siehe unten) |
 | Verfügbarkeit | `F` | freie und belegte Zeiten der Woche, eine Zeile je Kalender (siehe unten) |
 
 **Heute** (`T`), ‹ und › (`←`/`→`) blättern; der kleine Monat links springt zu einem Datum. Die Woche beginnt am Montag oder Sonntag
@@ -32,6 +57,16 @@ Alles in der Datei, was der Kalender nicht bearbeitet (weitere Erinnerungen, Tei
 
 **🖨** druckt die aktuelle Ansicht mit den Namen der angezeigten Kalender und dem Zeitraum als Überschrift (Monat und Woche im
 Querformat, der ganze Tag auf einem Blatt); mit „Als PDF speichern“ als Drucker entsteht ein PDF. Die Suche gilt auch für den Ausdruck.
+
+### Aufgaben
+
+Kalenderdateien können auch **Aufgaben** enthalten (To-dos, `VTODO` – wie Thunderbird, Apple Erinnerungen, Nextcloud Tasks oder Outlook sie
+exportieren). **Aufgaben** (`X`) listet die Aufgaben der angezeigten Kalender: **Überfällig** (rot), **Heute**, **Demnächst**, **Ohne Fälligkeit**
+und die **erledigten** zusammengeklappt. Tippen Sie in *Neue Aufgabe* und drücken Sie Enter, um eine im gewählten Kalender anzulegen. Das Kästchen
+davor hakt eine Aufgabe ab (und wieder auf). Ein Klick auf eine Aufgabe öffnet sie: Titel, **Fälligkeit** mit optionaler Uhrzeit, **Priorität**
+(ein rotes ! markiert hoch), **Status** (offen, in Arbeit mit % erledigt, erledigt, abgesagt), Kalender, Ort, Kategorien und Beschreibung;
+**Löschen** entfernt sie. Offene Aufgaben mit Fälligkeit erscheinen auch an ihrem Tag in der Monatsansicht und der Liste (☐); ein Klick öffnet sie.
+Die Suche findet auch Aufgaben; Rückgängig gilt für sie wie für Termine.
 
 ### Verfügbarkeit (frei/belegt)
 
@@ -107,7 +142,7 @@ Auf dem Mac verwenden Sie Cmd statt Strg. `F1` (oder `?`) zeigt diese Liste in d
 
 | Tasten | Funktion |
 |---|---|
-| `M` / `W` / `D` / `A` / `F` | Monat / Woche / Tag / Agenda / Verfügbarkeit |
+| `M` / `W` / `D` / `A` / `X` / `F` | Monat / Woche / Tag / Liste / Aufgaben / Verfügbarkeit |
 | `T` | Heute |
 | `←` / `K` | Zurück |
 | `→` / `J` | Weiter |

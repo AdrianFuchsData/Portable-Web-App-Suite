@@ -631,3 +631,20 @@ def test_save_as_markdown(app_page, tmp_path):
     md = page.evaluate("import('app/doc-markdown').then((m) => m.toMarkdown(DOC.doc.save()))")
     assert md == "Visit the [site](https://example.org/a%20b)\n\n1\\. not a list \\*not bold\\*\n\n- [x] done\n- [ ] open\n", md
     assert page.errors == []
+
+
+def test_header_and_footer_in_a_new_document(app_page):
+    page = ready(app_page)
+    assert page.evaluate("DOC.doc.save().documentStyle.documentFlavor") == 1  # pages, as in Word
+    click_text(page)
+    page.keyboard.type("Body")
+    for area, label, text in [("headers", "Edit header", "My header"), ("footers", "Edit footer", "My footer")]:
+        page.get_by_text("Insert", exact=True).first.click()
+        ribbon_button(page, "doc-hf-menu").click()
+        page.locator("[role=menu]").get_by_text(label, exact=True).click()
+        page.wait_for_timeout(500)
+        page.keyboard.type(text)
+        page.wait_for_timeout(300)
+        parts = page.evaluate(f"Object.values(DOC.doc.save().{area} || {{}}).map((h) => h.body.dataStream)")
+        assert any(text in p for p in parts), parts
+    assert page.evaluate("DOC.doc.save().body.dataStream").startswith("Body")

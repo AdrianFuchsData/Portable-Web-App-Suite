@@ -21,6 +21,10 @@
 //	    sftp.readFile(path) -> Uint8Array, sftp.writeFile(path, Uint8Array), sftp.mkdir(path),
 //	    sftp.readAt(path, offset, length) -> Uint8Array, sftp.writeAt(path, offset, Uint8Array, truncate),
 //	    sftp.chtimes(path, mtimeMs), sftp.remove(path), sftp.rmdir(path), sftp.rename(from, to), sftp.close()
+//	client.dial(host, port) -> Promise<transport>   a TCP connection from the server (direct-tcpip; jump hosts, local forwarding)
+//	client.listen(host, port) -> Promise<listener>  the server listens (tcpip-forward; remote forwarding)
+//	    listener.accept() -> Promise<transport|null>, listener.port, listener.close()
+//	    transport: send(Uint8Array), read() -> Promise<Uint8Array|null>, close() – the same form the engine takes in connect
 //	client.close()
 //	SSHEngine.generateKey(type, comment, passphrase) -> Promise<{privateKey (OpenSSH PEM), publicKey (authorized_keys line),
 //	    fingerprint, type}>; type "ed25519" (default), "ecdsa" (P-256) or "rsa" (4096 bits)
@@ -41,6 +45,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"strconv"
 	"sync"
 	"syscall/js"
 	"time"
@@ -49,7 +54,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-const version = "0.3.0"
+const version = "0.5.0"
 
 // ---- promises and helpers --------------------------------------------------------------------
 
@@ -223,6 +228,69 @@ func (c *jsConn) SetDeadline(t time.Time) error      { return nil }
 func (c *jsConn) SetReadDeadline(t time.Time) error  { return nil }
 func (c *jsConn) SetWriteDeadline(t time.Time) error { return nil }
 
+// connTransport exposes a net.Conn (an SSH channel) as a JS transport: send never blocks the JS thread (writes are queued for
+// a goroutine), read resolves to the next bytes or null at the end, close ends both directions.
+func connTransport(c net.Conn) js.Value {
+	o := newObject()
+	var mu sync.Mutex
+	cond := sync.NewCond(&mu)
+	var queue [][]byte
+	closed := false
+	go func() {
+		for {
+			mu.Lock()
+			for len(queue) == 0 && !closed {
+				cond.Wait()
+			}
+			if len(queue) == 0 && closed {
+				mu.Unlock()
+				c.Close() // (after the last queued write)
+				return
+			}
+			b := queue[0]
+			queue = queue[1:]
+			mu.Unlock()
+			if _, err := c.Write(b); err != nil {
+				c.Close()
+				return
+			}
+		}
+	}()
+	o.method("read", func(args []js.Value) any {
+		return promise(func() (any, error) {
+			buf := make([]byte, 32*1024)
+			n, err := c.Read(buf)
+			if n > 0 {
+				return toJSBytes(buf[:n]), nil
+			}
+			if err != nil {
+				return js.Null(), nil
+			}
+			return toJSBytes(nil), nil
+		})
+	})
+	o.method("send", func(args []js.Value) any {
+		b := fromJSBytes(args[0])
+		mu.Lock()
+		if !closed {
+			queue = append(queue, b)
+			cond.Signal()
+		}
+		mu.Unlock()
+		return nil
+	})
+	o.method("close", func(args []js.Value) any {
+		mu.Lock()
+		if !closed {
+			closed = true
+			cond.Signal() // (the writer closes the channel after the queued writes)
+		}
+		mu.Unlock()
+		return nil
+	})
+	return o.value
+}
+
 // ---- connect -----------------------------------------------------------------------------------
 
 func connect(transport, opts js.Value) (any, error) {
@@ -329,6 +397,43 @@ func newClient(client *ssh.Client) js.Value {
 			opts = args[0]
 		}
 		return promise(func() (any, error) { return newShell(client, opts) })
+	})
+	o.method("dial", func(args []js.Value) any {
+		host, port := args[0].String(), args[1].Int()
+		return promise(func() (any, error) {
+			c, err := client.Dial("tcp", net.JoinHostPort(host, strconv.Itoa(port)))
+			if err != nil {
+				return nil, err
+			}
+			return connTransport(c), nil
+		})
+	})
+	o.method("listen", func(args []js.Value) any {
+		host, port := args[0].String(), args[1].Int()
+		return promise(func() (any, error) {
+			l, err := client.Listen("tcp", net.JoinHostPort(host, strconv.Itoa(port)))
+			if err != nil {
+				return nil, err
+			}
+			lo := newObject()
+			if a, ok := l.Addr().(*net.TCPAddr); ok {
+				lo.value.Set("port", a.Port)
+			}
+			lo.method("accept", func(args []js.Value) any {
+				return promise(func() (any, error) {
+					c, err := l.Accept()
+					if err != nil {
+						return js.Null(), nil
+					}
+					return connTransport(c), nil
+				})
+			})
+			lo.method("close", func(args []js.Value) any {
+				go l.Close()
+				return nil
+			})
+			return lo.value, nil
+		})
 	})
 	o.method("sftp", func(args []js.Value) any {
 		return promise(func() (any, error) {
@@ -547,6 +652,7 @@ func newSFTP(s *sftp.Client) js.Value {
 	simple("remove", func(args []js.Value) error { return s.Remove(path(args, 0)) })
 	simple("rmdir", func(args []js.Value) error { return s.RemoveDirectory(path(args, 0)) })
 	simple("rename", func(args []js.Value) error { return s.PosixRename(path(args, 0), path(args, 1)) })
+	simple("chmod", func(args []js.Value) error { return s.Chmod(path(args, 0), os.FileMode(uint32(args[1].Int())&0o7777)) })
 	simple("chtimes", func(args []js.Value) error {
 		t := time.UnixMilli(int64(args[1].Float()))
 		return s.Chtimes(path(args, 0), t, t)

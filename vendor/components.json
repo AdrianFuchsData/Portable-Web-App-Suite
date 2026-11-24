@@ -4,11 +4,15 @@
     {"name": "htm", "version": "3.1.1", "license": "Apache-2.0", "files": ["licenses/htm.LICENSE.txt"]},
     {"name": "Preact", "version": "10 (bundled with htm 3.1.1)", "license": "MIT", "files": ["licenses/preact.LICENSE.txt"]}
   ],
+  "icons/": [{"name": "Lucide icons (lucide-static)", "version": "1.70.0", "license": "ISC", "files": ["icons/LICENSE.txt"]}],
   "pico.min.css": [{"name": "Pico CSS", "version": "2.1.1", "license": "MIT", "files": ["licenses/pico.LICENSE.txt"]}],
   "pico.conditional.min.css": [{"name": "Pico CSS", "version": "2.1.1", "license": "MIT", "files": ["licenses/pico.LICENSE.txt"]}],
   "kdbxweb.min.js": [{"name": "kdbxweb", "version": "2.1.1", "license": "MIT", "files": ["licenses/kdbxweb.LICENSE.txt"]}],
   "hash-wasm-argon2.umd.min.js": [{"name": "hash-wasm", "version": "4.12.0", "license": "MIT", "files": ["licenses/hash-wasm.LICENSE.txt"]}],
   "otpauth.umd.min.js": [{"name": "otpauth", "version": "9.5.2", "license": "MIT", "files": ["licenses/otpauth.LICENSE.txt"]}],
+  "qrcode-generator.min.js": [{"name": "qrcode-generator", "version": "2.0.4", "license": "MIT", "files": ["licenses/qrcode-generator.LICENSE.txt"]}],
+  "axe/": [{"name": "axe-core", "version": "4.14.0", "license": "MPL-2.0 (bundled parts MIT, ISC, …)", "files": ["licenses/axe-core.LICENSE.txt", "licenses/axe-core.LICENSE-3RD-PARTY.txt"]}],
+  "jsQR.min.js": [{"name": "jsQR", "version": "1.4.0", "license": "Apache-2.0", "files": ["licenses/jsqr.LICENSE.txt"]}],
   "exceljs.min.js": [{"name": "ExcelJS", "version": "4.4.0", "license": "MIT", "files": ["licenses/exceljs.LICENSE.txt"]}],
   "xlsx.full.min.js": [{"name": "SheetJS Community Edition", "version": "0.20.3", "license": "Apache-2.0", "files": ["licenses/sheetjs.LICENSE.txt"]}],
   "pptxgen.bundle.js": [

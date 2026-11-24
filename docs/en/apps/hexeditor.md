@@ -49,10 +49,36 @@ floating point numbers (32 and 64 bit) and the UTF-8 character. **Little endian*
 **Byte value (hex)** writes the bytes you enter at the cursor (for example `FF` or `48 65 6C`). This is the easiest way
 to edit on phones and tablets.
 
+## Structure
+
+The **Structure** tab (next to the data inspector) shows how a file is built when its format is known: PNG, JPEG, GIF, BMP,
+WAV and other RIFF files, ZIP (also Office documents, JAR, …), ELF (Linux programs and libraries) and PE (Windows `.exe`
+and `.dll`). Every part is listed with its offset (hex), size and meaning – e.g. the chunks of a PNG with width, height and
+colour type, the files of a ZIP with method and sizes, the sections of a program. A click on a part selects its bytes; while
+the tab is open the parts are tinted in alternating colours in the hex view. Damaged files are shown as far as they can be
+read.
+
+## Marks: bookmarks and coloured ranges
+
+`Ctrl+F2` sets (or removes) a **bookmark** on the byte at the cursor – it gets a blue frame; `F2` and `Shift+F2` jump to the
+next and previous mark. To **colour** a part of the file, select it, open the **Marks** tab, pick a colour, optionally type a
+label (e.g. "header") and click **Colour the selection**. The tab lists all marks of the file with their offset (and length);
+a click jumps there or selects the range again, ✎ renames, × removes. Marks move along when bytes are inserted or deleted
+(and back with undo); a mark whose bytes are all deleted goes away. Each open file has its own marks; they are not saved in
+the file.
+
 ## Checksums
 
 **#** shows the checksums of the selection, or of the whole file when nothing is selected: CRC-32, Adler-32, MD5,
 SHA-1, SHA-256 and SHA-512 (hexadecimal). ⧉ copies a value, for example to compare it with a published checksum.
+
+## Statistics
+
+**📊** analyses the selection (or the whole file): the **entropy** in bits per byte (0 = always the same byte, 8 = completely
+random) with a hint what it suggests – above 7.5 the data is compressed or encrypted, text lies around 4 to 5 –, the share of
+zero bytes and of printable text, a **histogram** of how often each byte value 00–FF occurs (logarithmic to see rare values)
+and the most frequent values. For larger data a curve shows the **entropy along the file**: compressed or encrypted parts
+stand out as plateaus near the dashed line; a click on the curve jumps there.
 
 ## Comparing two files
 
@@ -94,6 +120,8 @@ On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the applicat
 |---|---|
 | `Ctrl+F` | Find |
 | `Ctrl+G` | Go to offset |
+| `Ctrl+F2` | Bookmark on/off |
+| `F2` / `Shift+F2` | Next / previous mark |
 | `←` / `→` / `↑` / `↓` | Move (with Shift: select) |
 | `Page Up` / `Page Down` | One page up / down |
 | `Home` / `End` | Start / end of the row |

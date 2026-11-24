@@ -64,7 +64,7 @@ export function newSlide(template = 'content', props = {}) {
 export function newDeck(title = 'Presentation') {
   const first = newSlide('title');
   first.blocks[0].html = title;
-  return { version: 1, title, lang: 'en', theme: 'black', highlightTheme: 'monokai', css: '', config: { ...DEFAULT_CONFIG }, slides: [{ ...first, children: [] }, { ...newSlide('content'), children: [] }] };
+  return { version: 1, title, lang: 'en', theme: 'black', highlightTheme: 'monokai', css: '', themeVars: {}, themeFonts: '', config: { ...DEFAULT_CONFIG }, slides: [{ ...first, children: [] }, { ...newSlide('content'), children: [] }] };
 }
 
 /** Normalize a deck read from a file (missing fields, old versions). */
@@ -74,6 +74,42 @@ export function normalizeDeck(deck) {
     ...newDeck(), ...deck, config: { ...DEFAULT_CONFIG, ...(deck.config || {}) },
     slides: (deck.slides || []).map((s) => ({ ...slide(s), children: (s.children || []).map(slide) })),
   };
+}
+
+// ---- theme customisation: reveal.js's CSS variables over the chosen theme -------------------------------------------
+
+/** The editable variables: key -> CSS variable (deck.themeVars holds { key: value }; empty values keep the theme's). */
+export const THEME_VARS = {
+  background: '--r-background-color', mainColor: '--r-main-color', headingColor: '--r-heading-color', linkColor: '--r-link-color',
+  linkHover: '--r-link-color-hover', selection: '--r-selection-background-color', mainFont: '--r-main-font', headingFont: '--r-heading-font',
+  codeFont: '--r-code-font', mainSize: '--r-main-font-size', headingWeight: '--r-heading-font-weight', headingTransform: '--r-heading-text-transform',
+  headingShadow: '--r-heading-text-shadow', h1Size: '--r-heading1-size', h2Size: '--r-heading2-size',
+};
+const cssValue = (v) => String(v).replace(/[;{}<>]/g, '').trim();
+const fontStack = (name) => (/[,"']/.test(name) ? name : `"${name}", sans-serif`);
+
+/** CSS of the customised theme: the variables, a background picture or gradient, the embedded fonts. */
+export function themeCss(deck) {
+  const v = deck.themeVars || {};
+  const vars = Object.entries(THEME_VARS).filter(([k]) => v[k] !== undefined && v[k] !== '')
+    .map(([k, name]) => `  ${name}: ${/Font$/.test(k) ? fontStack(cssValue(v[k])) : cssValue(v[k])};`);
+  if (v.linkColor && !v.linkHover) vars.push(`  --r-link-color-hover: ${cssValue(v.linkColor)};`);
+  let out = deck.themeFonts ? `${deck.themeFonts}\n` : '';
+  if (vars.length) out += `:root {\n${vars.join('\n')}\n}\n`;
+  if (v.background) out += `.reveal-viewport { background: ${cssValue(v.background)}; }\n`;
+  if (v.backgroundImage) out += `.reveal-viewport { background: ${cssValue(v.backgroundImage)}; background-size: cover; }\n`;
+  return out;
+}
+
+/** Variables from a theme CSS file (its :root block and fonts), e.g. one saved before or a reveal.js theme. */
+export function themeFromCss(css) {
+  const vars = {};
+  const names = Object.fromEntries(Object.entries(THEME_VARS).map(([k, n]) => [n, k]));
+  for (const m of String(css).matchAll(/(--r-[\w-]+)\s*:\s*([^;}]+)/g)) if (names[m[1]]) vars[names[m[1]]] = m[2].trim().replace(/^"([^"]+)",\s*sans-serif$/, '$1');
+  const bg = /\.reveal-viewport\s*\{[^}]*background:\s*([^;}]+)/.exec(css);
+  if (bg && /url\(|gradient\(/.test(bg[1])) vars.backgroundImage = bg[1].trim();
+  const fonts = [...String(css).matchAll(/@font-face\s*\{[^}]*\}/g)].map((m) => m[0]).join('\n');
+  return { vars, fonts };
 }
 
 // ---- iteration -----------------------------------------------------------------------------------------------
@@ -272,6 +308,7 @@ ${trusted ? '' : `<meta http-equiv="Content-Security-Policy" content="script-src
 <style>${assets.css.fonts || ''}</style>
 <style>${assets.css.theme}</style>
 <style>${assets.css.highlight || ''}</style>
+${deck.themeVars || deck.themeFonts ? `<style id="suite-theme">${themeCss(deck)}</style>` : ''}
 <style>.reveal .slides section.suite-top { top: 0 !important; } .reveal .r-stretch { object-fit: contain; }
 ${deck.css || ''}</style>
 ${math.head}

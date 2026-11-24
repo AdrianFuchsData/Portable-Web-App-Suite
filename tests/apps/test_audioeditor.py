@@ -783,3 +783,27 @@ def test_volume_automation(app_page, tmp_path):
     with zipfile.ZipFile(d.value.path()) as z:
         assert len(json.loads(z.read("project.json"))["tracks"][0]["envelope"]) == 1
     assert page.errors == []
+
+
+def test_playback_survives_audio_errors_and_follows_with_the_view(app_page, tmp_path):
+    page = ready(app_page)
+    open_files(page, make_wav(tmp_path / "long.wav", seconds=8))
+    # zoomed in so that the playback leaves the view: the view follows and the waveforms are drawn for the new range
+    page.evaluate("AE.state.view.pps = 400")
+    page.click("[data-testid=play]")
+    for _ in range(60):
+        if page.evaluate("AE.state.view.start") > 0:
+            break
+        page.wait_for_timeout(100)
+    page.wait_for_timeout(200)
+    start, key = page.evaluate("[AE.state.view.start, AE.state.tracks[0].cache.key]")
+    assert start > 0 and key.startswith(f"{start}|"), (start, key)
+    # the audio output fails (as in Chrome when the device is lost): a new context goes on playing from the same position
+    first = page.evaluate("AE.time")
+    page.evaluate("AE.audioContext.dispatchEvent(new Event('error'))")
+    expect(page.locator("[data-testid=toast]").last).to_contain_text("restarted")
+    page.wait_for_timeout(300)
+    assert page.evaluate("AE.state.playing !== null && AE.state.playing.ctx === AE.audioContext && AE.audioContext.state !== 'closed'")
+    assert page.evaluate("AE.time") >= first
+    page.keyboard.press(" ")
+    assert page.errors == []

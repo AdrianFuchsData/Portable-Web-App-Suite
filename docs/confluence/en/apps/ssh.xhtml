@@ -12,6 +12,28 @@ integrated file panel. Connections go through the <strong>local relay</strong> (
 <li><strong>Connect</strong> opens a new tab; <strong>Save connection</strong> adds the connection to <strong>Saved connections</strong> (password and passphrase only if the
    box is ticked; a private key is always saved with the connection).</li>
 </ol>
+<h3>Proxy and jump host</h3>
+<p>Under <strong>Proxy and jump host</strong> in the connection dialog:</p>
+<ul>
+<li><strong>Jump host (ProxyJump)</strong>: choose a saved connection (a bastion, gateway or "Jump server"). The client first connects to it and then
+  opens the connection to the target <strong>from there</strong> – the target only needs to be reachable from the jump host. The jump host may itself
+  use a jump host; its own host key is checked as usual. Both connections end when the tab is closed.</li>
+<li><strong>Proxy</strong>: <strong>SOCKS5</strong> or <strong>HTTP (CONNECT)</strong> with host, port and optionally user and password (the password is saved like the others,
+  protected in a KeePass connections file). The relay connects to the proxy, and the proxy to the SSH server; SSH stays encrypted end to
+  end. (For a proxy used by all connections of the relay, start the relay with <code>--upstream-proxy</code>.)</li>
+</ul>
+<h3>Port forwarding</h3>
+<p><strong>⇄ Forwarding</strong> (in the toolbar of a connected tab) opens tunnels through the SSH connection:</p>
+<ul>
+<li><strong>Local (here → server)</strong>: the relay listens on this computer at <code>127.0.0.1</code> and a port (empty = any free port, shown after
+  starting); every connection to it is passed on by the SSH server to <em>host:port</em> – for example a database or web interface that
+  only the server can reach (<code>localhost:5432</code> seen from the server). Other programs on this computer, and the other apps of the suite,
+  connect to <code>127.0.0.1</code> at the shown port. This needs the relay on your own machine (a shared relay does not listen on ports).</li>
+<li><strong>Remote (server → here)</strong>: the SSH server listens on its <code>127.0.0.1</code> at the given port; connections there come back through the
+  browser and the relay to <em>host:port</em> on this side.</li>
+</ul>
+<p>Each forwarding shows how many connections it carried; × stops it. 💾 saves the current forwardings with the saved connection: they
+start whenever it connects. Closing the tab stops all of them.</p>
 <h3>Host keys</h3>
 <p>When you connect to a server for the first time, the client shows the server's key fingerprint (<code>SHA256:…</code>). Compare it with the
 fingerprint the administrator gives you (<code>ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub</code> on the server):</p>
@@ -34,6 +56,12 @@ yellow connecting, red closed. <strong>Reconnect</strong> opens a closed session
 <li>On touch screens a key bar offers Esc, Tab, Ctrl (applies to the next key, e.g. Ctrl then C), the arrow keys and a few characters that are
   hard to type on phone keyboards.</li>
 </ul>
+<h3>Snippets</h3>
+<p><strong>Snippets</strong> in the side bar keep commands you use often. <strong>+ Snippet</strong> adds one (with the text selected in the terminal, if any): a
+name, the command – several lines are sent one after the other – and whether Enter is pressed after it. A click on a snippet types it
+into the active terminal. Placeholders in double braces ask for a value first: <code>tail -n 50 {{log file}}</code> or
+<code>sudo systemctl restart {{service}}</code>. ✎ edits or deletes a snippet. Snippets are kept in the connections file, together with the
+saved connections.</p>
 <h2>Files (SFTP)</h2>
 <p><strong>📁 Files</strong> opens the file panel of the session (it starts in the home directory):</p>
 <ul>

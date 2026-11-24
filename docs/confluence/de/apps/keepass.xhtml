@@ -45,7 +45,7 @@ die Datenbank nicht öffnen. Die neue Datenbank wird erst gespeichert, wenn Sie 
 </tr>
 <tr>
 <td>Einmalpasswort</td>
-<td>wird mit den verbleibenden Sekunden angezeigt, wenn der Eintrag ein Feld <code>otp</code> hat (<code>otpauth://totp/…</code>, wie es KeePassXC schreibt)</td>
+<td>der aktuelle Code mit den verbleibenden Sekunden (siehe unten); 🔑 <strong>Einmalpasswort einrichten…</strong> fügt eines hinzu</td>
 </tr>
 <tr>
 <td>Tags</td>
@@ -73,10 +73,35 @@ die Datenbank nicht öffnen. Die neue Datenbank wird erst gespeichert, wenn Sie 
 </tr>
 </tbody>
 </table>
-<p>Bei jeder Bearbeitung eines Eintrags wird die vorherige Version einmal im <strong>Verlauf</strong> abgelegt (nicht bei jedem Tastendruck).</p>
+<p>Bei jeder Bearbeitung eines Eintrags wird die vorherige Version einmal im <strong>Verlauf</strong> abgelegt (nicht bei jedem Tastendruck). Der Verlauf
+listet die Versionen, die neueste zuerst, jeweils mit dem, was danach geändert wurde (zum Beispiel „danach geändert: Passwort“). Ein Klick auf
+eine Version zeigt ihre Felder – die vom aktuellen Eintrag abweichenden sind hervorgehoben, Passwörter und geschützte Felder bleiben verborgen,
+bis Sie auf 👁 klicken – und erlaubt <strong>Wiederherstellen</strong>, das Passwort zu kopieren oder <strong>Diese Version löschen</strong>. <strong>Ganzen Verlauf löschen</strong>
+entfernt alle älteren Versionen des Eintrags (etwa wenn ein altes Passwort nirgends mehr gespeichert sein soll). Unter <strong>⚙ Datenbank</strong> begrenzt
+<em>Ältere Versionen je Eintrag</em> den Verlauf (Vorgabe von KeePass: 10; −1 behält alle); ältere Versionen über der Grenze werden beim Speichern
+entfernt.</p>
 <p>Kopierte Werte werden nach 30 Sekunden aus der Zwischenablage entfernt.</p>
 <p>Rückgängig (↶, <code>Strg+Z</code>) und Wiederholen (↷, <code>Strg+Y</code>) wirken auf alle Änderungen der Datenbank seit dem Entsperren: Felder, neue und gelöschte Einträge und Gruppen, Verschieben, Anhänge und Einstellungen. Tippen in ein Feld zählt als ein Schritt. Sperren löscht den Verlauf.</p>
 <p>↗ neben einem Anhang (<strong>Öffnen mit…</strong>) öffnet ihn in einer anderen Anwendung der Suite; Speichern dort ersetzt den Anhang. Speichern Sie danach die Datenbank.</p>
+<h2>Einmalpasswörter (Zwei-Faktor-Codes)</h2>
+<p>Ein Eintrag kann das Geheimnis eines Einmalpassworts enthalten, so ersetzt die Datenbank auch eine Authenticator-App. Der Eintrag zeigt den
+aktuellen Code (⧉ kopiert ihn; der Balken zeigt, wie lange er gilt). <strong>🔑 Einmalpasswort einrichten…</strong> – oder ✎ bei einem vorhandenen – öffnet
+einen Dialog: Fügen Sie den <code>otpauth://</code>-Link ein, den ein Dienst anbietet (er füllt alle Felder aus), oder geben Sie den <strong>geheimen Schlüssel</strong>
+ein (Base32, Leerzeichen werden ignoriert) und, wenn der Dienst es verlangt, die Art (<strong>TOTP</strong>: zeitbasiert, die übliche; <strong>HOTP</strong>: zählerbasiert;
+<strong>Steam</strong>: die fünf Zeichen von Steam Guard), Algorithmus, Stellen und Intervall oder Zähler. 🎲 erzeugt einen neuen zufälligen Schlüssel, etwa
+für einen eigenen Server. × entfernt das Einmalpasswort.</p>
+<p>Bei HOTP zeigt der Eintrag den Code zum aktuellen Zähler; <strong>Nächster Code</strong> kopiert ihn und zählt weiter (speichern Sie danach die Datenbank,
+damit der Zähler erhalten bleibt).</p>
+<p>Das Geheimnis wird geschützt im Feld <code>otp</code> als <code>otpauth://</code>-Link gespeichert (wie bei KeePassXC, KeeWeb, KeePassDX und Strongbox) und zusätzlich
+in den Feldern <code>TimeOtp-…</code> / <code>HmacOtp-…</code> von KeePass 2.47+, damit jede gängige KeePass-App dieselben Codes zeigt. Einträge, die nur die Felder von
+KeePass 2, die älteren KeePassXC-Felder <code>TOTP Seed</code> / <code>TOTP Settings</code> oder das KeeOtp-Format haben, werden ebenfalls gelesen. Diese Felder
+erscheinen nicht unter <em>Weitere Felder</em>.</p>
+<p><strong>QR-Codes.</strong> Im Einrichtungsdialog liest <strong>📷 QR-Code scannen</strong> den QR-Code, den ein Dienst anzeigt, mit der Kamera des Geräts (der Browser fragt
+um Erlaubnis; nichts verlässt das Gerät), <strong>🖼 QR-Code aus einem Bild…</strong> liest ihn aus einem Bildschirmfoto oder Foto. Auch eine Übertragung aus dem
+Google Authenticator (<em>Konten übertragen</em>, <code>otpauth-migration://</code>) funktioniert: Das erste Konto kommt in den Eintrag, <strong>Als neue Einträge hinzufügen</strong>
+legt für jedes weitere Konto einen Eintrag in derselben Gruppe an. Um ein Geheimnis auf ein anderes Gerät zu bringen – etwa in die Authenticator-App
+des Telefons –, klicken Sie neben dem Code auf <strong>▦ QR</strong>: Nach einer Warnung zeigt <strong>QR-Code anzeigen</strong> ihn als QR-Code (und das Geheimnis als Text).
+Wer ihn sieht, kann Ihre Codes erzeugen; zeigen Sie ihn also nur, um ihn selbst zu scannen.</p>
 <h2>Passwortgenerator</h2>
 <p>🎲 <strong>Erzeugen</strong> öffnet den Generator: Länge (4 bis 64), Kleinbuchstaben, Großbuchstaben, Ziffern, Sonderzeichen und die Option,
 ähnliche Zeichen (l, 1, O, 0) zu vermeiden. ⟳ erzeugt ein neues Passwort; <strong>Übernehmen</strong> setzt es als Passwort des Eintrags.</p>
@@ -107,6 +132,18 @@ ihre Schlüsseldatei ein):</p>
 (weniger als 60 Bit geschätzte Stärke, dieselbe Schätzung wie im Generator), in mehreren Einträgen verwendete Passwörter,
 abgelaufene Einträge und Passwörter, die seit mehr als einem Jahr unverändert sind (aus dem Verlauf der Einträge). Ein Klick
 öffnet den Eintrag. Die Prüfung läuft vollständig im Browser; kein Passwort verlässt das Gerät.</p>
+<h2>CSV-Import und -Export</h2>
+<p><strong>⇅ CSV → CSV exportieren…</strong> schreibt die Einträge der ganzen Datenbank oder der aktuellen Gruppe (mit ihren Untergruppen) in eine
+CSV-Datei (Spalten <code>Group</code>, <code>Title</code>, <code>Username</code>, <code>Password</code>, <code>URL</code>, <code>Notes</code>, <code>TOTP</code>, <code>Tags</code>, <code>Last Modified</code>, <code>Created</code> – das Format von
+KeePassXC, das die meisten Passwortmanager importieren können). <strong>Eine CSV-Datei ist nicht verschlüsselt</strong>: Der Dialog warnt davor, und die
+Schaltfläche sagt es auch. Exportieren Sie nur, wenn Sie es brauchen, behalten Sie die Datei auf Ihrem eigenen Gerät und löschen Sie sie danach.</p>
+<p><strong>⇅ CSV → CSV importieren…</strong> liest die CSV-Datei eines anderen Passwortmanagers in eine neue Gruppe ein. Die Spaltenköpfe von KeePassXC,
+KeePass, Bitwarden, Chrome/Edge, Firefox, Safari, LastPass, 1Password, Dashlane, Proton Pass und ähnlichen Exporten werden erkannt (auch
+deutsche wie <em>Benutzername</em> oder <em>Kennwort</em>); der Dialog zeigt, welche Spalte zu welchem Feld wird. Spalten ohne Bedeutung für KeePass
+(Favorit, IDs, Zeitstempel) werden ignoriert, unbekannte Spalten werden zu weiteren Feldern. Eine Gruppen-/Ordnerspalte legt Untergruppen an;
+eine TOTP-Spalte (ein <code>otpauth://</code>-Link oder ein Base32-Geheimnis) wird zum Einmalpasswort des Eintrags; Einträge ohne Titel werden nach der
+Website benannt. Trennzeichen (Komma, Strichpunkt oder Tabulator) und Kodierung (UTF-8 oder Windows-1252) werden erkannt. Löschen Sie die
+CSV-Datei nach dem Import – sie enthält Ihre Passwörter im Klartext.</p>
 <h2>Sperren</h2>
 <p><strong>Sperren</strong> (<code>Strg+L</code>) schließt die Datenbank; bei ungespeicherten Änderungen ist eine Bestätigung nötig. Nach 15 Minuten ohne
 Aktivität wird die Datenbank automatisch gesperrt, außer es gibt ungespeicherte Änderungen.</p>

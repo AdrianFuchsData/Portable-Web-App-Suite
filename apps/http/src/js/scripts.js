@@ -3,7 +3,7 @@
  * run in a Worker created from a data: URL: it has an opaque origin (no access to the suite's storage), its own thread
  * (an endless loop is ended after the timeout) and only the request, response and variables it is given.
  *
- *   await runScript(code, { kind: 'prerequest' | 'test', request, response, environment, collection, variables })
+ *   await runScript(code, { kind: 'prerequest' | 'test', request, response, environment, collection, variables, iterationData, iteration, iterationCount })
  *     -> { tests: [{ name, passed, error }], logs: [{ level, text }], error, environment, collection, variables, request }
  *
  * request: { method, url, headers: [[name, value]], body }; response: { code, status, headers: [[name, value]], body, responseTime }
@@ -81,7 +81,7 @@ function expect(value, label = '') {
 
 self.onmessage = async (event) => {
   const ctx = event.data;
-  const env = store(ctx.environment), coll = store(ctx.collection), local = store(ctx.variables);
+  const env = store(ctx.environment), coll = store(ctx.collection), local = store(ctx.variables), data = store(ctx.iterationData || {});
   const request = { method: ctx.request.method, url: ctx.request.url, headers: headerList(ctx.request.headers), body: { raw: ctx.request.body || '' } };
   let response;
   if (ctx.response) {
@@ -95,8 +95,9 @@ self.onmessage = async (event) => {
   }
   self.pm = {
     environment: env, collectionVariables: coll, globals: env,
-    variables: { ...store(ctx.variables), get: (k) => (local.has(k) ? local.get(k) : env.has(k) ? env.get(k) : coll.get(k)), replaceIn: (s) => coll.replaceIn(env.replaceIn(local.replaceIn(s))) },
-    request, response, info: { requestName: ctx.name, eventName: ctx.kind },
+    variables: { ...store(ctx.variables), get: (k) => (local.has(k) ? local.get(k) : data.has(k) ? data.get(k) : env.has(k) ? env.get(k) : coll.get(k)), replaceIn: (s) => coll.replaceIn(env.replaceIn(data.replaceIn(local.replaceIn(s)))) },
+    iterationData: data,
+    request, response, info: { requestName: ctx.name, eventName: ctx.kind, iteration: ctx.iteration || 0, iterationCount: ctx.iterationCount || 1 },
     expect,
     test: (name, fn) => {
       try {

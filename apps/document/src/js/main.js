@@ -114,7 +114,9 @@ const { univerAPI } = createUniver({
   darkMode: dark(),
   presets: [UniverDocsCorePreset({ container: host }), UniverDocsDrawingPreset(), UniverDocsHyperLinkPreset(), UniverDocsThreadCommentPreset()],
 });
-const blank = () => ({ documentStyle: { autoHyphenation: 0 } });
+// a new document has A4 pages with 2.5 cm margins, as in Word (Univer's default is a pageless document, which has no headers and footers)
+const PX_CM = 96 / 2.54;
+const blank = () => ({ documentStyle: { autoHyphenation: 0, documentFlavor: 1, pageSize: { width: 21 * PX_CM, height: 29.7 * PX_CM }, marginTop: 2.5 * PX_CM, marginBottom: 2 * PX_CM, marginLeft: 2.5 * PX_CM, marginRight: 2.5 * PX_CM } });
 
 // ---- fonts (shared/js/fonts.js): the bundled and imported fonts in Univer's font menus ------------------------------------------
 function syncFonts() {
@@ -148,11 +150,21 @@ function ribbonSubmenu({ id, title, icon, order, position, items }) {
   menu._menuManagerService.mergeMenu({ [position]: { [id]: schema } });
 }
 
-// Insert → Header & footer (Univer's own entry is a double-click into the page margin)
+// Insert → Header & footer (Univer's own entry is a double-click into the page margin). Only documents with pages have headers and
+// footers: a pageless document gets A4 pages first.
+async function editHeaderFooter(editArea) {
+  const ds = doc.save().documentStyle || {};
+  if (ds.documentFlavor !== 1) {
+    await univerAPI.executeCommand('docs.command.page-setup', { documentFlavor: 1, pageOrient: 0, pageSize: { width: 21 * PX_CM, height: 29.7 * PX_CM },
+      marginTop: 2.5 * PX_CM, marginBottom: 2 * PX_CM, marginLeft: 2.5 * PX_CM, marginRight: 2.5 * PX_CM });
+    await new Promise((r) => setTimeout(r, 100)); // (the pages are laid out)
+  }
+  return univerAPI.executeCommand('doc.command.open-header-footer-panel', { editArea });
+}
 univerAPI.registerComponent('DocHeaderFooterMenuIcon', HeaderFooterIcon);
 ribbonSubmenu({
   id: 'doc-hf-menu', title: 'doc-hf.menu', icon: 'DocHeaderFooterMenuIcon', order: 10, position: 'ribbon.insert.others',
-  items: [['header', 'HEADER'], ['footer', 'FOOTER']].map(([key, editArea]) => ['doc-hf-' + key, 'doc-hf.' + key, () => univerAPI.executeCommand('doc.command.open-header-footer-panel', { editArea })]),
+  items: [['header', 'HEADER'], ['footer', 'FOOTER']].map(([key, editArea]) => ['doc-hf-' + key, 'doc-hf.' + key, () => editHeaderFooter(editArea)]),
 });
 
 // Insert → Date & time: today's date or the current time as text at the cursor, in the format of the browser's region (when its
@@ -322,7 +334,7 @@ export function fromText(text) {
     paragraphs.push({ startIndex: stream.length });
     stream += '\r';
   }
-  return { ...blank(), body: { dataStream: `${stream}\n`, paragraphs, sectionBreaks: [{ startIndex: stream.length }], textRuns: [] } };
+  return { documentStyle: { autoHyphenation: 0 }, body: { dataStream: `${stream}\n`, paragraphs, sectionBreaks: [{ startIndex: stream.length }], textRuns: [] } }; // (a text file: continuous, without pages)
 }
 
 /** Plain text of a document (paragraph marks become line breaks, embedded objects and table markers are dropped). */
@@ -617,12 +629,12 @@ function Toolbar() {
     <${Suite.shell.Recent} app=${APP} before=${confirmDiscard} onOpen=${(p) => openPicked(p)} />
     <button class=${state.dirty ? '' : 'secondary outline'} data-testid="save" onClick=${() => save()}>${t('doc.save')}</button>
     <button class="secondary outline" data-testid="save-as" onClick=${openSaveAs}>${t('doc.saveAs')}</button>
-    <button class="secondary outline" data-testid="toc" title=${t('doc.tocHint')} onClick=${tableOfContents}>📑 ${t('doc.toc')}</button>
-    <button class="secondary outline" data-testid="add-diagram" title=${t('dia.insert')} onClick=${insertDiagram}>📐 ${t('doc.diagram')}</button>
-    ${focusedDiagram() ? html`<button class="secondary" data-testid="edit-diagram" onClick=${editDiagram}>📐 ${t('dia.edit')}</button>` : null}
-    <button class=${spelling.open ? 'secondary' : 'secondary outline'} data-testid="spell" title=${`${t('spell.button')} (F7)`} aria-pressed=${spelling.open ? 'true' : 'false'} onClick=${spelling.toggle}>ABC✓</button>
-    <button class="secondary outline" data-testid="comments" title=${t('doc.commentsHint')} onClick=${() => univerAPI.executeCommand('docs.operation.toggle-comment-panel')}>💬 ${t('doc.comments')}</button>
-    <button class="secondary outline" data-testid="print" title=${t('doc.print')} aria-label=${t('doc.print')} onClick=${printDocument}>🖨</button>
+    <button class="secondary outline" data-testid="toc" title=${t('doc.tocHint')} onClick=${tableOfContents}>${Suite.icon('files')} ${t('doc.toc')}</button>
+    <button class="secondary outline" data-testid="add-diagram" title=${t('dia.insert')} onClick=${insertDiagram}>${Suite.icon('shapes')} ${t('doc.diagram')}</button>
+    ${focusedDiagram() ? html`<button class="secondary" data-testid="edit-diagram" onClick=${editDiagram}>${Suite.icon('shapes')} ${t('dia.edit')}</button>` : null}
+    <button class=${spelling.open ? 'secondary' : 'secondary outline'} data-testid="spell" title=${`${t('spell.button')} (F7)`} aria-pressed=${spelling.open ? 'true' : 'false'} onClick=${spelling.toggle}>ABC${Suite.icon('check')}</button>
+    <button class="secondary outline" data-testid="comments" title=${t('doc.commentsHint')} onClick=${() => univerAPI.executeCommand('docs.operation.toggle-comment-panel')}>${Suite.icon('message-square')} ${t('doc.comments')}</button>
+    <button class="secondary outline" data-testid="print" title=${t('doc.print')} aria-label=${t('doc.print')} onClick=${printDocument}>${Suite.icon('printer')}</button>
     <span class="doc-name" data-testid="file-name">${state.name}${state.dirty ? ' •' : ''}</span>
   </nav>`;
 }

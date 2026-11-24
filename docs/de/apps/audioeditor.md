@@ -191,7 +191,11 @@ messen** zeigt die Lautheit in LUFS und die Spitze.
 ## Abspielen und Aufnehmen
 
 ▶ (oder `Leertaste`) spielt die Auswahl oder ab der Einfügemarke bis zum Ende; ⏸ hält an, ⏹ stoppt, ⏮ ⏭ springen an den
-Anfang bzw. das Ende. 🔁 wiederholt die Auswahl. Ein Klick auf das Zeitlineal setzt die Abspielposition.
+Anfang bzw. das Ende. 🔁 wiederholt die Auswahl. Ein Klick auf das Zeitlineal setzt die Abspielposition. Beim Abspielen folgt die
+Ansicht der Abspielposition.
+
+Verliert der Browser die Audioausgabe (etwa wenn das Ausgabegerät wechselt; Chrome meldet dann einen Fehler des Audiogeräts), startet
+der Editor eine neue Ausgabe und spielt an derselben Stelle weiter; eine Meldung weist darauf hin.
 
 ● startet die Aufnahme mit dem Mikrofon (der Browser fragt nach der Erlaubnis); die anderen Spuren werden dabei abgespielt.
 ● beendet die Aufnahme; sie wird eine neue Spur mit einem Clip, der an der Einfügemarke beginnt.
@@ -250,6 +254,12 @@ Auf dem Mac verwenden Sie Cmd statt Strg. `F1` (oder `?`) zeigt diese Liste in d
 
 ## Auf Smartphones und Tablets
 
-Tippen oder Ziehen auf einer Spur setzt die Einfügemarke bzw. wählt aus; ein Clip wird an seiner (etwas höheren)
-Titelleiste verschoben. Die Spurköpfe sind schmaler, behalten aber alle Schaltflächen und Regler; die
-Werkzeugleiste lässt sich waagrecht verschieben.
+Auf einem Touchscreen folgen die Spuren den üblichen Gesten:
+
+- **Mit einem Finger ziehen** bewegt durch die Aufnahme (nach links und rechts) und durch die Spuren (nach oben und unten).
+- **Zwei Finger** auseinander oder zusammen zoomen um die Stelle zwischen ihnen.
+- **Tippen** setzt die Einfügemarke; **berühren und halten**, dann ziehen, wählt aus (die Auswahl folgt dem Finger, auch über Spuren hinweg).
+- Ein Clip wird an seiner (etwas höheren) Titelleiste verschoben; Blendengriffe und Lautstärkepunkte werden wie mit der Maus gezogen.
+
+Die Bildlaufleiste unter den Spuren ist auf Touchscreens breiter. Die Spurköpfe sind schmaler, behalten aber alle Schaltflächen und Regler;
+die Werkzeugleiste lässt sich waagrecht verschieben.

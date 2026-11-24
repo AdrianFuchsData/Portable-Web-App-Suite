@@ -55,6 +55,35 @@ Vorschläge ([Rechtschreibung](../benutzerhandbuch.md#rechtschreibung)).
 Datei zu sehen, während man ihr Ende bearbeitet. Beide Ansichten bearbeiten denselben Text und teilen einen Rückgängig-Verlauf; die
 zweite Ansicht folgt dem aktiven Reiter. Erneut ◫ schließt sie.
 
+
+## Lesezeichen
+
+Markieren Sie Zeilen, zu denen Sie zurückkehren möchten: `Strg+F2` (oder ein Klick in den schmalen Rand links der Zeilennummern) setzt oder
+entfernt ein Lesezeichen ◆ in der aktuellen Zeile, die eingefärbt wird. `F2` und `Umschalt+F2` springen zum nächsten und vorigen Lesezeichen
+(am Ende wieder von vorn), `Strg+Umschalt+F2` entfernt alle. Lesezeichen wandern beim Bearbeiten mit dem Text. Die Gruppe **Lesezeichen** in
+**🛠 Werkzeuge** kopiert außerdem die Zeilen mit Lesezeichen, entfernt sie oder behält nur sie – etwa um die interessanten Zeilen einer
+Protokolldatei zu sammeln. Die Statusleiste zeigt ihre Anzahl. Jedes Dokument hat eigene Lesezeichen; sie werden nicht mit der Datei
+gespeichert.
+
+## Markdown-Vorschau
+
+Für Markdown-Dateien (`.md`) zeigt **👁 Vorschau** (`Strg+Umschalt+M`) das gestaltete Dokument neben dem Text (am Smartphone darunter):
+Überschriften, Hervorhebungen, Listen, Aufgabenlisten, Tabellen, Code, Zitate und Links. Sie wird beim Tippen aktualisiert und scrollt mit
+dem Text mit. **⤓ HTML** speichert das gestaltete Dokument als HTML-Datei. Zur Sicherheit kann nichts im Dokument ausgeführt werden (keine
+Skripte), und Bilder aus Dateien oder dem Web werden nicht geladen – nur als `data:`-Adresse eingebettete Bilder erscheinen.
+## Suchen und ersetzen
+
+`Strg+F` (oder 🔍) öffnet die Suchleiste über dem Text. Geben Sie den Suchtext ein: Die Leiste zählt die Treffer (*2 von 7*), und
+die Treffer werden hervorgehoben. **Eingabe** oder ↓ geht zum nächsten Treffer, **Umschalt+Eingabe** oder ↑ zum vorherigen (auch
+`F3` / `Umschalt+F3`), **Alt+Eingabe** wählt alle Treffer auf einmal aus (dann ändert Tippen alle zugleich). Die Schaltflächen
+neben dem Feld schalten **Groß-/Kleinschreibung beachten** (Aa), **Ganzes Wort** und **Regulärer Ausdruck** (`.*`; ein ungültiger
+Ausdruck wird gemeldet) ein. Der Pfeil links blendet das **Ersetzen**-Feld ein: **Ersetzen** ändert den aktuellen Treffer und geht
+weiter, **Alle ersetzen** ändert jeden Treffer (mit einem regulären Ausdruck fügen `$1`, `$2` … seine Gruppen ein). `Escape`
+schließt die Leiste. `Strg+G` springt zu einer Zeile.
+
+Die anderen Code-Editoren der Suite – die Zellen des [Python-Notebooks](notebook.md), der SQL-Editor des
+[Datenbank-Werkzeugs](dbtool.md) und die Bodys der [HTTP-Analyse](http.md) – haben dieselbe Suchleiste.
+
 ## In Dateien suchen
 
 **🔍🗂** (`Strg+Umschalt+F`) durchsucht alle geöffneten Dokumente auf einmal: Treffer werden je Datei mit Zeile und Spalte
@@ -79,13 +108,22 @@ Werkzeug lässt sich mit `Strg+Z` rückgängig machen.
 
 | Gruppe | Werkzeuge |
 |---|---|
-| Zeilen | sortieren A→Z oder Z→A (Zahlen in natürlicher Reihenfolge: 9 vor 10; Groß-/Kleinschreibung egal), nach Länge sortieren, Reihenfolge umkehren, doppelte Zeilen entfernen, leere Zeilen entfernen, Leerzeichen am Ende oder an beiden Enden entfernen, Zeilen verbinden |
+| Zeilen | sortieren A→Z oder Z→A (Zahlen in natürlicher Reihenfolge: 9 vor 10; Groß-/Kleinschreibung egal), nach Länge sortieren, Reihenfolge umkehren, doppelte Zeilen entfernen, leere Zeilen entfernen, Leerzeichen am Ende oder an beiden Enden entfernen, Zeilen verbinden, mischen, Zeilen nummerieren…, Text vor/nach Zeilen einfügen…, Zeilen behalten oder entfernen, die einen Text oder regulären Ausdruck enthalten…, Zeilen bei einer Breite umbrechen… |
 | Groß/klein | GROSSBUCHSTABEN, kleinbuchstaben, Wörter Groß Beginnen, gROSS/kLEIN uMKEHREN |
 | Kodieren / dekodieren | Base64 (UTF-8), URL-Kodierung (Prozentkodierung), HTML-Entitäten |
-| Formatieren | JSON formatieren (einrücken) oder verkleinern, XML formatieren, SQL formatieren, SQL in eine Zeile |
+| Formatieren | JSON formatieren (einrücken) oder verkleinern, XML formatieren oder verkleinern, YAML formatieren, JSON → YAML, YAML → JSON, SQL formatieren, SQL in eine Zeile |
 
 Zeilenwerkzeuge arbeiten immer mit ganzen Zeilen: denen, die die Auswahl berührt. Ungültige Eingaben (etwa fehlerhaftes JSON)
 zeigen eine Meldung und lassen den Text unverändert.
+
+Werkzeuge mit **…** fragen zuerst nach ihren Einstellungen und zeigen eine Vorschau des Ergebnisses: *Zeilen nummerieren* (Beginn, Text nach
+der Nummer, führende Nullen), *Text vor/nach Zeilen* (etwa `- ` für eine Liste oder `;` an jedem Ende; leere Zeilen lassen sich auslassen),
+Zeilen *behalten* oder *entfernen, die* einen Text *enthalten* (wahlweise als regulärer Ausdruck und mit Groß-/Kleinschreibung), Zeilen bei
+einer Breite *umbrechen* (an Leerzeichen, die Einrückung bleibt). Die Einstellungen werden gemerkt.
+
+**Syntaxprüfung**: In JSON-, XML- und YAML-Dateien wird ein Fehler schon beim Tippen rot unterstrichen, mit einer Marke am Rand; zeigen Sie
+darauf, um die Meldung zu lesen. **✓ Syntax prüfen** (oben in der Werkzeugliste) meldet, ob das Dokument korrekt ist, oder springt zum ersten
+Fehler und nennt Zeile, Spalte und Problem.
 
 **SQL formatieren…** arbeitet wie der PoorSQL-Formatierer: jede Klausel in einer eigenen Zeile, Listen und Unterabfragen
 eingerückt, Schlüsselwörter, Funktionsnamen und Datentypen in GROSSBUCHSTABEN. Ein Dialog legt die Optionen fest, mit einer
@@ -155,6 +193,10 @@ Auf dem Mac verwenden Sie Cmd statt Strg. `F1` (oder `?`) zeigt diese Liste in d
 | `Strg+Y` / `Strg+Umschalt+Z` | Wiederholen |
 | `Strg+F` | Suchen und ersetzen |
 | `Strg+Umschalt+F` | In allen geöffneten Dateien suchen |
+| `Strg+Umschalt+M` | Markdown-Vorschau ein/aus |
+| `Strg+F2` | Lesezeichen ein/aus |
+| `F2` / `Umschalt+F2` | Nächstes / voriges Lesezeichen |
+| `Strg+Umschalt+F2` | Alle Lesezeichen entfernen |
 | `Strg+G` | Gehe zu Zeile |
 | `Strg+D` | Nächstes Vorkommen des Wortes auswählen |
 | `Strg+Klick` | Cursor hinzufügen |

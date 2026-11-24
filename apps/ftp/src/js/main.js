@@ -16,6 +16,11 @@ Suite.i18n.register({
     'ftp.ftps': 'FTPS (explicit TLS)', 'ftp.ftpsi': 'FTPS (implicit TLS)', 'ftp.ftp': 'FTP (not encrypted)', 'ftp.sftp': 'SFTP (SSH)', 'ftp.key': 'Private key (SFTP)',
     'ftp.sites': 'Sites', 'ftp.saveSite': 'Save site', 'ftp.siteName': 'Site name', 'ftp.local': 'Local', 'ftp.remote': 'Remote', 'ftp.chooseFolder': 'Choose local folder…',
     'ftp.noFolder': 'This browser cannot open local folders. Upload files with the button; downloads go to the browser’s download folder.', 'ftp.uploadFiles': 'Upload files…',
+    'ftp.perms': 'Permissions', 'ftp.permsTitle': 'Permissions of {0}', 'ftp.items': '{0} items', 'ftp.owner': 'Owner', 'ftp.group': 'Group', 'ftp.others': 'Others',
+    'ftp.read': 'Read', 'ftp.write': 'Write', 'ftp.exec': 'Execute', 'ftp.octal': 'Octal', 'ftp.permsDone': 'Permissions of {0} item(s) set to {1}.',
+    'ftp.preview': 'Preview', 'ftp.edit': 'Edit', 'ftp.loading': 'Loading…', 'ftp.close': 'Close', 'ftp.previewTooBig': 'The file is too big for a preview (more than 20 MB). Download it instead.',
+    'ftp.previewCut': 'Only the beginning of the file is shown.', 'ftp.editTooBig': 'Files over 2 MB are edited with “Open with…” (text or hex editor).', 'ftp.editBinary': '“{0}” is not a text file. Use “Open with…” to edit it.',
+    'ftp.editSave': 'Save to the server', 'ftp.editChanged': '“{0}” was changed on the server since you opened it. Overwrite it anyway?', 'ftp.editDiscard': 'Discard the changes to “{0}”?',
     'ftp.upload': 'Upload', 'ftp.savedBack': '“{0}” was uploaded to the server.', 'ftp.download': 'Download', 'ftp.mkdir': 'New folder', 'ftp.rename': 'Rename', 'ftp.delete': 'Delete', 'ftp.refresh': 'Refresh',
     'ftp.deleteConfirm': 'Delete {0} item(s) on the server?', 'ftp.queue': 'Transfers', 'ftp.clearDone': 'Clear finished', 'ftp.waiting': 'waiting', 'ftp.done': 'done',
     'ftp.failed': 'failed', 'ftp.notConnected': 'Not connected.', 'ftp.connecting': 'Connecting…', 'ftp.folderName': 'Folder name', 'ftp.newName': 'New name', 'ftp.cancel': 'Cancel',
@@ -36,6 +41,11 @@ Suite.i18n.register({
     'ftp.ftps': 'FTPS (explizites TLS)', 'ftp.ftpsi': 'FTPS (implizites TLS)', 'ftp.ftp': 'FTP (unverschlüsselt)', 'ftp.sftp': 'SFTP (SSH)', 'ftp.key': 'Privater Schlüssel (SFTP)',
     'ftp.sites': 'Server', 'ftp.saveSite': 'Server speichern', 'ftp.siteName': 'Name', 'ftp.local': 'Lokal', 'ftp.remote': 'Server', 'ftp.chooseFolder': 'Lokalen Ordner wählen…',
     'ftp.noFolder': 'Dieser Browser kann keine lokalen Ordner öffnen. Laden Sie Dateien mit der Schaltfläche hoch; Downloads landen im Download-Ordner des Browsers.', 'ftp.uploadFiles': 'Dateien hochladen…',
+    'ftp.perms': 'Rechte', 'ftp.permsTitle': 'Rechte von {0}', 'ftp.items': '{0} Elementen', 'ftp.owner': 'Eigentümer', 'ftp.group': 'Gruppe', 'ftp.others': 'Andere',
+    'ftp.read': 'Lesen', 'ftp.write': 'Schreiben', 'ftp.exec': 'Ausführen', 'ftp.octal': 'Oktal', 'ftp.permsDone': 'Rechte von {0} Element(en) auf {1} gesetzt.',
+    'ftp.preview': 'Vorschau', 'ftp.edit': 'Bearbeiten', 'ftp.loading': 'Lade…', 'ftp.close': 'Schließen', 'ftp.previewTooBig': 'Die Datei ist für eine Vorschau zu groß (über 20 MB). Laden Sie sie stattdessen herunter.',
+    'ftp.previewCut': 'Nur der Anfang der Datei wird gezeigt.', 'ftp.editTooBig': 'Dateien über 2 MB werden mit „Öffnen mit…“ (Text- oder Hex-Editor) bearbeitet.', 'ftp.editBinary': '„{0}“ ist keine Textdatei. Verwenden Sie „Öffnen mit…“, um sie zu bearbeiten.',
+    'ftp.editSave': 'Auf dem Server speichern', 'ftp.editChanged': '„{0}“ wurde seit dem Öffnen auf dem Server geändert. Trotzdem überschreiben?', 'ftp.editDiscard': 'Die Änderungen an „{0}“ verwerfen?',
     'ftp.upload': 'Hochladen', 'ftp.savedBack': '„{0}“ wurde auf den Server hochgeladen.', 'ftp.download': 'Herunterladen', 'ftp.mkdir': 'Neuer Ordner', 'ftp.rename': 'Umbenennen', 'ftp.delete': 'Löschen', 'ftp.refresh': 'Aktualisieren',
     'ftp.deleteConfirm': '{0} Element(e) auf dem Server löschen?', 'ftp.queue': 'Übertragungen', 'ftp.clearDone': 'Erledigte entfernen', 'ftp.waiting': 'wartet', 'ftp.done': 'fertig',
     'ftp.failed': 'fehlgeschlagen', 'ftp.notConnected': 'Nicht verbunden.', 'ftp.connecting': 'Verbinde…', 'ftp.folderName': 'Ordnername', 'ftp.newName': 'Neuer Name', 'ftp.cancel': 'Abbrechen',
@@ -56,7 +66,7 @@ const hasFolderPicker = typeof window.showDirectoryPicker === 'function' && wind
 const state = {
   site: { name: '', protocol: 'sftp', host: '', port: 22, username: '', password: '', privateKey: '', insecure: false },
   fs: null, connecting: false, remotePath: null, remote: [], remoteSel: new Set(),
-  localRoot: null, localStack: [], local: [], localSel: new Set(), queue: [], dialog: null, panels: false, sync: null,
+  localRoot: null, localStack: [], local: [], localSel: new Set(), queue: [], dialog: null, panels: false, sync: null, perms: null, previewData: null, edit: null,
 };
 let nextJob = 1;
 const data = Suite.appdata.create(APP, { onChange: () => render() });
@@ -476,8 +486,8 @@ function Sites() {
   return html`<aside class=${`ftp-side suite-drawer ${state.panels ? 'open' : ''}`} data-testid="sidebar">
     <strong>${t('ftp.sites')}</strong>
     <ul class="ftp-sites">${data.connections().map((c) => html`<li data-testid="site">
-      <a href="#" onClick=${(e) => { e.preventDefault(); state.panels = false; state.site = { ...c }; connect(c); }}>${c.protocol === 'sftp' ? '🔐' : '🌐'} ${c.name}</a>
-      <button class="secondary outline" data-testid="edit-site" onClick=${() => { state.site = { ...c }; render(); }}>✎</button>
+      <a href="#" onClick=${(e) => { e.preventDefault(); state.panels = false; state.site = { ...c }; connect(c); }}>${c.protocol === 'sftp' ? Suite.icon('lock-keyhole') : Suite.icon('globe')} ${c.name}</a>
+      <button class="secondary outline" data-testid="edit-site" onClick=${() => { state.site = { ...c }; render(); }}>${Suite.icon('pencil')}</button>
       <button class="secondary outline" data-testid="delete-site" onClick=${async () => { if (await Suite.shell.confirm(t('ftp.deleteSite', c.name))) data.deleteConnection(c.id); }}>×</button></li>`)}</ul>
     <${data.Bar} />
     <details><summary>${t('appdata.relay')}</summary><${data.RelayFields} /></details>
@@ -486,12 +496,12 @@ function Sites() {
 
 function FileTable({ entries, sel, onOpen, testid, draggable, onDragStartItem }) {
   return html`<div class="ftp-table-wrap"><table class="ftp-table" data-testid=${testid}>
-    <thead><tr><th>${t('ftp.name')}</th><th class="num">${t('ftp.size')}</th><th class="ftp-wide">${t('ftp.modified')}</th></tr></thead>
+    <thead><tr><th>${t('ftp.name')}</th><th class="num">${t('ftp.size')}</th><th class="ftp-wide">${t('ftp.modified')}</th>${entries.some((e) => e.mode != null) ? html`<th class="ftp-wide">${t('ftp.perms')}</th>` : null}</tr></thead>
     <tbody>${entries.map((e) => html`<tr class=${sel.has(e.name) ? 'selected' : ''} data-testid="entry" draggable=${draggable}
         onDragStart=${(ev) => onDragStartItem && onDragStartItem(ev, e)}
         onClick=${(ev) => { if (!(ev.ctrlKey || ev.metaKey)) sel.clear(); if (sel.has(e.name) && (ev.ctrlKey || ev.metaKey)) sel.delete(e.name); else sel.add(e.name); render(); }}
         onDblClick=${() => onOpen(e)}>
-      <td data-testid="entry-name">${e.isDir ? '📁' : '📄'} ${e.name}</td><td class="num">${e.isDir ? '' : fmtSize(e.size)}</td><td class="ftp-wide">${fmtDate(e.mtime)}</td></tr>`)}</tbody>
+      <td data-testid="entry-name">${e.isDir ? Suite.icon('folder') : Suite.icon('file')} ${e.name}</td><td class="num">${e.isDir ? '' : fmtSize(e.size)}</td><td class="ftp-wide">${fmtDate(e.mtime)}</td>${entries.some((x) => x.mode != null) ? html`<td class="ftp-wide ftp-mode" data-testid="entry-mode">${permString(e.mode)}</td>` : null}</tr>`)}</tbody>
   </table></div>`;
 }
 
@@ -506,10 +516,10 @@ function LocalPane() {
     </div>
     ${dir ? html`
       <div class="ftp-buttons">
-        <button class="secondary outline" data-testid="local-up" disabled=${state.localStack.length < 2} onClick=${() => { state.localStack.pop(); listLocal(); }}>↑</button>
-        <button class="secondary outline" data-testid="upload-selected" disabled=${!state.fs || !state.localSel.size} onClick=${() => upload(state.local.filter((x) => state.localSel.has(x.name))).catch(fail)}>${t('ftp.upload')} →</button>
-        <button class="secondary outline" title=${t('ftp.refresh')} onClick=${listLocal}>⟳</button>
-        <button class="secondary outline" data-testid="compare" disabled=${!state.fs} onClick=${startCompare}>⇄ ${t('ftp.compare')}</button>
+        <button class="secondary outline" data-testid="local-up" title=${Suite.t('common.up')} disabled=${state.localStack.length < 2} onClick=${() => { state.localStack.pop(); listLocal(); }}>${Suite.icon('arrow-up')}</button>
+        <button class="secondary outline" data-testid="upload-selected" disabled=${!state.fs || !state.localSel.size} onClick=${() => upload(state.local.filter((x) => state.localSel.has(x.name))).catch(fail)}>${t('ftp.upload')} ${Suite.icon('arrow-right')}</button>
+        <button class="secondary outline" title=${t('ftp.refresh')} onClick=${listLocal}>${Suite.icon('rotate-cw')}</button>
+        <button class="secondary outline" data-testid="compare" disabled=${!state.fs} onClick=${startCompare}>${Suite.icon('arrow-left-right')} ${t('ftp.compare')}</button>
       </div>
       <${FileTable} entries=${state.local} sel=${state.localSel} testid="local-list" draggable=${true}
         onDragStartItem=${(ev, e) => { if (!state.localSel.has(e.name)) { state.localSel = new Set([e.name]); } ev.dataTransfer.setData('application/x-ftp-local', e.name); }}
@@ -518,6 +528,8 @@ function LocalPane() {
         <button class="secondary" data-testid="upload-files" disabled=${!state.fs} onClick=${pickUpload}>${t('ftp.uploadFiles')}</button>`}
   </section>`;
 }
+
+const oneFile = () => state.remoteSel.size === 1 && state.remote.some((x) => state.remoteSel.has(x.name) && !x.isDir);
 
 function RemotePane() {
   return html`<section class="ftp-pane" data-testid="remote"
@@ -533,14 +545,17 @@ function RemotePane() {
     </div>
     ${state.fs ? html`
       <div class="ftp-buttons">
-        <button class="secondary outline" data-testid="remote-up" disabled=${state.remotePath === '/'} onClick=${() => listRemote(parent(state.remotePath))}>↑</button>
-        <button class="secondary outline" data-testid="download-selected" disabled=${!state.remoteSel.size} onClick=${() => download(state.remote.filter((x) => state.remoteSel.has(x.name))).catch(fail)}>← ${t('ftp.download')}</button>
+        <button class="secondary outline" data-testid="remote-up" title=${Suite.t('common.up')} disabled=${state.remotePath === '/'} onClick=${() => listRemote(parent(state.remotePath))}>${Suite.icon('arrow-up')}</button>
+        <button class="secondary outline" data-testid="download-selected" disabled=${!state.remoteSel.size} onClick=${() => download(state.remote.filter((x) => state.remoteSel.has(x.name))).catch(fail)}>${Suite.icon('arrow-left')} ${t('ftp.download')}</button>
         <button class="secondary outline" data-testid="remote-open-with" disabled=${!state.remoteSel.size || state.remote.some((x) => state.remoteSel.has(x.name) && x.isDir)}
           onClick=${() => openWith(state.remote.filter((x) => state.remoteSel.has(x.name)))}>${t('bridge.openWith')}</button>
+        <button class="secondary outline" data-testid="remote-preview" disabled=${!oneFile()} onClick=${() => preview()}>${Suite.icon('eye')} ${t('ftp.preview')}</button>
+        <button class="secondary outline" data-testid="remote-edit" disabled=${!oneFile()} onClick=${() => editRemote()}>${Suite.icon('pencil')} ${t('ftp.edit')}</button>
+        <button class="secondary outline" data-testid="remote-perms" disabled=${!state.remoteSel.size} onClick=${openPermissions}>${Suite.icon('lock-keyhole')} ${t('ftp.perms')}</button>
         <button class="secondary outline" data-testid="remote-mkdir" onClick=${() => remoteAction('mkdir')}>${t('ftp.mkdir')}</button>
         <button class="secondary outline" data-testid="remote-rename" disabled=${state.remoteSel.size !== 1} onClick=${() => remoteAction('rename')}>${t('ftp.rename')}</button>
         <button class="secondary outline" data-testid="remote-delete" disabled=${!state.remoteSel.size} onClick=${() => remoteAction('delete')}>${t('ftp.delete')}</button>
-        <button class="secondary outline" title=${t('ftp.refresh')} data-testid="remote-refresh" onClick=${() => listRemote()}>⟳</button>
+        <button class="secondary outline" title=${t('ftp.refresh')} data-testid="remote-refresh" onClick=${() => listRemote()}>${Suite.icon('rotate-cw')}</button>
       </div>
       <${FileTable} entries=${state.remote} sel=${state.remoteSel} testid="remote-list" draggable=${true}
         onDragStartItem=${(ev, e) => { if (!state.remoteSel.has(e.name)) state.remoteSel = new Set([e.name]); ev.dataTransfer.setData('application/x-ftp-remote', e.name); }}
@@ -555,10 +570,10 @@ function Queue() {
     <div class="ftp-pane-head"><strong>${t('ftp.queue')}</strong>
       <button class="secondary outline" data-testid="clear-done" onClick=${() => { state.queue = state.queue.filter((j) => j.status !== 'done'); render(); }}>${t('ftp.clearDone')}</button></div>
     <ul>${state.queue.map((j) => html`<li data-testid="job" data-status=${j.status}>
-      <span>${j.direction === 'up' ? '⬆' : '⬇'} ${j.name}</span>
+      <span>${j.direction === 'up' ? Suite.icon('upload') : Suite.icon('download')} ${j.name}</span>
       <progress value=${j.status === 'done' ? 1 : j.total ? j.done / j.total : 0} max="1"></progress>
       <small>${j.status === 'running' ? `${fmtSize(j.done)}${j.total ? ` / ${fmtSize(j.total)}` : ''}${j.note ? ` · ${j.note}` : ''}` : j.status === 'failed' ? `${t('ftp.failed')}: ${j.error}` : t(`ftp.${j.status}`)}</small>
-      ${j.status === 'failed' ? html`<button class="secondary outline ftp-mini" data-testid="job-resume" onClick=${() => resume(j)}>↻ ${t('ftp.resume')}</button>` : null}</li>`)}</ul>
+      ${j.status === 'failed' ? html`<button class="secondary outline ftp-mini" data-testid="job-resume" onClick=${() => resume(j)}>${Suite.icon('rotate-cw')} ${t('ftp.resume')}</button>` : null}</li>`)}</ul>
   </section>`;
 }
 
@@ -597,7 +612,7 @@ function SyncDialog() {
       <tbody>${shown.map((r) => html`<tr data-testid="sync-row" data-status=${r.status} data-action=${r.action}>
         <td data-testid="sync-name">${r.rel}</td><td class="num">${side(r.local)}</td><td class="num">${side(r.remote)}</td><td><small>${t(`ftp.st.${r.status}`)}</small></td>
         <td><select data-testid="sync-action" onChange=${(e) => { r.action = e.target.value; render(); }}>
-          ${['up', 'down', 'skip'].filter((a) => a === 'skip' || (a === 'up' ? r.local : r.remote)).map((a) => html`<option value=${a} selected=${r.action === a}>${a === 'up' ? '→ ' : a === 'down' ? '← ' : ''}${t(`ftp.act.${a}`)}</option>`)}</select></td></tr>`)}</tbody>
+          ${['up', 'down', 'skip'].filter((a) => a === 'skip' || (a === 'up' ? r.local : r.remote)).map((a) => html`<option value=${a} selected=${r.action === a}>${a === 'up' ? '' : a === 'down' ? '' : ''}${t(`ftp.act.${a}`)}</option>`)}</select></td></tr>`)}</tbody>
     </table></div>` : null}
     ${!todo ? html`<p data-testid="sync-nothing">${t('ftp.syncNothing')}</p>` : null}
     <footer><button class="secondary" onClick=${close}>${t('ftp.cancel')}</button>
@@ -605,15 +620,164 @@ function SyncDialog() {
   </article></dialog>`;
 }
 
+// ---- permissions, preview, editing ----------------------------------------------------------------------------------
+
+/** "rwxr-x---" (plus s/t) for permission bits. */
+function permString(mode) {
+  if (mode == null) return '';
+  const r = (bits, special, ch) => `${bits & 4 ? 'r' : '-'}${bits & 2 ? 'w' : '-'}${special ? (bits & 1 ? ch : ch.toUpperCase()) : bits & 1 ? 'x' : '-'}`;
+  return r((mode >> 6) & 7, mode & 0o4000, 's') + r((mode >> 3) & 7, mode & 0o2000, 's') + r(mode & 7, mode & 0o1000, 't');
+}
+
+function openPermissions() {
+  const entries = state.remote.filter((x) => state.remoteSel.has(x.name));
+  if (!entries.length) return;
+  const known = entries.find((e) => e.mode != null);
+  state.perms = { entries, mode: known ? known.mode & 0o7777 : entries[0].isDir ? 0o755 : 0o644, error: '' };
+  render();
+}
+
+async function applyPermissions() {
+  const d = state.perms;
+  d.busy = true; d.error = ''; render();
+  try {
+    for (const e of d.entries) await state.fs.chmod(join(state.remotePath, e.name), d.mode);
+    state.perms = null;
+    Suite.shell.toast(t('ftp.permsDone', d.entries.length, d.mode.toString(8).padStart(3, '0')));
+    await listRemote();
+  } catch (e) { d.error = Suite.i18n.describe(e); d.busy = false; }
+  render();
+}
+
+function PermissionsDialog() {
+  const d = state.perms;
+  if (!d) return null;
+  const bit = (b) => html`<input type="checkbox" data-testid=${`perm-${b.toString(8)}`} checked=${!!(d.mode & b)} onChange=${(e) => { d.mode = e.target.checked ? d.mode | b : d.mode & ~b; render(); }} />`;
+  const rows = [['ftp.owner', 0o400, 0o200, 0o100], ['ftp.group', 0o40, 0o20, 0o10], ['ftp.others', 0o4, 0o2, 0o1]];
+  return html`<dialog open data-testid="perms-dialog"><article>
+    <header><strong>${t('ftp.permsTitle', d.entries.length === 1 ? d.entries[0].name : t('ftp.items', d.entries.length))}</strong></header>
+    <table class="ftp-perms"><thead><tr><th></th><th>${t('ftp.read')}</th><th>${t('ftp.write')}</th><th>${t('ftp.exec')}</th></tr></thead>
+      <tbody>${rows.map(([label, r, w, x]) => html`<tr><th>${t(label)}</th><td>${bit(r)}</td><td>${bit(w)}</td><td>${bit(x)}</td></tr>`)}</tbody></table>
+    <label>${t('ftp.octal')}<input data-testid="perm-octal" inputmode="numeric" value=${(d.mode & 0o7777).toString(8).padStart(3, '0')}
+      onInput=${(e) => { if (/^[0-7]{3,4}$/.test(e.target.value)) { d.mode = parseInt(e.target.value, 8); render(); } }} /></label>
+    <p><code data-testid="perm-string">${permString(d.mode)}</code></p>
+    ${d.error ? html`<p class="ftp-error" data-testid="perms-error">${d.error}</p>` : null}
+    <footer><button class="secondary" onClick=${() => { state.perms = null; render(); }}>${t('ftp.cancel')}</button>
+      <button data-testid="perms-ok" aria-busy=${!!d.busy} onClick=${applyPermissions}>${t('ftp.ok')}</button></footer>
+  </article></dialog>`;
+}
+
+const PREVIEW_MAX = 20 * 1024 * 1024, EDIT_MAX = 2 * 1024 * 1024;
+const IMAGE = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', bmp: 'image/bmp', svg: 'image/svg+xml', ico: 'image/x-icon', avif: 'image/avif' };
+const MEDIA = { mp3: 'audio/mpeg', ogg: 'audio/ogg', oga: 'audio/ogg', wav: 'audio/wav', flac: 'audio/flac', m4a: 'audio/mp4', opus: 'audio/ogg', mp4: 'video/mp4', webm: 'video/webm', ogv: 'video/ogg', mov: 'video/mp4' };
+const ext = (name) => (/\.([^.]+)$/.exec(name) || [])[1]?.toLowerCase() || '';
+
+/** Text of bytes when they are text (UTF-8 without NUL bytes), otherwise null. */
+function asText(bytes) {
+  if (bytes.subarray(0, 8192).includes(0)) return null;
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch (e) { return null; }
+}
+
+function hexDump(bytes) {
+  const lines = [];
+  for (let o = 0; o < bytes.length; o += 16) {
+    const row = bytes.subarray(o, o + 16);
+    lines.push(`${o.toString(16).padStart(8, '0')}  ${[...row].map((b) => b.toString(16).padStart(2, '0')).join(' ').padEnd(47)}  ${[...row].map((b) => (b >= 32 && b < 127 ? String.fromCharCode(b) : '.')).join('')}`);
+  }
+  return lines.join('\n');
+}
+
+async function preview(entry = state.remote.find((x) => state.remoteSel.has(x.name) && !x.isDir)) {
+  if (!entry || entry.isDir) return;
+  const path = join(state.remotePath, entry.name);
+  if (state.previewData && state.previewData.url) URL.revokeObjectURL(state.previewData.url);
+  state.previewData = { name: entry.name, loading: true };
+  render();
+  try {
+    const partial = entry.size > PREVIEW_MAX;
+    const kind = IMAGE[ext(entry.name)] ? 'image' : MEDIA[ext(entry.name)] ? 'media' : null;
+    if (kind && partial) { state.previewData = { name: entry.name, tooBig: true }; render(); return; }
+    // text and unknown files: the first 256 KiB are enough
+    const bytes = kind ? await state.fs.read(path) : (await state.fs.read(path)).subarray(0, 256 * 1024);
+    if (!state.previewData || state.previewData.name !== entry.name) return;
+    if (kind) state.previewData = { name: entry.name, kind, type: IMAGE[ext(entry.name)] || MEDIA[ext(entry.name)], url: URL.createObjectURL(new Blob([bytes], { type: IMAGE[ext(entry.name)] || MEDIA[ext(entry.name)] })) };
+    else {
+      const text = asText(bytes);
+      state.previewData = text !== null ? { name: entry.name, kind: 'text', text, cut: entry.size > bytes.length } : { name: entry.name, kind: 'hex', text: hexDump(bytes.subarray(0, 4096)), cut: entry.size > 4096 };
+    }
+  } catch (e) { state.previewData = { name: entry.name, error: Suite.i18n.describe(e) }; }
+  render();
+}
+
+function PreviewDialog() {
+  const p = state.previewData;
+  if (!p) return null;
+  const close = () => { if (p.url) URL.revokeObjectURL(p.url); state.previewData = null; render(); };
+  return html`<dialog open data-testid="preview-dialog" class="ftp-preview"><article>
+    <header><strong>${p.name}</strong></header>
+    ${p.loading ? html`<p aria-busy="true">${t('ftp.loading')}</p>` : p.error ? html`<p class="ftp-error">${p.error}</p>` : p.tooBig ? html`<p>${t('ftp.previewTooBig')}</p>`
+      : p.kind === 'image' ? html`<img data-testid="preview-image" src=${p.url} alt=${p.name} />`
+      : p.kind === 'media' ? (/^video/.test(p.type) ? html`<video data-testid="preview-media" controls src=${p.url}></video>` : html`<audio data-testid="preview-media" controls src=${p.url}></audio>`)
+      : html`<pre data-testid=${p.kind === 'text' ? 'preview-text' : 'preview-hex'}>${p.text}</pre>${p.cut ? html`<p><small>${t('ftp.previewCut')}</small></p>` : null}`}
+    <footer>
+      ${p.kind === 'text' ? html`<button class="secondary outline" data-testid="preview-edit" onClick=${() => { const e = state.remote.find((x) => x.name === p.name); close(); editRemote(e); }}>${Suite.icon('pencil')} ${t('ftp.edit')}</button>` : null}
+      <button data-testid="preview-close" onClick=${close}>${t('ftp.close')}</button></footer>
+  </article></dialog>`;
+}
+
+/** Edit a remote text file here: read it, change it, upload it again (after checking that it did not change on the server). */
+async function editRemote(entry = state.remote.find((x) => state.remoteSel.has(x.name) && !x.isDir)) {
+  if (!entry || entry.isDir) return;
+  if (entry.size > EDIT_MAX) { Suite.shell.toast(t('ftp.editTooBig'), 'warning'); return; }
+  const path = join(state.remotePath, entry.name);
+  try {
+    const bytes = await state.fs.read(path);
+    const text = asText(bytes);
+    if (text === null) { Suite.shell.toast(t('ftp.editBinary', entry.name), 'warning'); return; }
+    state.edit = { name: entry.name, path, text, original: text, size: bytes.length, crlf: /\r\n/.test(text) };
+    render();
+  } catch (e) { fail(e); }
+}
+
+async function saveEdit() {
+  const d = state.edit;
+  const now = await state.fs.size(d.path);
+  if (now !== null && now !== d.size && !(await Suite.shell.confirm(t('ftp.editChanged', d.name)))) return;
+  const bytes = new TextEncoder().encode(d.text);
+  d.busy = true; render();
+  try {
+    await transfer({ direction: 'up', name: d.name, size: bytes.length, run: (progress) => state.fs.write(d.path, bytes, progress) });
+    Object.assign(d, { original: d.text, size: bytes.length, busy: false });
+    Suite.shell.toast(t('ftp.savedBack', d.name));
+    listRemote();
+  } catch (e) { d.busy = false; fail(e); }
+  render();
+}
+
+function EditDialog() {
+  const d = state.edit;
+  if (!d) return null;
+  const changed = d.text !== d.original;
+  const close = async () => { if (changed && !(await Suite.shell.confirm(t('ftp.editDiscard', d.name)))) return; state.edit = null; render(); };
+  return html`<dialog open data-testid="edit-dialog" class="ftp-edit"><article>
+    <header><strong>${d.name}${changed ? ' •' : ''}</strong> <small>${state.site.host}:${d.path}</small></header>
+    <textarea data-testid="edit-text" spellcheck="false" value=${d.text}
+      onKeyDown=${(e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveEdit(); } }}
+      onInput=${(e) => { d.text = d.crlf ? e.target.value.replace(/\r?\n/g, '\r\n') : e.target.value; render(); }}></textarea>
+    <footer><button class="secondary" data-testid="edit-close" onClick=${close}>${t('ftp.close')}</button>
+      <button data-testid="edit-save" disabled=${!changed} aria-busy=${!!d.busy} onClick=${saveEdit}>${t('ftp.editSave')}</button></footer>
+  </article></dialog>`;
+}
+
 function Toolbar() {
-  return html`<nav class="ftp-toolbar"><button class="secondary outline ftp-only-phone" data-testid="toggle-panels" onClick=${() => { state.panels = !state.panels; render(); }}>☰ ${t('ftp.sites')}</button></nav>`;
+  return html`<nav class="ftp-toolbar"><button class="secondary outline ftp-only-phone" data-testid="toggle-panels" onClick=${() => { state.panels = !state.panels; render(); }}>${Suite.icon('menu')} ${t('ftp.sites')}</button></nav>`;
 }
 
 function Main() {
   return html`<div class="ftp-layout">
     <${Sites} />${state.panels ? Suite.shell.backdrop(() => { state.panels = false; render(); }) : null}
     <div class="ftp-work"><${QuickConnect} /><div class="ftp-panes"><${LocalPane} /><${RemotePane} /></div><${Queue} /></div>
-    <${NameDialog} /><${SyncDialog} /><${data.Dialog} />
+    <${NameDialog} /><${SyncDialog} /><${PermissionsDialog} /><${PreviewDialog} /><${EditDialog} /><${data.Dialog} />
   </div>`;
 }
 
@@ -621,5 +785,5 @@ Suite.shell.mount({ id: APP, title: 'app.title', version: '%%BUILD_VERSION%%', t
 Suite.ssh.load().catch(() => {});
 
 // for tests
-window.FTP = { state, data, connect, parseListLine, parseMlsdLine, compareEntry };
+window.FTP = { state, data, permString, preview, editRemote, connect, parseListLine, parseMlsdLine, compareEntry };
 document.body.dataset.ready = 'true';

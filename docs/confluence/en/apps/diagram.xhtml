@@ -33,6 +33,11 @@ imports <strong>Excalidraw</strong> drawings.</p>
 <td>yes, laid out automatically</td>
 <td>–</td>
 </tr>
+<tr>
+<td>PlantUML (<code>.puml</code>, <code>.plantuml</code>, <code>.pu</code>, <code>.iuml</code>, <code>.wsd</code>)</td>
+<td>yes, laid out automatically (see below)</td>
+<td>–</td>
+</tr>
 </tbody>
 </table>
 <p>The SVG and PNG exports show the current page as a picture and contain the whole diagram, like draw.io's "editable" exports:
@@ -46,6 +51,12 @@ the printer to get a PDF.</p>
 text (bold or coloured parts of a label are not kept). Style settings that the editor does not use are kept when you save, so
 a round trip through this editor does not remove them. Routing points of draw.io connectors are kept and the connector is
 drawn through them; they move with the connector, not with the shapes.</p></ac:rich-text-body></ac:structured-macro>
+<h2>Templates</h2>
+<p><strong>📋 Templates</strong> offers starting points for common kinds of diagrams: flowchart, organisation chart, sequence, class, use case,
+state and activity diagram (UML), entity relationship, network, business process (BPMN), mind map, SWOT analysis and timeline.
+Choose one and click <strong>New diagram</strong> (replaces the current diagram – you are asked first if it has unsaved changes) or <strong>Add to
+this page</strong> (placed below what is already there; <code>Ctrl+Z</code> takes it away again). A double click on a template does the same: on an
+empty page it starts a new diagram, otherwise it adds it. The sample texts are in English; change them like any other shapes.</p>
 <h2>Drawing</h2>
 <ul>
 <li>The shape bar on the left adds a shape in the middle of the view; you can also drag a shape onto the drawing.</li>
@@ -127,11 +138,11 @@ All of them are saved as the corresponding draw.io shapes and arrows.</p>
 </ul>
 <p>Groups (with their names and nesting), rotation, locks and layers are saved in the draw.io file and are understood by
 draw.io; groups and angles of Excalidraw files are taken over when they are opened.</p>
-<h3>Automatic layout and Mermaid</h3>
+<h3>Automatic layout, Mermaid and PlantUML</h3>
 <p><strong>Automatic layout</strong> (in the format panel when nothing is selected – or with several shapes selected, for just those)
 arranges the shapes in layers along their connectors: top to bottom, left to right, bottom to top or right to left.
 Connectors pointing back against that direction are led around the side. Undo restores the previous arrangement.</p>
-<p><strong>Insert Mermaid…</strong> turns a <a href="https://mermaid.js.org">Mermaid</a> flowchart into shapes and connectors and lays them out, for
+<p><strong>Insert Mermaid / PlantUML…</strong> turns a <a href="https://mermaid.js.org">Mermaid</a> flowchart into shapes and connectors and lays them out, for
 example:</p>
 <ac:structured-macro ac:name="code"><ac:plain-text-body><![CDATA[flowchart TD
   A[Start] --> B{OK?}
@@ -142,6 +153,24 @@ example:</p>
 <code>[( )]</code> cylinder, <code>(( ))</code> circle, <code>{ }</code> decision, <code>{{ }}</code> hexagon, <code>[/ /]</code> parallelogram, quoted labels and <code>&lt;br&gt;</code>, the links
 <code>--&gt;</code>, <code>---</code>, <code>-.-&gt;</code> (dashed), <code>==&gt;</code> (thick), <code>&lt;--&gt;</code>, <code>--o</code>, <code>--x</code>, labels as <code>--&gt;|text|</code> or <code>-- text --&gt;</code>, chains and <code>A &amp; B --&gt; C</code>.
 Subgraphs, styles and classes are ignored; other Mermaid diagram types (sequence, class, …) cannot be imported.</p>
+<p>The same dialog takes <a href="https://plantuml.com">PlantUML</a> text (between <code>@startuml</code> and <code>@enduml</code>); <strong>Insert an example…</strong> fills in
+one of the templates as text. No PlantUML server is needed – the text is read by the app itself and becomes ordinary, editable
+shapes:</p>
+<ul>
+<li><strong>Class diagrams:</strong> <code>class</code>, <code>abstract class</code>, <code>interface</code>, <code>enum</code>, <code>entity</code> with <code>{ members }</code> or <code>Name : member</code> (fields above,
+  methods below a separator), relations <code>&lt;|--</code> (inheritance), <code>&lt;|..</code> (realisation), <code>*--</code> (composition), <code>o--</code> (aggregation), <code>--&gt;</code>,
+  <code>..&gt;</code>, <code>--</code>, with multiplicities (<code>"1" -- "*"</code>) and labels (<code>: label</code>).</li>
+<li><strong>Use case diagrams:</strong> <code>actor</code>, <code>:Actor:</code>, <code>usecase</code>, <code>(Use case)</code>, aliases with <code>as</code>, <code>left to right direction</code>.</li>
+<li><strong>Component diagrams:</strong> <code>component</code>, <code>[Component]</code>, <code>interface</code>, <code>() "Interface"</code>, <code>node</code>, <code>database</code>, <code>cloud</code>, <code>queue</code>, <code>file</code>, …</li>
+<li><strong>State diagrams:</strong> <code>state</code>, <code>[*]</code> as start and end, <code>State : description</code>, transitions with events.</li>
+<li><strong>Activity diagrams</strong> (the current syntax): <code>start</code>, <code>stop</code>, <code>end</code>, <code>:action;</code> (also over several lines), <code>if … elseif … else …
+  endif</code>, <code>while … endwhile</code>, <code>repeat … repeat while</code>, <code>fork … fork again … end fork</code>, <code>detach</code>/<code>kill</code>.</li>
+<li><strong>Sequence diagrams:</strong> <code>participant</code>, <code>actor</code>, <code>database</code> and the other participant kinds, messages <code>-&gt;</code>, <code>--&gt;</code> (reply, dashed),
+  <code>-&gt;&gt;</code>, <code>-&gt;x</code>, <code>&lt;-</code>, self messages, <code>autonumber</code>, <code>title</code>, <code>alt</code>/<code>else</code>/<code>opt</code>/<code>loop</code>/<code>par</code>/<code>group … end</code> as frames, notes over, left
+  or right of participants, <code>== dividers ==</code>, <code>...</code> and <code>|||</code> for space.</li>
+</ul>
+<p>Styles (<code>skinparam</code>, colours), <code>!include</code>, packages as containers and notes outside sequence diagrams are ignored. <code>.puml</code> files
+(also without <code>@startuml</code>) open as a new diagram, saved as <code>.drawio</code>.</p>
 <h2>Format panel</h2>
 <p>The panel on the right shows the settings of the selection:</p>
 <table>
@@ -333,4 +362,4 @@ shows the whole page.</p>
 </tbody>
 </table>
 <h2>On phones and tablets</h2>
-<p>The shapes are in a bar below the drawing; tap one to add it. <strong>Format</strong> opens the format panel. Two fingers zoom and move the view.</p>
+<p>The shapes are in a bar below the drawing; tap one to add it. <strong>Format</strong> opens the format panel. Two fingers zoom and move the view; one finger on an empty part of the drawing moves it too (a selection rectangle needs a mouse or a pen).</p>

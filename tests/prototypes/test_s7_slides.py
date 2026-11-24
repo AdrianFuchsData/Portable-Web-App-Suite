@@ -4,6 +4,7 @@ import io
 import re
 
 import pytest
+from playwright.sync_api import expect
 from pptx import Presentation
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_SHAPE_TYPE
 from pptx.util import Emu
@@ -170,7 +171,7 @@ def test_present(page, sample_pptx):
     page.keyboard.press("ArrowLeft")
     assert presenter.get_attribute("data-index") == "1"
     page.keyboard.press("Escape")
-    assert presenter.is_hidden()
+    expect(presenter).to_be_hidden()
 
 
 def test_ui_open_and_save(page, sample_pptx, tmp_path):

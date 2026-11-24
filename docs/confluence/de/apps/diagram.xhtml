@@ -33,6 +33,11 @@ werden können, und er importiert <strong>Excalidraw</strong>-Zeichnungen.</p>
 <td>ja, automatisch angeordnet</td>
 <td>–</td>
 </tr>
+<tr>
+<td>PlantUML (<code>.puml</code>, <code>.plantuml</code>, <code>.pu</code>, <code>.iuml</code>, <code>.wsd</code>)</td>
+<td>ja, automatisch angeordnet (siehe unten)</td>
+<td>–</td>
+</tr>
 </tbody>
 </table>
 <p>Die SVG- und PNG-Exporte zeigen die aktuelle Seite als Bild und enthalten das ganze Diagramm, wie die „bearbeitbaren“ Exporte von
@@ -45,6 +50,13 @@ speichern“ als Drucker, um ein PDF zu erhalten.</p>
 <ac:structured-macro ac:name="info"><ac:rich-text-body><p>draw.io kennt viel mehr Formen und Optionen. Formen, die dieser Editor nicht kennt, werden als Rechtecke dargestellt, und
 Beschriftungen sind reiner Text (fette oder farbige Teile einer Beschriftung gehen verloren). Stileinstellungen, die der Editor nicht
 verwendet, bleiben beim Speichern erhalten, sodass sie beim Bearbeiten mit diesem Editor nicht verloren gehen.</p></ac:rich-text-body></ac:structured-macro>
+<h2>Vorlagen</h2>
+<p><strong>📋 Vorlagen</strong> bietet Ausgangspunkte für häufige Diagrammarten: Flussdiagramm, Organigramm, Sequenz-, Klassen-, Anwendungsfall-,
+Zustands- und Aktivitätsdiagramm (UML), Entity-Relationship, Netzwerk, Geschäftsprozess (BPMN), Mindmap, SWOT-Analyse und Zeitleiste.
+Wählen Sie eine aus und klicken Sie auf <strong>Neues Diagramm</strong> (ersetzt das aktuelle Diagramm – bei ungespeicherten Änderungen wird vorher
+gefragt) oder <strong>Zu dieser Seite hinzufügen</strong> (unter das Vorhandene gesetzt; <code>Strg+Z</code> nimmt es wieder weg). Ein Doppelklick auf eine Vorlage
+tut dasselbe: auf einer leeren Seite beginnt er ein neues Diagramm, sonst fügt er sie hinzu. Die Beispieltexte sind englisch; ändern Sie sie
+wie alle anderen Formen.</p>
 <h2>Zeichnen</h2>
 <ul>
 <li>Die Formenleiste links fügt eine Form in der Mitte der Ansicht ein; eine Form kann auch auf die Zeichnung gezogen werden.</li>
@@ -127,12 +139,12 @@ Alle werden als die entsprechenden draw.io-Formen und -Pfeile gespeichert.</p>
 </ul>
 <p>Gruppen (mit Namen und Verschachtelung), Drehung, Sperren und Ebenen werden in der draw.io-Datei gespeichert und von draw.io
 verstanden; Gruppen und Winkel aus Excalidraw-Dateien werden beim Öffnen übernommen.</p>
-<h3>Automatisch anordnen und Mermaid</h3>
+<h3>Automatisch anordnen, Mermaid und PlantUML</h3>
 <p><strong>Automatisch anordnen</strong> (im Formatbereich, wenn nichts ausgewählt ist – oder bei mehreren ausgewählten Formen nur für diese)
 ordnet die Formen in Ebenen entlang ihrer Verbinder an: von oben nach unten, von links nach rechts, von unten nach oben oder von
 rechts nach links. Verbinder, die gegen diese Richtung zurückführen, werden seitlich herumgeführt. Rückgängig stellt die vorherige
 Anordnung wieder her.</p>
-<p><strong>Mermaid einfügen…</strong> wandelt ein <a href="https://mermaid.js.org">Mermaid</a>-Flussdiagramm in Formen und Verbinder um und ordnet sie an,
+<p><strong>Mermaid / PlantUML einfügen…</strong> wandelt ein <a href="https://mermaid.js.org">Mermaid</a>-Flussdiagramm in Formen und Verbinder um und ordnet sie an,
 zum Beispiel:</p>
 <ac:structured-macro ac:name="code"><ac:plain-text-body><![CDATA[flowchart TD
   A[Start] --> B{OK?}
@@ -144,6 +156,24 @@ zum Beispiel:</p>
 <code>&lt;br&gt;</code>, die Verbindungen <code>--&gt;</code>, <code>---</code>, <code>-.-&gt;</code> (gestrichelt), <code>==&gt;</code> (dick), <code>&lt;--&gt;</code>, <code>--o</code>, <code>--x</code>, Beschriftungen als <code>--&gt;|Text|</code> oder
 <code>-- Text --&gt;</code>, Ketten und <code>A &amp; B --&gt; C</code>. Untergraphen, Stile und Klassen werden ignoriert; andere Mermaid-Diagrammarten (Sequenz,
 Klassen, …) lassen sich nicht importieren.</p>
+<p>Derselbe Dialog nimmt auch <a href="https://plantuml.com">PlantUML</a>-Text (zwischen <code>@startuml</code> und <code>@enduml</code>); <strong>Ein Beispiel einfügen…</strong> setzt
+eine der Vorlagen als Text ein. Ein PlantUML-Server ist nicht nötig – die App liest den Text selbst, und es entstehen gewöhnliche, bearbeitbare
+Formen:</p>
+<ul>
+<li><strong>Klassendiagramme:</strong> <code>class</code>, <code>abstract class</code>, <code>interface</code>, <code>enum</code>, <code>entity</code> mit <code>{ Mitgliedern }</code> oder <code>Name : Mitglied</code> (Felder oben,
+  Methoden unter einem Trennstrich), Beziehungen <code>&lt;|--</code> (Vererbung), <code>&lt;|..</code> (Realisierung), <code>*--</code> (Komposition), <code>o--</code> (Aggregation), <code>--&gt;</code>,
+  <code>..&gt;</code>, <code>--</code>, mit Multiplizitäten (<code>"1" -- "*"</code>) und Beschriftungen (<code>: Text</code>).</li>
+<li><strong>Anwendungsfalldiagramme:</strong> <code>actor</code>, <code>:Akteur:</code>, <code>usecase</code>, <code>(Anwendungsfall)</code>, Aliase mit <code>as</code>, <code>left to right direction</code>.</li>
+<li><strong>Komponentendiagramme:</strong> <code>component</code>, <code>[Komponente]</code>, <code>interface</code>, <code>() "Schnittstelle"</code>, <code>node</code>, <code>database</code>, <code>cloud</code>, <code>queue</code>, <code>file</code>, …</li>
+<li><strong>Zustandsdiagramme:</strong> <code>state</code>, <code>[*]</code> als Start und Ende, <code>Zustand : Beschreibung</code>, Übergänge mit Ereignissen.</li>
+<li><strong>Aktivitätsdiagramme</strong> (aktuelle Syntax): <code>start</code>, <code>stop</code>, <code>end</code>, <code>:Aktion;</code> (auch über mehrere Zeilen), <code>if … elseif … else … endif</code>,
+  <code>while … endwhile</code>, <code>repeat … repeat while</code>, <code>fork … fork again … end fork</code>, <code>detach</code>/<code>kill</code>.</li>
+<li><strong>Sequenzdiagramme:</strong> <code>participant</code>, <code>actor</code>, <code>database</code> und die anderen Arten von Beteiligten, Nachrichten <code>-&gt;</code>, <code>--&gt;</code> (Antwort,
+  gestrichelt), <code>-&gt;&gt;</code>, <code>-&gt;x</code>, <code>&lt;-</code>, Nachrichten an sich selbst, <code>autonumber</code>, <code>title</code>, <code>alt</code>/<code>else</code>/<code>opt</code>/<code>loop</code>/<code>par</code>/<code>group … end</code> als
+  Rahmen, Notizen über, links oder rechts von Beteiligten, <code>== Trenner ==</code>, <code>...</code> und <code>|||</code> für Abstand.</li>
+</ul>
+<p>Stile (<code>skinparam</code>, Farben), <code>!include</code>, Pakete als Container und Notizen außerhalb von Sequenzdiagrammen werden ignoriert. <code>.puml</code>-Dateien
+(auch ohne <code>@startuml</code>) öffnen sich als neues Diagramm und werden als <code>.drawio</code> gespeichert.</p>
 <h2>Formatbereich</h2>
 <p>Der Bereich rechts zeigt die Einstellungen der Auswahl:</p>
 <table>
@@ -336,4 +366,4 @@ Klassen, …) lassen sich nicht importieren.</p>
 </table>
 <h2>Auf Smartphones und Tablets</h2>
 <p>Die Formen stehen in einer Leiste unter der Zeichnung; Tippen fügt eine Form ein. <strong>Format</strong> öffnet den Formatbereich. Zwei Finger zoomen
-und verschieben die Ansicht.</p>
+und verschieben die Ansicht; ein Finger auf einer leeren Stelle der Zeichnung verschiebt sie ebenfalls (ein Auswahlrechteck braucht eine Maus oder einen Stift).</p>

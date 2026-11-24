@@ -51,6 +51,33 @@ Markdown everywhere, in program code only in comments and strings; right-click a
 look at the beginning of a long file while editing its end. Both views edit the same text and share one undo history;
 the second view follows the active tab. ◫ again closes it.
 
+## Bookmarks
+
+Mark lines you want to come back to: `Ctrl+F2` (or a click in the narrow margin left of the line numbers) sets or removes a
+bookmark ◆ on the current line, which is tinted. `F2` and `Shift+F2` jump to the next and previous bookmark (wrapping around),
+`Ctrl+Shift+F2` removes all. Bookmarks move with the text when you edit. The **Bookmarks** group in **🛠 Tools** also copies the
+bookmarked lines, removes them, or keeps only them – e.g. to collect the interesting lines of a log file. The status bar shows
+how many there are. Each document has its own bookmarks; they are not saved with the file.
+
+## Markdown preview
+
+For Markdown files (`.md`), **👁 Preview** (`Ctrl+Shift+M`) shows the rendered document next to the text (below it on phones):
+headings, emphasis, lists, task lists, tables, code, quotes and links. It is updated while you type and scrolls along with the
+text. **⤓ HTML** saves the rendered document as an HTML file. For safety, nothing in the document can run (no scripts), and
+pictures from files or the web are not loaded – only pictures embedded as `data:` addresses are shown.
+
+## Find and replace
+
+`Ctrl+F` (or 🔍) opens the search bar above the text. Type the text to find: the bar counts the matches (*2 of 7*) and the
+matches are highlighted. **Enter** or ↓ goes to the next match, **Shift+Enter** or ↑ to the previous one (also `F3` / `Shift+F3`),
+**Alt+Enter** selects all matches at once (then type to change them all together). The buttons next to the field switch on
+**Match case** (Aa), **Whole word** and **Regular expression** (`.*`; an invalid expression is reported). The arrow at the left
+shows the **replace** field: **Replace** changes the current match and goes on, **Replace all** changes every match (with a
+regular expression, `$1`, `$2` … insert its groups). `Escape` closes the bar. `Ctrl+G` goes to a line.
+
+The other code editors of the suite – the cells of the [Python notebook](notebook.md), the SQL editor of the
+[database tool](dbtool.md) and the bodies of the [HTTP analyzer](http.md) – have the same search bar.
+
 ## Find in files
 
 **🔍🗂** (`Ctrl+Shift+F`) searches all open documents at once: matches are listed by file with line and column; a click
@@ -75,13 +102,22 @@ be undone with `Ctrl+Z`.
 
 | Group | Tools |
 |---|---|
-| Lines | sort A→Z or Z→A (numbers in natural order: 9 before 10; upper/lower case ignored), sort by length, reverse the order, remove duplicate lines, remove empty lines, trim whitespace at the end or at both ends, join lines |
+| Lines | sort A→Z or Z→A (numbers in natural order: 9 before 10; upper/lower case ignored), sort by length, reverse the order, remove duplicate lines, remove empty lines, trim whitespace at the end or at both ends, join lines, shuffle, number lines…, add text before/after lines…, keep or remove lines containing a text or regular expression…, wrap lines at a width… |
 | Case | UPPER CASE, lower case, Title Case, iNVERT cASE |
 | Encode / decode | Base64 (UTF-8), URL encoding (percent encoding), HTML entities |
-| Format | format (indent) or minify JSON, format XML, format SQL, SQL on one line |
+| Format | format (indent) or minify JSON, format or minify XML, format YAML, JSON → YAML, YAML → JSON, format SQL, SQL on one line |
 
 Line tools always work on whole lines: those touched by the selection. Invalid input (for example broken JSON) shows
 a message and leaves the text unchanged.
+
+Tools with **…** ask for their options first and show a preview of the result: *number lines* (start, the text after the
+number, leading zeros), *text before/after lines* (e.g. `- ` for a list or `;` at every end; empty lines can be left alone),
+*keep* or *remove lines containing* a text (optionally a regular expression, optionally case-sensitive), *wrap lines* at a width
+(breaks at spaces, keeps the indentation). The options are remembered.
+
+**Syntax check**: in JSON, XML and YAML files, an error is underlined in red while you type, with a mark in the margin; point at
+it to read the message. **✓ Check syntax** (top of the tools list) reports whether the document is correct or jumps to the
+first error and names line, column and problem.
 
 **Format SQL…** works like the PoorSQL formatter: every clause on its own line, lists and sub-queries indented,
 keywords, function names and data types in UPPER CASE. A dialog sets the options, with a preview of the result:
@@ -149,6 +185,10 @@ On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the applicat
 | `Ctrl+Y` / `Ctrl+Shift+Z` | Redo |
 | `Ctrl+F` | Find and replace |
 | `Ctrl+Shift+F` | Find in all open files |
+| `Ctrl+Shift+M` | Markdown preview on/off |
+| `Ctrl+F2` | Bookmark on/off |
+| `F2` / `Shift+F2` | Next / previous bookmark |
+| `Ctrl+Shift+F2` | Remove all bookmarks |
 | `Ctrl+G` | Go to line |
 | `Ctrl+D` | Select the next occurrence of the word |
 | `Ctrl+Click` | Add a cursor |

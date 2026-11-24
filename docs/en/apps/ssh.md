@@ -13,6 +13,31 @@ integrated file panel. Connections go through the **local relay** (see the user 
 3. **Connect** opens a new tab; **Save connection** adds the connection to **Saved connections** (password and passphrase only if the
    box is ticked; a private key is always saved with the connection).
 
+### Proxy and jump host
+
+Under **Proxy and jump host** in the connection dialog:
+
+- **Jump host (ProxyJump)**: choose a saved connection (a bastion, gateway or "Jump server"). The client first connects to it and then
+  opens the connection to the target **from there** – the target only needs to be reachable from the jump host. The jump host may itself
+  use a jump host; its own host key is checked as usual. Both connections end when the tab is closed.
+- **Proxy**: **SOCKS5** or **HTTP (CONNECT)** with host, port and optionally user and password (the password is saved like the others,
+  protected in a KeePass connections file). The relay connects to the proxy, and the proxy to the SSH server; SSH stays encrypted end to
+  end. (For a proxy used by all connections of the relay, start the relay with `--upstream-proxy`.)
+
+### Port forwarding
+
+**⇄ Forwarding** (in the toolbar of a connected tab) opens tunnels through the SSH connection:
+
+- **Local (here → server)**: the relay listens on this computer at `127.0.0.1` and a port (empty = any free port, shown after
+  starting); every connection to it is passed on by the SSH server to *host:port* – for example a database or web interface that
+  only the server can reach (`localhost:5432` seen from the server). Other programs on this computer, and the other apps of the suite,
+  connect to `127.0.0.1` at the shown port. This needs the relay on your own machine (a shared relay does not listen on ports).
+- **Remote (server → here)**: the SSH server listens on its `127.0.0.1` at the given port; connections there come back through the
+  browser and the relay to *host:port* on this side.
+
+Each forwarding shows how many connections it carried; × stops it. 💾 saves the current forwardings with the saved connection: they
+start whenever it connects. Closing the tab stops all of them.
+
 ### Host keys
 
 When you connect to a server for the first time, the client shows the server's key fingerprint (`SHA256:…`). Compare it with the
@@ -37,6 +62,14 @@ yellow connecting, red closed. **Reconnect** opens a closed session again; × cl
   (without colour codes). **⤓** saves what the terminal currently holds (including the scrollback of up to 5000 lines).
 - On touch screens a key bar offers Esc, Tab, Ctrl (applies to the next key, e.g. Ctrl then C), the arrow keys and a few characters that are
   hard to type on phone keyboards.
+
+### Snippets
+
+**Snippets** in the side bar keep commands you use often. **+ Snippet** adds one (with the text selected in the terminal, if any): a
+name, the command – several lines are sent one after the other – and whether Enter is pressed after it. A click on a snippet types it
+into the active terminal. Placeholders in double braces ask for a value first: `tail -n 50 {{log file}}` or
+`sudo systemctl restart {{service}}`. ✎ edits or deletes a snippet. Snippets are kept in the connections file, together with the
+saved connections.
 
 ## Files (SFTP)
 

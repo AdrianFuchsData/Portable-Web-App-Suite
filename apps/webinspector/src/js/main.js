@@ -4,6 +4,7 @@
  * the source, the structure and the requests (also as HAR); a HAR viewer; and a developer-tools bookmarklet.
  */
 import * as an from 'app/analyze';
+import { checkAccessibility, IMPACT } from 'app/a11y';
 
 const { html } = Suite.shell;
 const t = Suite.t;
@@ -19,6 +20,9 @@ Suite.i18n.register({
     'app.title': 'Web inspector',
     'wi.page': 'Page', 'wi.hdrs': 'Headers', 'wi.har': 'HAR viewer', 'wi.bookmarklet': 'Bookmarklet', 'wi.go': 'Load', 'wi.back': 'Back', 'wi.url': 'Address', 'wi.ua': 'User agent',
     'wi.uaDefault': 'relay default', 'wi.uaDesktop': 'desktop browser', 'wi.uaMobile': 'mobile browser', 'wi.follow': 'Follow redirects', 'wi.openHtml': 'Open HTML file', 'wi.paste': 'Paste source',
+    'wi.a11y': 'Accessibility', 'wi.a11yRun': 'Check accessibility', 'wi.a11yAgain': 'Check again', 'wi.a11yHint': 'axe-core checks the HTML and CSS of the page (WCAG 2.x A/AA and best practices) in an isolated frame; the page\'s own scripts do not run, so content added by scripts is not checked.',
+    'wi.a11ySummary': '{0} problems: {1}', 'wi.a11yClean': 'No problems found by the automatic rules.', 'wi.a11yPassed': '{0} rules passed', 'wi.a11yReview': 'To review by hand ({0})',
+    'wi.a11yMore': 'Explanation', 'wi.a11yMoreNodes': '{0} more elements', 'wi.impact.critical': 'critical', 'wi.impact.serious': 'serious', 'wi.impact.moderate': 'moderate', 'wi.impact.minor': 'minor',
     'wi.preview': 'Preview', 'wi.headers': 'Headers & security', 'wi.source': 'Source', 'wi.structure': 'Structure', 'wi.network': 'Requests',
     'wi.viewport': 'Preview size', 'wi.vp.full': 'full width', 'wi.vp.phone': 'phone (390 × 844)', 'wi.vp.tablet': 'tablet (820 × 1180)', 'wi.vp.desktop': 'desktop (1366 × 768)', 'wi.vp.rotate': 'Rotate',
     'wi.keepCookies': 'Keep cookies', 'wi.keepCookiesHint': 'Cookies set by pages are stored here and sent with later requests (through the relay), like a browser does.',
@@ -54,6 +58,9 @@ Suite.i18n.register({
     'app.title': 'Web-Inspektor',
     'wi.page': 'Seite', 'wi.hdrs': 'Header', 'wi.har': 'HAR-Betrachter', 'wi.bookmarklet': 'Bookmarklet', 'wi.go': 'Laden', 'wi.back': 'Zurück', 'wi.url': 'Adresse', 'wi.ua': 'User-Agent',
     'wi.uaDefault': 'Relay-Standard', 'wi.uaDesktop': 'Desktop-Browser', 'wi.uaMobile': 'Mobilbrowser', 'wi.follow': 'Weiterleitungen folgen', 'wi.openHtml': 'HTML-Datei öffnen', 'wi.paste': 'Quelltext einfügen',
+    'wi.a11y': 'Barrierefreiheit', 'wi.a11yRun': 'Barrierefreiheit prüfen', 'wi.a11yAgain': 'Erneut prüfen', 'wi.a11yHint': 'axe-core prüft HTML und CSS der Seite (WCAG 2.x A/AA und bewährte Verfahren) in einem abgeschotteten Frame; die Skripte der Seite laufen nicht, von Skripten erzeugte Inhalte werden also nicht geprüft.',
+    'wi.a11ySummary': '{0} Probleme: {1}', 'wi.a11yClean': 'Die automatischen Regeln haben keine Probleme gefunden.', 'wi.a11yPassed': '{0} Regeln bestanden', 'wi.a11yReview': 'Von Hand zu prüfen ({0})',
+    'wi.a11yMore': 'Erklärung', 'wi.a11yMoreNodes': '{0} weitere Elemente', 'wi.impact.critical': 'kritisch', 'wi.impact.serious': 'schwer', 'wi.impact.moderate': 'mittel', 'wi.impact.minor': 'gering',
     'wi.preview': 'Vorschau', 'wi.headers': 'Header & Sicherheit', 'wi.source': 'Quelltext', 'wi.structure': 'Struktur', 'wi.network': 'Anfragen',
     'wi.viewport': 'Vorschaugröße', 'wi.vp.full': 'volle Breite', 'wi.vp.phone': 'Smartphone (390 × 844)', 'wi.vp.tablet': 'Tablet (820 × 1180)', 'wi.vp.desktop': 'Desktop (1366 × 768)', 'wi.vp.rotate': 'Drehen',
     'wi.keepCookies': 'Cookies behalten', 'wi.keepCookiesHint': 'Von Seiten gesetzte Cookies werden hier gespeichert und wie in einem Browser bei späteren Anfragen (über das Relay) mitgeschickt.',
@@ -174,6 +181,7 @@ async function load(url, { push = true } = {}) {
 function setPage(page) {
   state.page = page;
   state.preview = null;
+  state.a11y = null;
   state.sourceFilter = '';
   const isHtml = !page.type || /html|xml/i.test(page.type);
   if (!isHtml) { state.sub = 'headers'; Suite.shell.toast(t('wi.notHtml', page.type), 'warning'); }
@@ -265,7 +273,7 @@ const sizeOf = (e) => (e.response._transferSize > 0 ? e.response._transferSize :
 
 function AddressBar() {
   return html`<form class="wi-address" onSubmit=${(e) => { e.preventDefault(); load(e.target.elements.url.value); }}>
-    <button type="button" class="secondary outline" title=${t('wi.back')} data-testid="back" disabled=${!state.history.length} onClick=${() => load(state.history.pop(), { push: false })}>←</button>
+    <button type="button" class="secondary outline" title=${t('wi.back')} data-testid="back" disabled=${!state.history.length} onClick=${() => load(state.history.pop(), { push: false })}>${Suite.icon('arrow-left')}</button>
     <input name="url" type="url" placeholder="https://example.org" data-testid="url" key=${state.url} defaultValue=${state.url} aria-label=${t('wi.url')} />
     <button type="submit" data-testid="go" aria-busy=${state.loading}>${t('wi.go')}</button>
     <select data-testid="ua" title=${t('wi.ua')} onChange=${(e) => { state.ua = e.target.value; }}>
@@ -296,7 +304,7 @@ function Preview() {
     <div class="wi-row">
       <select data-testid="viewport" title=${t('wi.viewport')} aria-label=${t('wi.viewport')} onChange=${(e) => { state.viewport = e.target.value; savePrefs(); render(); }}>
         ${Object.keys(VIEWPORTS).map((k) => html`<option value=${k} selected=${state.viewport === k}>${t(`wi.vp.${k}`)}</option>`)}</select>
-      ${vp ? html`<button class="secondary outline" data-testid="rotate" aria-pressed=${state.rotated} title=${t('wi.vp.rotate')} onClick=${() => { state.rotated = !state.rotated; savePrefs(); render(); }}>⟳</button>` : null}
+      ${vp ? html`<button class="secondary outline" data-testid="rotate" aria-pressed=${state.rotated} title=${t('wi.vp.rotate')} onClick=${() => { state.rotated = !state.rotated; savePrefs(); render(); }}>${Suite.icon('rotate-cw')}</button>` : null}
       <small class="wi-note" data-testid="preview-note">${state.page.via === 'relay' ? t('wi.resources', state.preview.fetched) : t('wi.noResources')}${blocked ? ` · ${t('wi.blockedCount', blocked)}` : ''}</small>
     </div>
     <div class=${`wi-device ${vp ? 'sized' : ''}`}>
@@ -306,7 +314,7 @@ function Preview() {
   </div>`;
 }
 
-const STATUS_ICON = { ok: '✅', warn: '⚠️', bad: '❌', info: 'ℹ️' };
+const STATUS_ICON = { ok: 'circle-check', warn: 'triangle-alert', bad: 'circle-x', info: 'info' };
 
 function Headers() {
   const p = state.page;
@@ -314,7 +322,7 @@ function Headers() {
   return html`<div class="wi-scroll">
     <h4>${t('wi.headers')}</h4>
     <table class="wi-table" data-testid="security"><thead><tr><th></th><th>${t('wi.check')}</th><th>${t('wi.result')}</th><th>${t('wi.value')}</th></tr></thead>
-      <tbody>${state.security.map((c) => html`<tr data-testid="check" data-status=${c.status}><td>${STATUS_ICON[c.status]}</td><td>${c.name}</td><td>${t(c.note, ...c.args)}</td><td class="wi-code">${c.value}</td></tr>`)}</tbody></table>
+      <tbody>${state.security.map((c) => html`<tr data-testid="check" data-status=${c.status}><td class=${`wi-status-${c.status}`}>${Suite.icon(STATUS_ICON[c.status] || 'info', { label: c.status })}</td><td>${c.name}</td><td>${t(c.note, ...c.args)}</td><td class="wi-code">${c.value}</td></tr>`)}</tbody></table>
     <h4>${t('wi.responseHeaders')}</h4>
     <table class="wi-table" data-testid="response-headers"><tbody>${p.headers.map(([k, v]) => html`<tr><td class="wi-key">${k}</td><td class="wi-code">${v}</td></tr>`)}</tbody></table>
   </div>`;
@@ -350,7 +358,7 @@ function Structure() {
       <tr><td class="wi-key">${t('wi.elements')}</td><td>${a.elements}</td></tr></tbody></table>
     <details open><summary>${t('wi.meta')} (${a.metas.length})</summary><table class="wi-table"><tbody>${a.metas.map((m) => html`<tr><td class="wi-key">${m.name}</td><td>${m.content}</td></tr>`)}</tbody></table></details>
     <details open><summary>${t('wi.headings')} (${a.headings.length})</summary>${list(a.headings, (h) => html`<span style=${`padding-left:${(h.level - 1) * 1}rem`} data-testid="heading">h${h.level} ${h.text}</span>`)}</details>
-    <details><summary data-testid="links-summary">${t('wi.links', a.links.length, ext)}</summary>${list(a.links, (l) => html`<a href="#" onClick=${(e) => { e.preventDefault(); if (/^https?:/i.test(l.href)) { state.tab = 'page'; load(l.href); } }}>${l.text || l.href}</a> <small>${l.href}${l.external ? ' ↗' : ''}${l.nofollow ? ' (nofollow)' : ''}</small>`)}</details>
+    <details><summary data-testid="links-summary">${t('wi.links', a.links.length, ext)}</summary>${list(a.links, (l) => html`<a href="#" onClick=${(e) => { e.preventDefault(); if (/^https?:/i.test(l.href)) { state.tab = 'page'; load(l.href); } }}>${l.text || l.href}</a> <small>${l.href}${l.external ? Suite.icon('external-link') : ''}${l.nofollow ? ' (nofollow)' : ''}</small>`)}</details>
     <details><summary>${t('wi.images', a.images.length)}</summary>${list(a.images, (i) => html`<span>${i.src}</span> <small>${i.alt === null ? '⚠ alt' : `alt="${i.alt}"`}</small>`)}</details>
     <details><summary>${t('wi.scripts', a.scripts.length)}</summary>${list(a.scripts, (s) => html`<span>${s.inline ? `${t('wi.inline')} (${fmtSize(s.size)})` : s.src}</span> <small>${[s.type, s.async && 'async', s.defer && 'defer'].filter(Boolean).join(' ')}</small>`)}</details>
     <details><summary>${t('wi.styles', a.styles.length)}</summary>${list(a.styles, (s) => (s.inline ? `${t('wi.inline')} (${fmtSize(s.size)})` : s.href))}</details>
@@ -425,15 +433,54 @@ function Cookies() {
   </div>`;
 }
 
+// ---- accessibility (axe-core) ------------------------------------------------------------------------------------------
+
+async function runA11y() {
+  if (!state.page) return;
+  const page = state.page;
+  state.a11y = { running: true };
+  render();
+  try {
+    const result = await checkAccessibility(state.preview ? state.preview.html : page.source, { lang: Suite.i18n.language });
+    if (state.page === page) state.a11y = { result };
+  } catch (e) { if (state.page === page) state.a11y = { error: Suite.i18n.describe(e) }; }
+  render();
+}
+
+function A11yRule({ rule, kind }) {
+  return html`<details class=${`wi-a11y-rule ${rule.impact || ''}`} data-testid=${kind === 'violation' ? 'a11y-violation' : 'a11y-incomplete'} data-rule=${rule.id}>
+    <summary><span class=${`wi-impact ${rule.impact || ''}`}>${rule.impact ? t(`wi.impact.${rule.impact}`) : '?'}</span> ${rule.help} <small>(${rule.nodes.length})</small></summary>
+    <p><small>${rule.description} · <code>${rule.id}</code> · ${rule.tags.filter((x) => /^wcag\d|^best-practice/.test(x)).join(', ')}</small>
+      <a href=${rule.helpUrl} target="_blank" rel="noopener noreferrer">${t('wi.a11yMore')}</a></p>
+    <ul>${rule.nodes.slice(0, 50).map((n) => html`<li data-testid="a11y-node"><code>${[].concat(n.target).join(' ')}</code><pre>${n.html}</pre>${n.summary ? html`<small class="wi-a11y-fix">${n.summary}</small>` : null}</li>`)}</ul>
+    ${rule.nodes.length > 50 ? html`<small>${t('wi.a11yMoreNodes', rule.nodes.length - 50)}</small>` : null}
+  </details>`;
+}
+
+function Accessibility() {
+  const a = state.a11y;
+  const r = a && a.result;
+  const count = (impact) => (r ? r.violations.filter((v) => v.impact === impact).reduce((n, v) => n + v.nodes.length, 0) : 0);
+  return html`<div class="wi-a11y" data-testid="a11y">
+    <p><button data-testid="a11y-run" aria-busy=${!!(a && a.running)} disabled=${!!(a && a.running)} onClick=${runA11y}>${Suite.icon('accessibility')} ${t(r ? 'wi.a11yAgain' : 'wi.a11yRun')}</button>
+      <small> ${t('wi.a11yHint')}</small></p>
+    ${a && a.error ? html`<p class="wi-bad" data-testid="a11y-error">${a.error}</p>` : null}
+    ${r ? html`<p data-testid="a11y-summary" class=${r.violations.length ? 'wi-bad' : 'wi-good'}>${r.violations.length ? t('wi.a11ySummary', r.violations.length, IMPACT.map((i) => `${count(i)} ${t(`wi.impact.${i}`)}`).join(' · ')) : t('wi.a11yClean')}
+        <small> · ${t('wi.a11yPassed', r.passes)} · axe-core ${r.version}</small></p>
+      ${r.violations.map((rule) => html`<${A11yRule} rule=${rule} kind="violation" key=${rule.id} />`)}
+      ${r.incomplete.length ? html`<h5>${t('wi.a11yReview', r.incomplete.length)}</h5>${r.incomplete.map((rule) => html`<${A11yRule} rule=${rule} kind="incomplete" key=${rule.id} />`)}` : null}` : null}
+  </div>`;
+}
+
 function PageTab() {
-  const subs = ['preview', 'headers', 'source', 'structure', 'network', 'cookies'];
+  const subs = ['preview', 'headers', 'source', 'structure', 'a11y', 'network', 'cookies'];
   return html`<section class="wi-page">
     <${AddressBar} />
     ${!hasRelay() ? html`<p class="wi-note" data-testid="relay-hint">${t('wi.relayHint')}</p>` : null}
     ${state.page ? html`
       <${Summary} />
       <nav class="wi-subtabs" role="tablist">${subs.map((s) => html`<button role="tab" class=${`secondary ${state.sub === s ? '' : 'outline'}`} data-testid=${`sub-${s}`} aria-selected=${state.sub === s} onClick=${() => { state.sub = s; render(); }}>${t(`wi.${s}`)}</button>`)}</nav>
-      <div class="wi-sub">${state.sub === 'preview' ? html`<${Preview} />` : state.sub === 'headers' ? html`<${Headers} />` : state.sub === 'source' ? html`<${Source} />` : state.sub === 'structure' ? html`<${Structure} />` : state.sub === 'network' ? html`<${Network} />` : html`<${Cookies} />`}</div>`
+      <div class="wi-sub">${state.sub === 'preview' ? html`<${Preview} />` : state.sub === 'headers' ? html`<${Headers} />` : state.sub === 'source' ? html`<${Source} />` : state.sub === 'structure' ? html`<${Structure} />` : state.sub === 'a11y' ? html`<${Accessibility} />` : state.sub === 'network' ? html`<${Network} />` : html`<${Cookies} />`}</div>`
       : html`<p class="wi-hint" data-testid="no-page">${t('wi.noPage')}</p>`}
   </section>`;
 }
@@ -493,7 +540,7 @@ function HarTab() {
   const total = log.entries.reduce((s, e) => s + sizeOf(e), 0);
   const sortBy = (key) => { state.harSort = state.harSort && state.harSort.key === key ? { key, dir: -state.harSort.dir } : { key, dir: 1 }; render(); };
   const sel = state.harSel != null ? log.entries[state.harSel] : null;
-  const th = (key, label) => html`<th class="wi-sort" onClick=${() => sortBy(key)}>${label}${state.harSort && state.harSort.key === key ? (state.harSort.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
+  const th = (key, label) => html`<th class="wi-sort" onClick=${() => sortBy(key)}>${label}${state.harSort && state.harSort.key === key ? (state.harSort.dir > 0 ? Suite.icon('chevron-up') : Suite.icon('chevron-down')) : ''}</th>`;
   return html`<section class="wi-har">
     <div class="wi-row">
       <button class="secondary outline" data-testid="open-har" onClick=${pickHar}>${t('wi.openHar')}</button>
@@ -534,7 +581,7 @@ function BookmarkletTab() {
   const url = bookmarkletUrl();
   return html`<section class="wi-bm wi-scroll">
     <p>${t('wi.bmIntro')}</p>
-    <p>${t('wi.bmDrag')} <a class="wi-bm-link" href=${url} data-testid="bookmarklet-link" onClick=${(e) => e.preventDefault()}>🔍 Inspector</a></p>
+    <p>${t('wi.bmDrag')} <a class="wi-bm-link" href=${url} data-testid="bookmarklet-link" onClick=${(e) => e.preventDefault()}>${Suite.icon('search')} Inspector</a></p>
     <p>${t('wi.bmMobile')}</p>
     <div class="wi-row">
       <button data-testid="bookmarklet-copy" onClick=${async () => { try { await navigator.clipboard.writeText(url); Suite.shell.toast(t('wi.copied')); } catch (e) { fail(e); } }}>${t('wi.bmCopy')}</button>
@@ -590,5 +637,5 @@ Suite.files.dropZone(document.body, (picked) => openLocal(picked[0].file));
 Suite.bridge.receive((picked) => openLocal(picked.file), { app: 'webinspector' }); // files opened from other apps ("Open with…")
 
 // for tests
-window.WI = { state, an, bookmarkletUrl, load };
+window.WI = { runA11y, state, an, bookmarkletUrl, load };
 document.body.dataset.ready = 'true';

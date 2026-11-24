@@ -4,6 +4,9 @@
     "@app/er.js": "er.js",
     "@app/layout.js": "../../../diagram/src/js/layout.js",
     "app/cm-symbols": "../../../../shared/js/cm-symbols.js",
-    "app/cm-indent": "../../../../shared/js/cm-indent.js"
+    "app/cm-indent": "../../../../shared/js/cm-indent.js",
+    "@app/table-io.js": "table-io.js",
+    "@app/completion.js": "completion.js",
+    "app/cm-search": "../../../../shared/js/cm-search.js"
   }
 }

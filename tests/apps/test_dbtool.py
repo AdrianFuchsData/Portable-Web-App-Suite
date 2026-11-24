@@ -54,7 +54,7 @@ def test_open_query_and_schema(app_page, tmp_path):
     page = app_page("dbtool", init_script=NO_PICKERS)
     assert page.title() == "Database tool"
     open_db(page, make_db(tmp_path / "test.sqlite"))
-    expect(page.locator("[data-testid=table-name]")).to_have_text(["👁 adults", "▦ notes", "▦ people"])
+    expect(page.locator("[data-testid=table-name]")).to_have_text(["adults", "notes", "people"])
     run(page, "SELECT name, age FROM people ORDER BY id;\nSELECT count(*) AS n FROM notes;")
     expect(page.locator("[data-testid=result-tab]")).to_have_count(2)
     expect(page.locator("[data-testid=row]")).to_have_count(3)
@@ -80,7 +80,7 @@ def test_create_edit_and_save(app_page, tmp_path):
     expect(page.locator("[data-testid=session]")).to_have_count(1)
     run(page, "CREATE TABLE items (id INTEGER PRIMARY KEY, label TEXT, price REAL);\nINSERT INTO items (label, price) VALUES ('Pen', 1.5), ('Book', 12);")
     expect(page.locator("[data-testid=message]")).to_contain_text("INSERT: 2 row(s) affected")
-    expect(page.locator("[data-testid=table-name]")).to_have_text(["▦ items"])  # the schema is refreshed after CREATE
+    expect(page.locator("[data-testid=table-name]")).to_have_text(["items"])  # the schema is refreshed after CREATE
     page.click("[data-testid=browse]")
     expect(page.locator("[data-testid=row]")).to_have_count(2)
 
@@ -112,7 +112,7 @@ def test_undo_redo_sqlite(app_page, tmp_path):
     run(page, "SELECT * FROM people;")
     expect(page.locator("[data-testid=undo]")).to_be_disabled()  # reading is no step
     run(page, "DELETE FROM people WHERE age IS NULL; DROP VIEW adults;")
-    expect(page.locator("[data-testid=table-name]")).to_have_text(["▦ notes", "▦ people"])
+    expect(page.locator("[data-testid=table-name]")).to_have_text(["notes", "people"])
     page.locator("summary", has_text="people").locator("[data-testid=browse]").click()
     expect(page.locator("[data-testid=row]")).to_have_count(2)
     page.locator("[data-testid=row]").nth(0).locator("[data-testid=cell]").nth(1).dblclick()
@@ -125,7 +125,7 @@ def test_undo_redo_sqlite(app_page, tmp_path):
     page.locator("body").click(position={"x": 1, "y": 1})
     page.keyboard.press("Control+z")
     expect(page.locator("[data-testid=row]")).to_have_count(3)
-    expect(page.locator("[data-testid=table-name]")).to_have_text(["👁 adults", "▦ notes", "▦ people"])
+    expect(page.locator("[data-testid=table-name]")).to_have_text(["adults", "notes", "people"])
     expect(page.locator("[data-testid=message]")).to_contain_text("Undone: DELETE")
     page.click("[data-testid=redo]")
     expect(page.locator("[data-testid=row]")).to_have_count(2)
@@ -206,7 +206,7 @@ def test_postgres_query_and_edit(app_page, relay, pg):
     connect_dialog(page, relay, port)
     page.click("[data-testid=pg-connect]")
     expect(page.locator("[data-testid=session]")).to_contain_text("Test server")
-    expect(page.locator("[data-testid=table-name]")).to_have_text(["▦ city"])
+    expect(page.locator("[data-testid=table-name]")).to_have_text(["city"])
     run(page, "SELECT name, population FROM city ORDER BY id;")
     expect(page.locator("[data-testid=row]")).to_have_count(2)
     assert grid_rows(page)[0] == ["Wien", "2000000"]
@@ -254,7 +254,7 @@ def test_postgres_ssl(app_page, relay, certs):
         page = app_page("dbtool", init_script=NO_PICKERS)
         connect_dialog(page, relay, server.server_address[1], host="localhost", ssl="require")
         page.click("[data-testid=pg-connect]")
-        expect(page.locator("[data-testid=table-name]")).to_have_text(["▦ t"])
+        expect(page.locator("[data-testid=table-name]")).to_have_text(["t"])
     finally:
         server.shutdown()
 
@@ -286,7 +286,7 @@ def test_saved_connections_in_keepass(app_page, relay, pg, tmp_path):
     page2.click("[data-testid=appdata-unlock-ok]")
     expect(page2.locator("[data-testid=appdata-name]")).to_have_text("connections.kdbx")
     page2.locator("[data-testid=saved-connection] a").click()
-    expect(page2.locator("[data-testid=table-name]")).to_have_text(["▦ city"])
+    expect(page2.locator("[data-testid=table-name]")).to_have_text(["city"])
 
 
 def test_saved_connections_as_json_without_password(app_page, relay, pg, tmp_path):

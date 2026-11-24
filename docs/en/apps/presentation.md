@@ -96,6 +96,18 @@ PowerPoint files (also those made in PowerPoint, with their bullet characters an
   **Ungroup** (`Ctrl+Shift+G`) separates them again. Groups are kept in PowerPoint files (also groups made in PowerPoint; a group inside a
   group becomes part of the outer one).
 
+### Context menu
+
+A right click (on a touch screen: touch and hold) opens the menu of the application:
+
+- on an **element**: edit text, edit diagram, cut, copy, paste, duplicate, delete, to front / to back, group / ungroup and
+  align (the element is selected first);
+- on the **empty slide**: paste, select all and the slide actions;
+- on a **slide thumbnail**: new slide, duplicate, delete, move up or down, hide in the show (or show it again).
+
+The arrow keys move through the menu, `Enter` runs an entry, `Escape` closes it. While a text is being edited, the browser's own
+menu opens (with its spelling suggestions).
+
 ## Spelling
 
 With a language chosen in the **ABC** selector of the header, unknown words are underlined in the text being edited and in the speaker

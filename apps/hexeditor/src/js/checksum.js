@@ -93,3 +93,40 @@
 
   Object.assign(HE, { crc32, adler32, md5, checksums, differences });
 })(window.HE = window.HE || {});
+
+// ---- statistics: byte histogram and entropy -------------------------------------------------------------------------------
+(function (HE) {
+  'use strict';
+
+  /** Shannon entropy (bits per byte, 0–8) of byte counts over n bytes. */
+  function entropyOf(counts, n) {
+    if (!n) return 0;
+    let h = 0;
+    for (let i = 0; i < 256; i++) if (counts[i]) { const p = counts[i] / n; h -= p * Math.log2(p); }
+    return h;
+  }
+
+  /**
+   * Statistics of bytes: { counts (256), entropy, zeros, printable (counts), top: [[byte, count], …] (the 8 most frequent),
+   * blocks: [{ offset, entropy }] (the entropy of consecutive blocks, about `blocks` of them, at least 512 bytes each) }.
+   */
+  HE.byteStats = function byteStats(bytes, { blocks = 256 } = {}) {
+    const n = bytes.length;
+    const counts = new Uint32Array(256);
+    for (let i = 0; i < n; i++) counts[bytes[i]]++;
+    let printable = 0;
+    for (let c = 0x20; c < 0x7f; c++) printable += counts[c];
+    printable += counts[9] + counts[10] + counts[13];
+    const top = [...counts].map((c, b) => [b, c]).filter(([, c]) => c).sort((a, b) => b[1] - a[1] || a[0] - b[0]).slice(0, 8);
+    const size = Math.max(512, Math.ceil(n / blocks)); // (smaller blocks cannot show a high entropy: too few bytes per value)
+    const list = [];
+    const bc = new Uint32Array(256);
+    for (let o = 0; o < n; o += size) {
+      bc.fill(0);
+      const end = Math.min(n, o + size);
+      for (let i = o; i < end; i++) bc[bytes[i]]++;
+      list.push({ offset: o, entropy: entropyOf(bc, end - o) });
+    }
+    return { n, counts, entropy: entropyOf(counts, n), zeros: counts[0], printable, top, blockSize: size, blocks: list };
+  };
+})(window.HE = window.HE || {});

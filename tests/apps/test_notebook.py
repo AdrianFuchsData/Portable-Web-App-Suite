@@ -257,6 +257,27 @@ def test_office_and_utility_packages(nb):
     assert nb.errors == [] and nb.requests == []
 
 
+def test_cryptography(nb):
+    """cryptography is bundled: Fernet, RSA signatures and key derivation run in the browser."""
+    load(nb, [{"cell_type": "code", "metadata": {}, "outputs": [], "source":
+               "from cryptography.fernet import Fernet\n"
+               "from cryptography.hazmat.primitives import hashes, serialization\n"
+               "from cryptography.hazmat.primitives.asymmetric import rsa, padding\n"
+               "from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC\n"
+               "f = Fernet(Fernet.generate_key()); print(f.decrypt(f.encrypt(b'secret message')).decode())\n"
+               "key = rsa.generate_private_key(public_exponent=65537, key_size=2048)\n"
+               "sig = key.sign(b'data', padding.PKCS1v15(), hashes.SHA256()); key.public_key().verify(sig, b'data', padding.PKCS1v15(), hashes.SHA256())\n"
+               "print('signature ok', key.public_key().public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo).decode().splitlines()[0])\n"
+               "kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b'salt', iterations=1000); print(kdf.derive(b'password').hex()[:16])"}])
+    run(nb, 0)
+    out = cell(nb, 0).locator("[data-testid=outputs]")
+    expect(out).to_contain_text("secret message", timeout=90000)
+    expect(out).to_contain_text("signature ok -----BEGIN PUBLIC KEY-----")
+    expect(out).to_contain_text("632c2812e46d4604")  # PBKDF2-HMAC-SHA256('password', 'salt', 1000)
+    expect(out.locator(".nb-error")).to_have_count(0)
+    assert nb.errors == [] and nb.requests == []
+
+
 def test_restart(nb):
     load(nb, [{"cell_type": "code", "source": "kept = 1", "metadata": {}, "outputs": []}, {"cell_type": "code", "source": "kept", "metadata": {}, "outputs": []}])
     cell(nb, 0).locator("[data-testid=run-cell]").click()
@@ -491,7 +512,7 @@ def test_stop_restarts_without_isolation(nb):
     assert nb.evaluate("NB.kernel.canInterrupt") is False
     load(nb, [code_cell("while True:\n    pass"), code_cell("print('next')")])
     nb.click("[data-testid=run-all]")
-    expect(nb.locator("[data-testid=stop]")).to_have_text("⏹ Stop")
+    expect(nb.locator("[data-testid=stop]")).to_have_text("Stop")
     cell(nb, 1).click(position={"x": 2, "y": 2})
     nb.keyboard.press("i")
     nb.keyboard.press("i")
@@ -553,7 +574,7 @@ def test_interrupt_when_isolated(browser, isolated_server):
                   [code_cell("kept = 42"), code_cell("import time\nwhile True:\n    time.sleep(0.01)"), code_cell("kept")])
     page.click("[data-testid=run-all]")
     stop = page.locator("[data-testid=stop]")
-    expect(stop).to_have_text("⏹ Interrupt")
+    expect(stop).to_have_text("Interrupt")
     expect(cell(page, 0).locator("[data-testid=prompt]")).to_have_text("[1]", timeout=60000)  # (the loop is running now)
     page.wait_for_timeout(500)
     stop.click()

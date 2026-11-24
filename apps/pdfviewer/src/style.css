@@ -56,3 +56,10 @@
 .pv-signatures dl { margin: 0; } .pv-signatures dt { font-weight: 600; margin-top: .2rem; } .pv-signatures dd { margin: 0; }
 .pv-signatures ol { padding-left: 1rem; margin: 0; }
 .pv-sig-note { color: var(--pico-muted-color); font-size: .72rem; }
+.pv-redaction { position: absolute; background: rgba(0, 0, 0, .85); outline: 2px solid #c62828; z-index: 30; cursor: pointer; }
+.pv-redaction-new { pointer-events: none; background: rgba(0, 0, 0, .5); }
+.pv-redacting .page { cursor: crosshair; }
+.pv-redacting .textLayer, .pv-redacting .annotationLayer { pointer-events: none; }
+.pv-redactbar input { flex: 1 1 10rem; }
+.pv-row { display: flex; gap: .75rem; flex-wrap: wrap; }
+.pv-row > label { flex: 1 1 8rem; }

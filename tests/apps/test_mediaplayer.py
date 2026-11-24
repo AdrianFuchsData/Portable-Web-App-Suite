@@ -52,7 +52,7 @@ def test_open_tags_durations_and_play(app_page, songs):
     page = app_page("mediaplayer", init_script=NO_PICKERS)
     assert page.title() == "Media player"
     open_files(page, *songs)
-    expect(titles(page)).to_have_text(["▶ Anna – Morning", "Ben – Evening"])  # the first file starts playing
+    expect(titles(page)).to_have_text(["Anna – Morning", "Ben – Evening"])  # the first file starts playing
     expect(page.locator("[data-testid=item-duration]")).to_have_text(["0:01", "0:01"])
     expect(page.locator("[data-testid=now-title]")).to_have_text("Morning")
     expect(page.locator("[data-testid=now-artist]")).to_have_text("Anna")
@@ -68,20 +68,20 @@ def test_auto_advance_and_repeat(app_page, tmp_path):
     files = [make_wav(tmp_path / f"{n}.wav", 1.2, 300 + 100 * i) for i, n in enumerate(("a", "b"))]
     page = app_page("mediaplayer", init_script=NO_PICKERS)
     open_files(page, *files)
-    expect(current(page)).to_have_text("▶ a.wav")
-    expect(current(page)).to_have_text("▶ b.wav")  # advances at the end
-    expect(page.locator("[data-testid=play]")).to_have_text("▶")  # and stops after the last item
+    expect(current(page)).to_have_text("a.wav")
+    expect(current(page)).to_have_text("b.wav")  # advances at the end
+    expect(page.locator("[data-testid=play] .suite-icon-play")).to_have_count(1)  # and stops after the last item
     assert media(page, "v.ended")
 
     page.click("[data-testid=repeat]")  # off -> all
     expect(page.locator("[data-testid=repeat]")).to_have_attribute("data-mode", "all")
     page.click("[data-testid=play]")  # replays b
-    expect(current(page)).to_have_text("▶ a.wav", timeout=15000)  # wraps around
+    expect(current(page)).to_have_text("a.wav", timeout=15000)  # wraps around
 
     page.click("[data-testid=repeat]")  # all -> one
     expect(page.locator("[data-testid=repeat]")).to_have_attribute("data-mode", "one")
     page.wait_for_timeout(1200)  # several loops of a 0.4 s file
-    expect(current(page)).to_have_text("▶ a.wav")
+    expect(current(page)).to_have_text("a.wav")
 
 
 def test_controls_keyboard_and_preferences(app_page, tmp_path):
@@ -90,7 +90,7 @@ def test_controls_keyboard_and_preferences(app_page, tmp_path):
     wait_media(page, "!v.paused")
     page.locator("body").press(" ")
     wait_media(page, "v.paused")
-    expect(page.locator("[data-testid=play]")).to_have_text("▶")
+    expect(page.locator("[data-testid=play] .suite-icon-play")).to_have_count(1)
     page.locator("body").press("]")
     expect(page.locator("[data-testid=rate]")).to_have_value("1.25")
     assert media(page, "v.playbackRate") == 1.25
@@ -184,7 +184,7 @@ def test_unplayable_file_is_skipped(app_page, tmp_path):
     expect(page.locator("[data-testid=toast]").first).to_contain_text("cannot be played")
     expect(page.locator("[data-testid=item]").nth(0)).to_have_class(re.compile(r"\berror\b"))
     page.click("[data-testid=next]")
-    expect(current(page)).to_have_text("▶ 2 good.wav")
+    expect(current(page)).to_have_text("2 good.wav")
 
 
 def test_shuffle_plays_every_item_once(app_page, tmp_path):
@@ -210,7 +210,7 @@ def test_reorder_remove_filter_and_url(app_page, tmp_path):
     open_files(page, *files)
     page.locator("[data-testid=item]").nth(2).hover()
     page.locator("[data-testid=item-up]").nth(2).click()
-    expect(titles(page)).to_have_text(["▶ a.wav", "c.wav", "b.wav"])
+    expect(titles(page)).to_have_text(["a.wav", "c.wav", "b.wav"])
     page.locator("[data-testid=item]").nth(0).hover()
     page.locator("[data-testid=item-remove]").nth(0).click()
     expect(titles(page)).to_have_text(["c.wav", "b.wav"])

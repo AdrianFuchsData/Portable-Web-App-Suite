@@ -6,6 +6,7 @@
 import * as zx from 'zxing-wasm';
 import { parse, build, FORMS } from '@app/content.js';
 import { toSvg, toCanvas } from '@app/render.js';
+import * as batch from '@app/batch.js';
 
 const { html } = Suite.shell;
 const t = Suite.t;
@@ -31,8 +32,15 @@ Suite.i18n.register({
     'bc.f.name': 'Name', 'bc.f.issuer': 'Issuer', 'bc.f.label': 'Account', 'bc.f.secret': 'Secret', 'bc.f.summary': 'Title', 'bc.f.start': 'Start', 'bc.f.end': 'End', 'bc.f.location': 'Place',
     'bc.f.description': 'Description', 'bc.nopass': 'none', 'bc.codes2d': '2D codes', 'bc.codes1d': '1D codes (bar codes)', 'bc.ecLevel': 'Error correction',
     'bc.ec.L': 'L – 7 %', 'bc.ec.M': 'M – 15 %', 'bc.ec.Q': 'Q – 25 %', 'bc.ec.H': 'H – 30 %', 'bc.moduleSize': 'Module size (px)', 'bc.margin': 'Quiet zone (modules)',
-    'bc.barHeight': 'Bar height (px)', 'bc.showText': 'Text below the bars', 'bc.foreground': 'Colour', 'bc.background': 'Background', 'bc.transparent': 'Transparent background',
+    'bc.barHeight': 'Bar height (px)', 'bc.showText': 'Text below the bars', 'bc.showContent': 'Show the encoded text below the code', 'bc.caption': 'Caption', 'bc.captionHint': 'Text of your own with the code, e.g. a name or a price', 'bc.captionPos': 'Caption position', 'bc.below': 'Below the code', 'bc.above': 'Above the code', 'bc.foreground': 'Colour', 'bc.background': 'Background', 'bc.transparent': 'Transparent background',
     'bc.downloadSvg': 'SVG', 'bc.downloadPng': 'PNG', 'bc.copyImage': 'Copy image', 'bc.print': 'Print', 'bc.verified': '✓ readable ({0})', 'bc.notVerified': '⚠ could not be read back',
+    'bc.batch': 'Batch', 'bc.batchHint': 'Many codes at once: one content per line, or a CSV file (one row per code, with columns for the content and optionally a caption and a file name).',
+    'bc.batchLines': 'Contents (one code per line)', 'bc.batchOpen': 'Open a CSV or text file…', 'bc.batchRows': '{0} rows', 'bc.batchHeader': 'The first row contains the column names',
+    'bc.batchContentCol': 'Content column', 'bc.batchCaptionCol': 'Caption column', 'bc.batchNameCol': 'File name column', 'bc.none': '(none)', 'bc.column': 'Column {0}',
+    'bc.batchLook': 'Size, colours, text with the code and the caption (when there is no caption column) come from', 'bc.batchOutput': 'Result',
+    'bc.out.pdf': 'PDF – a sheet of labels', 'bc.out.zip-png': 'ZIP with PNG pictures', 'bc.out.zip-svg': 'ZIP with SVG pictures', 'bc.page': 'Page', 'bc.cols': 'Columns', 'bc.rows': 'Rows',
+    'bc.batchRun': 'Create {0} codes', 'bc.batchFirst': 'First code:', 'bc.batchEmpty': 'Enter contents or open a file.', 'bc.batchDone': '{0} codes created',
+    'bc.batchErrors': '{0} could not be encoded', 'bc.batchLine': 'Line {0}',
     'bc.size': '{0} × {1} px', 'bc.error': 'This content cannot be encoded as {0}: {1}', 'bc.fileName': 'barcode', 'bc.wifiDetails': 'Network {0}, password: {1}',
   },
   de: {
@@ -50,16 +58,24 @@ Suite.i18n.register({
     'bc.f.name': 'Name', 'bc.f.issuer': 'Aussteller', 'bc.f.label': 'Konto', 'bc.f.secret': 'Geheimnis', 'bc.f.summary': 'Titel', 'bc.f.start': 'Beginn', 'bc.f.end': 'Ende', 'bc.f.location': 'Ort',
     'bc.f.description': 'Beschreibung', 'bc.nopass': 'keine', 'bc.codes2d': '2D-Codes', 'bc.codes1d': '1D-Codes (Strichcodes)', 'bc.ecLevel': 'Fehlerkorrektur',
     'bc.ec.L': 'L – 7 %', 'bc.ec.M': 'M – 15 %', 'bc.ec.Q': 'Q – 25 %', 'bc.ec.H': 'H – 30 %', 'bc.moduleSize': 'Modulgröße (px)', 'bc.margin': 'Ruhezone (Module)',
-    'bc.barHeight': 'Balkenhöhe (px)', 'bc.showText': 'Text unter den Balken', 'bc.foreground': 'Farbe', 'bc.background': 'Hintergrund', 'bc.transparent': 'Transparenter Hintergrund',
+    'bc.barHeight': 'Balkenhöhe (px)', 'bc.showText': 'Text unter den Balken', 'bc.showContent': 'Den kodierten Text unter dem Code zeigen', 'bc.caption': 'Beschriftung', 'bc.captionHint': 'Eigener Text zum Code, z. B. ein Name oder ein Preis', 'bc.captionPos': 'Position der Beschriftung', 'bc.below': 'Unter dem Code', 'bc.above': 'Über dem Code', 'bc.foreground': 'Farbe', 'bc.background': 'Hintergrund', 'bc.transparent': 'Transparenter Hintergrund',
     'bc.downloadSvg': 'SVG', 'bc.downloadPng': 'PNG', 'bc.copyImage': 'Bild kopieren', 'bc.print': 'Drucken', 'bc.verified': '✓ lesbar ({0})', 'bc.notVerified': '⚠ konnte nicht zurückgelesen werden',
+    'bc.batch': 'Stapel', 'bc.batchHint': 'Viele Codes auf einmal: ein Inhalt je Zeile oder eine CSV-Datei (eine Zeile je Code, mit Spalten für den Inhalt und optional eine Beschriftung und einen Dateinamen).',
+    'bc.batchLines': 'Inhalte (ein Code je Zeile)', 'bc.batchOpen': 'CSV- oder Textdatei öffnen…', 'bc.batchRows': '{0} Zeilen', 'bc.batchHeader': 'Die erste Zeile enthält die Spaltennamen',
+    'bc.batchContentCol': 'Spalte mit dem Inhalt', 'bc.batchCaptionCol': 'Spalte mit der Beschriftung', 'bc.batchNameCol': 'Spalte mit dem Dateinamen', 'bc.none': '(keine)', 'bc.column': 'Spalte {0}',
+    'bc.batchLook': 'Größe, Farben, Text zum Code und Beschriftung (wenn es keine Beschriftungsspalte gibt) kommen aus', 'bc.batchOutput': 'Ergebnis',
+    'bc.out.pdf': 'PDF – ein Etikettenbogen', 'bc.out.zip-png': 'ZIP mit PNG-Bildern', 'bc.out.zip-svg': 'ZIP mit SVG-Bildern', 'bc.page': 'Seite', 'bc.cols': 'Spalten', 'bc.rows': 'Zeilen',
+    'bc.batchRun': '{0} Codes erstellen', 'bc.batchFirst': 'Erster Code:', 'bc.batchEmpty': 'Geben Sie Inhalte ein oder öffnen Sie eine Datei.', 'bc.batchDone': '{0} Codes erstellt',
+    'bc.batchErrors': '{0} nicht kodierbar', 'bc.batchLine': 'Zeile {0}',
     'bc.size': '{0} × {1} px', 'bc.error': 'Dieser Inhalt kann nicht als {0} kodiert werden: {1}', 'bc.fileName': 'barcode', 'bc.wifiDetails': 'Netzwerk {0}, Passwort: {1}',
   },
 });
 
 const state = {
   tab: 'read', results: [], camera: null, image: null, busy: false,
-  gen: { type: 'text', fields: { text: 'https://example.org' }, format: 'QRCode', ecLevel: 'M', scale: 6, margin: 4, barHeight: 80, showText: true, fg: '#000000', bg: '#ffffff', transparent: false },
+  gen: { type: 'text', fields: { text: 'https://example.org' }, format: 'QRCode', ecLevel: 'M', scale: 6, margin: 4, barHeight: 80, showText: true, showContent: false, caption: '', captionPos: 'below', fg: '#000000', bg: '#ffffff', transparent: false },
   output: null, // { svg, symbol, error, verified }
+  batch: { text: '', file: null, rows: null, header: true, contentCol: 0, captionCol: -1, nameCol: -1, output: 'pdf', page: 'A4', gridCols: 3, gridRows: 8, busy: false, progress: 0, result: null },
 };
 
 let queued = false;
@@ -201,6 +217,12 @@ function drawOverlay() {
 const linear = (format) => FORMATS_1D.includes(format);
 const genText = () => build(state.gen.type, state.gen.fields);
 
+/** Drawing options of the generator settings for a content (and a caption of its own, default the generator's). */
+function styleOptions(g, text, caption = g.caption) {
+  const lin = linear(g.format);
+  return { scale: g.scale, margin: g.margin, linear: lin, barHeight: g.barHeight, text: (lin ? g.showText : g.showContent) ? text : '', caption, captionPos: g.captionPos, fg: g.fg, bg: g.transparent ? 'transparent' : g.bg };
+}
+
 let generation = 0;
 async function generate() {
   const g = state.gen;
@@ -212,7 +234,7 @@ async function generate() {
     const r = await zx.writeBarcode(text, { format: g.format, options });
     if (id !== generation) return;
     if (r.error) { state.output = { error: t('bc.error', g.format, r.error.replace(/\s*\(retval.*$/, '')), text }; render(); return; }
-    const opts = { scale: g.scale, margin: g.margin, linear: linear(g.format), barHeight: g.barHeight, text: linear(g.format) && g.showText ? text : '', fg: g.fg, bg: g.transparent ? 'transparent' : g.bg };
+    const opts = styleOptions(g, text);
     const svg = toSvg(r.symbol, opts);
     // read the result back as a check (white background, so that light-on-dark codes are recognised as well)
     const check = toCanvas(r.symbol, { ...opts, bg: g.transparent ? '#ffffff' : opts.bg });
@@ -289,19 +311,19 @@ function ResultActions({ r }) {
   const f = p.fields;
   const safeUrl = p.type === 'url' && /^https?:\/\//i.test(f.url) ? f.url : null;
   return html`<div class="bc-actions">
-    <button class="secondary outline" data-testid="copy-text" onClick=${() => copyText(r.text)}>⧉ ${t('bc.copy')}</button>
-    ${safeUrl ? html`<a role="button" class="secondary outline" data-testid="open-link" href=${safeUrl} target="_blank" rel="noopener noreferrer">↗ ${t('bc.openLink')}</a>` : null}
-    ${p.type === 'wifi' && f.password ? html`<button class="secondary outline" data-testid="copy-password" onClick=${() => copyText(f.password)}>🔑 ${t('bc.f.password')}</button>` : null}
-    ${p.type === 'contact' ? html`<button class="secondary outline" data-testid="save-contact" onClick=${() => Suite.files.download(new TextEncoder().encode(/^BEGIN:VCARD/i.test(r.text.trim()) ? r.text : build('contact', f)), `${(f.name || 'contact').replace(/[^\w.-]+/g, '_')}.vcf`, 'text/vcard')}>👤 ${t('bc.saveContact')}</button>` : null}
-    ${p.type === 'event' ? html`<button class="secondary outline" data-testid="save-event" onClick=${() => Suite.files.download(new TextEncoder().encode(/BEGIN:VCALENDAR/i.test(r.text) ? r.text : `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Portable Web App Suite//Barcodes//EN\r\n${r.text.trim()}\r\nEND:VCALENDAR\r\n`), 'event.ics', 'text/calendar')}>📅 ${t('bc.saveEvent')}</button>` : null}
-    <button class="secondary outline" data-testid="use-it" onClick=${() => useInGenerator(r)}>✎ ${t('bc.useIt')}</button>
+    <button class="secondary outline" data-testid="copy-text" onClick=${() => copyText(r.text)}>${Suite.icon('copy')} ${t('bc.copy')}</button>
+    ${safeUrl ? html`<a role="button" class="secondary outline" data-testid="open-link" href=${safeUrl} target="_blank" rel="noopener noreferrer">${Suite.icon('external-link')} ${t('bc.openLink')}</a>` : null}
+    ${p.type === 'wifi' && f.password ? html`<button class="secondary outline" data-testid="copy-password" onClick=${() => copyText(f.password)}>${Suite.icon('key-round')} ${t('bc.f.password')}</button>` : null}
+    ${p.type === 'contact' ? html`<button class="secondary outline" data-testid="save-contact" onClick=${() => Suite.files.download(new TextEncoder().encode(/^BEGIN:VCARD/i.test(r.text.trim()) ? r.text : build('contact', f)), `${(f.name || 'contact').replace(/[^\w.-]+/g, '_')}.vcf`, 'text/vcard')}>${Suite.icon('user')} ${t('bc.saveContact')}</button>` : null}
+    ${p.type === 'event' ? html`<button class="secondary outline" data-testid="save-event" onClick=${() => Suite.files.download(new TextEncoder().encode(/BEGIN:VCALENDAR/i.test(r.text) ? r.text : `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Portable Web App Suite//Barcodes//EN\r\n${r.text.trim()}\r\nEND:VCALENDAR\r\n`), 'event.ics', 'text/calendar')}>${Suite.icon('calendar')} ${t('bc.saveEvent')}</button>` : null}
+    <button class="secondary outline" data-testid="use-it" onClick=${() => useInGenerator(r)}>${Suite.icon('pencil')} ${t('bc.useIt')}</button>
   </div>`;
 }
 
 function Details({ p }) {
   const entries = Object.entries(p.fields).filter(([k, v]) => v !== '' && v !== false && k !== 'text' && !(p.type === 'url'));
   if (!entries.length) return null;
-  return html`<dl class="bc-details">${entries.map(([k, v]) => html`<dt>${t(`bc.f.${k}`)}</dt><dd>${v === true ? '✓' : String(v)}</dd>`)}</dl>`;
+  return html`<dl class="bc-details">${entries.map(([k, v]) => html`<dt>${t(`bc.f.${k}`)}</dt><dd>${v === true ? Suite.icon('check') : String(v)}</dd>`)}</dl>`;
 }
 
 function Read() {
@@ -309,10 +331,10 @@ function Read() {
   const showStage = cam || state.image;
   return html`<section class="bc-read">
     <div class="bc-bar">
-      ${cam ? html`<button data-testid="camera" onClick=${stopCamera}>⏹ ${t('bc.stopCamera')}</button>
-          ${cam.devices.length > 1 ? html`<button class="secondary outline" data-testid="switch-camera" onClick=${switchCamera}>🔄 ${t('bc.switchCamera')}</button>` : null}`
-        : html`<button data-testid="camera" onClick=${() => startCamera()}>📷 ${t('bc.camera')}</button>`}
-      <button class="secondary" data-testid="open-image" onClick=${openImage} aria-busy=${state.busy}>🖼 ${t('bc.openImage')}</button>
+      ${cam ? html`<button data-testid="camera" onClick=${stopCamera}>${Suite.icon('square')} ${t('bc.stopCamera')}</button>
+          ${cam.devices.length > 1 ? html`<button class="secondary outline" data-testid="switch-camera" onClick=${switchCamera}>${Suite.icon('refresh-cw')} ${t('bc.switchCamera')}</button>` : null}`
+        : html`<button data-testid="camera" onClick=${() => startCamera()}>${Suite.icon('camera')} ${t('bc.camera')}</button>`}
+      <button class="secondary" data-testid="open-image" onClick=${openImage} aria-busy=${state.busy}>${Suite.icon('image')} ${t('bc.openImage')}</button>
     </div>
     ${showStage ? html`<div class="bc-stage" data-testid="stage">
         ${cam ? html`<div class="bc-media" ref=${(el) => { if (el && video.parentElement !== el) el.prepend(video); }}></div>` : html`<img src=${state.image.url} alt=${state.image.name} data-testid="image" />`}
@@ -359,7 +381,10 @@ function Create() {
         <label>${t('bc.foreground')}<input type="color" data-testid="fg" value=${g.fg} onInput=${(e) => setGen({ fg: e.target.value })} /></label>
         <label>${t('bc.background')}<input type="color" data-testid="bg" value=${g.bg} disabled=${g.transparent} onInput=${(e) => setGen({ bg: e.target.value })} /></label>
       </div>
-      ${lin ? html`<label class="bc-check"><input type="checkbox" data-testid="show-text" checked=${g.showText} onChange=${(e) => setGen({ showText: e.target.checked })} /> ${t('bc.showText')}</label>` : null}
+      <label class="bc-check"><input type="checkbox" data-testid="show-text" checked=${lin ? g.showText : g.showContent} onChange=${(e) => setGen(lin ? { showText: e.target.checked } : { showContent: e.target.checked })} /> ${t(lin ? 'bc.showText' : 'bc.showContent')}</label>
+      <label>${t('bc.caption')}<textarea rows="2" data-testid="caption" value=${g.caption} placeholder=${t('bc.captionHint')} onInput=${(e) => setGen({ caption: e.target.value })}></textarea></label>
+      ${g.caption ? html`<label>${t('bc.captionPos')}<select data-testid="caption-pos" onChange=${(e) => setGen({ captionPos: e.target.value })}>
+        <option value="below" selected=${g.captionPos === 'below'}>${t('bc.below')}</option><option value="above" selected=${g.captionPos === 'above'}>${t('bc.above')}</option></select></label>` : null}
       <label class="bc-check"><input type="checkbox" data-testid="transparent" checked=${g.transparent} onChange=${(e) => setGen({ transparent: e.target.checked })} /> ${t('bc.transparent')}</label>
     </div>
     <div class="bc-output" data-testid="output">
@@ -367,25 +392,122 @@ function Create() {
       ${o && o.svg ? html`<div class="bc-preview" id="bc-print" data-testid="preview" dangerouslySetInnerHTML=${{ __html: o.svg }}></div>
         <p class="bc-meta"><span data-testid="verified" class=${o.verified ? 'bc-ok' : 'bc-error'}>${o.verified ? t('bc.verified', o.verified) : t('bc.notVerified')}</span> · <span data-testid="size">${t('bc.size', o.width, o.height)}</span></p>
         <div class="bc-actions">
-          <button data-testid="download-svg" onClick=${downloadSvg}>⬇ ${t('bc.downloadSvg')}</button>
-          <button data-testid="download-png" onClick=${downloadPng}>⬇ ${t('bc.downloadPng')}</button>
-          <button class="secondary outline" data-testid="copy-image" onClick=${copyImage}>⧉ ${t('bc.copyImage')}</button>
-          <button class="secondary outline" data-testid="print" onClick=${printCode}>🖨 ${t('bc.print')}</button>
+          <button data-testid="download-svg" onClick=${downloadSvg}>${Suite.icon('download')} ${t('bc.downloadSvg')}</button>
+          <button data-testid="download-png" onClick=${downloadPng}>${Suite.icon('download')} ${t('bc.downloadPng')}</button>
+          <button class="secondary outline" data-testid="copy-image" onClick=${copyImage}>${Suite.icon('copy')} ${t('bc.copyImage')}</button>
+          <button class="secondary outline" data-testid="print" onClick=${printCode}>${Suite.icon('printer')} ${t('bc.print')}</button>
         </div>
         <details><summary>${t('bc.content')}</summary><pre class="bc-text" data-testid="gen-text">${o.text}</pre></details>` : null}
     </div>
   </section>`;
 }
 
+// ---- batch ----------------------------------------------------------------------------------------
+
+function decodeText(bytes) {
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch (e) { return new TextDecoder('windows-1252').decode(bytes); }
+}
+
+async function openBatchFile() {
+  try {
+    const picked = await Suite.files.open({ types: [{ description: 'CSV / Text', accept: { 'text/plain': ['.csv', '.txt', '.tsv'] } }] });
+    if (!picked) return;
+    const text = decodeText(new Uint8Array(await picked[0].file.arrayBuffer()));
+    const rows = Suite.csv.parse(text);
+    const b = state.batch;
+    if (rows.every((r) => r.length === 1)) Object.assign(b, { text, file: null, rows: null }); // (a list: one code per line)
+    else Object.assign(b, { file: picked[0].file.name, rows, header: true, contentCol: 0, captionCol: -1, nameCol: -1 });
+    b.result = null;
+    render();
+  } catch (e) { fail(e); }
+}
+
+const batchItems = () => { const b = state.batch; return batch.items(b.rows ? { rows: b.rows, header: b.header, contentCol: b.contentCol, captionCol: b.captionCol, nameCol: b.nameCol } : { text: b.text }); };
+
+async function encodeFor(format, ecLevel) {
+  await zxing();
+  const options = format === 'QRCode' || format === 'MicroQRCode' ? `ecLevel=${ecLevel}` : '';
+  return async (content) => {
+    const r = await zx.writeBarcode(content, { format, options });
+    if (r.error) throw new Error(r.error.replace(/\s*\(retval.*$/, ''));
+    return r.symbol;
+  };
+}
+
+async function runBatch() {
+  const b = state.batch;
+  const list = batchItems();
+  if (!list.length || b.busy) return;
+  const g = state.gen;
+  b.busy = true; b.progress = 0; b.result = null;
+  render();
+  try {
+    const encode = await encodeFor(g.format, g.ecLevel);
+    const draw = (symbol, it) => {
+      const opts = styleOptions(g, it.content, it.caption != null ? it.caption : g.caption);
+      return { svg: toSvg(symbol, opts), canvas: () => toCanvas(symbol, opts) };
+    };
+    const r = await batch.run(list, { encode, draw, output: b.output, page: b.page, cols: b.gridCols, rows: b.gridRows, onProgress: (i, n) => { b.progress = n ? i / n : 1; render(); } });
+    b.result = { done: r.done, errors: r.errors };
+    if (r.done) {
+      const name = `${batch.fileStem(b.file ? b.file.replace(/\.[^.]+$/, '') : t('bc.fileName'))}-${g.format}.${r.ext}`;
+      const saved = await Suite.files.saveAs(r.bytes, { suggestedName: name, types: [{ description: r.ext.toUpperCase(), accept: { [r.type]: [`.${r.ext}`] } }], type: r.type });
+      if (saved) { if (saved.mode === 'downloaded') Suite.shell.banner(saved.message); else Suite.shell.toast(saved.message); }
+    }
+  } catch (e) { fail(e); } finally { b.busy = false; render(); }
+}
+
+function Batch() {
+  const b = state.batch;
+  const g = state.gen;
+  const list = batchItems();
+  const header = b.rows ? (b.header ? b.rows[0] : b.rows[0].map((_, i) => t('bc.column', i + 1))) : [];
+  const colSelect = (key, testid, allowNone) => html`<select data-testid=${testid} onChange=${(e) => { b[key] = +e.target.value; b.result = null; render(); }}>
+    ${allowNone ? html`<option value="-1" selected=${b[key] < 0}>${t('bc.none')}</option>` : null}
+    ${header.map((h, i) => html`<option value=${i} selected=${b[key] === i}>${h || t('bc.column', i + 1)}</option>`)}</select>`;
+  const first = list[0];
+  return html`<section class="bc-create bc-batch">
+    <div class="bc-form">
+      <p><small>${t('bc.batchHint')}</small></p>
+      ${b.rows ? html`<p class="bc-file" data-testid="batch-file">${Suite.icon('file')} ${b.file} · ${t('bc.batchRows', b.rows.length)}
+          <button type="button" class="secondary outline" onClick=${() => { Object.assign(b, { file: null, rows: null, result: null }); render(); }}>×</button></p>
+          <label class="bc-check"><input type="checkbox" data-testid="batch-header" checked=${b.header} onChange=${(e) => { b.header = e.target.checked; render(); }} /> ${t('bc.batchHeader')}</label>
+          <label>${t('bc.batchContentCol')}${colSelect('contentCol', 'batch-content-col', false)}</label>
+          <label>${t('bc.batchCaptionCol')}${colSelect('captionCol', 'batch-caption-col', true)}</label>
+          <label>${t('bc.batchNameCol')}${colSelect('nameCol', 'batch-name-col', true)}</label>`
+        : html`<label>${t('bc.batchLines')}<textarea rows="8" data-testid="batch-text" value=${b.text} placeholder=${'https://example.org/1\nhttps://example.org/2'} onInput=${(e) => { b.text = e.target.value; b.result = null; render(); }}></textarea></label>`}
+      <button type="button" class="secondary outline" data-testid="batch-open" onClick=${openBatchFile}>${Suite.icon('folder-open')} ${t('bc.batchOpen')}</button>
+      <label>${t('bc.format')}<select data-testid="batch-format" onChange=${(e) => { setGen({ format: e.target.value }); state.batch.result = null; }}>
+        <optgroup label=${t('bc.codes2d')}>${FORMATS_2D.map((f) => html`<option value=${f} selected=${g.format === f}>${zx.formatToLabel ? zx.formatToLabel(f) : f}</option>`)}</optgroup>
+        <optgroup label=${t('bc.codes1d')}>${FORMATS_1D.map((f) => html`<option value=${f} selected=${g.format === f}>${zx.formatToLabel ? zx.formatToLabel(f) : f}</option>`)}</optgroup></select></label>
+      <p><small>${t('bc.batchLook')} <a href="#" onClick=${(e) => { e.preventDefault(); state.tab = 'create'; render(); }}>${t('bc.create')}</a></small></p>
+      <label>${t('bc.batchOutput')}<select data-testid="batch-output" onChange=${(e) => { b.output = e.target.value; render(); }}>
+        ${['pdf', 'zip-png', 'zip-svg'].map((o) => html`<option value=${o} selected=${b.output === o}>${t(`bc.out.${o}`)}</option>`)}</select></label>
+      ${b.output === 'pdf' ? html`<div class="bc-grid">
+        <label>${t('bc.page')}<select data-testid="batch-page" onChange=${(e) => { b.page = e.target.value; render(); }}>${Object.keys(batch.PAGES).map((k) => html`<option selected=${b.page === k}>${k}</option>`)}</select></label>
+        <label>${t('bc.cols')}<input type="number" min="1" max="10" data-testid="batch-cols" value=${b.gridCols} onInput=${(e) => { b.gridCols = Math.max(1, Math.min(10, +e.target.value || 1)); render(); }} /></label>
+        <label>${t('bc.rows')}<input type="number" min="1" max="20" data-testid="batch-rows" value=${b.gridRows} onInput=${(e) => { b.gridRows = Math.max(1, Math.min(20, +e.target.value || 1)); render(); }} /></label>
+      </div>` : null}
+      <button type="button" data-testid="batch-run" disabled=${!list.length || b.busy} aria-busy=${b.busy} onClick=${runBatch}>${t('bc.batchRun', list.length)}</button>
+      ${b.busy ? html`<progress value=${b.progress} max="1"></progress>` : null}
+    </div>
+    <div class="bc-output" data-testid="batch-output-panel">
+      ${first ? html`<p><small>${t('bc.batchFirst')}</small></p><pre class="bc-text" data-testid="batch-first">${first.content}${first.caption ? `\n— ${first.caption}` : ''}</pre>` : html`<p class="bc-meta">${t('bc.batchEmpty')}</p>`}
+      ${b.result ? html`<p data-testid="batch-result" class=${b.result.errors.length ? 'bc-error' : 'bc-ok'}>${t('bc.batchDone', b.result.done)}${b.result.errors.length ? ` · ${t('bc.batchErrors', b.result.errors.length)}` : ''}</p>
+        ${b.result.errors.length ? html`<ul class="bc-errors" data-testid="batch-errors">${b.result.errors.slice(0, 50).map((e) => html`<li>${t('bc.batchLine', e.line)}: <code>${e.content}</code> – ${e.message}</li>`)}</ul>` : null}` : null}
+    </div>
+  </section>`;
+}
+
 function Toolbar() {
   return html`<nav class="bc-toolbar" role="tablist">
-    ${['read', 'create'].map((k) => html`<button role="tab" class=${state.tab === k ? '' : 'secondary outline'} aria-selected=${state.tab === k} data-testid=${`tab-${k}`}
-      onClick=${() => { state.tab = k; if (k !== 'read') stopCamera(); if (k === 'create' && !state.output) generate(); render(); }}>${k === 'read' ? '📷' : '▦'} ${t(`bc.${k}`)}</button>`)}
+    ${['read', 'create', 'batch'].map((k) => html`<button role="tab" class=${state.tab === k ? '' : 'secondary outline'} aria-selected=${state.tab === k} data-testid=${`tab-${k}`}
+      onClick=${() => { state.tab = k; if (k !== 'read') stopCamera(); if (k !== 'read' && !state.output) generate(); render(); }}>${k === 'read' ? Suite.icon('camera') : k === 'create' ? Suite.icon('qr-code') : Suite.icon('files')} ${t(`bc.${k}`)}</button>`)}
   </nav>`;
 }
 
 function Main() {
-  return html`<div class="bc-main">${state.tab === 'read' ? html`<${Read} />` : html`<${Create} />`}</div>`;
+  return html`<div class="bc-main">${state.tab === 'read' ? html`<${Read} />` : state.tab === 'batch' ? html`<${Batch} />` : html`<${Create} />`}</div>`;
 }
 
 Suite.shell.mount({ id: APP, title: 'app.title', version: '%%BUILD_VERSION%%', toolbar: () => html`<${Toolbar} />`, main: () => html`<${Main} />` });
@@ -404,5 +526,5 @@ Suite.bridge.receive((picked) => { state.tab = 'read'; readImage(picked.file, pi
 zxing().catch(fail);
 
 // for tests
-window.BC = { state, readImage, generate, setGen, parse, build, zxing, get zx() { return zx; } };
+window.BC = { state, runBatch, batch, readImage, generate, setGen, parse, build, zxing, get zx() { return zx; } };
 document.body.dataset.ready = 'true';

@@ -7,9 +7,10 @@
  */
 import {
   THEMES, TRANSITIONS, SPEEDS, FRAGMENTS, BLOCK_TYPES, CODE_LANGUAGES, newDeck, newSlide, newBlock, normalizeDeck, flatten, slideAt,
-  slideTitle, renderPage, renderBlock, hasActiveContent, fromHtml, fromMarkdown, fromNotebook, toMarkdown, newId,
+  slideTitle, renderPage, renderBlock, hasActiveContent, fromHtml, fromMarkdown, fromNotebook, toMarkdown, newId, themeCss, themeFromCss,
 } from '@app/deck.js';
 import { mermaidSvg } from '@app/mermaid-svg.js';
+import { exportPdf } from '@app/pdf.js';
 import { importPptx } from 'app/pptx-import';
 import { exportPptx } from 'app/pptx-export';
 import { pptxToWebSlides, webSlidesToPptx } from 'app/deck-convert';
@@ -24,6 +25,12 @@ const PPTX_MIME = 'application/vnd.openxmlformats-officedocument.presentationml.
 
 Suite.i18n.register({
   en: {
+    'rv.themeEdit': 'Customise theme…', 'rv.themeTitle': 'Customise the theme “{0}”', 'rv.themeHint': 'Your settings go over the chosen theme; empty fields keep the theme\'s value. The preview shows the result at once.',
+    'rv.themeDefault': 'from the theme', 'rv.themeBackground': 'Background', 'rv.themeText': 'Text', 'rv.themeHeadings': 'Headings', 'rv.themeLinks': 'Links', 'rv.themeSelection': 'Selection',
+    'rv.themeBgImage': 'Background picture or gradient (CSS)', 'rv.themeBgPicture': 'Choose a background picture…', 'rv.themeMainFont': 'Text font', 'rv.themeHeadingFont': 'Heading font', 'rv.themeCodeFont': 'Code font',
+    'rv.themeSize': 'Text size', 'rv.themeH1': 'Title size', 'rv.themeWeight': 'Heading weight', 'rv.themeTransform': 'Heading case', 'rv.themeAsTyped': 'as typed',
+    'rv.themeReset': 'Back to the theme', 'rv.themeLoad': 'Load theme (CSS)…', 'rv.themeSave': 'Save theme (CSS)', 'rv.themeLoaded': '{0} settings taken from the file.',
+    'rv.pdfFile': 'Save as PDF file', 'rv.pdfSteps': 'Save as PDF file, one page per step (fragments)',
     'app.title': 'Web slides',
     'rv.new': 'New', 'rv.open': 'Open', 'rv.save': 'Save', 'rv.saveAs': 'Save as', 'rv.undo': 'Undo', 'rv.redo': 'Redo', 'rv.present': 'Present',
     'rv.presentWindow': 'Present in a new window', 'rv.print': 'PDF / print', 'rv.addSlide': 'Slide', 'rv.addSub': 'Sub-slide', 'rv.addBlock': 'Element',
@@ -67,6 +74,12 @@ Suite.i18n.register({
     'rv.presentHint': 'Keys: → ← ↑ ↓ or Space to move, O overview, S speaker notes, F full screen, Esc overview.',
   },
   de: {
+    'rv.themeEdit': 'Design anpassen…', 'rv.themeTitle': 'Design „{0}“ anpassen', 'rv.themeHint': 'Ihre Einstellungen gelten über dem gewählten Design; leere Felder behalten den Wert des Designs. Die Vorschau zeigt das Ergebnis sofort.',
+    'rv.themeDefault': 'vom Design', 'rv.themeBackground': 'Hintergrund', 'rv.themeText': 'Text', 'rv.themeHeadings': 'Überschriften', 'rv.themeLinks': 'Links', 'rv.themeSelection': 'Markierung',
+    'rv.themeBgImage': 'Hintergrundbild oder Verlauf (CSS)', 'rv.themeBgPicture': 'Hintergrundbild wählen…', 'rv.themeMainFont': 'Schrift für Text', 'rv.themeHeadingFont': 'Schrift für Überschriften', 'rv.themeCodeFont': 'Schrift für Code',
+    'rv.themeSize': 'Textgröße', 'rv.themeH1': 'Titelgröße', 'rv.themeWeight': 'Stärke der Überschriften', 'rv.themeTransform': 'Schreibweise der Überschriften', 'rv.themeAsTyped': 'wie getippt',
+    'rv.themeReset': 'Zurück zum Design', 'rv.themeLoad': 'Design laden (CSS)…', 'rv.themeSave': 'Design speichern (CSS)', 'rv.themeLoaded': '{0} Einstellungen aus der Datei übernommen.',
+    'rv.pdfFile': 'Als PDF-Datei speichern', 'rv.pdfSteps': 'Als PDF-Datei speichern, eine Seite je Schritt (Fragmente)',
     'app.title': 'Web-Folien',
     'rv.new': 'Neu', 'rv.open': 'Öffnen', 'rv.save': 'Speichern', 'rv.saveAs': 'Speichern unter', 'rv.undo': 'Rückgängig', 'rv.redo': 'Wiederholen', 'rv.present': 'Präsentieren',
     'rv.presentWindow': 'In neuem Fenster präsentieren', 'rv.print': 'PDF / Drucken', 'rv.addSlide': 'Folie', 'rv.addSub': 'Unterfolie', 'rv.addBlock': 'Element',
@@ -708,6 +721,21 @@ function stopPresenting() {
 }
 document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && state.presenting) stopPresenting(); });
 
+/** A PDF file of the slides (pictures of reveal.js's print view; steps: one page per fragment step). */
+async function savePdf({ steps = false } = {}) {
+  stopEditing(false);
+  const d = deck();
+  state.exporting = { done: 0, total: 0 };
+  render();
+  try {
+    const html = renderPage(d, assets(d), { config: { view: 'print', hash: false, pdfSeparateFragments: steps, pdfMaxPagesPerSlide: steps ? 50 : 1 }, trusted: state.trusted });
+    const bytes = await exportPdf(html, { onProgress: (i, n) => { state.exporting = { done: i, total: n }; render(); } });
+    const base = (state.name || d.title || 'slides').replace(/\.[^.]+$/, '').replace(/[\\/:*?"<>|]+/g, '_') || 'slides';
+    const result = await Suite.files.saveAs(bytes, { suggestedName: `${base}.pdf`, types: [{ description: 'PDF', accept: { 'application/pdf': ['.pdf'] } }], type: 'application/pdf' });
+    if (result) { if (result.mode === 'downloaded') Suite.shell.banner(result.message); else Suite.shell.toast(result.message); }
+  } catch (e) { Suite.shell.toast(Suite.i18n.describe(e), 'error'); } finally { state.exporting = null; render(); }
+}
+
 /** Present in a new window (written into about:blank, so that it keeps working offline and speaker notes can open). */
 function presentWindow({ print = false, notes = false } = {}) {
   stopEditing(false);
@@ -723,9 +751,9 @@ function presentWindow({ print = false, notes = false } = {}) {
 
 const TEMPLATES = ['title', 'content', 'section', 'image', 'code', 'quote', 'blank', 'markdown', 'html'];
 
-function Dropdown({ label, testid, items }) {
+function Dropdown({ label, testid, items, title = null }) {
   return html`<details class="dropdown rv-dropdown" data-testid=${testid}>
-    <summary>${label}</summary>
+    <summary title=${title} aria-label=${title}>${label}</summary>
     <ul>${items.map(([key, text, fn]) => html`<li><a href="#" data-testid=${`${testid}-${key}`} onClick=${(e) => { e.preventDefault(); e.target.closest('details').open = false; fn(); }}>${text}</a></li>`)}</ul>
   </details>`;
 }
@@ -738,20 +766,21 @@ function Toolbar() {
     <button class=${state.dirty ? '' : 'secondary outline'} data-testid="save" onClick=${() => save()}>${t('rv.save')}</button>
     <button class="secondary outline" data-testid="save-as" onClick=${() => { state.dialog = { kind: 'saveAs', stem: (state.name || t('rv.untitled')).replace(/\.[^.]+$/, ''), format: 'html' }; render(); }}>${t('rv.saveAs')}</button>
     <span class="rv-sep"></span>
-    <button class="secondary outline" title="${t('rv.undo')} (Ctrl+Z)" data-testid="undo" disabled=${!history.canUndo} onClick=${() => undoStep(false)}>↶</button>
-    <button class="secondary outline" title="${t('rv.redo')} (Ctrl+Y)" data-testid="redo" disabled=${!history.canRedo} onClick=${() => undoStep(true)}>↷</button>
+    <button class="secondary outline" title="${t('rv.undo')} (Ctrl+Z)" data-testid="undo" disabled=${!history.canUndo} onClick=${() => undoStep(false)}>${Suite.icon('undo-2')}</button>
+    <button class="secondary outline" title="${t('rv.redo')} (Ctrl+Y)" data-testid="redo" disabled=${!history.canRedo} onClick=${() => undoStep(true)}>${Suite.icon('redo-2')}</button>
     <span class="rv-sep"></span>
     <${Dropdown} label=${`+ ${t('rv.addSlide')}`} testid="add-slide" items=${TEMPLATES.map((k) => [k, t(`rv.tpl.${k}`), () => addSlide(k)])} />
     <${Dropdown} label=${`+ ${t('rv.addSub')}`} testid="add-sub" items=${TEMPLATES.map((k) => [k, t(`rv.tpl.${k}`), () => addSlide(k, true)])} />
     ${current().kind === 'blocks' ? html`<${Dropdown} label=${`+ ${t('rv.addBlock')}`} testid="add-block" items=${[...BLOCK_TYPES.map((k) => [k, t(`rv.type.${k}`), () => addBlock(k)]), ['drawio', `📐 ${t('rv.type.drawio')}`, () => drawDiagram(null)]]} />` : null}
     <span class="rv-sep"></span>
-    <button data-testid="present" title="F5" onClick=${present}>▶ ${t('rv.present')}</button>
-    <button class="secondary outline" title=${t('rv.presentWindow')} aria-label=${t('rv.presentWindow')} data-testid="present-window" onClick=${() => presentWindow()}>↗</button>
-    <${Dropdown} label="🖨" testid="print" items=${[['slides', t('rv.print'), () => presentWindow({ print: true })], ['notes', t('rv.printNotes'), () => presentWindow({ print: true, notes: true })]]} />
+    <button data-testid="present" title="F5" onClick=${present}>${Suite.icon('play')} ${t('rv.present')}</button>
+    <button class="secondary outline" title=${t('rv.presentWindow')} aria-label=${t('rv.presentWindow')} data-testid="present-window" onClick=${() => presentWindow()}>${Suite.icon('external-link')}</button>
+    <${Dropdown} label=${Suite.icon('printer')} title=${t('rv.print')} testid="print" items=${[['pdf', t('rv.pdfFile'), () => savePdf()], ['pdf-steps', t('rv.pdfSteps'), () => savePdf({ steps: true })], ['slides', t('rv.print'), () => presentWindow({ print: true })], ['notes', t('rv.printNotes'), () => presentWindow({ print: true, notes: true })]]} />
+    ${state.exporting ? html`<span class="rv-exporting" data-testid="pdf-progress" aria-busy="true">${state.exporting.total ? `${state.exporting.done}/${state.exporting.total}` : ''}</span>` : null}
     ${state.trusted || hasActiveContent(deck()) ? html`<span class="rv-sep"></span>
       <button class=${state.trusted ? 'rv-trusted' : 'secondary outline'} data-testid="scripts" title=${t(state.trusted ? 'rv.scriptsOnTitle' : 'rv.scriptsOffTitle')}
-        onClick=${() => (state.trusted ? untrust() : askTrust())}>${state.trusted ? `⚠ ${t('rv.scriptsOn')}` : `🛡 ${t('rv.scriptsOff')}`}</button>` : null}
-    <button class="secondary outline rv-only-phone" data-testid="toggle-panels" onClick=${() => { state.panels = state.panels ? null : 'inspector'; render(); }}>☰ ${t('rv.panels')}</button>
+        onClick=${() => (state.trusted ? untrust() : askTrust())}>${state.trusted ? html`${Suite.icon('triangle-alert')} ${t('rv.scriptsOn')}` : html`${Suite.icon('shield')} ${t('rv.scriptsOff')}`}</button>` : null}
+    <button class="secondary outline rv-only-phone" data-testid="toggle-panels" onClick=${() => { state.panels = state.panels ? null : 'inspector'; render(); }}>${Suite.icon('menu')} ${t('rv.panels')}</button>
   </nav>`;
 }
 
@@ -760,12 +789,12 @@ function SlideList() {
   return html`<aside class=${`rv-slides suite-drawer ${state.panels === 'slides' ? 'open' : ''}`} data-testid="slide-list">
     <div class="rv-list-head"><strong>${t('rv.slides')}</strong>
       <span class="rv-list-buttons">
-        <button class="secondary outline" title=${t('rv.up')} data-testid="slide-up" onClick=${() => moveSlide(-1)}>↑</button>
-        <button class="secondary outline" title=${t('rv.down')} data-testid="slide-down" onClick=${() => moveSlide(1)}>↓</button>
-        <button class="secondary outline" title=${t('rv.indent')} data-testid="slide-indent" disabled=${state.v > 0 || state.h === 0} onClick=${() => indent(true)}>⇥</button>
-        <button class="secondary outline" title=${t('rv.outdent')} data-testid="slide-outdent" disabled=${state.v === 0} onClick=${() => indent(false)}>⇤</button>
-        <button class="secondary outline" title=${t('rv.duplicate')} data-testid="slide-duplicate" onClick=${duplicateSlide}>⧉</button>
-        <button class="secondary outline" title=${t('rv.delete')} data-testid="slide-delete" onClick=${removeSlide}>🗑</button>
+        <button class="secondary outline" title=${t('rv.up')} data-testid="slide-up" onClick=${() => moveSlide(-1)}>${Suite.icon('arrow-up')}</button>
+        <button class="secondary outline" title=${t('rv.down')} data-testid="slide-down" onClick=${() => moveSlide(1)}>${Suite.icon('arrow-down')}</button>
+        <button class="secondary outline" title=${t('rv.indent')} data-testid="slide-indent" disabled=${state.v > 0 || state.h === 0} onClick=${() => indent(true)}>${Suite.icon('indent-increase')}</button>
+        <button class="secondary outline" title=${t('rv.outdent')} data-testid="slide-outdent" disabled=${state.v === 0} onClick=${() => indent(false)}>${Suite.icon('indent-decrease')}</button>
+        <button class="secondary outline" title=${t('rv.duplicate')} data-testid="slide-duplicate" onClick=${duplicateSlide}>${Suite.icon('copy')}</button>
+        <button class="secondary outline" title=${t('rv.delete')} data-testid="slide-delete" onClick=${removeSlide}>${Suite.icon('trash-2')}</button>
       </span></div>
     <ol title=${t('rv.dropHint')}>${items.map(({ slide, h, v }) => html`<li key=${slide.id} class=${`${v ? 'sub' : ''} ${h === state.h && v === state.v ? 'active' : ''}`} data-testid="slide-item"
         draggable="true" data-slide=${slide.id}
@@ -788,7 +817,7 @@ function SlideList() {
         onClick=${() => { if (state.panels === 'slides') state.panels = null; select(h, v); }}>
       <span class="rv-num">${v ? `${h + 1}.${v + 1}` : h + 1}</span>
       <span class="rv-swatch" style=${`background:${(slide.background && (slide.background.color || slide.background.gradient)) || 'transparent'}`}></span>
-      <span class="rv-title">${slide.kind === 'markdown' ? 'Ⓜ ' : slide.kind === 'html' ? '‹›' : ''}${slideTitle(slide) || '—'}</span>
+      <span class="rv-title">${slide.kind === 'markdown' ? Suite.icon('badge-info') : slide.kind === 'html' ? '‹›' : ''}${slideTitle(slide) || '—'}</span>
     </li>`)}</ol>
   </aside>`;
 }
@@ -830,8 +859,8 @@ function ElementInspector() {
       <${Select} label=${t('rv.itemFragment')} testid="el-item-fragment" value=${b.itemFragment} options=${fragmentOptions()} onChange=${(v) => updateBlock({ itemFragment: v })} />`;
   } else if (b.type === 'image') {
     specific = html`<div class="rv-buttons"><button type="button" class="secondary outline" data-testid="el-choose-image" onClick=${() => chooseImage((src) => updateBlock({ src }))}>${t('rv.chooseImage')}</button>
-      ${isDiagramBlock(b) ? html`<button type="button" class="secondary" data-testid="edit-diagram" onClick=${() => editDiagramBlock(b.id)}>📐 ${t('dia.edit')}</button>`
-        : html`<button type="button" class="secondary outline" data-testid="draw-diagram" onClick=${() => drawDiagram(b.id)}>📐 ${t('rv.drawDiagram')}</button>`}</div>
+      ${isDiagramBlock(b) ? html`<button type="button" class="secondary" data-testid="edit-diagram" onClick=${() => editDiagramBlock(b.id)}>${Suite.icon('shapes')} ${t('dia.edit')}</button>`
+        : html`<button type="button" class="secondary outline" data-testid="draw-diagram" onClick=${() => drawDiagram(b.id)}>${Suite.icon('shapes')} ${t('rv.drawDiagram')}</button>`}</div>
       <${Field} label=${t('rv.alt')} testid="el-alt" keyed=${k('alt')} value=${b.alt} onInput=${up('alt')} />
       <${Field} label=${t('rv.width')} testid="el-width" type="number" min="0" max="100" keyed=${k('width')} value=${b.width || ''} onInput=${(v) => updateBlock({ width: +v || 0 }, k('width'))} />
       <${Check} label=${t('rv.stretch')} testid="el-stretch" checked=${b.stretch} onChange=${(v) => updateBlock({ stretch: v })} />`;
@@ -861,10 +890,10 @@ function ElementInspector() {
   return html`<div class="rv-inspector-body" data-testid="element-inspector">
     <div class="rv-row"><strong>${t(`rv.type.${b.type}`)}</strong>
       <span class="rv-buttons">
-        <button type="button" class="secondary outline" title=${t('rv.up')} data-testid="el-up" onClick=${() => blockOp('up')}>↑</button>
-        <button type="button" class="secondary outline" title=${t('rv.down')} data-testid="el-down" onClick=${() => blockOp('down')}>↓</button>
-        <button type="button" class="secondary outline" title=${t('rv.duplicate')} data-testid="el-duplicate" onClick=${() => blockOp('duplicate')}>⧉</button>
-        <button type="button" class="secondary outline" title=${t('rv.delete')} data-testid="el-delete" onClick=${() => blockOp('delete')}>🗑</button>
+        <button type="button" class="secondary outline" title=${t('rv.up')} data-testid="el-up" onClick=${() => blockOp('up')}>${Suite.icon('arrow-up')}</button>
+        <button type="button" class="secondary outline" title=${t('rv.down')} data-testid="el-down" onClick=${() => blockOp('down')}>${Suite.icon('arrow-down')}</button>
+        <button type="button" class="secondary outline" title=${t('rv.duplicate')} data-testid="el-duplicate" onClick=${() => blockOp('duplicate')}>${Suite.icon('copy')}</button>
+        <button type="button" class="secondary outline" title=${t('rv.delete')} data-testid="el-delete" onClick=${() => blockOp('delete')}>${Suite.icon('trash-2')}</button>
       </span></div>
     ${specific}
     <${Select} label=${t('rv.fragment')} testid="el-fragment" value=${b.fragment} options=${fragmentOptions()} onChange=${(v) => updateBlock({ fragment: v })} />
@@ -922,6 +951,71 @@ function SlideInspector() {
 
 const FORMATS = [['960x700', '960 × 700 (reveal.js)'], ['1280x720', '1280 × 720 (16:9)'], ['1920x1080', '1920 × 1080 (16:9)'], ['1024x768', '1024 × 768 (4:3)']];
 
+// ---- theme editor: reveal.js's variables over the chosen theme ------------------------------------------------------
+
+const GENERIC_FONTS = [['', 'rv.themeDefault'], ['system-ui, sans-serif', 'System (sans-serif)'], ['Georgia, serif', 'Georgia (serif)'], ['ui-monospace, monospace', 'Monospace']];
+
+/** Embed the @font-face rules of the chosen fonts in the deck (bundled or imported fonts of the suite). */
+function refreshThemeFonts(d) {
+  const v = d.themeVars || {};
+  const names = [v.mainFont, v.headingFont, v.codeFont].filter((f) => f && !/[,]/.test(f));
+  d.themeFonts = names.length && Suite.fonts ? Suite.fonts.cssFor(names) : '';
+}
+
+function setThemeVar(key, value, coalesce = null) {
+  edit((d) => {
+    d.themeVars = { ...(d.themeVars || {}) };
+    if (value === '' || value === null || value === undefined) delete d.themeVars[key]; else d.themeVars[key] = value;
+    if (/Font$/.test(key)) refreshThemeFonts(d);
+  }, coalesce || `theme:${key}`);
+}
+
+function ThemeDialog() {
+  const d = deck();
+  const v = d.themeVars || {};
+  const close = () => { state.dialog = null; render(); };
+  const fonts = Suite.fonts ? Suite.fonts.families() : [];
+  const color = (key, label) => html`<label class="rv-theme-color">${t(label)}
+    <span><input type="color" data-testid=${`theme-${key}`} value=${/^#[0-9a-f]{6}$/i.test(v[key] || '') ? v[key] : '#888888'} class=${v[key] ? '' : 'unset'} onInput=${(e) => setThemeVar(key, e.target.value)} />
+      ${v[key] ? html`<button type="button" class="secondary outline" title=${t('rv.themeDefault')} onClick=${() => setThemeVar(key, '')}>×</button>` : html`<small>${t('rv.themeDefault')}</small>`}</span></label>`;
+  const font = (key, label) => html`<label>${t(label)}<select data-testid=${`theme-${key}`} onChange=${(e) => setThemeVar(key, e.target.value)}>
+    ${GENERIC_FONTS.map(([val, l]) => html`<option value=${val} selected=${(v[key] || '') === val}>${l.startsWith('rv.') ? t(l) : l}</option>`)}
+    ${fonts.map((f) => html`<option value=${f.name} selected=${v[key] === f.name}>${f.name}</option>`)}</select></label>`;
+  return html`<dialog open data-testid="theme-dialog"><article class="rv-theme-dialog">
+    <header><strong>${t('rv.themeTitle', d.theme)}</strong></header>
+    <p><small>${t('rv.themeHint')}</small></p>
+    <div class="rv-theme-grid">
+      ${color('background', 'rv.themeBackground')}${color('mainColor', 'rv.themeText')}${color('headingColor', 'rv.themeHeadings')}${color('linkColor', 'rv.themeLinks')}${color('selection', 'rv.themeSelection')}
+    </div>
+    <label>${t('rv.themeBgImage')}<input data-testid="theme-backgroundImage" placeholder="linear-gradient(135deg, #1e3c72, #2a5298)" value=${v.backgroundImage || ''} onInput=${(e) => setThemeVar('backgroundImage', e.target.value)} /></label>
+    <label class="rv-file-button" role="button">${t('rv.themeBgPicture')}<input type="file" accept="image/*" hidden data-testid="theme-bg-picture" onChange=${async (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      const url = await new Promise((r) => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); });
+      setThemeVar('backgroundImage', `url("${url}") center / cover no-repeat`); e.target.value = '';
+    }} /></label>
+    <div class="rv-theme-grid">${font('mainFont', 'rv.themeMainFont')}${font('headingFont', 'rv.themeHeadingFont')}${font('codeFont', 'rv.themeCodeFont')}</div>
+    <div class="rv-theme-grid">
+      <label>${t('rv.themeSize')}<input data-testid="theme-mainSize" placeholder="42px" value=${v.mainSize || ''} onInput=${(e) => setThemeVar('mainSize', e.target.value)} /></label>
+      <label>${t('rv.themeH1')}<input data-testid="theme-h1Size" placeholder="3.77em" value=${v.h1Size || ''} onInput=${(e) => setThemeVar('h1Size', e.target.value)} /></label>
+      <label>${t('rv.themeWeight')}<select data-testid="theme-headingWeight" onChange=${(e) => setThemeVar('headingWeight', e.target.value)}>
+        ${[['', t('rv.themeDefault')], ['300', '300'], ['400', '400'], ['600', '600'], ['700', '700'], ['900', '900']].map(([val, l]) => html`<option value=${val} selected=${(v.headingWeight || '') === val}>${l}</option>`)}</select></label>
+      <label>${t('rv.themeTransform')}<select data-testid="theme-headingTransform" onChange=${(e) => setThemeVar('headingTransform', e.target.value)}>
+        ${[['', t('rv.themeDefault')], ['none', t('rv.themeAsTyped')], ['uppercase', 'UPPERCASE'], ['capitalize', 'Capitalize']].map(([val, l]) => html`<option value=${val} selected=${(v.headingTransform || '') === val}>${l}</option>`)}</select></label>
+    </div>
+    <footer>
+      <button type="button" class="secondary outline" data-testid="theme-reset" onClick=${() => edit((x) => { x.themeVars = {}; x.themeFonts = ''; })}>${t('rv.themeReset')}</button>
+      <label class="rv-file-button secondary outline" role="button" data-testid="theme-load-label">${t('rv.themeLoad')}<input type="file" accept=".css,text/css" hidden data-testid="theme-load" onChange=${async (e) => {
+        const f = e.target.files[0]; if (!f) return;
+        const { vars, fonts: ff } = themeFromCss(await f.text());
+        edit((x) => { x.themeVars = { ...(x.themeVars || {}), ...vars }; x.themeFonts = ff || x.themeFonts || ''; });
+        Suite.shell.toast(t('rv.themeLoaded', Object.keys(vars).length)); e.target.value = '';
+      }} /></label>
+      <button type="button" class="secondary outline" data-testid="theme-save" onClick=${() => Suite.files.download(new TextEncoder().encode(`/* ${d.title} – theme based on reveal.js "${d.theme}" */\n${themeCss(d)}`), `${(d.title || 'theme').replace(/[\\/:*?"<>|]+/g, '_')}-theme.css`, 'text/css')}>${t('rv.themeSave')}</button>
+      <button type="button" data-testid="theme-close" onClick=${close}>${t('rv.done')}</button>
+    </footer>
+  </article></dialog>`;
+}
+
 function DeckInspector() {
   const d = deck();
   const c = d.config;
@@ -931,6 +1025,7 @@ function DeckInspector() {
     <${Field} label=${t('rv.title')} testid="deck-title" keyed="title" value=${d.title} onInput=${(v) => edit(() => { d.title = v; }, 'deck:title')} />
     <div class="rv-row">
       <${Select} label=${t('rv.theme')} testid="deck-theme" value=${d.theme} options=${THEMES.map((x) => [x, x])} onChange=${(v) => edit(() => { d.theme = v; })} />
+      <button type="button" class="secondary outline" data-testid="theme-edit" onClick=${() => { state.dialog = { kind: 'theme' }; render(); }}>${Suite.icon('palette')} ${t('rv.themeEdit')}${Object.keys(d.themeVars || {}).length ? ' •' : ''}</button>
       <${Select} label=${t('rv.highlightTheme')} testid="deck-highlight" value=${d.highlightTheme} options=${[['monokai', 'Monokai'], ['zenburn', 'Zenburn']]} onChange=${(v) => edit(() => { d.highlightTheme = v; })} />
     </div>
     <div class="rv-row">
@@ -971,15 +1066,16 @@ function FormatBar() {
     ${btn('bold', html`<b>B</b>`, t('rv.bold'))}${btn('italic', html`<i>I</i>`, t('rv.italic'))}${btn('underline', html`<u>U</u>`, t('rv.underline'))}
     ${btn('strikeThrough', html`<s>S</s>`, t('rv.strike'))}${btn('code', '‹›', t('rv.inlineCode'))}
     <button type="button" class="secondary outline" title=${t('rv.link')} data-testid="fmt-link" onMouseDown=${(e) => e.preventDefault()}
-      onClick=${() => { const url = window.prompt(t('rv.linkUrl'), 'https://'); if (url) format('createLink', url); }}>🔗</button>
+      onClick=${() => { const url = window.prompt(t('rv.linkUrl'), 'https://'); if (url) format('createLink', url); }}>${Suite.icon('link')}</button>
     <label class="rv-color" title=${t('rv.textColor')}><input type="color" data-testid="fmt-color" onMouseDown=${(e) => e.stopPropagation()} onInput=${(e) => format('foreColor', e.target.value)} /></label>
-    ${btn('removeFormat', '⌫', t('rv.clearFormat'))}
+    ${btn('removeFormat', Suite.icon('remove-formatting'), t('rv.clearFormat'))}
     <button type="button" data-testid="fmt-done" onClick=${() => stopEditing()}>${t('rv.done')}</button>
   </div>`;
 }
 
 function Dialog() {
   const d = state.dialog;
+  if (d && d.kind === 'theme') return html`<${ThemeDialog} />`;
   if (!d || d.kind !== 'saveAs') return null;
   return html`<dialog open data-testid="save-dialog"><article>
     <form onSubmit=${(e) => { e.preventDefault(); state.dialog = null; render(); save({ as: true, format: d.format, name: `${d.stem}.${d.format === 'md' ? 'md' : d.format === 'pptx' ? 'pptx' : 'html'}` }); }}>
@@ -1042,5 +1138,5 @@ Suite.openFiles.register(() => (state.dirty || state.name
   ? [{ name: state.name || `${t('rv.untitled')}.html`, bytes: new TextEncoder().encode(presentationHtml()), dirty: state.dirty }] : []));
 
 // for tests
-window.RV = { state, history, drawDiagram, editDiagramBlock, presentationHtml, setDeck, normalizeDeck, fromHtml, fromMarkdown, fromNotebook, toMarkdown, previewWindow, updatePreview };
+window.RV = { savePdf, state, history, drawDiagram, editDiagramBlock, presentationHtml, setDeck, normalizeDeck, fromHtml, fromMarkdown, fromNotebook, toMarkdown, previewWindow, updatePreview };
 document.body.dataset.ready = 'true';

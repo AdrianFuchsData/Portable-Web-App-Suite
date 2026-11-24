@@ -33,11 +33,30 @@ Code 93, **EAN-13**, EAN-8, UPC-A, UPC-E, ITF and Codabar (1D bar codes). Readin
    (L 7 %, M 15 %, Q 25 %, H 30 %). 1D codes accept only certain characters (EAN/UPC: digits with the check digit
    calculated) – an example is filled in when you switch to one; an error message explains invalid contents.
 3. Set the **module size** (pixels per square or bar), the **quiet zone** (white margin in modules; scanners need it),
-   for 1D codes the **bar height** and the text below the bars, and the **colours** or a transparent background. Keep
-   dark codes on a light background with enough contrast.
+   for 1D codes the **bar height**, and the **colours** or a transparent background. Keep dark codes on a light
+   background with enough contrast.
+4. Text with the code: 1D codes show their digits below the bars (**Text below the bars**); for 2D codes **Show the encoded
+   text below the code** adds the content, wrapped to the code's width (long contents are shortened after 12 lines). A
+   **Caption** of your own – a name, a price, “Scan me” – goes below or above the code (*Caption position*). The text is
+   part of the SVG and PNG, so a label is ready to print.
 
 The preview is read back automatically: **✓ readable** confirms that the code can be scanned. **⬇ SVG** (scalable, for
 print) and **⬇ PNG** download the code, **Copy image** puts it on the clipboard, **🖨 Print** prints only the code.
+
+## Batch: many codes at once
+
+**📑 Batch** creates many codes in one go – for example labels for a shelf, tickets or inventory numbers:
+
+- Type or paste the contents, **one code per line**, or **open a CSV or text file**. In a CSV file (comma, semicolon or tab)
+  choose the column with the **content** and, if you like, a column with the **caption** (printed with each code) and one
+  with the **file name**; tick whether the first row holds the column names. A file with only one column counts as a list.
+- The **format** can be chosen here; size, colours, text with the code and the caption (when there is no caption column)
+  are those set under **▦ Create**.
+- **Result**: a **PDF** sheet of labels (A4 or Letter, columns × rows per page, codes centred in their cells), or a **ZIP**
+  with one **PNG** or **SVG** picture per code (named after the file name column, otherwise numbered after the content).
+
+Contents that the format cannot encode (letters for EAN-13, for example) are skipped and listed with their line number; a
+ZIP also contains them in `errors.txt`.
 
 ## Keyboard shortcuts
 

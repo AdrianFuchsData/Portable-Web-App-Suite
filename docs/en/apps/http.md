@@ -55,6 +55,14 @@ Available: `pm.environment`, `pm.collectionVariables`, `pm.variables` (`get`, `s
 `to.include`, `to.have.property`, `to.be.above`/`below`, `to.match`, `to.be.oneOf`, `to.be.true`, `to.exist`, `to.be.empty`, `.not`, …).
 Scripts run isolated from the suite (no access to its storage, files or passwords) and are stopped after five seconds.
 
+## GraphQL
+
+Choose **GraphQL** as body: write the **query** (also mutations) and, if needed, the **variables** as JSON – `{{variables}}` of the
+environment work in both. The request is sent as `POST` with a JSON body `{"query", "variables", "operationName"}` (the name of a
+named operation is filled in). **Load schema** asks the server for its schema (introspection) and lists the queries, mutations and
+their fields with arguments and types; ▸ unfolds the fields of a type, a click on a field inserts it at the cursor. Collections keep
+GraphQL bodies in Postman's format.
+
 ## WebSocket
 
 A URL starting with `ws://` or `wss://` turns the request into a WebSocket connection: **Connect** opens it, the lower half
@@ -79,11 +87,24 @@ variable values in the collection, then save it (as a Postman collection).
 
 Undo (↶, `Ctrl+Z`) and redo (↷, `Ctrl+Y`) cover all changes to the collection: requests, folders, URL, headers, body, authentication. Typing into one field counts as one step.
 
-## cURL
+## Running a collection
+
+**▶▶ Run collection** sends the requests of the whole collection or of one folder one after the other, with their pre-request scripts
+and tests – like Postman's Collection Runner. Variables that a script sets (for example a token from a login) apply to the following
+requests. Choose the number of **iterations** and a **pause** between requests, or a **data file**: a CSV file (first line = names)
+or a JSON array of objects, one row per iteration; its columns are available as `{{variables}}` and in scripts as
+`pm.iterationData.get('name')` (`pm.info.iteration` counts from 0). *Stop at the first failure* ends the run at a failed test, an error
+or – for requests without tests – a status from 400. The table shows status, time and every test; **Save results (JSON)** keeps a
+report, **New run** starts again.
+
+## cURL and code
 
 - **Import cURL…** turns a `curl` command (e.g. "Copy as cURL" from the browser developer tools) into a request: method, URL, headers, data,
   form fields, `-u` user, and more.
-- **cURL** next to the tabs shows the current request as a `curl` command (with variables resolved) to copy it.
+- **Code** next to the tabs shows the current request (with variables resolved) as code to copy or save as a file: **cURL**, **wget**,
+  **HTTPie**, **JavaScript** (fetch, in the browser or **Node.js**), **Python** (requests), **PowerShell** (Invoke-WebRequest), **Go**
+  (net/http), **Java** (HttpClient), **C#** (HttpClient) and **PHP** (cURL). Text bodies are written into the code; a binary body is read
+  from a file `body.bin`. The last chosen language is remembered.
 
 ## Keyboard shortcuts
 

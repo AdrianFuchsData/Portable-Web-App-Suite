@@ -91,6 +91,20 @@ nach und führt sie auf; danach lassen sich diese Dateien weder daraus laden noc
 <li>Ein Doppelklick (Tippen) auf eine Datei zeigt eine Vorschau: Text, Bilder, Audio und Video. <strong>Herunterladen</strong> in der Vorschau
   speichert die Datei.</li>
 </ul>
+<h2>Suchen</h2>
+<p><strong>🔍</strong> (<code>Strg+F</code>) durchsucht das ganze Archiv samt allen Ordnern. Geben Sie einen <strong>Namen</strong> ein – einen Teil davon oder ein Muster mit <code>*</code>
+(beliebige Zeichen) und <code>?</code> (ein Zeichen), etwa <code>*.log</code> oder <code>bericht-202?.pdf</code> –, und die passenden Dateien und Ordner erscheinen schon beim
+Tippen. Mit <strong>Im Inhalt</strong> werden die Dateien selbst nach einem Text durchsucht (wahlweise als regulärer Ausdruck und mit Groß-/Kleinschreibung):
+Jeder Treffer erscheint mit Zeile, Spalte und dem umgebenden Text; das Namensfeld schränkt dann ein, welche Dateien durchsucht werden.
+Binärdateien, verschlüsselte Dateien und Dateien über 32 MiB werden übersprungen (die Zusammenfassung nennt, wie viele); eine lange Suche lässt
+sich anhalten. Ein Klick auf ein Ergebnis öffnet seinen Ordner mit der Datei ausgewählt; ein Doppelklick zeigt die Datei. <code>Esc</code> oder × beendet
+die Suche.</p>
+<h2>Zwei Archive vergleichen</h2>
+<p><strong>⇔</strong> vergleicht das geöffnete Archiv mit einem anderen (in jedem Format, das der Archivmanager liest, etwa ein ZIP mit einem TAR.GZ): Dateien,
+die <strong>nur hier</strong>, <strong>nur im anderen</strong>, <strong>verschieden</strong> oder <strong>gleich</strong> sind. ZIP-Dateien werden über ihre gespeicherte Prüfsumme und Größe
+verglichen, andere Formate über den Inhalt. Die Liste zeigt zuerst die Unterschiede; die Auswahl zeigt auch die gleichen oder alle Dateien.
+<strong>⇐ Übernehmen</strong> holt die Fassung einer verschiedenen Datei aus dem anderen Archiv – oder eine hier fehlende Datei – in dieses Archiv
+(Rückgängig mit <code>Strg+Z</code>; speichern, um sie zu behalten). Ein Klick auf einen Namen zeigt die Datei in ihrem Ordner. × beendet den Vergleich.</p>
 <h2>Auswählen</h2>
 <p>Ein Klick wählt ein Element, <code>Strg</code>+Klick fügt Elemente hinzu oder entfernt sie, <code>Umschalt</code>+Klick wählt einen Bereich, <code>Strg+A</code> wählt
 alle Elemente des Ordners. Auch die Kontrollkästchen wählen Elemente aus (auf Smartphones und Tablets sind sie der Weg zur Auswahl).</p>
@@ -141,6 +155,11 @@ Dateien brauchen das Passwort.</p>
 <li><strong>Speichern unter</strong> (<code>Strg+Umschalt+S</code>) fragt nach dem Dateinamen und dem <strong>Format</strong> (ZIP, 7Z, TAR, TAR.GZ, TAR.BZ2, TAR.XZ, GZ). So wird ein Archiv
   umgewandelt, etwa ein <code>.tar.gz</code> in ein <code>.zip</code>. Eine GZ-Datei enthält genau eine Datei. Ein geöffnetes TAR.BZ2- oder TAR.XZ-Archiv wird
   wieder in seinem Format gespeichert. Einzelne <code>.bz2</code>- und <code>.xz</code>-Dateien ohne Archiv darin lassen sich weder öffnen noch schreiben.</li>
+<li><strong>In Teile aufteilen</strong> (in <em>Speichern unter</em>) schneidet das Archiv in Teile der gewählten Größe, etwa um es per E-Mail zu schicken oder auf
+  einen FAT32-Stick zu kopieren (höchstens 4 GB je Datei). Die Teile heißen <code>name.zip.001</code>, <code>.002</code>, …, wie 7-Zip sie schreibt; 7-Zip und andere
+  Programme können sie wieder zusammenfügen. In Chrome/Edge am Desktop wählen Sie einen Ordner für die Teile, sonst werden sie einzeln
+  heruntergeladen. Um ein aufgeteiltes Archiv hier zu öffnen, wählen Sie im Öffnen-Dialog <strong>alle seine Teile</strong> zusammen aus (die Reihenfolge ist
+  gleich).</li>
 <li><strong>Kompression</strong> in der Statusleiste legt die Kompression neuer und geänderter Dateien fest: Speichern, Schnell, Normal, Maximal.
   Unveränderte Dateien eines geöffneten ZIP-Archivs werden unverändert übernommen, daher ist das Speichern schnell.</li>
 </ul>
@@ -175,6 +194,10 @@ das Windows ohne Zusatzprogramm öffnen kann).</p>
 <tr>
 <td><code>Strg+O</code></td>
 <td>Öffnen</td>
+</tr>
+<tr>
+<td><code>Strg+F</code></td>
+<td>Suchen (Namen und Inhalte)</td>
 </tr>
 <tr>
 <td><code>Strg+S</code></td>

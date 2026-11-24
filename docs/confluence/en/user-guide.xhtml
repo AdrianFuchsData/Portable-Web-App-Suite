@@ -58,6 +58,11 @@ later.</p>
 <td><ac:link><ri:page ri:content-title="KeePass" /><ac:plain-text-link-body><![CDATA[KeePass]]></ac:plain-text-link-body></ac:link></td>
 </tr>
 <tr>
+<td>Authenticator (two-factor codes)</td>
+<td><code>authenticator.html</code></td>
+<td><ac:link><ri:page ri:content-title="Authenticator" /><ac:plain-text-link-body><![CDATA[Authenticator]]></ac:plain-text-link-body></ac:link></td>
+</tr>
+<tr>
 <td>Archive manager</td>
 <td><code>archive.html</code></td>
 <td><ac:link><ri:page ri:content-title="Archive manager" /><ac:plain-text-link-body><![CDATA[Archive manager]]></ac:plain-text-link-body></ac:link></td>
@@ -177,7 +182,7 @@ mounting archives in the notebook above 512 MiB, ZIP archives without ZIP64 abov
 </thead>
 <tbody>
 <tr>
-<td>ABC / ABC✓</td>
+<td>ABC / ABC · language</td>
 <td>Spelling: off, or the language that text fields are checked in (only in applications with text, see Spelling)</td>
 </tr>
 <tr>
@@ -185,7 +190,7 @@ mounting archives in the notebook above 512 MiB, ZIP archives without ZIP64 abov
 <td>Command palette: search all actions of the application (also <code>Ctrl+Shift+P</code> or <code>Ctrl+Shift+Space</code>)</td>
 </tr>
 <tr>
-<td>◐ / ☀ / ☾</td>
+<td>Sun-moon / sun / moon</td>
 <td>Design: automatic (follows the system), light or dark</td>
 </tr>
 <tr>
@@ -200,8 +205,20 @@ mounting archives in the notebook above 512 MiB, ZIP archives without ZIP64 abov
 <td>☺</td>
 <td>In a focused text field: emoji and symbols (also <code>Ctrl+.</code>, see Emoji and symbols)</td>
 </tr>
+<tr>
+<td>⌃ (phones and narrow windows)</td>
+<td>Collapses the toolbar row of the application, or shows it again – more room for the content</td>
+</tr>
+<tr>
+<td>Panel icon</td>
+<td>Hides the title bar. A small button at the top right shows it again (or <em>Show the title bar</em> in the command palette).</td>
+</tr>
 </tbody>
 </table>
+<p>Both settings – a hidden title bar and a collapsed toolbar – are remembered and apply to all applications of the suite in this browser.</p>
+<p>The buttons show <strong>icons</strong> that are part of the suite, so they look the same in every browser and on every system. This documentation
+writes them as similar characters (for example 💾 for <em>Save</em>, 🔍 for <em>Find</em>); the name of a button appears when you hold the pointer over
+it, and screen readers announce it.</p>
 <p>The applications remember the language and the design in your browser.</p>
 <h3>Command palette</h3>
 <p><strong>⌘</strong> (or <code>Ctrl+Shift+P</code> / <code>Ctrl+Shift+Space</code>; on a Mac <code>Cmd</code> instead of <code>Ctrl</code>) lists every action the application offers
@@ -489,6 +506,11 @@ networks only).</p>
 its header shows <strong>🔓 Network and interrupt</strong>. The apps use that relay by default; enter its token once. Settings and recently
 used files are kept separately for the files opened directly and for those served by the relay (export and import them with
 <strong>⚙ Settings</strong>). The port is set with <code>--port</code> (default 8765).</p>
+<p><strong>Installing as an app (PWA).</strong> Served by the relay (on <code>localhost</code>, or over <code>https</code>), the suite and every application can be
+<strong>installed</strong> like an app: in Chrome and Edge with <strong>Install as an app</strong> in the title bar (or the install icon in the address bar), on
+Android with <em>Add to home screen</em> / <em>Install app</em> in the browser menu. The installed app opens in its own window with its own icon. The
+browser keeps a copy of every page that was opened, so an installed app also starts when the relay does not run (the network functions
+then wait for the relay). Opening the HTML files directly does not change.</p>
 <p><strong>A company proxy.</strong> If the relay may only reach the internet through a proxy, start it with
 <code>--upstream-proxy http://proxy.example.org:3128</code> (with <code>user:password@</code> before the host if needed; <code>--upstream-proxy env</code> takes
 the proxy from the environment variables). <code>--no-proxy</code> lists servers reached directly.</p>

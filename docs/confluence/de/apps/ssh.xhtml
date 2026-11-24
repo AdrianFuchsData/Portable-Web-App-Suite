@@ -12,6 +12,28 @@ eingebauten Dateibereich. Verbindungen laufen über das <strong>lokale Relay</st
 <li><strong>Verbinden</strong> öffnet einen neuen Reiter; <strong>Verbindung speichern</strong> fügt die Verbindung den <strong>Gespeicherten Verbindungen</strong> hinzu (Passwort und
    Passphrase nur, wenn das Kästchen angehakt ist; ein privater Schlüssel wird immer mit der Verbindung gespeichert).</li>
 </ol>
+<h3>Proxy und Sprungserver</h3>
+<p>Unter <strong>Proxy und Sprungserver</strong> im Verbindungsdialog:</p>
+<ul>
+<li><strong>Sprungserver (ProxyJump)</strong>: eine gespeicherte Verbindung wählen (Bastion, Gateway oder „Jump-Server“). Der Client verbindet sich zuerst mit ihr
+  und öffnet dann die Verbindung zum Ziel <strong>von dort aus</strong> – das Ziel muss nur vom Sprungserver erreichbar sein. Der Sprungserver kann selbst einen
+  Sprungserver verwenden; sein eigener Host-Schlüssel wird wie gewohnt geprüft. Beide Verbindungen enden, wenn der Tab geschlossen wird.</li>
+<li><strong>Proxy</strong>: <strong>SOCKS5</strong> oder <strong>HTTP (CONNECT)</strong> mit Host, Port und optional Benutzer und Passwort (das Passwort wird wie die anderen gespeichert,
+  in einer KeePass-Verbindungsdatei geschützt). Das Relay verbindet sich mit dem Proxy, der Proxy mit dem SSH-Server; SSH bleibt Ende-zu-Ende
+  verschlüsselt. (Für einen Proxy für alle Verbindungen des Relays starten Sie das Relay mit <code>--upstream-proxy</code>.)</li>
+</ul>
+<h3>Portweiterleitung</h3>
+<p><strong>⇄ Weiterleitung</strong> (in der Werkzeugleiste eines verbundenen Tabs) öffnet Tunnel durch die SSH-Verbindung:</p>
+<ul>
+<li><strong>Lokal (hier → Server)</strong>: Das Relay lauscht auf diesem Rechner an <code>127.0.0.1</code> und einem Port (leer = ein freier Port, nach dem Start angezeigt);
+  jede Verbindung dorthin gibt der SSH-Server an <em>Host:Port</em> weiter – etwa eine Datenbank oder Weboberfläche, die nur der Server erreicht
+  (<code>localhost:5432</code> vom Server aus gesehen). Andere Programme auf diesem Rechner und die anderen Apps der Suite verbinden sich mit <code>127.0.0.1</code> am
+  angezeigten Port. Das braucht das Relay auf dem eigenen Rechner (ein gemeinsames Relay lauscht an keinen Ports).</li>
+<li><strong>Entfernt (Server → hier)</strong>: Der SSH-Server lauscht an seinem <code>127.0.0.1</code> am angegebenen Port; Verbindungen dorthin kommen über den Browser und
+  das Relay zu <em>Host:Port</em> auf dieser Seite zurück.</li>
+</ul>
+<p>Jede Weiterleitung zeigt, wie viele Verbindungen sie getragen hat; × beendet sie. 💾 speichert die aktuellen Weiterleitungen mit der gespeicherten
+Verbindung: Sie starten bei jedem Verbinden. Schließen des Tabs beendet alle.</p>
 <h3>Host-Schlüssel</h3>
 <p>Beim ersten Verbinden zeigt der Client den Fingerabdruck des Serverschlüssels (<code>SHA256:…</code>). Vergleichen Sie ihn mit dem Fingerabdruck, den Ihnen
 die Administration nennt (<code>ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub</code> auf dem Server):</p>
@@ -34,6 +56,12 @@ grün verbunden, gelb verbinde, rot geschlossen. <strong>Neu verbinden</strong> 
 <li>Auf Touch-Geräten bietet eine Tastenleiste Esc, Tab, Strg (gilt für die nächste Taste, z. B. Strg und dann C), die Pfeiltasten und einige
   Zeichen, die auf Smartphone-Tastaturen schwer zu tippen sind.</li>
 </ul>
+<h3>Gespeicherte Befehle</h3>
+<p><strong>Befehle</strong> in der Seitenleiste bewahrt häufig gebrauchte Befehle auf. <strong>+ Befehl</strong> legt einen an (mit dem im Terminal markierten Text, falls
+vorhanden): einen Namen, den Befehl – mehrere Zeilen werden nacheinander gesendet – und ob danach Enter gedrückt wird. Ein Klick auf einen Befehl
+tippt ihn ins aktive Terminal. Platzhalter in doppelten geschweiften Klammern fragen zuerst nach einem Wert: <code>tail -n 50 {{Logdatei}}</code> oder
+<code>sudo systemctl restart {{Dienst}}</code>. ✎ bearbeitet oder löscht einen Befehl. Die Befehle liegen in der Verbindungsdatei, zusammen mit den gespeicherten
+Verbindungen.</p>
 <h2>Dateien (SFTP)</h2>
 <p><strong>📁 Dateien</strong> öffnet den Dateibereich der Sitzung (er beginnt im Home-Verzeichnis):</p>
 <ul>

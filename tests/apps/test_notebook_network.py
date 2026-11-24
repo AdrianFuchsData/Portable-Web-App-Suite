@@ -56,6 +56,12 @@ def test_isolated_notebook_network(browser, served, certs, http_target, sshd):
                         f"r = requests.get({http_target + '/hello'!r}, headers={{'X-Custom': 'yes'}})\n"
                         "print(r.status_code, r.json()['path'], r.json()['headers']['X-Custom'])")
         expect(out).to_contain_text("200 /hello yes", timeout=90000)
+        # compressed answers are decoded as by requests itself (gzip and deflate; the header stays)
+        out = run(page, "import requests\n"
+                        f"for p in ('/gzip', '/deflate'):\n    r = requests.get({http_target!r} + p)\n"
+                        "    print(p, r.headers['Content-Encoding'], r.json()['path'], len(r.content) == len(r.text.encode()))")
+        expect(out).to_contain_text("/gzip gzip /gzip True", timeout=90000)
+        expect(out).to_contain_text("/deflate deflate /deflate True")
         # smtplib over a socket through the relay, STARTTLS in the relay (it checks the certificate)
         out = run(page, "import smtplib\n"
                         f"with smtplib.SMTP('localhost', {smtp_server.server_address[1]}, timeout=20) as s:\n"

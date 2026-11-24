@@ -41,7 +41,8 @@ def test_run_commands(app_page):
     expect(page.locator("[data-testid=palette]")).to_have_count(0)
     page.wait_for_function("() => TE.app.view.state.doc.toString() === 'HELLO'")
     # a button by its title; arrow keys choose
-    palette(page, "wrap")
+    palette(page, "word wrap")
+    expect(page.locator("[data-testid=palette-item]").first).to_contain_text("Word wrap")
     page.keyboard.press("Enter")
     expect(page.locator("[data-testid=wrap]")).to_have_attribute("aria-pressed", "true")
     palette(page, "zzzz nothing")

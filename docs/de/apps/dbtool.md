@@ -1,6 +1,6 @@
 # Datenbankwerkzeug
 
-Das Datenbankwerkzeug (`dbtool.html`) öffnet **SQLite**-Datenbankdateien und verbindet sich mit **PostgreSQL**-Servern: Schema durchsuchen,
+Das Datenbankwerkzeug (`dbtool.html`) öffnet **SQLite**-Datenbankdateien und verbindet sich mit **PostgreSQL**-, **MySQL**- und **MariaDB**-Servern: Schema durchsuchen,
 SQL schreiben und ausführen, Tabellendaten ansehen und bearbeiten, Ergebnisse exportieren.
 
 ## SQLite-Datenbanken
@@ -12,18 +12,22 @@ SQL schreiben und ausführen, Tabellendaten ansehen und bearbeiten, Ergebnisse e
 
 SQLite funktioniert vollständig offline.
 
-## PostgreSQL-Server
+## PostgreSQL-, MySQL- und MariaDB-Server
 
-Ein Postgres-Server wird über das **lokale Relay** erreicht (siehe Benutzerhandbuch, „Netzwerkfunktionen und das Relay“).
+Ein Datenbankserver wird über das **lokale Relay** erreicht (siehe Benutzerhandbuch, „Netzwerkfunktionen und das Relay“).
 
-1. **Mit Postgres verbinden…** öffnet den Verbindungsdialog: Name, Host, Port (5432), Datenbank, Benutzer, Passwort, SSL (bevorzugen,
+1. **Mit einem Server verbinden…** öffnet den Verbindungsdialog: den **Servertyp** (PostgreSQL oder MySQL / MariaDB), Name, Host, Port (5432 oder 3306), Datenbank, Benutzer, Passwort, SSL (bevorzugen,
    erforderlich, aus; optional selbst signierte Zertifikate akzeptieren) sowie Adresse und Token des Relays. **Testen** prüft das Relay.
 2. **Verbinden** öffnet die Verbindung; **Verbindung speichern** fügt sie den **Gespeicherten Verbindungen** hinzu (das Passwort nur, wenn das
    Kästchen angehakt ist).
 3. Ein Klick auf eine gespeicherte Verbindung verbindet (oder fragt nach dem Passwort, wenn es nicht gespeichert wurde); ✎ bearbeitet und
    × löscht eine Verbindung.
 
-Unterstützt werden Passwort-, MD5- und SCRAM-SHA-256-Anmeldung.
+PostgreSQL: Unterstützt werden Passwort-, MD5- und SCRAM-SHA-256-Anmeldung. MySQL / MariaDB: `caching_sha2_password` (Vorgabe von MySQL 8; die
+erste Anmeldung eines Benutzers wird über SSL oder mit dem RSA-Schlüssel des Servers abgeschlossen) und `mysql_native_password` (MariaDB, ältere
+MySQL-Versionen), auch wenn der Server zwischen ihnen wechselt. 🐬 kennzeichnet MySQL-Verbindungen, 🐘 Postgres-Verbindungen. Eine MySQL-Verbindung
+arbeitet in der gewählten Datenbank: Ihre Tabellen erscheinen ohne Präfix, der Editor verwendet den MySQL-Dialekt (Backticks, MySQL-Funktionen in der
+Vervollständigung).
 
 ### Verbindungen speichern
 
@@ -41,12 +45,22 @@ der Suite enthalten.
 
 - **Schema** listet die Tabellen (▦) und Sichten (👁) der aktiven Datenbank; aufgeklappt zeigt eine Tabelle ihre Spalten (🔑 = Primärschlüssel,
   Typen, NOT NULL). ⟳ lädt das Schema neu; nach `CREATE`, `ALTER` und `DROP` geschieht das automatisch.
-- Der SQL-Editor hebt SQL hervor und ergänzt Schlüsselwörter, Tabellen- und Spaltennamen (`Strg+Leertaste`).
+- Der SQL-Editor hebt SQL hervor und ergänzt beim Tippen (oder mit `Strg+Leertaste`): Schlüsselwörter, Tabellen, die Spalten der in der Anweisung
+  genannten Tabellen – auch ohne Tabellennamen (`SELECT ▮ FROM people`, `WHERE a…`), mit Tabelle und Typ daneben –, Spalten nach `tabelle.` oder
+  einem Alias (`p.` bei `FROM people p`) und die gängigen Funktionen von SQLite oder PostgreSQL (`upper(▮)`, `strftime`, `date_trunc`,
+  `string_agg`, …), die mit ihren Klammern eingefügt werden.
 - **Ausführen** (`Strg+Eingabe`) führt den markierten Text oder die Anweisung an der Schreibmarke aus; **Alles ausführen**
   (`Strg+Umschalt+Eingabe`) führt alle Anweisungen aus.
 - Jede Anweisung mit Ergebnis erhält einen Ergebnis-Reiter. Die Meldungszeile zeigt die Zahl der geänderten Zeilen, die Dauer oder den Fehler
   (bei Postgres mit SQL-State-Code, Detail und Hinweis).
-- **CSV** und **JSON** exportieren das angezeigte Ergebnis.
+- **CSV**, **XLSX** (Excel, LibreOffice, Google Tabellen) und **JSON** exportieren das angezeigte Ergebnis. Bei einer durchgesehenen
+  Tabelle exportieren sie alle Zeilen, nicht nur die geladene Seite. Die XLSX-Datei hat eine fette, fixierte Kopfzeile und einen Autofilter.
+- **⇪ Importieren** liest eine CSV-Datei (Komma, Strichpunkt oder Tabulator; UTF-8 oder Windows-1252) oder das erste Blatt einer Excel-Datei
+  (`.xlsx`) in eine **neue Tabelle** (benannt nach der Datei; die Spaltentypen – ganze Zahl, Kommazahl oder Text – werden aus den Werten
+  geschätzt) oder eine **vorhandene Tabelle** (Spalten nach Namen zugeordnet, andere Spalten werden ausgelassen und genannt). Eine Vorschau zeigt
+  die ersten Zeilen; *Die erste Zeile enthält die Spaltennamen* lässt sich ausschalten. Leere Zellen werden NULL; Excel-Daten werden zu
+  `JJJJ-MM-TT`. Die Zeilen werden in einer Transaktion eingefügt – alle oder keine –, danach wird die Tabelle angezeigt. Rückgängig (SQLite)
+  entfernt den Import wieder.
 - **⛁ ER-Diagramm** (über dem Schema) zeichnet die Tabellen und Sichten mit ihren Spalten (🔑 Primärschlüssel, → Fremdschlüssel) und
   die Fremdschlüssel-Beziehungen und öffnet die Zeichnung im Diagrammeditor (referenzierte Tabellen über den referenzierenden), wo sie
   angeordnet, bearbeitet, gedruckt oder exportiert werden kann.

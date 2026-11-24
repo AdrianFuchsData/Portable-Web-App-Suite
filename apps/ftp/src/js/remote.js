@@ -1,13 +1,14 @@
 /*
  * Remote file systems of the FTP/SFTP client, all with the same interface:
  *   await fs.home()                      -> start directory
- *   await fs.list(path)                  -> [{ name, size, isDir, mtime }]
+ *   await fs.list(path)                  -> [{ name, size, isDir, mtime, mode (permission bits, or null) }]
  *   await fs.read(path, onProgress, { offset })  -> Uint8Array from offset; onProgress(done, total) counts from the file start.
  *       A failed read has `error.partial` (the bytes received before the failure), so it can be resumed.
  *   await fs.write(path, bytes, onProgress, { offset })   bytes go to the file from offset (resume: offset = remote size)
  *   await fs.size(path)                  -> size or null (missing)
  *   await fs.setTime(path, mtimeMs)      -> modification time (best effort)
  *   await fs.mkdir(path) / rmdir(path) / remove(path) / rename(from, to)
+ *   await fs.chmod(path, mode)           permission bits (FTP: SITE CHMOD, if the server offers it)
  *   await fs.close()
  * FTP (RFC 959, passive mode, MLSD or LIST, explicit and implicit FTPS) is implemented here over relay connections;
  * SFTP uses the SSH engine (shared/js/ssh.js).
@@ -68,20 +69,34 @@ async function readAll(conn, onChunk, parts = []) {
   return concat(parts);
 }
 
+/** Permission bits of an "ls -l" mode string ("rwxr-x---", with s/S/t/T). */
+export function modeOf(perms) {
+  if (!/^[rwxsStT-]{9}$/.test(perms)) return null;
+  let mode = 0;
+  for (let i = 0; i < 9; i++) {
+    const c = perms[i];
+    if (c === 'r' || c === 'w' || c === 'x' || c === 's' || c === 't') mode |= 1 << (8 - i);
+  }
+  if (/[sS]/.test(perms[2])) mode |= 0o4000;
+  if (/[sS]/.test(perms[5])) mode |= 0o2000;
+  if (/[tT]/.test(perms[8])) mode |= 0o1000;
+  return mode;
+}
+
 const MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
 
 /** Parse a LIST line (Unix "ls -l" or Windows/IIS "MM-DD-YY  HH:MMAM <DIR> name" format). */
 export function parseListLine(line) {
-  const unix = /^([bcdlps-])[rwxsStT-]{9}[+@.]?\s+\d+\s+\S+\s+\S+\s+(\d+)\s+(\w{3})\s+(\d{1,2})\s+(\d{1,2}:\d{2}|\d{4})\s+(.+)$/.exec(line);
+  const unix = /^([bcdlps-])([rwxsStT-]{9})[+@.]?\s+\d+\s+\S+\s+\S+\s+(\d+)\s+(\w{3})\s+(\d{1,2})\s+(\d{1,2}:\d{2}|\d{4})\s+(.+)$/.exec(line);
   if (unix) {
-    let name = unix[6];
+    let name = unix[7];
     if (unix[1] === 'l') name = name.replace(/ -> .*$/, '');
     const now = new Date();
     let year = now.getFullYear(), hh = 0, mm = 0;
-    if (unix[5].includes(':')) { [hh, mm] = unix[5].split(':').map(Number); } else year = Number(unix[5]);
-    const d = new Date(year, MONTHS[unix[3].toLowerCase()] ?? 0, Number(unix[4]), hh, mm);
-    if (unix[5].includes(':') && d > now) d.setFullYear(year - 1);
-    return { name, size: Number(unix[2]), isDir: unix[1] === 'd', link: unix[1] === 'l', mtime: d.getTime() };
+    if (unix[6].includes(':')) { [hh, mm] = unix[6].split(':').map(Number); } else year = Number(unix[6]);
+    const d = new Date(year, MONTHS[unix[4].toLowerCase()] ?? 0, Number(unix[5]), hh, mm);
+    if (unix[6].includes(':') && d > now) d.setFullYear(year - 1);
+    return { name, size: Number(unix[3]), isDir: unix[1] === 'd', link: unix[1] === 'l', mtime: d.getTime(), mode: modeOf(unix[2]) };
   }
   const win = /^(\d{2})-(\d{2})-(\d{2,4})\s+(\d{1,2}):(\d{2})([AP]M)\s+(<DIR>|\d+)\s+(.+)$/i.exec(line);
   if (win) {
@@ -89,7 +104,7 @@ export function parseListLine(line) {
     if (year < 100) year += year < 70 ? 2000 : 1900;
     let hh = Number(win[4]) % 12;
     if (/PM/i.test(win[6])) hh += 12;
-    return { name: win[8], size: win[7] === '<DIR>' ? 0 : Number(win[7]), isDir: win[7] === '<DIR>', mtime: new Date(year, Number(win[1]) - 1, Number(win[2]), hh, Number(win[5])).getTime() };
+    return { name: win[8], mode: null, size: win[7] === '<DIR>' ? 0 : Number(win[7]), isDir: win[7] === '<DIR>', mtime: new Date(year, Number(win[1]) - 1, Number(win[2]), hh, Number(win[5])).getTime() };
   }
   return null;
 }
@@ -103,7 +118,8 @@ export function parseMlsdLine(line) {
   const type = (facts.type || '').toLowerCase();
   if (type === 'cdir' || type === 'pdir' || name === '.' || name === '..') return null;
   const m = /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/.exec(facts.modify || '');
-  return { name, size: Number(facts.size || facts.sizd || 0), isDir: type === 'dir', mtime: m ? Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]) : null };
+  return { name, size: Number(facts.size || facts.sizd || 0), isDir: type === 'dir', mtime: m ? Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]) : null,
+    mode: /^(0o)?[0-7]{3,4}$/i.test(facts['unix.mode'] || '') ? parseInt(facts['unix.mode'].replace(/^0o/i, ''), 8) & 0o7777 : null }; // ("0644", "644", pyftpdlib: "0o644")
 }
 
 /**
@@ -138,6 +154,12 @@ export async function openFtp({ relay, host, port, user, password, tls = 'none',
   } catch (e) { conn.close(); throw e; }
   const feat = await send('FEAT').catch(() => ({ code: 500, text: '' }));
   const hasMlsd = feat.code === 211 && /\bMLST\b/i.test(feat.text);
+  // ask for the unix.mode fact (permissions) when the server offers it but does not send it by default
+  const mlst = /\bMLST\s+(\S+)/i.exec(feat.text || '');
+  if (hasMlsd && mlst && /unix\.mode/i.test(mlst[1]) && !/unix\.mode\*/i.test(mlst[1])) {
+    const facts = mlst[1].split(';').filter(Boolean).map((f) => f.replace(/\*$/, '')).filter((f) => /^(type|size|modify|unix\.mode|perm)$/i.test(f));
+    await send(`OPTS MLST ${facts.join(';')};`).catch(() => {});
+  }
   let epsv = true;
 
   /** Open a passive data connection, send the command, collect or send data. */
@@ -212,6 +234,7 @@ export async function openFtp({ relay, host, port, user, password, tls = 'none',
     rmdir: (path) => serial(() => send(`RMD ${path}`, [2])),
     remove: (path) => serial(() => send(`DELE ${path}`, [2])),
     rename: (from, to) => serial(async () => { await send(`RNFR ${from}`, [3]); await send(`RNTO ${to}`, [2]); }),
+    chmod: (path, mode) => serial(async () => { await send(`SITE CHMOD ${(mode & 0o7777).toString(8).padStart(3, '0')} ${path}`, [2]); }),
     close: () => serial(async () => { try { await send('QUIT'); } catch (e) { /* closed */ } conn.close(); }),
   };
   return fs;
@@ -225,7 +248,8 @@ export async function openSftp({ relay, host, port, user, password, privateKey, 
   return {
     kind: 'sftp',
     home: () => sftp.realpath('.'),
-    list: async (path) => (await sftp.list(path)).map((e) => ({ name: e.name, size: e.size, isDir: e.isDir, mtime: e.mtime })),
+    list: async (path) => (await sftp.list(path)).map((e) => ({ name: e.name, size: e.size, isDir: e.isDir, mtime: e.mtime, mode: typeof e.mode === 'number' ? e.mode & 0o777 | (e.mode & 0x800000 ? 0o4000 : 0) | (e.mode & 0x400000 ? 0o2000 : 0) | (e.mode & 0x100000 ? 0o1000 : 0) : null })),
+    chmod: (path, mode) => sftp.chmod(path, mode),
     read: async (path, onProgress, { offset = 0 } = {}) => {
       const total = (await sftp.stat(path)).size;
       const parts = [];

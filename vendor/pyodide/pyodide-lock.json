@@ -115,6 +115,23 @@
    "unvendored_tests": false,
    "version": "1.3.3"
   },
+  "cryptography": {
+   "depends": [
+    "six",
+    "cffi"
+   ],
+   "file_name": "cryptography-47.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "cryptography"
+   ],
+   "install_dir": "site",
+   "name": "cryptography",
+   "package_type": "package",
+   "sha256": "0b41491ced2cf85046559cac2502e875492cbef6d332addafa680e41be27f0ad",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "47.0.0"
+  },
   "cycler": {
    "depends": [
     "six"

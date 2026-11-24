@@ -72,6 +72,17 @@
    "contourpy-1.3.3.dist-info/LICENSE"
   ]
  },
+ "cryptography-47.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl": {
+  "name": "cryptography",
+  "version": "47.0.0",
+  "license": "Apache-2.0 OR BSD-3-Clause",
+  "classifiers": [],
+  "license_files": [
+   "cryptography-47.0.0.dist-info/licenses/LICENSE",
+   "cryptography-47.0.0.dist-info/licenses/LICENSE.APACHE",
+   "cryptography-47.0.0.dist-info/licenses/LICENSE.BSD"
+  ]
+ },
  "cycler-0.12.1-py3-none-any.whl": {
   "name": "cycler",
   "version": "0.12.1",

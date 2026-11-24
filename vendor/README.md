@@ -87,6 +87,9 @@ Downloaded with `curl`; each defines a global. License texts in `licenses/`.
 | `kdbxweb.min.js` | [kdbxweb](https://github.com/keeweb/kdbxweb) | 2.1.1 | MIT | `kdbxweb` | `https://cdn.jsdelivr.net/npm/kdbxweb@2.1.1/dist/kdbxweb.min.js` |
 | `hash-wasm-argon2.umd.min.js` | [hash-wasm](https://github.com/Daninet/hash-wasm) | 4.12.0 | MIT | `hashwasm` | `https://cdn.jsdelivr.net/npm/hash-wasm@4.12.0/dist/argon2.umd.min.js` |
 | `otpauth.umd.min.js` | [otpauth](https://github.com/hectorm/otpauth) | 9.5.2 | MIT | `OTPAuth` | `https://cdn.jsdelivr.net/npm/otpauth@9.5.2/dist/otpauth.umd.min.js` |
+| `qrcode-generator.min.js` | [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) | 2.0.4 | MIT | `qrcode` | `https://cdn.jsdelivr.net/npm/qrcode-generator@2.0.4/dist/qrcode.min.js` (jsDelivr's minified build; taken from the Web Authenticator) |
+| `axe/axe.min.js`, `axe/locales/de.json` | [axe-core](https://github.com/dequelabs/axe-core) (accessibility rules of the web inspector) | 4.14.0 | MPL-2.0 (third-party parts: `licenses/axe-core.LICENSE-3RD-PARTY.txt`) | `axe` | `https://cdn.jsdelivr.net/npm/axe-core@4.14.0/axe.min.js` and `…/locales/de.json` |
+| `jsQR.min.js` | [jsQR](https://github.com/cozmo/jsQR) | 1.4.0 | Apache-2.0 | `jsQR` | `https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js` (jsDelivr's minified build; taken from the Web Authenticator) |
 | `exceljs.min.js` | [ExcelJS](https://github.com/exceljs/exceljs) | 4.4.0 | MIT | `ExcelJS` | `https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js` |
 | `xlsx.full.min.js` | [SheetJS CE](https://sheetjs.com/) | 0.20.3 | Apache-2.0 | `XLSX` | `https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js` (npm only has 0.18.5) |
 | `pptxgen.bundle.js` | [PptxGenJS](https://gitbrent.github.io/PptxGenJS/) | 4.0.1 | MIT (bundles JSZip, MIT/GPL-3.0 dual) | `PptxGenJS` | `https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js` |

@@ -89,6 +89,19 @@ can neither be loaded from nor saved into it. <em>Open with…</em> works the sa
 <li>Double-click (on phones: tap) a folder to open it. ↑, <code>Backspace</code> or the path above the list go back.</li>
 <li>Double-click (tap) a file to preview it: text, images, audio and video. <strong>Download</strong> in the preview saves the file.</li>
 </ul>
+<h2>Searching</h2>
+<p><strong>🔍</strong> (<code>Ctrl+F</code>) searches the whole archive, all folders included. Type a <strong>name</strong> – a part of it, or a pattern with <code>*</code> (any
+characters) and <code>?</code> (one character), e.g. <code>*.log</code> or <code>report-202?.pdf</code> – and the matching files and folders are listed as you
+type. With <strong>In the contents</strong> the files themselves are searched for a text (optionally a regular expression, optionally with
+matching case): every hit is shown with line, column and the text around it; the name field then limits which files are
+searched. Binary files, encrypted files and files above 32 MiB are skipped (the summary says how many); a long search can be
+stopped. A click on a result opens its folder with the file selected; a double-click shows the file. <code>Esc</code> or × ends the search.</p>
+<h2>Comparing two archives</h2>
+<p><strong>⇔</strong> compares the open archive with another one (of any format the archive manager reads, e.g. a ZIP with a TAR.GZ): files
+that are <strong>only here</strong>, <strong>only in the other</strong>, <strong>different</strong> or <strong>the same</strong>. ZIP files are compared by their stored checksum and
+size, other formats by content. The list shows the differences first; the selector also shows the equal files or all. <strong>⇐ Take</strong>
+puts the other archive's version of a changed file – or a file that is missing here – into this archive (undo with <code>Ctrl+Z</code>;
+save to keep it). A click on a name shows the file in its folder. × ends the comparison.</p>
 <h2>Selecting</h2>
 <p>Click selects one item, <code>Ctrl</code>+click adds or removes items, <code>Shift</code>+click selects a range, <code>Ctrl+A</code> selects all items of the
 folder. The checkboxes select items too (on phones and tablets they are the way to select).</p>
@@ -139,6 +152,10 @@ password.</p>
 <li><strong>Save as</strong> (<code>Ctrl+Shift+S</code>) asks for the file name and the <strong>format</strong> (ZIP, 7Z, TAR, TAR.GZ, TAR.BZ2, TAR.XZ, GZ). This converts an archive, for
   example a <code>.tar.gz</code> into a <code>.zip</code>. A GZ file holds exactly one file. An opened TAR.BZ2 or TAR.XZ archive is saved in its format
   again. Single <code>.bz2</code> and <code>.xz</code> files without an archive inside can neither be opened nor written.</li>
+<li><strong>Split into parts</strong> (in <em>Save as</em>) cuts the archive into parts of the chosen size, e.g. to send it by e-mail or to copy it to
+  a FAT32 stick (at most 4 GB per file). The parts are named <code>name.zip.001</code>, <code>.002</code>, … as 7-Zip writes them; 7-Zip and other
+  programs can join them again. In Chrome/Edge on the desktop you choose a folder for the parts, elsewhere they are downloaded one
+  by one. To open a split archive here, select <strong>all its parts</strong> together in the open dialog (their order does not matter).</li>
 <li><strong>Compression</strong> in the status bar sets the compression of new and changed files: Store, Fastest, Normal, Maximum. Unchanged
   files of an opened ZIP archive are copied as they are, so saving is fast.</li>
 </ul>
@@ -173,6 +190,10 @@ software).</p>
 <tr>
 <td><code>Ctrl+O</code></td>
 <td>Open</td>
+</tr>
+<tr>
+<td><code>Ctrl+F</code></td>
+<td>Search (names and contents)</td>
 </tr>
 <tr>
 <td><code>Ctrl+S</code></td>

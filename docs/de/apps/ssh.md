@@ -13,6 +13,31 @@ eingebauten Dateibereich. Verbindungen laufen über das **lokale Relay** (siehe 
 3. **Verbinden** öffnet einen neuen Reiter; **Verbindung speichern** fügt die Verbindung den **Gespeicherten Verbindungen** hinzu (Passwort und
    Passphrase nur, wenn das Kästchen angehakt ist; ein privater Schlüssel wird immer mit der Verbindung gespeichert).
 
+### Proxy und Sprungserver
+
+Unter **Proxy und Sprungserver** im Verbindungsdialog:
+
+- **Sprungserver (ProxyJump)**: eine gespeicherte Verbindung wählen (Bastion, Gateway oder „Jump-Server“). Der Client verbindet sich zuerst mit ihr
+  und öffnet dann die Verbindung zum Ziel **von dort aus** – das Ziel muss nur vom Sprungserver erreichbar sein. Der Sprungserver kann selbst einen
+  Sprungserver verwenden; sein eigener Host-Schlüssel wird wie gewohnt geprüft. Beide Verbindungen enden, wenn der Tab geschlossen wird.
+- **Proxy**: **SOCKS5** oder **HTTP (CONNECT)** mit Host, Port und optional Benutzer und Passwort (das Passwort wird wie die anderen gespeichert,
+  in einer KeePass-Verbindungsdatei geschützt). Das Relay verbindet sich mit dem Proxy, der Proxy mit dem SSH-Server; SSH bleibt Ende-zu-Ende
+  verschlüsselt. (Für einen Proxy für alle Verbindungen des Relays starten Sie das Relay mit `--upstream-proxy`.)
+
+### Portweiterleitung
+
+**⇄ Weiterleitung** (in der Werkzeugleiste eines verbundenen Tabs) öffnet Tunnel durch die SSH-Verbindung:
+
+- **Lokal (hier → Server)**: Das Relay lauscht auf diesem Rechner an `127.0.0.1` und einem Port (leer = ein freier Port, nach dem Start angezeigt);
+  jede Verbindung dorthin gibt der SSH-Server an *Host:Port* weiter – etwa eine Datenbank oder Weboberfläche, die nur der Server erreicht
+  (`localhost:5432` vom Server aus gesehen). Andere Programme auf diesem Rechner und die anderen Apps der Suite verbinden sich mit `127.0.0.1` am
+  angezeigten Port. Das braucht das Relay auf dem eigenen Rechner (ein gemeinsames Relay lauscht an keinen Ports).
+- **Entfernt (Server → hier)**: Der SSH-Server lauscht an seinem `127.0.0.1` am angegebenen Port; Verbindungen dorthin kommen über den Browser und
+  das Relay zu *Host:Port* auf dieser Seite zurück.
+
+Jede Weiterleitung zeigt, wie viele Verbindungen sie getragen hat; × beendet sie. 💾 speichert die aktuellen Weiterleitungen mit der gespeicherten
+Verbindung: Sie starten bei jedem Verbinden. Schließen des Tabs beendet alle.
+
 ### Host-Schlüssel
 
 Beim ersten Verbinden zeigt der Client den Fingerabdruck des Serverschlüssels (`SHA256:…`). Vergleichen Sie ihn mit dem Fingerabdruck, den Ihnen
@@ -37,6 +62,14 @@ grün verbunden, gelb verbinde, rot geschlossen. **Neu verbinden** öffnet eine 
   Protokoll als Textdatei (ohne Farbcodes). **⤓** speichert, was das Terminal gerade enthält (samt Verlauf von bis zu 5000 Zeilen).
 - Auf Touch-Geräten bietet eine Tastenleiste Esc, Tab, Strg (gilt für die nächste Taste, z. B. Strg und dann C), die Pfeiltasten und einige
   Zeichen, die auf Smartphone-Tastaturen schwer zu tippen sind.
+
+### Gespeicherte Befehle
+
+**Befehle** in der Seitenleiste bewahrt häufig gebrauchte Befehle auf. **+ Befehl** legt einen an (mit dem im Terminal markierten Text, falls
+vorhanden): einen Namen, den Befehl – mehrere Zeilen werden nacheinander gesendet – und ob danach Enter gedrückt wird. Ein Klick auf einen Befehl
+tippt ihn ins aktive Terminal. Platzhalter in doppelten geschweiften Klammern fragen zuerst nach einem Wert: `tail -n 50 {{Logdatei}}` oder
+`sudo systemctl restart {{Dienst}}`. ✎ bearbeitet oder löscht einen Befehl. Die Befehle liegen in der Verbindungsdatei, zusammen mit den gespeicherten
+Verbindungen.
 
 ## Dateien (SFTP)
 

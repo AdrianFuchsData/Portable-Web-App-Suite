@@ -12,6 +12,7 @@ imports **Excalidraw** drawings.
 | SVG and PNG with an embedded diagram (`.drawio.svg`, `.drawio.png`) | yes | **Save** writes the image again (first page), **SVG** / **PNG** export |
 | Excalidraw (`.excalidraw`) | yes (rectangles, ellipses, diamonds, text, arrows, lines, images) | – |
 | Mermaid flowchart (`.mmd`, `.mermaid`) | yes, laid out automatically | – |
+| PlantUML (`.puml`, `.plantuml`, `.pu`, `.iuml`, `.wsd`) | yes, laid out automatically (see below) | – |
 
 The SVG and PNG exports show the current page as a picture and contain the whole diagram, like draw.io's "editable" exports:
 open them again in this editor (or in draw.io) to continue editing. A diagram opened from such a picture is saved as that kind
@@ -26,6 +27,14 @@ the printer to get a PDF.
 > text (bold or coloured parts of a label are not kept). Style settings that the editor does not use are kept when you save, so
 > a round trip through this editor does not remove them. Routing points of draw.io connectors are kept and the connector is
 > drawn through them; they move with the connector, not with the shapes.
+
+## Templates
+
+**📋 Templates** offers starting points for common kinds of diagrams: flowchart, organisation chart, sequence, class, use case,
+state and activity diagram (UML), entity relationship, network, business process (BPMN), mind map, SWOT analysis and timeline.
+Choose one and click **New diagram** (replaces the current diagram – you are asked first if it has unsaved changes) or **Add to
+this page** (placed below what is already there; `Ctrl+Z` takes it away again). A double click on a template does the same: on an
+empty page it starts a new diagram, otherwise it adds it. The sample texts are in English; change them like any other shapes.
 
 ## Drawing
 
@@ -93,13 +102,13 @@ All of them are saved as the corresponding draw.io shapes and arrows.
 Groups (with their names and nesting), rotation, locks and layers are saved in the draw.io file and are understood by
 draw.io; groups and angles of Excalidraw files are taken over when they are opened.
 
-### Automatic layout and Mermaid
+### Automatic layout, Mermaid and PlantUML
 
 **Automatic layout** (in the format panel when nothing is selected – or with several shapes selected, for just those)
 arranges the shapes in layers along their connectors: top to bottom, left to right, bottom to top or right to left.
 Connectors pointing back against that direction are led around the side. Undo restores the previous arrangement.
 
-**Insert Mermaid…** turns a [Mermaid](https://mermaid.js.org) flowchart into shapes and connectors and lays them out, for
+**Insert Mermaid / PlantUML…** turns a [Mermaid](https://mermaid.js.org) flowchart into shapes and connectors and lays them out, for
 example:
 
 ```
@@ -114,6 +123,25 @@ Supported are the direction (`TD`/`TB`, `LR`, `BT`, `RL`), the node shapes `[ ]`
 `[( )]` cylinder, `(( ))` circle, `{ }` decision, `{{ }}` hexagon, `[/ /]` parallelogram, quoted labels and `<br>`, the links
 `-->`, `---`, `-.->` (dashed), `==>` (thick), `<-->`, `--o`, `--x`, labels as `-->|text|` or `-- text -->`, chains and `A & B --> C`.
 Subgraphs, styles and classes are ignored; other Mermaid diagram types (sequence, class, …) cannot be imported.
+
+The same dialog takes [PlantUML](https://plantuml.com) text (between `@startuml` and `@enduml`); **Insert an example…** fills in
+one of the templates as text. No PlantUML server is needed – the text is read by the app itself and becomes ordinary, editable
+shapes:
+
+- **Class diagrams:** `class`, `abstract class`, `interface`, `enum`, `entity` with `{ members }` or `Name : member` (fields above,
+  methods below a separator), relations `<|--` (inheritance), `<|..` (realisation), `*--` (composition), `o--` (aggregation), `-->`,
+  `..>`, `--`, with multiplicities (`"1" -- "*"`) and labels (`: label`).
+- **Use case diagrams:** `actor`, `:Actor:`, `usecase`, `(Use case)`, aliases with `as`, `left to right direction`.
+- **Component diagrams:** `component`, `[Component]`, `interface`, `() "Interface"`, `node`, `database`, `cloud`, `queue`, `file`, …
+- **State diagrams:** `state`, `[*]` as start and end, `State : description`, transitions with events.
+- **Activity diagrams** (the current syntax): `start`, `stop`, `end`, `:action;` (also over several lines), `if … elseif … else …
+  endif`, `while … endwhile`, `repeat … repeat while`, `fork … fork again … end fork`, `detach`/`kill`.
+- **Sequence diagrams:** `participant`, `actor`, `database` and the other participant kinds, messages `->`, `-->` (reply, dashed),
+  `->>`, `->x`, `<-`, self messages, `autonumber`, `title`, `alt`/`else`/`opt`/`loop`/`par`/`group … end` as frames, notes over, left
+  or right of participants, `== dividers ==`, `...` and `|||` for space.
+
+Styles (`skinparam`, colours), `!include`, packages as containers and notes outside sequence diagrams are ignored. `.puml` files
+(also without `@startuml`) open as a new diagram, saved as `.drawio`.
 
 ## Format panel
 
@@ -190,4 +218,4 @@ On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the applicat
 
 ## On phones and tablets
 
-The shapes are in a bar below the drawing; tap one to add it. **Format** opens the format panel. Two fingers zoom and move the view.
+The shapes are in a bar below the drawing; tap one to add it. **Format** opens the format panel. Two fingers zoom and move the view; one finger on an empty part of the drawing moves it too (a selection rectangle needs a mouse or a pen).

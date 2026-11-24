@@ -60,7 +60,7 @@ def test_save_into_and_open_from_an_archive(app_page):
     archive.evaluate("AR.app.addFiles([{ file: new File(['second file'], 'other.md'), path: 'docs/other.md' }])")
     editor.click("[data-testid=open]")
     choice = editor.locator("[data-testid=storage-archive]")
-    expect(choice).to_have_text("📦 archive.zip (ZIP)")
+    expect(choice).to_have_text("archive.zip (ZIP)")
     choice.click()
     expect(link).to_contain_text("Open from the archive")
     archive.locator("[data-testid=link-file][value='docs/other.md']").check()

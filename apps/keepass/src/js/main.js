@@ -38,6 +38,26 @@
       'kp.mergeOk': 'Merge', 'kp.synced': 'The databases were synchronized. Save to keep the result.', 'kp.imported': '{0} entries were imported into the group “{1}”. Save to keep them.',
       'kp.report': 'Report', 'kp.reportTitle': 'Password report', 'kp.reportOk': 'No problems found: all passwords are strong, unique and current.',
       'kp.issueEmpty': 'Empty password', 'kp.issueWeak': 'Weak password ({0} bits)', 'kp.issueReused': 'Used in {0} entries', 'kp.issueExpired': 'Expired {0}', 'kp.issueOld': 'Unchanged for {0} days',
+      'kp.tagsShort': 'Tags', 'kp.historyChanged': '{0} changed afterwards', 'kp.historyNoChange': 'no difference to the next version', 'kp.historyDiffers': 'Highlighted: different from the current entry.',
+      'kp.historyDelete': 'Delete this version', 'kp.historyClear': 'Delete the whole history', 'kp.historyClearConfirm': 'Delete all {0} older versions of this entry?',
+      'kp.historyMax': 'Older versions kept per entry', 'kp.historyMaxHint': 'When saving, older versions beyond this number are removed (−1: keep all).',
+      'kp.otpSetup': 'Set up one-time password…', 'kp.otpEdit': 'One-time password', 'kp.otpUri': 'Paste an otpauth:// link', 'kp.otpSecret': 'Secret key (Base32)', 'kp.otpRandom': 'New random secret',
+      'kp.otpType': 'Type', 'kp.otpIssuer': 'Service', 'kp.otpAccount': 'Account', 'kp.otpAlgorithm': 'Algorithm', 'kp.otpDigits': 'Digits', 'kp.otpPeriod': 'Period (s)', 'kp.otpCounter': 'Counter',
+      'kp.otpHint': 'Stored like KeePassXC (field “otp”) and KeePass 2 (TimeOtp-/HmacOtp- fields), so other KeePass apps show the same codes.', 'kp.otpSave': 'Save',
+      'kp.otpSaved': 'One-time password saved. Save the database to keep it.', 'kp.otpInvalid': 'The one-time password data cannot be read: {0}', 'kp.otpNext': 'Next code',
+      'kp.otpNextHint': 'Copies the code and moves the counter on (HOTP)', 'kp.otpRemove': 'Remove the one-time password', 'kp.otpRemoveConfirm': 'Remove the one-time password of this entry?',
+      'kp.qrScan': 'Scan QR code', 'kp.qrStop': 'Stop camera', 'kp.qrFromImage': 'QR code from a picture…', 'kp.qrImage': 'Pictures', 'kp.qrNone': 'No QR code was found in the picture.',
+      'kp.qrNotOtp': 'The QR code is not a one-time password (otpauth://).', 'kp.qrCamera': 'The camera cannot be used: {0}', 'kp.qrMore': 'The code contains {0} more accounts.',
+      'kp.qrMoreAdd': 'Add them as new entries', 'kp.qrMoreAdded': '{0} entries with one-time passwords were added.', 'kp.qrShowTitle': 'Transfer to another device',
+      'kp.qrWarning': 'Whoever sees or photographs this QR code can create your codes. Show it only to scan it into your own authenticator app, and not while someone is watching or the screen is shared.',
+      'kp.qrReveal': 'Show QR code',
+      'kp.csv': 'CSV', 'kp.csvImport': 'Import CSV…', 'kp.csvExport': 'Export CSV…', 'kp.csvImportTitle': 'Import a CSV file', 'kp.csvEntries': '{0} entries found in “{1}”.',
+      'kp.csvColumns': 'Columns', 'kp.csvIgnored': 'ignored', 'kp.csvCustom': 'additional field', 'kp.csvGroupField': 'group', 'kp.csvTags': 'tags', 'kp.csvTarget': 'Import into the new group',
+      'kp.csvImportOk': 'Import', 'kp.csvDeleteHint': 'The CSV file contains your passwords unencrypted. Delete it (and empty the trash) after the import.',
+      'kp.csvImported': '{0} entries were imported into the group “{1}”. Save to keep them. Then delete the CSV file.', 'kp.csvEmpty': 'The file contains no entries.',
+      'kp.csvExportTitle': 'Export as CSV', 'kp.csvWarning': 'A CSV file is NOT encrypted: everyone who gets the file can read all passwords. Only export when you need it (for example to move to another program), keep the file on your own device and delete it afterwards.',
+      'kp.csvScopeAll': 'The whole database ({0} entries)', 'kp.csvScopeGroup': 'Only the group “{0}” with its subgroups ({1} entries)', 'kp.csvExportOk': 'Export unencrypted',
+      'kp.csvExported': '{0} entries exported. Delete the CSV file as soon as you no longer need it.',
       'kp.reportSummary': '{0} entries checked · {1} with problems', 'kp.reportHint': 'Weak: less than 60 bits of estimated strength. Old: unchanged for more than a year. Entries in the recycle bin are ignored.', 'kp.recent': 'Recently used',
     },
     de: {
@@ -65,6 +85,26 @@
       'kp.mergeOk': 'Zusammenführen', 'kp.synced': 'Die Datenbanken wurden abgeglichen. Speichern Sie, um das Ergebnis zu behalten.', 'kp.imported': '{0} Einträge wurden in die Gruppe „{1}“ übernommen. Speichern Sie, um sie zu behalten.',
       'kp.report': 'Bericht', 'kp.reportTitle': 'Passwortbericht', 'kp.reportOk': 'Keine Probleme gefunden: alle Passwörter sind stark, einmalig und aktuell.',
       'kp.issueEmpty': 'Leeres Passwort', 'kp.issueWeak': 'Schwaches Passwort ({0} Bit)', 'kp.issueReused': 'In {0} Einträgen verwendet', 'kp.issueExpired': 'Abgelaufen {0}', 'kp.issueOld': 'Seit {0} Tagen unverändert',
+      'kp.tagsShort': 'Tags', 'kp.historyChanged': 'danach geändert: {0}', 'kp.historyNoChange': 'kein Unterschied zur nächsten Version', 'kp.historyDiffers': 'Hervorgehoben: anders als im aktuellen Eintrag.',
+      'kp.historyDelete': 'Diese Version löschen', 'kp.historyClear': 'Ganzen Verlauf löschen', 'kp.historyClearConfirm': 'Alle {0} älteren Versionen dieses Eintrags löschen?',
+      'kp.historyMax': 'Ältere Versionen je Eintrag', 'kp.historyMaxHint': 'Beim Speichern werden ältere Versionen über diese Anzahl hinaus entfernt (−1: alle behalten).',
+      'kp.otpSetup': 'Einmalpasswort einrichten…', 'kp.otpEdit': 'Einmalpasswort', 'kp.otpUri': 'Einen otpauth://-Link einfügen', 'kp.otpSecret': 'Geheimer Schlüssel (Base32)', 'kp.otpRandom': 'Neuer zufälliger Schlüssel',
+      'kp.otpType': 'Art', 'kp.otpIssuer': 'Dienst', 'kp.otpAccount': 'Konto', 'kp.otpAlgorithm': 'Algorithmus', 'kp.otpDigits': 'Stellen', 'kp.otpPeriod': 'Intervall (s)', 'kp.otpCounter': 'Zähler',
+      'kp.otpHint': 'Gespeichert wie in KeePassXC (Feld „otp“) und KeePass 2 (TimeOtp-/HmacOtp-Felder), damit andere KeePass-Apps dieselben Codes zeigen.', 'kp.otpSave': 'Speichern',
+      'kp.otpSaved': 'Einmalpasswort gespeichert. Speichern Sie die Datenbank, um es zu behalten.', 'kp.otpInvalid': 'Die Daten des Einmalpassworts sind nicht lesbar: {0}', 'kp.otpNext': 'Nächster Code',
+      'kp.otpNextHint': 'Kopiert den Code und zählt weiter (HOTP)', 'kp.otpRemove': 'Einmalpasswort entfernen', 'kp.otpRemoveConfirm': 'Das Einmalpasswort dieses Eintrags entfernen?',
+      'kp.qrScan': 'QR-Code scannen', 'kp.qrStop': 'Kamera beenden', 'kp.qrFromImage': 'QR-Code aus einem Bild…', 'kp.qrImage': 'Bilder', 'kp.qrNone': 'Im Bild wurde kein QR-Code gefunden.',
+      'kp.qrNotOtp': 'Der QR-Code ist kein Einmalpasswort (otpauth://).', 'kp.qrCamera': 'Die Kamera kann nicht verwendet werden: {0}', 'kp.qrMore': 'Der Code enthält {0} weitere Konten.',
+      'kp.qrMoreAdd': 'Als neue Einträge hinzufügen', 'kp.qrMoreAdded': '{0} Einträge mit Einmalpasswörtern wurden hinzugefügt.', 'kp.qrShowTitle': 'Auf ein anderes Gerät übertragen',
+      'kp.qrWarning': 'Wer diesen QR-Code sieht oder fotografiert, kann Ihre Codes erzeugen. Zeigen Sie ihn nur, um ihn in Ihre eigene Authenticator-App zu scannen, und nicht, während jemand zusieht oder der Bildschirm geteilt wird.',
+      'kp.qrReveal': 'QR-Code anzeigen',
+      'kp.csv': 'CSV', 'kp.csvImport': 'CSV importieren…', 'kp.csvExport': 'CSV exportieren…', 'kp.csvImportTitle': 'Eine CSV-Datei importieren', 'kp.csvEntries': '{0} Einträge in „{1}“ gefunden.',
+      'kp.csvColumns': 'Spalten', 'kp.csvIgnored': 'ignoriert', 'kp.csvCustom': 'weiteres Feld', 'kp.csvGroupField': 'Gruppe', 'kp.csvTags': 'Tags', 'kp.csvTarget': 'In die neue Gruppe importieren',
+      'kp.csvImportOk': 'Importieren', 'kp.csvDeleteHint': 'Die CSV-Datei enthält Ihre Passwörter unverschlüsselt. Löschen Sie sie nach dem Import (und leeren Sie den Papierkorb).',
+      'kp.csvImported': '{0} Einträge wurden in die Gruppe „{1}“ importiert. Speichern Sie, um sie zu behalten. Löschen Sie danach die CSV-Datei.', 'kp.csvEmpty': 'Die Datei enthält keine Einträge.',
+      'kp.csvExportTitle': 'Als CSV exportieren', 'kp.csvWarning': 'Eine CSV-Datei ist NICHT verschlüsselt: Wer die Datei bekommt, kann alle Passwörter lesen. Exportieren Sie nur, wenn Sie es brauchen (etwa für den Umzug in ein anderes Programm), behalten Sie die Datei auf Ihrem eigenen Gerät und löschen Sie sie danach.',
+      'kp.csvScopeAll': 'Die ganze Datenbank ({0} Einträge)', 'kp.csvScopeGroup': 'Nur die Gruppe „{0}“ mit ihren Untergruppen ({1} Einträge)', 'kp.csvExportOk': 'Unverschlüsselt exportieren',
+      'kp.csvExported': '{0} Einträge exportiert. Löschen Sie die CSV-Datei, sobald Sie sie nicht mehr brauchen.',
       'kp.reportSummary': '{0} Einträge geprüft · {1} mit Problemen', 'kp.reportHint': 'Schwach: weniger als 60 Bit geschätzte Stärke. Alt: seit mehr als einem Jahr unverändert. Einträge im Papierkorb werden nicht geprüft.',
     },
   });
@@ -74,7 +114,7 @@
     file: null, keyFile: null, busy: false, error: '', creating: false, recent: [],
     groupId: null, entryId: null, search: '', pane: 'entries', // pane: groups | entries | entry (phones)
     reveal: new Set(), historyPushed: null, generatorFor: null, gen: { length: 20, lower: true, upper: true, digits: true, symbols: true, excludeAmbiguous: false }, genValue: '',
-    settingsOpen: false, renamingGroup: null, merge: null, report: false,
+    settingsOpen: false, renamingGroup: null, merge: null, report: false, csv: null, historyOpen: null, otpEdit: null, otpQr: null,
   };
 
   let renderQueued = false;
@@ -159,6 +199,8 @@
     if (state.dirty && !force && !(await Suite.shell.confirm(t('kp.unsavedLock')))) return;
     history.clear();
     baseline = null;
+    closeCamera();
+    Object.assign(state, { otpEdit: null, otpQr: null, csv: null });
     Object.assign(state, { db: null, dirty: false, entryId: null, groupId: null, reveal: new Set(), file: state.handle ? { file: await state.handle.getFile(), handle: state.handle } : null });
     Suite.shell.setDirty(false);
     render();
@@ -222,6 +264,8 @@
   function selectEntry(entry) {
     state.entryId = entry ? entry.uuid.id : null;
     state.historyPushed = null;
+    state.historyOpen = null;
+    state.historyExpanded = false;
     state.reveal = new Set();
     state.generatorFor = null;
     state.pane = entry ? 'entry' : 'entries';
@@ -327,16 +371,181 @@
     });
   }
 
-  // ---- TOTP ----------------------------------------------------------------------------------------
+  // ---- one-time passwords (Suite.otp: TOTP, HOTP, Steam; KeePassXC "otp" field and KeePass TimeOtp-*/HmacOtp-* fields) ---------
 
-  function totpOf(entry) {
-    const uri = db().field(entry, 'otp');
-    if (!uri || typeof OTPAuth === 'undefined') return null;
+  /** { token } or { error } or null (no OTP data). */
+  function otpOf(entry) {
+    if (!Suite.otp.hasOtpData(entry)) return null;
+    try { const token = Suite.otp.readToken(entry); return token ? { token } : null; } catch (e) { return { error: Suite.i18n.describe(e) }; }
+  }
+
+  /** Change the OTP fields of an entry (the previous version goes to the history once per editing session). */
+  function changeOtp(entry, token) {
+    if (state.historyPushed !== entry.uuid.id) { entry.pushHistory(); state.historyPushed = entry.uuid.id; }
+    if (token) Suite.otp.writeToken(entry, token); else Suite.otp.removeTokenFields(entry);
+    entry.times.update();
+    setDirty();
+  }
+
+  /** HOTP: use the current code and move on to the next one (the counter is saved in the entry). */
+  function nextHotp(entry, token) {
+    copy(Suite.otp.generate(token).code, t('kp.otp'));
+    changeOtp(entry, { ...token, counter: token.counter + 1 });
+  }
+
+  function editOtp(entry) {
+    const found = otpOf(entry);
+    const f = db().fields(entry);
+    const token = found && found.token;
+    state.otpEdit = {
+      entryId: entry.uuid.id, error: '', isNew: !token,
+      form: token ? { ...token, counter: String(token.counter), digits: String(token.digits), period: String(token.period) }
+        : { type: 'totp', secret: '', algorithm: 'SHA1', digits: '6', period: '30', counter: '0', issuer: f.Title || '', account: f.UserName || '' },
+    };
+    render();
+  }
+
+  function saveOtp() {
+    const d = state.otpEdit;
+    const entry = d && db().findEntry(d.entryId);
+    if (!entry) { state.otpEdit = null; render(); return; }
     try {
-      const otp = OTPAuth.URI.parse(uri.trim());
-      if (otp instanceof OTPAuth.TOTP) return { code: otp.generate(), remaining: otp.period - (Math.floor(Date.now() / 1000) % otp.period) };
-      return null;
-    } catch (e) { return null; }
+      const token = Suite.otp.createToken(d.form);
+      closeCamera();
+      state.otpEdit = null;
+      changeOtp(entry, token);
+      Suite.shell.toast(t('kp.otpSaved'));
+    } catch (e) { d.error = Suite.i18n.describe(e); render(); }
+  }
+
+  function OtpDialog() {
+    const d = state.otpEdit;
+    if (!d) return null;
+    const f = d.form;
+    const set = (key) => (e) => { f[key] = e.target.value; d.error = ''; render(); };
+    const fromUri = (text) => {
+      try { const tk = Suite.otp.parseUri(text); Object.assign(f, { ...tk, counter: String(tk.counter), digits: String(tk.digits), period: String(tk.period) }); d.error = ''; } catch (e) { d.error = Suite.i18n.describe(e); }
+      render();
+    };
+    const close = () => { closeCamera(); state.otpEdit = null; render(); };
+    return html`<dialog open data-testid="otp-dialog"><article class="kp-otp-dialog">
+      <header><strong>${t(d.isNew ? 'kp.otpSetup' : 'kp.otpEdit')}</strong></header>
+      <label>${t('kp.otpUri')}<input data-testid="otp-uri" placeholder="otpauth://totp/…?secret=…" autocomplete="off" spellcheck="false"
+        onChange=${(e) => { if (e.target.value.trim()) fromUri(e.target.value); e.target.value = ''; }} /></label>
+      <div class="kp-buttons kp-scan">
+        ${Suite.qr.cameraAvailable ? html`<button type="button" class="secondary outline" data-testid="qr-camera" onClick=${() => { if (d.scanning) { closeCamera(); d.scanning = false; } else { d.scanning = true; d.error = ''; } render(); }}>${Suite.icon('camera')} ${t(d.scanning ? 'kp.qrStop' : 'kp.qrScan')}</button>` : null}
+        <button type="button" class="secondary outline" data-testid="qr-image" onClick=${scanImage}>${Suite.icon('image')} ${t('kp.qrFromImage')}</button>
+      </div>
+      ${d.scanning ? html`<video class="kp-camera" data-testid="qr-video" ref=${(el) => { if (el && !el.dataset.started) { el.dataset.started = '1'; scanCamera(el); } }}></video>` : null}
+      ${d.more && d.more.length ? html`<p class="kp-more" data-testid="qr-more">${t('kp.qrMore', d.more.length)} <button type="button" class="secondary outline" data-testid="qr-more-add" onClick=${importMore}>${t('kp.qrMoreAdd')}</button></p>` : null}
+      <hr />
+      <label>${t('kp.otpSecret')}<div class="kp-secret"><input data-testid="otp-secret" value=${f.secret} autocomplete="off" spellcheck="false" data-no-symbols onInput=${set('secret')} />
+        <button type="button" class="secondary outline" title=${t('kp.otpRandom')} data-testid="otp-random" onClick=${() => { f.secret = Suite.otp.randomSecret(); render(); }}>${Suite.icon('dices')}</button></div></label>
+      <div class="kp-grid">
+        <label>${t('kp.otpType')}<select data-testid="otp-type" onChange=${set('type')}>${[['totp', 'TOTP'], ['hotp', 'HOTP'], ['steam', 'Steam']].map(([v, l]) => html`<option value=${v} selected=${f.type === v}>${l}</option>`)}</select></label>
+        <label>${t('kp.otpIssuer')}<input data-testid="otp-issuer" value=${f.issuer} onInput=${set('issuer')} /></label>
+        <label>${t('kp.otpAccount')}<input data-testid="otp-account" value=${f.account} onInput=${set('account')} /></label>
+        ${f.type !== 'steam' ? html`<label>${t('kp.otpAlgorithm')}<select data-testid="otp-algorithm" onChange=${set('algorithm')}>${Suite.otp.ALGORITHMS.map((a) => html`<option value=${a} selected=${f.algorithm === a}>${a}</option>`)}</select></label>
+          <label>${t('kp.otpDigits')}<input type="number" min="4" max="10" data-testid="otp-digits" value=${f.digits} onInput=${set('digits')} /></label>` : null}
+        ${f.type === 'hotp' ? html`<label>${t('kp.otpCounter')}<input type="number" min="0" data-testid="otp-counter" value=${f.counter} onInput=${set('counter')} /></label>`
+          : html`<label>${t('kp.otpPeriod')}<input type="number" min="1" data-testid="otp-period" value=${f.period} onInput=${set('period')} /></label>`}
+      </div>
+      <p><small>${t('kp.otpHint')}</small></p>
+      ${d.error ? html`<p class="kp-error" data-testid="otp-error">${d.error}</p>` : null}
+      <footer><button type="button" class="secondary" onClick=${close}>${t('kp.close')}</button>
+        <button type="button" data-testid="otp-save" onClick=${saveOtp}>${t('kp.otpSave')}</button></footer>
+    </article></dialog>`;
+  }
+
+  // ---- QR codes: scan an otpauth:// code into an entry, show an entry's secret as a QR code -----------------------------------
+
+  let stopCamera = null;
+  function closeCamera() { if (stopCamera) { stopCamera(); stopCamera = null; } }
+
+  /** A scanned text: otpauth:// fills the dialog; a Google Authenticator export with several accounts can become new entries. */
+  async function useScanned(text) {
+    const d = state.otpEdit;
+    if (!d) return;
+    closeCamera();
+    d.scanning = false;
+    let tokens = [];
+    try {
+      if (/^otpauth-migration:/i.test(text)) tokens = Suite.otp.parseMigrationUri(text);
+      else if (/^otpauth:/i.test(text)) tokens = [Suite.otp.parseUri(text)];
+      else throw new Suite.LocalizedError('kp.qrNotOtp');
+    } catch (e) { d.error = Suite.i18n.describe(e); render(); return; }
+    const [first, ...more] = tokens;
+    if (!first) { d.error = t('kp.qrNotOtp'); render(); return; }
+    Object.assign(d.form, { ...first, counter: String(first.counter), digits: String(first.digits), period: String(first.period) });
+    d.error = '';
+    d.more = more;
+    render();
+  }
+
+  /** The other accounts of a Google Authenticator export as new entries next to the edited one. */
+  function importMore() {
+    const d = state.otpEdit;
+    const entry = d && db().findEntry(d.entryId);
+    if (!entry || !d.more || !d.more.length) return;
+    for (const token of d.more) {
+      const e = db().addEntry(entry.parentGroup, { Title: token.issuer || token.account || t('kp.untitled'), UserName: token.account, Password: '', URL: '', Notes: '' });
+      Suite.otp.writeToken(e, token);
+    }
+    Suite.shell.toast(t('kp.qrMoreAdded', d.more.length));
+    d.more = [];
+    setDirty();
+  }
+
+  async function scanImage() {
+    const d = state.otpEdit;
+    try {
+      const picked = await Suite.files.open({ types: [{ description: t('kp.qrImage'), accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'] } }] });
+      if (!picked) return;
+      const text = await Suite.qr.decodeImage(picked[0].file);
+      if (!text) { d.error = t('kp.qrNone'); render(); return; }
+      await useScanned(text);
+    } catch (e) { d.error = Suite.i18n.describe(e); render(); }
+  }
+
+  async function scanCamera(video) {
+    const d = state.otpEdit;
+    try { stopCamera = await Suite.qr.startCamera(video, (text) => useScanned(text)); } catch (e) { d.scanning = false; d.error = t('kp.qrCamera', Suite.i18n.describe(e)); render(); }
+  }
+
+  function QrDialog() {
+    const q = state.otpQr;
+    if (!q) return null;
+    const entry = db().findEntry(q.entryId);
+    const found = entry && otpOf(entry);
+    if (!found || !found.token) return null;
+    const uri = Suite.otp.toUri(found.token);
+    const close = () => { state.otpQr = null; render(); };
+    return html`<dialog open data-testid="qr-dialog"><article class="kp-qr-dialog">
+      <header><strong>${t('kp.qrShowTitle')}</strong></header>
+      <p class="kp-warning"><small>${Suite.icon('triangle-alert')} ${t('kp.qrWarning')}</small></p>
+      ${q.shown ? html`<div class="kp-qr" data-testid="qr-code" dangerouslySetInnerHTML=${{ __html: Suite.qr.toSvg(uri) }}></div>
+          <p class="kp-qr-secret"><small>${found.token.issuer || ''} ${found.token.account ? `(${found.token.account})` : ''}</small><br /><code data-testid="qr-secret">${found.token.secret.replace(/(.{4})/g, '$1 ').trim()}</code></p>`
+        : html`<button type="button" data-testid="qr-reveal" onClick=${() => { q.shown = true; render(); }}>${t('kp.qrReveal')}</button>`}
+      <footer><button type="button" class="secondary" data-testid="qr-close" onClick=${close}>${t('kp.close')}</button></footer>
+    </article></dialog>`;
+  }
+
+  function OtpSection({ entry }) {
+    const found = otpOf(entry);
+    if (!found) return html`<div class="kp-row kp-otp" data-testid="otp"><button type="button" class="secondary outline" data-testid="otp-setup" onClick=${() => editOtp(entry)}>${Suite.icon('key-round')} ${t('kp.otpSetup')}</button></div>`;
+    if (found.error) return html`<div class="kp-otp" data-testid="otp"><span class="kp-error" data-testid="otp-invalid">${t('kp.otpInvalid', found.error)}</span>
+      <button type="button" class="secondary outline" data-testid="otp-edit" title=${Suite.t('common.edit')} onClick=${() => editOtp(entry)}>${t('kp.otpEdit')}</button></div>`;
+    const token = found.token;
+    const g = Suite.otp.generate(token);
+    return html`<div class="kp-otp" data-testid="otp"><span>${t('kp.otp')}${token.type === 'hotp' ? ' (HOTP)' : token.type === 'steam' ? ' (Steam)' : ''}:</span>
+      <code data-testid="otp-code">${Suite.otp.formatCode(g.code)}</code>
+      ${g.remaining != null ? html`<progress max=${token.period} value=${token.period - g.remaining} title=${`${g.remaining} s`}></progress><small data-testid="otp-remaining">${g.remaining} s</small>` : null}
+      <button type="button" class="secondary outline" title=${t('kp.copy')} data-testid="otp-copy" onClick=${() => copy(g.code, t('kp.otp'))}>${Suite.icon('copy')}</button>
+      ${token.type === 'hotp' ? html`<button type="button" class="secondary outline" data-testid="otp-next" title=${t('kp.otpNextHint')} onClick=${() => nextHotp(entry, token)}>${t('kp.otpNext')}</button>` : null}
+      <button type="button" class="secondary outline" data-testid="otp-qr" title=${t('kp.qrShowTitle')} onClick=${() => { state.otpQr = { entryId: entry.uuid.id, shown: false }; render(); }}>${Suite.icon('qr-code')} QR</button>
+      <button type="button" class="secondary outline" data-testid="otp-edit" onClick=${() => editOtp(entry)}>${Suite.icon('pencil')}</button>
+      <button type="button" class="secondary outline" data-testid="otp-remove" title=${t('kp.otpRemove')} onClick=${async () => { if (await Suite.shell.confirm(t('kp.otpRemoveConfirm'))) changeOtp(entry, null); }}>×</button>
+    </div>`;
   }
   setInterval(() => { if (state.db && state.entryId) render(); }, 1000);
 
@@ -394,7 +603,7 @@
             <input name="name" data-testid="group-name-input" defaultValue=${group.name} autofocus onBlur=${(e) => { group.name = e.target.value || group.name; state.renamingGroup = null; setDirty(); }} /></form>`
         : html`<a href="#" class=${active ? 'active' : ''} data-testid="group" style=${`padding-left:${depth * 0.9 + 0.4}rem`}
               onClick=${(e) => { e.preventDefault(); state.groupId = group.uuid.id; state.search = ''; state.entryId = null; state.pane = 'entries'; render(); }}
-              onDblClick=${() => { if (group !== db().root && !bin) { state.renamingGroup = group.uuid.id; render(); } }}>${bin ? '🗑 ' : '📁 '}${group.name || '—'}</a>`}
+              onDblClick=${() => { if (group !== db().root && !bin) { state.renamingGroup = group.uuid.id; render(); } }}>${bin ? Suite.icon('trash-2') : Suite.icon('folder')}${group.name || '—'}</a>`}
       ${group.groups.length ? html`<ul>${group.groups.map((g) => html`<${GroupTree} group=${g} depth=${depth + 1} key=${g.uuid.id} />`)}</ul>` : null}
     </li>`;
   }
@@ -437,8 +646,8 @@
       <input type=${shown ? 'text' : 'password'} data-testid=${testid} value=${value} autocomplete="off" spellcheck="false" data-no-symbols
              onInput=${(e) => updateEntry(entry, { [field]: e.target.value }, { protect: field === 'Password' ? [] : [field] })} />
       <button type="button" class="secondary outline" title=${shown ? t('kp.hide') : t('kp.show')} data-testid=${`${testid}-reveal`}
-              onClick=${() => { if (shown) state.reveal.delete(field); else state.reveal.add(field); render(); }}>${shown ? '🙈' : '👁'}</button>
-      <button type="button" class="secondary outline" title=${t('kp.copy')} data-testid=${`${testid}-copy`} onClick=${() => copy(db().field(entry, field), field === 'Password' ? t('kp.password') : field)}>⧉</button>
+              onClick=${() => { if (shown) state.reveal.delete(field); else state.reveal.add(field); render(); }}>${shown ? Suite.icon('eye-off') : Suite.icon('eye')}</button>
+      <button type="button" class="secondary outline" title=${t('kp.copy')} data-testid=${`${testid}-copy`} onClick=${() => copy(db().field(entry, field), field === 'Password' ? t('kp.password') : field)}>${Suite.icon('copy')}</button>
     </div>`;
   }
 
@@ -453,7 +662,7 @@
       <label>${t('kp.length')}: ${g.length}<input type="range" min="4" max="64" value=${g.length} data-testid="gen-length" onInput=${(e) => { g.length = +e.target.value; regenerate(); }} /></label>
       <div class="kp-gen-options">${opt('lower', 'kp.lower')}${opt('upper', 'kp.upper')}${opt('digits', 'kp.digits')}${opt('symbols', 'kp.symbols')}${opt('excludeAmbiguous', 'kp.ambiguous')}</div>
       <div class="kp-buttons">
-        <button type="button" class="secondary" onClick=${regenerate}>⟳</button>
+        <button type="button" class="secondary" title=${Suite.t('common.regenerate')} onClick=${regenerate}>${Suite.icon('rotate-cw')}</button>
         <button type="button" class="secondary outline" onClick=${() => { state.generatorFor = null; render(); }}>${t('kp.close')}</button>
         <button type="button" data-testid="gen-use" onClick=${() => { updateEntry(entry, { Password: state.genValue }); state.generatorFor = null; render(); }}>${t('kp.use')}</button>
       </div>
@@ -464,10 +673,9 @@
     const entry = currentEntry();
     if (!entry) return html`<section class="kp-editor kp-placeholder"></section>`;
     const f = db().fields(entry);
-    const custom = Object.keys(f).filter((k) => !STANDARD.includes(k));
+    const custom = Object.keys(f).filter((k) => !STANDARD.includes(k) && !Suite.otp.isOtpField(k));
     const field = (key, label, extra = {}) => html`<label>${t(label)}<input data-testid=${`field-${key}`} value=${f[key] || ''} ...${extra}
       onInput=${(e) => updateEntry(entry, { [key]: e.target.value })} /></label>`;
-    const otp = totpOf(entry);
     const history = db().history(entry);
     const expires = entry.times.expires && entry.times.expiryTime;
     const expired = expires && new Date(entry.times.expiryTime) < new Date();
@@ -478,17 +686,16 @@
       </div>
       ${field('Title', 'kp.title')}
       <label>${t('kp.userName')}<div class="kp-secret"><input data-testid="field-UserName" value=${f.UserName || ''} autocomplete="off" onInput=${(e) => updateEntry(entry, { UserName: e.target.value })} />
-        <button type="button" class="secondary outline" data-testid="field-UserName-copy" onClick=${() => copy(db().field(entry, 'UserName'), t('kp.userName'))}>⧉</button></div></label>
+        <button type="button" class="secondary outline" data-testid="field-UserName-copy" title=${Suite.t('common.copy')} onClick=${() => copy(db().field(entry, 'UserName'), t('kp.userName'))}>${Suite.icon('copy')}</button></div></label>
       <label>${t('kp.password')}<${SecretInput} entry=${entry} field="Password" testid="field-Password" /></label>
       <div class="kp-row">
-        <button type="button" class="secondary outline" data-testid="generate" onClick=${() => { state.generatorFor = entry.uuid.id; state.genValue = ''; render(); }}>🎲 ${t('kp.generate')}</button>
+        <button type="button" class="secondary outline" data-testid="generate" onClick=${() => { state.generatorFor = entry.uuid.id; state.genValue = ''; render(); }}>${Suite.icon('dices')} ${t('kp.generate')}</button>
         <small>${t('kp.strength', KP.entropy(f.Password || ''))}</small>
       </div>
       ${state.generatorFor === entry.uuid.id ? html`<${Generator} entry=${entry} />` : null}
       <label>${t('kp.url')}<div class="kp-secret"><input data-testid="field-URL" value=${f.URL || ''} inputmode="url" onInput=${(e) => updateEntry(entry, { URL: e.target.value })} />
         <a role="button" class="secondary outline" href=${/^https?:\/\//i.test(f.URL || '') ? f.URL : '#'} target="_blank" rel="noopener noreferrer">${t('kp.openUrl')}</a></div></label>
-      ${otp ? html`<p class="kp-otp">${t('kp.otp')}: <code data-testid="otp-code">${otp.code}</code> <small>(${otp.remaining} s)</small>
-        <button type="button" class="secondary outline" onClick=${() => copy(otp.code, t('kp.otp'))}>⧉</button></p>` : null}
+      <${OtpSection} entry=${entry} />
       <label>${t('kp.notes')}<textarea data-testid="field-Notes" rows="4" onInput=${(e) => updateEntry(entry, { Notes: e.target.value })}>${f.Notes || ''}</textarea></label>
       <label>${t('kp.tags')}<input data-testid="field-tags" key=${`tags-${entry.uuid.id}-${(entry.tags || []).join()}`} defaultValue=${(entry.tags || []).join(', ')}
         onChange=${(e) => { if (state.historyPushed !== entry.uuid.id) { entry.pushHistory(); state.historyPushed = entry.uuid.id; } entry.tags = e.target.value.split(',').map((s) => s.trim()).filter(Boolean); entry.times.update(); setDirty(); }} /></label>
@@ -507,14 +714,14 @@
             ${isProtected ? html`<${SecretInput} entry=${entry} field=${key} testid=${`custom-${key}`} />`
               : html`<input data-testid=${`custom-${key}`} value=${f[key]} onInput=${(e) => updateEntry(entry, { [key]: e.target.value })} />`}
             <label title=${t('kp.protected')}><input type="checkbox" checked=${isProtected} data-testid=${`custom-${key}-protected`}
-              onChange=${(e) => updateEntry(entry, { [key]: db().field(entry, key) }, { protect: e.target.checked ? [key] : [] })} /> 🔒</label>
+              onChange=${(e) => updateEntry(entry, { [key]: db().field(entry, key) }, { protect: e.target.checked ? [key] : [] })} /> ${Suite.icon('lock')}</label>
             <button type="button" class="secondary outline" data-testid=${`custom-${key}-delete`} onClick=${() => updateEntry(entry, { [key]: null })}>×</button>
           </div>`;
         })}
         <form class="kp-custom-row" onSubmit=${(e) => { e.preventDefault(); const name = e.target.elements.name.value.trim(); if (!name || STANDARD.includes(name)) return; updateEntry(entry, { [name]: e.target.elements.value.value }, { protect: e.target.elements.protect.checked ? [name] : [] }); e.target.reset(); }}>
           <input name="name" data-testid="new-field-name" placeholder=${t('kp.fieldName')} />
           <input name="value" data-testid="new-field-value" placeholder=${t('kp.fieldValue')} />
-          <label><input type="checkbox" name="protect" data-testid="new-field-protected" /> 🔒</label>
+          <label><input type="checkbox" name="protect" data-testid="new-field-protected" /> ${Suite.icon('lock')}</label>
           <button type="submit" class="secondary" data-testid="add-field">${t('kp.addField')}</button>
         </form>
       </fieldset>
@@ -522,18 +729,167 @@
         <legend>${t('kp.attachments')}</legend>
         <ul>${[...entry.binaries.keys()].map((name) => html`<li data-testid="attachment">
           <a href="#" onClick=${(e) => { e.preventDefault(); Suite.files.download(db().attachment(entry, name), name); }}>${name}</a>
-          <button type="button" class="secondary outline" title=${t('bridge.openWith')} aria-label=${t('bridge.openWith')} data-testid="attachment-open-with" onClick=${() => openAttachmentWith(entry, name)}>↗</button>
+          <button type="button" class="secondary outline" title=${t('bridge.openWith')} aria-label=${t('bridge.openWith')} data-testid="attachment-open-with" onClick=${() => openAttachmentWith(entry, name)}>${Suite.icon('external-link')}</button>
           <button type="button" class="secondary outline" data-testid="remove-attachment" onClick=${() => { db().removeAttachment(entry, name); setDirty(); }}>×</button></li>`)}</ul>
         <label class="kp-file-button" role="button">${t('kp.addAttachment')}<input type="file" multiple hidden data-testid="add-attachment" onChange=${(e) => { addAttachments(entry, [...e.target.files]); e.target.value = ''; }} /></label>
       </fieldset>
       <label>${t('kp.group')}<select data-testid="entry-group" onChange=${(e) => { const g = db().groups().find((x) => x.id === e.target.value); if (g) { db().move(entry, g.group); state.groupId = g.id; setDirty(); } }}>
         ${db().groups().map((g) => html`<option value=${g.id} selected=${g.id === entry.parentGroup.uuid.id}>${g.path || db().name}</option>`)}</select></label>
-      ${history.length ? html`<details class="kp-history" data-testid="history"><summary>${t('kp.history')} (${history.length})</summary><ul>
-        ${history.map((h, i) => html`<li data-testid="history-item">${fmtDate(h.times.lastModTime)} – ${db().field(h, 'Title')} / ${db().field(h, 'UserName')}
-          <button type="button" class="secondary outline" data-testid="restore" onClick=${() => { db().restoreHistory(entry, i); state.historyPushed = entry.uuid.id; setDirty(); }}>${t('kp.restore')}</button></li>`).reverse()}
-      </ul></details>` : null}
+      ${history.length ? html`<${HistoryPanel} entry=${entry} />` : null}
       <button type="button" class="secondary kp-delete" data-testid="delete-entry" onClick=${() => deleteEntry(entry)}>${t('kp.deleteEntry')}</button>
     </section>`;
+  }
+
+  // ---- CSV import and export ---------------------------------------------------------------------
+
+  const CSV_TYPES = [{ description: 'CSV', accept: { 'text/csv': ['.csv', '.txt'] } }];
+  const today = () => new Date().toISOString().slice(0, 10);
+  const isoTime = (d) => (d ? new Date(d).toISOString().replace(/\.\d{3}Z$/, 'Z') : '');
+
+  function decodeText(bytes) {
+    try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch (e) { return new TextDecoder('windows-1252').decode(bytes); }
+  }
+
+  async function chooseCsv() {
+    try {
+      const picked = await Suite.files.open({ types: CSV_TYPES });
+      if (!picked) return;
+      const file = picked[0].file;
+      const parsed = KP.csv.records(KP.csv.parse(decodeText(new Uint8Array(await file.arrayBuffer()))));
+      if (!parsed.records.length) { Suite.shell.toast(t('kp.csvEmpty'), 'warning'); return; }
+      state.csv = { kind: 'import', name: file.name, ...parsed, group: `CSV ${file.name.replace(/\.[^.]+$/, '')} ${today()}` };
+      render();
+    } catch (e) { Suite.shell.toast(Suite.i18n.describe(e), 'error'); }
+  }
+
+  /** Put the records into a new group below the root; groups of the CSV become subgroups. */
+  function importCsv(c) {
+    const target = db().createGroup(db().root, c.group || `CSV ${today()}`);
+    // a path prefix shared by all records that names the exported root ("Root/…", KeePassXC) is dropped
+    const firsts = new Set(c.records.map((r) => r.group.split('/')[0]));
+    const prefix = firsts.size === 1 && [...firsts][0] && c.records.every((r) => r.group) && (c.records.some((r) => !r.group.includes('/')) || /^(root|passwords|database)$/i.test([...firsts][0]) || [...firsts][0] === db().root.name)
+      ? [...firsts][0] : null;
+    for (const r of c.records) {
+      let path = r.group;
+      if (prefix) path = path.split('/').slice(1).join('/');
+      let group = target;
+      for (const name of path.split('/').map((x) => x.trim()).filter(Boolean)) group = group.groups.find((g) => g.name === name) || db().createGroup(group, name);
+      const values = { ...r.fields };
+      if (r.otp) values.otp = r.otp;
+      const entry = db().addEntry(group, values, { protect: r.otp ? ['otp'] : [] });
+      if (r.tags.length) entry.tags = r.tags;
+    }
+    state.csv = null;
+    state.groupId = target.uuid.id;
+    state.search = '';
+    selectEntry(null);
+    setDirty();
+    Suite.shell.toast(t('kp.csvImported', c.records.length, target.name));
+  }
+
+  async function exportCsv(scope) {
+    const group = scope === 'group' ? currentGroup() : db().root;
+    const entries = db().entries(group);
+    const rootName = db().root.name || 'Root';
+    const rows = [KP.csv.EXPORT_HEADER];
+    for (const e of entries) {
+      const f = db().fields(e);
+      const path = db().groupPath(e.parentGroup);
+      rows.push([path ? `${rootName}/${path}` : rootName, f.Title, f.UserName, f.Password, f.URL, f.Notes, f.otp || '', (e.tags || []).join(','), isoTime(e.times.lastModTime), isoTime(e.times.creationTime)]);
+    }
+    state.csv = null;
+    render();
+    try {
+      const bytes = new TextEncoder().encode(KP.csv.stringify(rows));
+      const result = await Suite.files.saveAs(bytes, { suggestedName: `${state.name.replace(/\.kdbx$/i, '') || 'passwords'}.csv`, types: CSV_TYPES, type: 'text/csv' });
+      if (!result) return;
+      report(result);
+      Suite.shell.toast(t('kp.csvExported', entries.length), 'warning');
+    } catch (e) { Suite.shell.toast(Suite.i18n.describe(e), 'error'); }
+  }
+
+  function CsvDialog() {
+    const c = state.csv;
+    if (!c) return null;
+    const close = () => { state.csv = null; render(); };
+    if (c.kind === 'export') {
+      const group = currentGroup();
+      return html`<dialog open data-testid="csv-export-dialog"><article>
+        <header><strong>${t('kp.csvExportTitle')}</strong></header>
+        <p class="kp-warning" data-testid="csv-warning">${Suite.icon('triangle-alert')} ${t('kp.csvWarning')}</p>
+        <label><input type="radio" name="scope" checked=${c.scope === 'all'} data-testid="csv-scope-all" onChange=${() => { c.scope = 'all'; render(); }} /> ${t('kp.csvScopeAll', db().entries().length)}</label>
+        ${group !== db().root && !inBin(group) ? html`<label><input type="radio" name="scope" checked=${c.scope === 'group'} data-testid="csv-scope-group" onChange=${() => { c.scope = 'group'; render(); }} /> ${t('kp.csvScopeGroup', group.name, db().entries(group).length)}</label>` : null}
+        <footer><button type="button" class="secondary" onClick=${close}>${t('kp.close')}</button>
+          <button type="button" class="kp-danger" data-testid="csv-export-ok" onClick=${() => exportCsv(c.scope)}>${t('kp.csvExportOk')}</button></footer>
+      </article></dialog>`;
+    }
+    const label = (col) => (!col.field ? t('kp.csvIgnored') : col.field.startsWith('custom:') ? `${t('kp.csvCustom')} „${col.field.slice(7)}“`
+      : col.field === 'group' ? t('kp.csvGroupField') : col.field === 'tags' ? t('kp.csvTags') : col.field === 'otp' ? t('kp.otp')
+      : t({ Title: 'kp.title', UserName: 'kp.userName', Password: 'kp.password', URL: 'kp.url', Notes: 'kp.notes' }[col.field]));
+    return html`<dialog open data-testid="csv-import-dialog"><article>
+      <header><strong>${t('kp.csvImportTitle')}</strong></header>
+      <p data-testid="csv-count">${t('kp.csvEntries', c.records.length, c.name)}</p>
+      <details open=${c.columns.length <= 8}><summary>${t('kp.csvColumns')}</summary>
+        <table class="kp-csv-columns" data-testid="csv-columns"><tbody>${c.columns.map((col) => html`<tr><td>${col.name}</td><td>${Suite.icon('arrow-right')} ${label(col)}</td></tr>`)}</tbody></table></details>
+      <form onSubmit=${(e) => { e.preventDefault(); c.group = e.target.elements.group.value.trim() || c.group; importCsv(c); }}>
+        <label>${t('kp.csvTarget')}<input name="group" data-testid="csv-group" defaultValue=${c.group} /></label>
+        <p class="kp-warning"><small>${Suite.icon('triangle-alert')} ${t('kp.csvDeleteHint')}</small></p>
+        <footer><button type="button" class="secondary" onClick=${close}>${t('kp.close')}</button>
+          <button type="submit" data-testid="csv-import-ok">${t('kp.csvImportOk')}</button></footer>
+      </form>
+    </article></dialog>`;
+  }
+
+  // ---- entry history ----------------------------------------------------------------------------
+
+  const FIELD_LABELS = { Title: 'kp.title', UserName: 'kp.userName', Password: 'kp.password', URL: 'kp.url', Notes: 'kp.notes' };
+  const fieldLabel = (key) => (FIELD_LABELS[key] ? t(FIELD_LABELS[key]) : key === 'otp' ? t('kp.otp') : key);
+
+  /** What differs between two versions: field names (standard ones first), "attachments", "tags". */
+  function versionChanges(a, b) {
+    const fa = db().fields(a), fb = db().fields(b);
+    const keys = [...new Set([...STANDARD, ...Object.keys(fa), ...Object.keys(fb)])];
+    const out = keys.filter((k) => (fa[k] || '') !== (fb[k] || '')).map(fieldLabel);
+    const names = (e) => [...e.binaries.keys()].sort().join('\n');
+    if (names(a) !== names(b)) out.push(t('kp.attachments'));
+    if ((a.tags || []).join() !== (b.tags || []).join()) out.push(t('kp.tagsShort'));
+    return out;
+  }
+
+  function HistoryVersion({ entry, version, index }) {
+    const f = db().fields(version);
+    const current = db().fields(entry);
+    const keys = [...new Set([...STANDARD, ...Object.keys(f)])].filter((k) => f[k] || current[k]);
+    const secret = (k) => k === 'Password' || version.fields.get(k) instanceof kdbxweb.ProtectedValue;
+    const revealKey = `history:${index}`;
+    const shown = state.reveal.has(revealKey);
+    return html`<div class="kp-history-version" data-testid="history-version">
+      <table><tbody>${keys.map((k) => html`<tr class=${(f[k] || '') !== (current[k] || '') ? 'kp-differs' : ''} data-testid="history-field">
+        <th>${fieldLabel(k)}</th><td>${secret(k) && !shown && f[k] ? '••••••••' : (f[k] || '—')}</td></tr>`)}
+        ${version.tags && version.tags.length ? html`<tr><th>${t('kp.tagsShort')}</th><td>${version.tags.join(', ')}</td></tr>` : null}
+        ${version.binaries.size ? html`<tr><th>${t('kp.attachments')}</th><td>${[...version.binaries.keys()].join(', ')}</td></tr>` : null}
+      </tbody></table>
+      <small>${t('kp.historyDiffers')}</small>
+      <div class="kp-buttons">
+        <button type="button" class="secondary outline" data-testid="history-reveal" onClick=${() => { if (shown) state.reveal.delete(revealKey); else state.reveal.add(revealKey); render(); }}>${shown ? Suite.icon('eye-off') : Suite.icon('eye')}</button>
+        ${f.Password ? html`<button type="button" class="secondary outline" data-testid="history-copy" onClick=${() => copy(f.Password, t('kp.password'))}>${Suite.icon('copy')} ${t('kp.password')}</button>` : null}
+        <button type="button" class="secondary" data-testid="restore" onClick=${() => { db().restoreHistory(entry, index); state.historyPushed = entry.uuid.id; state.historyOpen = null; setDirty(); }}>${t('kp.restore')}</button>
+        <button type="button" class="secondary outline" data-testid="history-delete" onClick=${() => { db().deleteHistory(entry, index); state.historyOpen = null; setDirty(); }}>${t('kp.historyDelete')}</button>
+      </div>
+    </div>`;
+  }
+
+  function HistoryPanel({ entry }) {
+    const versions = db().history(entry);
+    const rows = versions.map((h, i) => ({ h, i, changes: versionChanges(h, versions[i + 1] || entry) })).reverse();
+    return html`<details class="kp-history" data-testid="history" open=${state.historyExpanded} onToggle=${(e) => { state.historyExpanded = e.target.open; }}><summary>${t('kp.history')} (${versions.length})</summary>
+      <ul>${rows.map(({ h, i, changes }) => html`<li data-testid="history-item" class=${state.historyOpen === i ? 'open' : ''}>
+        <a href="#" data-testid="history-open" onClick=${(e) => { e.preventDefault(); state.historyOpen = state.historyOpen === i ? null : i; render(); }}>${fmtDate(h.times.lastModTime)} – ${db().field(h, 'Title') || '—'}</a>
+        <small data-testid="history-changes"> ${changes.length ? t('kp.historyChanged', changes.join(', ')) : t('kp.historyNoChange')}</small>
+        ${state.historyOpen === i ? html`<${HistoryVersion} entry=${entry} version=${h} index=${i} />` : null}
+      </li>`)}</ul>
+      <button type="button" class="secondary outline" data-testid="history-clear" onClick=${async () => { if (await Suite.shell.confirm(t('kp.historyClearConfirm', versions.length))) { db().deleteHistory(entry); state.historyOpen = null; setDirty(); } }}>${t('kp.historyClear')}</button>
+    </details>`;
   }
 
   // ---- merging ----------------------------------------------------------------------------------
@@ -623,7 +979,7 @@
       ${rows.length ? html`<ul class="kp-report-list">${rows.map(({ entry, issues }) => html`<li data-testid="report-row">
           <a href="#" onClick=${(e) => { e.preventDefault(); state.report = false; state.groupId = entry.parentGroup.uuid.id; state.search = ''; selectEntry(entry); }}>${db().field(entry, 'Title') || '–'}</a>
           <small> ${db().groupPath(entry.parentGroup)}</small><br /><span class="kp-issues">${issues.join(' · ')}</span></li>`)}</ul>`
-        : html`<p data-testid="report-ok">✓ ${t('kp.reportOk')}</p>`}
+        : html`<p data-testid="report-ok">${Suite.icon('check')} ${t('kp.reportOk')}</p>`}
       <p><small>${t('kp.reportHint')}</small></p>
       <footer><button data-testid="report-close" onClick=${() => { state.report = false; render(); }}>${t('kp.close')}</button></footer>
     </article></dialog>`;
@@ -634,6 +990,8 @@
     return html`<dialog open data-testid="settings"><article>
       <header><strong>${t('kp.settingsTitle')}</strong></header>
       <label>${t('kp.name')}<input data-testid="db-title" defaultValue=${db().db.meta.name || ''} onChange=${(e) => { db().db.meta.name = e.target.value; setDirty(); }} /></label>
+      <label>${t('kp.historyMax')}<input type="number" min="-1" max="1000" data-testid="history-max" defaultValue=${db().db.meta.historyMaxItems ?? 10}
+        onChange=${(e) => { const v = Math.round(+e.target.value); if (Number.isFinite(v)) { db().db.meta.historyMaxItems = Math.max(-1, v); setDirty(); } }} /><small>${t('kp.historyMaxHint')}</small></label>
       <form onSubmit=${async (e) => {
         e.preventDefault();
         const f = e.target.elements;
@@ -663,19 +1021,21 @@
     if (!state.db) return null;
     return html`<nav class="kp-toolbar" role="toolbar">
       <button class=${state.dirty ? '' : 'secondary'} data-testid="save" title="${t('kp.save')} (Ctrl+S)" onClick=${() => save(false)}>${t('kp.save')}</button>
-      <button class="secondary outline" title="${t('kp.undo')} (Ctrl+Z)" data-testid="undo" disabled=${!history.canUndo} onClick=${() => step(false)}>↶</button>
-      <button class="secondary outline" title="${t('kp.redo')} (Ctrl+Y)" data-testid="redo" disabled=${!history.canRedo} onClick=${() => step(true)}>↷</button>
+      <button class="secondary outline" title="${t('kp.undo')} (Ctrl+Z)" data-testid="undo" disabled=${!history.canUndo} onClick=${() => step(false)}>${Suite.icon('undo-2')}</button>
+      <button class="secondary outline" title="${t('kp.redo')} (Ctrl+Y)" data-testid="redo" disabled=${!history.canRedo} onClick=${() => step(true)}>${Suite.icon('redo-2')}</button>
       <button class="secondary" data-testid="new-entry" onClick=${newEntry}>+ ${t('kp.newEntry')}</button>
-      <button class="secondary outline" data-testid="db-settings" onClick=${() => { state.settingsOpen = true; render(); }}>⚙ ${t('kp.settings')}</button>
-      <button class="secondary outline" data-testid="merge" onClick=${chooseMerge}>⇄ ${t('kp.merge')}</button>
-      <button class="secondary outline" data-testid="report" onClick=${() => { state.report = true; render(); }}>🩺 ${t('kp.report')}</button>
-      <button class="secondary outline" data-testid="lock" onClick=${() => lock(false)}>🔒 ${t('kp.lock')}</button>
+      <button class="secondary outline" data-testid="db-settings" onClick=${() => { state.settingsOpen = true; render(); }}>${Suite.icon('settings')} ${t('kp.settings')}</button>
+      <button class="secondary outline" data-testid="merge" onClick=${chooseMerge}>${Suite.icon('arrow-left-right')} ${t('kp.merge')}</button>
+      <select class="kp-csv-menu" data-testid="csv-menu" aria-label=${t('kp.csv')} onChange=${(e) => { const v = e.target.value; e.target.value = ''; if (v === 'import') chooseCsv(); else if (v === 'export') { state.csv = { kind: 'export', scope: 'all' }; render(); } }}>
+        <option value="">${t('kp.csv')}</option><option value="import">${t('kp.csvImport')}</option><option value="export">${t('kp.csvExport')}</option></select>
+      <button class="secondary outline" data-testid="report" onClick=${() => { state.report = true; render(); }}>${Suite.icon('stethoscope')} ${t('kp.report')}</button>
+      <button class="secondary outline" data-testid="lock" onClick=${() => lock(false)}>${Suite.icon('lock')} ${t('kp.lock')}</button>
     </nav>`;
   }
 
   function Main() {
     if (!state.db) return html`<div class="kp-center"><${LockScreen} /></div>`;
-    return html`<div class=${`kp-layout pane-${state.pane}`} data-testid="workspace"><${Groups} /><${Entries} /><${EntryEditor} /><${SettingsDialog} /><${MergeDialog} /><${ReportDialog} /></div>`;
+    return html`<div class=${`kp-layout pane-${state.pane}`} data-testid="workspace"><${Groups} /><${Entries} /><${EntryEditor} /><${SettingsDialog} /><${MergeDialog} /><${ReportDialog} /><${CsvDialog} /><${OtpDialog} /><${QrDialog} /></div>`;
   }
 
   Suite.shell.mount({ id: APP, title: 'app.title', version: '%%BUILD_VERSION%%', toolbar: () => html`<${Toolbar} />`, main: () => html`<${Main} />` });
@@ -704,6 +1064,6 @@
   Suite.openFiles.register(async () => (state.db ? [{ name: state.name || 'database.kdbx', bytes: new Uint8Array(await state.db.save()), dirty: state.dirty }] : []));
 
   // for tests
-  KP.app = { state, history, step, showDatabase, save, lock, resetAutoLock, AUTO_LOCK_MINUTES };
+  KP.app = { state, otpOf, importCsv, exportCsv, history, step, showDatabase, save, lock, resetAutoLock, AUTO_LOCK_MINUTES };
   document.body.dataset.ready = 'true';
 })();

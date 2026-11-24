@@ -488,7 +488,7 @@ def test_conversation_threads(app_page, tmp_path):
     open_files(page, path)
     rows = page.locator("[data-testid=message]")
     expect(rows).to_have_count(2)  # the conversation (newest activity first) and the other message
-    expect(rows.first.locator("[data-testid=thread-toggle]")).to_have_text("▸ 4")
+    expect(rows.first.locator("[data-testid=thread-toggle]")).to_have_text("4")
     expect(rows.nth(1)).to_contain_text("Other")
     rows.first.locator("[data-testid=thread-toggle]").click()
     expect(rows).to_have_count(5)

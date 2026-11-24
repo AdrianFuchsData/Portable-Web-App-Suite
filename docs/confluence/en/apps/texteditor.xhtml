@@ -79,6 +79,26 @@ Markdown everywhere, in program code only in comments and strings; right-click a
 <p><strong>◫</strong> shows the current document a second time, next to the first one (one above the other on phones), for example to
 look at the beginning of a long file while editing its end. Both views edit the same text and share one undo history;
 the second view follows the active tab. ◫ again closes it.</p>
+<h2>Bookmarks</h2>
+<p>Mark lines you want to come back to: <code>Ctrl+F2</code> (or a click in the narrow margin left of the line numbers) sets or removes a
+bookmark ◆ on the current line, which is tinted. <code>F2</code> and <code>Shift+F2</code> jump to the next and previous bookmark (wrapping around),
+<code>Ctrl+Shift+F2</code> removes all. Bookmarks move with the text when you edit. The <strong>Bookmarks</strong> group in <strong>🛠 Tools</strong> also copies the
+bookmarked lines, removes them, or keeps only them – e.g. to collect the interesting lines of a log file. The status bar shows
+how many there are. Each document has its own bookmarks; they are not saved with the file.</p>
+<h2>Markdown preview</h2>
+<p>For Markdown files (<code>.md</code>), <strong>👁 Preview</strong> (<code>Ctrl+Shift+M</code>) shows the rendered document next to the text (below it on phones):
+headings, emphasis, lists, task lists, tables, code, quotes and links. It is updated while you type and scrolls along with the
+text. <strong>⤓ HTML</strong> saves the rendered document as an HTML file. For safety, nothing in the document can run (no scripts), and
+pictures from files or the web are not loaded – only pictures embedded as <code>data:</code> addresses are shown.</p>
+<h2>Find and replace</h2>
+<p><code>Ctrl+F</code> (or 🔍) opens the search bar above the text. Type the text to find: the bar counts the matches (<em>2 of 7</em>) and the
+matches are highlighted. <strong>Enter</strong> or ↓ goes to the next match, <strong>Shift+Enter</strong> or ↑ to the previous one (also <code>F3</code> / <code>Shift+F3</code>),
+<strong>Alt+Enter</strong> selects all matches at once (then type to change them all together). The buttons next to the field switch on
+<strong>Match case</strong> (Aa), <strong>Whole word</strong> and <strong>Regular expression</strong> (<code>.*</code>; an invalid expression is reported). The arrow at the left
+shows the <strong>replace</strong> field: <strong>Replace</strong> changes the current match and goes on, <strong>Replace all</strong> changes every match (with a
+regular expression, <code>$1</code>, <code>$2</code> … insert its groups). <code>Escape</code> closes the bar. <code>Ctrl+G</code> goes to a line.</p>
+<p>The other code editors of the suite – the cells of the <ac:link><ri:page ri:content-title="Python notebook" /><ac:plain-text-link-body><![CDATA[Python notebook]]></ac:plain-text-link-body></ac:link>, the SQL editor of the
+<ac:link><ri:page ri:content-title="Database tool" /><ac:plain-text-link-body><![CDATA[database tool]]></ac:plain-text-link-body></ac:link> and the bodies of the <ac:link><ri:page ri:content-title="HTTP analyzer" /><ac:plain-text-link-body><![CDATA[HTTP analyzer]]></ac:plain-text-link-body></ac:link> – have the same search bar.</p>
 <h2>Find in files</h2>
 <p><strong>🔍🗂</strong> (<code>Ctrl+Shift+F</code>) searches all open documents at once: matches are listed by file with line and column; a click
 opens the document and selects the match. <strong>Aa</strong> matches upper/lower case exactly, <strong>.*</strong> treats the text as a regular
@@ -105,7 +125,7 @@ be undone with <code>Ctrl+Z</code>.</p>
 <tbody>
 <tr>
 <td>Lines</td>
-<td>sort A→Z or Z→A (numbers in natural order: 9 before 10; upper/lower case ignored), sort by length, reverse the order, remove duplicate lines, remove empty lines, trim whitespace at the end or at both ends, join lines</td>
+<td>sort A→Z or Z→A (numbers in natural order: 9 before 10; upper/lower case ignored), sort by length, reverse the order, remove duplicate lines, remove empty lines, trim whitespace at the end or at both ends, join lines, shuffle, number lines…, add text before/after lines…, keep or remove lines containing a text or regular expression…, wrap lines at a width…</td>
 </tr>
 <tr>
 <td>Case</td>
@@ -117,12 +137,19 @@ be undone with <code>Ctrl+Z</code>.</p>
 </tr>
 <tr>
 <td>Format</td>
-<td>format (indent) or minify JSON, format XML, format SQL, SQL on one line</td>
+<td>format (indent) or minify JSON, format or minify XML, format YAML, JSON → YAML, YAML → JSON, format SQL, SQL on one line</td>
 </tr>
 </tbody>
 </table>
 <p>Line tools always work on whole lines: those touched by the selection. Invalid input (for example broken JSON) shows
 a message and leaves the text unchanged.</p>
+<p>Tools with <strong>…</strong> ask for their options first and show a preview of the result: <em>number lines</em> (start, the text after the
+number, leading zeros), <em>text before/after lines</em> (e.g. <code>-</code> for a list or <code>;</code> at every end; empty lines can be left alone),
+<em>keep</em> or <em>remove lines containing</em> a text (optionally a regular expression, optionally case-sensitive), <em>wrap lines</em> at a width
+(breaks at spaces, keeps the indentation). The options are remembered.</p>
+<p><strong>Syntax check</strong>: in JSON, XML and YAML files, an error is underlined in red while you type, with a mark in the margin; point at
+it to read the message. <strong>✓ Check syntax</strong> (top of the tools list) reports whether the document is correct or jumps to the
+first error and names line, column and problem.</p>
 <p><strong>Format SQL…</strong> works like the PoorSQL formatter: every clause on its own line, lists and sub-queries indented,
 keywords, function names and data types in UPPER CASE. A dialog sets the options, with a preview of the result:
 dialect (standard SQL, T-SQL/SQL Server, PostgreSQL, MySQL, MariaDB, SQLite, Oracle PL/SQL, Db2, DuckDB, BigQuery,
@@ -216,6 +243,22 @@ cursors. It also lets you change:</p>
 <tr>
 <td><code>Ctrl+Shift+F</code></td>
 <td>Find in all open files</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+M</code></td>
+<td>Markdown preview on/off</td>
+</tr>
+<tr>
+<td><code>Ctrl+F2</code></td>
+<td>Bookmark on/off</td>
+</tr>
+<tr>
+<td><code>F2</code> / <code>Shift+F2</code></td>
+<td>Next / previous bookmark</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+F2</code></td>
+<td>Remove all bookmarks</td>
 </tr>
 <tr>
 <td><code>Ctrl+G</code></td>

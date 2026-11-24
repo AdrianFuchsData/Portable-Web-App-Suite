@@ -94,7 +94,7 @@ def test_sftp_panel(app_page, relay, sshd, tmp_path, request):
     expect(page.locator("[data-testid=file-name]").first).to_be_visible()  # the home directory is listed first
     page.fill("[data-testid=path]", files)
     page.press("[data-testid=path]", "Enter")
-    expect(page.locator("[data-testid=file-name]")).to_have_text(["📄 remote.txt"])
+    expect(page.locator("[data-testid=file-name]")).to_have_text(["remote.txt"])
 
     with page.expect_download() as d:
         page.click("[data-testid=file-download]")
@@ -114,20 +114,20 @@ def test_sftp_panel(app_page, relay, sshd, tmp_path, request):
     with page.expect_file_chooser() as chooser:
         page.click("[data-testid=upload]")
     chooser.value.set_files(str(local))
-    expect(page.locator("[data-testid=file-name]")).to_have_text(["📄 remote.txt", "📄 upload.bin"])
+    expect(page.locator("[data-testid=file-name]")).to_have_text(["remote.txt", "upload.bin"])
     assert open(os.path.join(files, "upload.bin"), "rb").read() == local.read_bytes()
 
     page.click("[data-testid=mkdir]")
     page.fill("[data-testid=name-input]", "folder")
     page.click("[data-testid=name-ok]")
-    expect(page.locator("[data-testid=file-name]").first).to_have_text("📁 folder")
+    expect(page.locator("[data-testid=file-name]").first).to_have_text("folder")
     page.locator("[data-testid=file]", has_text="remote.txt").locator("[data-testid=file-rename]").click()
     page.fill("[data-testid=name-input]", "renamed.txt")
     page.click("[data-testid=name-ok]")
     expect(page.locator("[data-testid=file]", has_text="renamed.txt")).to_be_visible()
     page.locator("[data-testid=file]", has_text="upload.bin").locator("[data-testid=file-delete]").click()
     page.click("[data-testid=confirm-ok]")
-    expect(page.locator("[data-testid=file-name]")).to_have_text(["📁 folder", "📄 renamed.txt"])
+    expect(page.locator("[data-testid=file-name]")).to_have_text(["folder", "renamed.txt"])
     assert sorted(os.listdir(files)) == ["folder", "renamed.txt"]
     page.locator("[data-testid=file-name]", has_text="folder").click()
     expect(page.locator("[data-testid=path]")).to_have_value(files + "/folder")

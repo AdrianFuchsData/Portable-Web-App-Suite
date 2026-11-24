@@ -55,6 +55,13 @@ Verfügbar: `pm.environment`, `pm.collectionVariables`, `pm.variables` (`get`, `
 `to.have.property`, `to.be.above`/`below`, `to.match`, `to.be.oneOf`, `to.be.true`, `to.exist`, `to.be.empty`, `.not`, …). Skripte laufen
 abgeschottet von der Suite (kein Zugriff auf ihren Speicher, Dateien oder Passwörter) und werden nach fünf Sekunden beendet.
 
+## GraphQL
+
+Wählen Sie **GraphQL** als Body: Schreiben Sie die **Abfrage** (auch Mutationen) und bei Bedarf die **Variablen** als JSON – `{{Variablen}}` der Umgebung
+gelten in beiden. Die Anfrage geht als `POST` mit einem JSON-Body `{"query", "variables", "operationName"}` hinaus (der Name einer benannten Operation wird
+eingetragen). **Schema laden** fragt den Server nach seinem Schema (Introspection) und listet Abfragen, Mutationen und ihre Felder mit Argumenten und Typen;
+▸ klappt die Felder eines Typs auf, ein Klick auf ein Feld fügt es an der Schreibmarke ein. Sammlungen speichern GraphQL-Bodys im Format von Postman.
+
 ## WebSocket
 
 Eine URL, die mit `ws://` oder `wss://` beginnt, macht die Anfrage zu einer WebSocket-Verbindung: **Verbinden** öffnet sie, die untere
@@ -79,11 +86,24 @@ speichern Sie sie (als Postman-Sammlung).
 
 Rückgängig (↶, `Strg+Z`) und Wiederholen (↷, `Strg+Y`) wirken auf alle Änderungen der Sammlung: Anfragen, Ordner, URL, Header, Body, Anmeldung. Tippen in ein Feld zählt als ein Schritt.
 
-## cURL
+## Eine Sammlung ausführen
+
+**▶▶ Sammlung ausführen** sendet die Anfragen der ganzen Sammlung oder eines Ordners nacheinander, mit ihren Skripten vor der Anfrage und Tests – wie
+der Collection Runner von Postman. Variablen, die ein Skript setzt (etwa ein Token aus einer Anmeldung), gelten für die folgenden Anfragen. Wählen Sie
+die Zahl der **Durchläufe** und eine **Pause** zwischen den Anfragen oder eine **Datendatei**: eine CSV-Datei (erste Zeile = Namen) oder ein JSON-Array
+von Objekten, eine Zeile je Durchlauf; ihre Spalten stehen als `{{Variablen}}` und in Skripten als `pm.iterationData.get('name')` bereit
+(`pm.info.iteration` zählt ab 0). *Beim ersten Fehler anhalten* beendet den Lauf bei einem fehlgeschlagenen Test, einem Fehler oder – bei Anfragen ohne
+Tests – einem Status ab 400. Die Tabelle zeigt Status, Zeit und jeden Test; **Ergebnisse speichern (JSON)** bewahrt einen Bericht auf, **Neuer Lauf**
+beginnt von vorn.
+
+## cURL und Code
 
 - **cURL importieren…** macht aus einem `curl`-Befehl (z. B. „Als cURL kopieren“ aus den Entwicklerwerkzeugen des Browsers) eine Anfrage: Methode,
   URL, Header, Daten, Formularfelder, `-u`-Benutzer und mehr.
-- **cURL** neben den Reitern zeigt die aktuelle Anfrage als `curl`-Befehl (mit aufgelösten Variablen) zum Kopieren.
+- **Code** neben den Reitern zeigt die aktuelle Anfrage (mit aufgelösten Variablen) als Code zum Kopieren oder Speichern als Datei: **cURL**, **wget**,
+  **HTTPie**, **JavaScript** (fetch, im Browser oder **Node.js**), **Python** (requests), **PowerShell** (Invoke-WebRequest), **Go** (net/http), **Java**
+  (HttpClient), **C#** (HttpClient) und **PHP** (cURL). Text-Bodys stehen im Code; ein binärer Body wird aus einer Datei `body.bin` gelesen. Die zuletzt
+  gewählte Sprache bleibt eingestellt.
 
 ## Tastenkürzel
 

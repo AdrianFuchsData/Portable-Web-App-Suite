@@ -270,6 +270,35 @@ def _wrap_socket(self, sock, server_side=False, do_handshake_on_connect=True, su
 
 # ---- requests through the relay's /http ----------------------------------------------------------------------------------
 
+def _decode_content(data, encodings):
+    """The body as requests (urllib3) gives it: gzip, deflate, br and zstd content encodings undone, in reverse order. An encoding
+    that cannot be decoded (unknown, or its module missing) leaves the body as it is, as urllib3 does for unknown encodings."""
+    import zlib
+    for coding in reversed([c.strip().lower() for c in encodings.split(",") if c.strip()]):
+        try:
+            if coding in ("gzip", "x-gzip"):
+                data = zlib.decompress(data, 16 + zlib.MAX_WBITS)
+            elif coding == "deflate":
+                try:
+                    data = zlib.decompress(data)
+                except zlib.error:  # (raw deflate without the zlib header, as some servers send it)
+                    data = zlib.decompress(data, -zlib.MAX_WBITS)
+            elif coding == "br":
+                import brotli
+                data = brotli.decompress(data)
+            elif coding == "zstd":
+                import zstandard
+                data = zstandard.ZstdDecompressor().decompressobj().decompress(data)
+            elif coding != "identity":
+                break
+        except ImportError:
+            break
+        except Exception as e:
+            import requests
+            raise requests.exceptions.ContentDecodingError(f"Received response with content-encoding: {coding}, but failed to decode it: {e}") from None
+    return data
+
+
 def _relay_send(adapter, request, timeout=None, verify=True):
     import requests
     body = request.body or b""
@@ -297,7 +326,7 @@ def _relay_send(adapter, request, timeout=None, verify=True):
     response.headers = requests.structures.CaseInsensitiveDict()
     for name, value in answer.get("headers", []):
         response.headers[name] = f"{response.headers[name]}, {value}" if name in response.headers else value
-    response._content = base64.b64decode(answer.get("body") or "")
+    response._content = _decode_content(base64.b64decode(answer.get("body") or ""), response.headers.get("Content-Encoding", ""))
     response._content_consumed = True
     response.url = answer.get("url") or request.url
     response.request = request

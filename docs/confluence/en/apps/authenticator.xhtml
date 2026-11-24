@@ -1,0 +1,147 @@
+<!-- Generated from docs/en/apps/authenticator.md by tools/build_docs.py - do not edit. Confluence page title: Authenticator -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>The authenticator (<code>authenticator.html</code>) shows the one-time passwords (two-factor codes) of a KeePass database – like an
+authenticator app on the phone, but the secrets stay in your own encrypted <code>.kdbx</code> file. It supports <strong>TOTP</strong> (time-based,
+the usual kind), <strong>HOTP</strong> (counter-based) and <strong>Steam</strong> codes. Everything runs in the browser; nothing is sent anywhere.</p>
+<p>The tokens are stored the way KeePassXC, KeePass 2 (2.47 and later), KeePassDX and Strongbox store them (the <code>otp</code> field
+plus KeePass 2's <code>TimeOtp-…</code>/<code>HmacOtp-…</code> fields), so the same database also works in those programs and in the suite's
+<ac:link><ri:page ri:content-title="KeePass" /><ac:plain-text-link-body><![CDATA[KeePass]]></ac:plain-text-link-body></ac:link> application. Older KeePassXC fields (<code>TOTP Seed</code>/<code>TOTP Settings</code>) and KeeOtp entries are read too.</p>
+<h2>Unlocking or creating a database</h2>
+<ol>
+<li><strong>Choose database…</strong> picks the <code>.kdbx</code> file; you can also drop it onto the window, together with its key file. In
+   Chrome/Edge on the desktop, <strong>Recently opened</strong> lists the databases opened before.</li>
+<li>Enter the password (👁 shows it) and, if the database has one, choose the <strong>key file</strong>.</li>
+<li><strong>Unlock</strong>. A wrong password or key file gives an error message.</li>
+</ol>
+<p><strong>Create a new database</strong> asks for a name and a password (twice); optionally a <strong>key file</strong> is created as well and
+downloaded at once – keep it safe, without it the database cannot be opened. The new database is a KDBX 4 file (AES-256,
+Argon2id); it is written when you <strong>save</strong> it.</p>
+<h2>The codes</h2>
+<p>Every entry with one-time password data (outside the recycle bin) appears as a card, sorted by name, with its account and
+its group. For TOTP and Steam tokens the card shows three codes: the <strong>previous</strong>, the <strong>current</strong> (large) and the <strong>next</strong>
+code, and a bar with the seconds left. Click a code to copy it. The current code turns red in its last five seconds – the
+next code is then the one to use. The previous code helps when a server is a little behind.</p>
+<p>HOTP tokens show the code for the current counter; <strong>⟳ n</strong> moves on to the next code (the counter is increased and saved with
+the database).</p>
+<p><strong>Search</strong> (<code>Ctrl+F</code>) filters by name, account, issuer and group.</p>
+<h2>Adjusting the clock</h2>
+<p>TOTP codes depend on the time: if the clock of your device differs from the server's, the codes are rejected. The bar above
+the codes shows the clock the codes are made with:</p>
+<ul>
+<li><strong>−30 s</strong> / <strong>+30 s</strong> move the clock half a minute back or forward (one code step).</li>
+<li><strong>⏸</strong> stops the clock (the codes stay as they are), <strong>▶</strong> lets it run on from there.</li>
+<li><strong>⚙</strong> opens the settings: an <strong>offset to the local clock</strong> in seconds (e.g. <code>-90</code>), or a fixed <strong>date and time</strong> (this
+  stops the clock).</li>
+<li><strong>↺</strong> returns to the local clock. While the clock differs from the local clock, the bar is shown in yellow.</li>
+</ul>
+<p>The clock setting is not saved; it is reset when the application is opened again.</p>
+<h2>Adding and editing tokens</h2>
+<p><strong>+ Add</strong> opens the form:</p>
+<ul>
+<li><strong>Fill in from an otpauth:// link</strong>: paste a link as offered by a website for setting up two-factor authentication
+  (<code>otpauth://totp/Example:anna@example.org?secret=…&amp;issuer=Example</code>) – all fields are filled in.</li>
+<li>Or enter <strong>issuer</strong>, <strong>account</strong>, <strong>name</strong> (the title of the KeePass entry) and the <strong>secret key</strong> (Base32, spaces are
+  ignored). 🎲 creates a random secret (for setting up a token of your own).</li>
+<li><strong>Advanced settings</strong>: type (TOTP, HOTP, Steam), algorithm (SHA1, SHA256, SHA512), digits, period (TOTP) or counter (HOTP),
+  and the KeePass <strong>group</strong> the new entry goes into.</li>
+<li>The <strong>current code</strong> is shown while you type, so you can compare it with the website before you save.</li>
+</ul>
+<p><strong>✎ Edit</strong> changes a token the same way; the previous version of the entry goes into its history.</p>
+<h2>Deleting tokens</h2>
+<p><strong>🗑 Delete</strong> asks first and warns: switch off two-factor authentication for the account (or make sure you can sign in
+another way) before deleting the token, or you may lock yourself out. If the KeePass entry holds more than the token – a
+password, a URL, notes, attachments or other fields – you can <strong>remove only the token</strong> and keep the entry, or delete the
+whole entry. Deleted entries go to the recycle bin of the database, if it has one.</p>
+<h2>Importing</h2>
+<p><strong>⇩ Import</strong> reads several tokens at once:</p>
+<ul>
+<li><strong>Text</strong>: <code>otpauth://</code> links (one per line), <strong>Google Authenticator</strong> export links (<code>otpauth-migration://</code>, from the
+  QR codes of “Transfer accounts”) and unencrypted <strong>Aegis</strong> JSON exports.</li>
+<li><strong>🖼 QR code from a picture…</strong> reads the QR codes of screenshots or photos; you can also <strong>paste</strong> a screenshot (<code>Ctrl+V</code>) or
+  drop pictures onto the window.</li>
+<li><strong>📷 Scan with the camera</strong> reads QR codes held in front of the camera (the browser asks for permission).</li>
+<li><strong>📄 From a file…</strong> reads text and JSON files.</li>
+</ul>
+<p>The list below shows the tokens found; tokens that are already in the database are marked <em>already there</em> and not ticked.
+Choose the <strong>group</strong> for the new entries and <strong>Import</strong>. Pasting an <code>otpauth://</code> link or a QR code screenshot anywhere in the
+window (outside the text fields) opens the import with it.</p>
+<h2>Exporting</h2>
+<ul>
+<li><strong>▦</strong> on a card shows the token as a <strong>QR code</strong> and as an <code>otpauth://</code> link (after a warning – anyone who sees it can create
+  your codes). Scan the QR code with another authenticator app to move a token there.</li>
+<li><strong>⇧ Export all</strong> downloads all <code>otpauth://</code> links as a text file, or shows all QR codes. The export is <strong>not encrypted</strong> –
+  delete it after use.</li>
+</ul>
+<h2>Saving</h2>
+<p><strong>💾 Save</strong> (<code>Ctrl+S</code>) writes the database back to its file in Chrome/Edge on the desktop. In other browsers (Firefox,
+Android) it is downloaded: replace the original file with the downloaded one, otherwise the changes are lost. <strong>Save as</strong>
+(<code>Ctrl+Shift+S</code>) writes a copy. Before saving, the new file is decrypted again to make sure it can be opened.</p>
+<h2>Locking</h2>
+<p><strong>🔒 Lock</strong> (<code>Ctrl+L</code>) closes the database. It is also locked after <strong>10 minutes</strong> without activity – but never while there
+are unsaved changes.</p>
+<h2>Keyboard shortcuts</h2>
+<p>On a Mac, use Cmd instead of Ctrl. <code>F1</code> (or <code>?</code>) shows this list in the application.</p>
+<h3>Files</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+S</code></td>
+<td>Save as</td>
+</tr>
+<tr>
+<td><code>Ctrl+L</code></td>
+<td>Lock</td>
+</tr>
+</tbody>
+</table>
+<h3>Codes</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+F</code></td>
+<td>Search</td>
+</tr>
+<tr>
+<td><code>Ctrl+V</code></td>
+<td>Import a pasted <code>otpauth://</code> link or QR code picture</td>
+</tr>
+<tr>
+<td><code>Escape</code></td>
+<td>Close the dialog</td>
+</tr>
+</tbody>
+</table>
+<h3>Help</h3>
+<table>
+<thead>
+<tr>
+<th>Keys</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>show this list (outside of text fields)</td>
+</tr>
+</tbody>
+</table>
+<h2>On phones and tablets</h2>
+<p>The cards are shown in one column; the toolbar wraps. The camera of the back is used for scanning QR codes. On Android the
+database is saved as a download (see <em>Saving</em>).</p>

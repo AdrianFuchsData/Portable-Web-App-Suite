@@ -35,29 +35,30 @@
    * opens several files at once (tabs).
    */
   const APPS = [
-    { id: 'texteditor', icon: '📝', name: { en: 'Text editor', de: 'Texteditor' }, ext: TEXT, multi: true },
-    { id: 'hexeditor', icon: '🔢', name: { en: 'Hex editor', de: 'Hex-Editor' }, ext: ['*'], multi: true },
-    { id: 'archive', icon: '📦', name: { en: 'Archive manager', de: 'Archivmanager' }, ext: ['zip', 'tar', 'tgz', 'gz', 'jar', 'war', 'apk', 'epub', 'docx', 'xlsx', 'pptx', 'odt', 'ods', 'odp', 'whl', 'nupkg', 'vsix', '7z', 'rar', 'xz', 'txz', 'bz2', 'tbz2', 'zst', 'iso', 'cab', 'deb', 'rpm', 'cpio'] },
-    { id: 'mediaplayer', icon: '▶️', name: { en: 'Media player', de: 'Mediaplayer' }, ext: ['mp3', 'ogg', 'oga', 'opus', 'wav', 'flac', 'm4a', 'aac', 'mp4', 'm4v', 'webm', 'ogv', 'mkv', 'mov', 'm3u', 'm3u8', 'pls'] },
-    { id: 'audioeditor', icon: '🎚️', name: { en: 'Audio editor', de: 'Audio-Editor' }, ext: ['wav', 'mp3', 'ogg', 'oga', 'opus', 'flac', 'm4a', 'aac', 'webm'] },
-    { id: 'videoeditor', icon: '🎬', name: { en: 'Video editor', de: 'Video-Editor' }, ext: ['mp4', 'm4v', 'webm', 'mkv', 'mov', 'ogv'] },
-    { id: 'imageeditor', icon: '🎨', name: { en: 'Image editor', de: 'Bildbearbeitung' }, ext: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'avif', 'svg', 'ora', 'psd'] },
-    { id: 'barcode', icon: '▦', name: { en: 'Barcodes', de: 'Barcodes' }, ext: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'avif'] },
-    { id: 'diagram', icon: '📐', name: { en: 'Diagram editor', de: 'Diagramm-Editor' }, ext: ['drawio', 'dio', 'excalidraw', 'svg'] },
-    { id: 'keepass', icon: '🔐', name: { en: 'KeePass', de: 'KeePass' }, ext: ['kdbx'] },
-    { id: 'spreadsheet', icon: '📊', name: { en: 'Spreadsheet', de: 'Tabellenkalkulation' }, ext: ['xlsx', 'xlsm', 'xls', 'ods', 'csv', 'tsv'] },
-    { id: 'document', icon: '📄', name: { en: 'Document', de: 'Dokument' }, ext: ['docx', 'odt', 'rtf', 'txt', 'md', 'html', 'htm'] },
-    { id: 'presentation', icon: '📽️', name: { en: 'Presentation', de: 'Präsentation' }, ext: ['pptx'] },
-    { id: 'reveal', icon: '🎞️', name: { en: 'Web slides', de: 'Web-Folien' }, ext: ['ipynb', 'md', 'markdown', 'html', 'htm', 'pptx'] },
-    { id: 'pdfviewer', icon: '📕', name: { en: 'PDF viewer', de: 'PDF-Betrachter' }, ext: ['pdf'] },
-    { id: 'calendar', icon: '📅', name: { en: 'Calendar', de: 'Kalender' }, ext: ['ics', 'ical', 'ifb', 'icalendar'] },
-    { id: 'mail', icon: '✉️', name: { en: 'Mail', de: 'E-Mail' }, ext: ['eml', 'mbox', 'vcf'] },
-    { id: 'dbtool', icon: '🗄️', name: { en: 'Database tool', de: 'Datenbankwerkzeug' }, ext: ['sqlite', 'sqlite3', 'db', 'db3', 's3db'] },
-    { id: 'ssh', icon: '🖥️', name: { en: 'SSH client', de: 'SSH-Client' }, ext: [] },
-    { id: 'ftp', icon: '📁', name: { en: 'FTP/SFTP client', de: 'FTP/SFTP-Client' }, ext: [] },
-    { id: 'http', icon: '🌐', name: { en: 'HTTP analyzer', de: 'HTTP-Analysator' }, ext: [] },
-    { id: 'webinspector', icon: '🔍', name: { en: 'Web inspector', de: 'Web-Inspektor' }, ext: ['har', 'html', 'htm'] },
-    { id: 'notebook', icon: '🐍', name: { en: 'Python notebook', de: 'Python-Notebook' }, ext: ['ipynb', 'py'] },
+    { id: 'texteditor', icon: 'file-code', name: { en: 'Text editor', de: 'Texteditor' }, ext: TEXT, multi: true },
+    { id: 'hexeditor', icon: 'binary', name: { en: 'Hex editor', de: 'Hex-Editor' }, ext: ['*'], multi: true },
+    { id: 'archive', icon: 'package', name: { en: 'Archive manager', de: 'Archivmanager' }, ext: ['zip', 'tar', 'tgz', 'gz', 'jar', 'war', 'apk', 'epub', 'docx', 'xlsx', 'pptx', 'odt', 'ods', 'odp', 'whl', 'nupkg', 'vsix', '7z', 'rar', 'xz', 'txz', 'bz2', 'tbz2', 'zst', 'iso', 'cab', 'deb', 'rpm', 'cpio'] },
+    { id: 'mediaplayer', icon: 'circle-play', name: { en: 'Media player', de: 'Mediaplayer' }, ext: ['mp3', 'ogg', 'oga', 'opus', 'wav', 'flac', 'm4a', 'aac', 'mp4', 'm4v', 'webm', 'ogv', 'mkv', 'mov', 'm3u', 'm3u8', 'pls'] },
+    { id: 'audioeditor', icon: 'audio-lines', name: { en: 'Audio editor', de: 'Audio-Editor' }, ext: ['wav', 'mp3', 'ogg', 'oga', 'opus', 'flac', 'm4a', 'aac', 'webm'] },
+    { id: 'videoeditor', icon: 'clapperboard', name: { en: 'Video editor', de: 'Video-Editor' }, ext: ['mp4', 'm4v', 'webm', 'mkv', 'mov', 'ogv'] },
+    { id: 'imageeditor', icon: 'palette', name: { en: 'Image editor', de: 'Bildbearbeitung' }, ext: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'avif', 'svg', 'ora', 'psd'] },
+    { id: 'barcode', icon: 'qr-code', name: { en: 'Barcodes', de: 'Barcodes' }, ext: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'avif'] },
+    { id: 'diagram', icon: 'shapes', name: { en: 'Diagram editor', de: 'Diagramm-Editor' }, ext: ['drawio', 'dio', 'excalidraw', 'svg'] },
+    { id: 'keepass', icon: 'lock-keyhole', name: { en: 'KeePass', de: 'KeePass' }, ext: ['kdbx'] },
+    { id: 'authenticator', icon: 'shield-check', name: { en: 'Authenticator', de: 'Authenticator' }, ext: ['kdbx'] },
+    { id: 'spreadsheet', icon: 'file-spreadsheet', name: { en: 'Spreadsheet', de: 'Tabellenkalkulation' }, ext: ['xlsx', 'xlsm', 'xls', 'ods', 'csv', 'tsv'] },
+    { id: 'document', icon: 'file-text', name: { en: 'Document', de: 'Dokument' }, ext: ['docx', 'odt', 'rtf', 'txt', 'md', 'html', 'htm'] },
+    { id: 'presentation', icon: 'presentation', name: { en: 'Presentation', de: 'Präsentation' }, ext: ['pptx'] },
+    { id: 'reveal', icon: 'monitor-play', name: { en: 'Web slides', de: 'Web-Folien' }, ext: ['ipynb', 'md', 'markdown', 'html', 'htm', 'pptx'] },
+    { id: 'pdfviewer', icon: 'book-open-text', name: { en: 'PDF viewer', de: 'PDF-Betrachter' }, ext: ['pdf'] },
+    { id: 'calendar', icon: 'calendar', name: { en: 'Calendar', de: 'Kalender' }, ext: ['ics', 'ical', 'ifb', 'icalendar'] },
+    { id: 'mail', icon: 'mail', name: { en: 'Mail', de: 'E-Mail' }, ext: ['eml', 'mbox', 'vcf'] },
+    { id: 'dbtool', icon: 'database', name: { en: 'Database tool', de: 'Datenbankwerkzeug' }, ext: ['sqlite', 'sqlite3', 'db', 'db3', 's3db'] },
+    { id: 'ssh', icon: 'terminal', name: { en: 'SSH client', de: 'SSH-Client' }, ext: [] },
+    { id: 'ftp', icon: 'folder-sync', name: { en: 'FTP/SFTP client', de: 'FTP/SFTP-Client' }, ext: [] },
+    { id: 'http', icon: 'globe', name: { en: 'HTTP analyzer', de: 'HTTP-Analysator' }, ext: [] },
+    { id: 'webinspector', icon: 'scan-search', name: { en: 'Web inspector', de: 'Web-Inspektor' }, ext: ['har', 'html', 'htm'] },
+    { id: 'notebook', icon: 'notebook-pen', name: { en: 'Python notebook', de: 'Python-Notebook' }, ext: ['ipynb', 'py'] },
   ];
 
   Suite.i18n.register({
@@ -196,7 +197,8 @@
           b.type = 'button';
           b.className = 'secondary outline';
           b.dataset.app = a.id;
-          b.textContent = `${a.icon} ${a.name[Suite.i18n.language] || a.name.en}`;
+          b.innerHTML = Suite.icons ? Suite.icons.svg(a.icon) : '';
+          b.append(` ${a.name[Suite.i18n.language] || a.name.en}`);
           b.addEventListener('click', () => done(a.id));
           div.append(b);
         }

@@ -203,7 +203,7 @@ def test_page_operations(app_page, pdfs, tmp_path):
     show_sidebar(page)
     # move page 3 to the front
     page.locator("[data-testid=page-select]").nth(2).check()
-    expect(page.locator("[data-testid=pages-menu] option").first).to_have_text("📄 Pages (1)")
+    expect(page.locator("[data-testid=pages-menu] option").first).to_have_text("Pages (1)")
     pages_menu(page, "moveTo")
     page.fill("[data-testid=move-position]", "1")
     page.click("[data-testid=move-ok]")

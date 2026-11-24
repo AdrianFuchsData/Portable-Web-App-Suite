@@ -45,7 +45,9 @@ gedacht.
   Bilder** (oft zur Nachverfolgung benutzt) angezeigt; **Nur Text** zeigt die Textfassung. Links öffnen in einem neuen Tab.
 - Anhänge stehen über dem Text: Ein Klick speichert sie.
 - **Suchen** durchsucht Betreff, Absender und Text des aktuellen Ordners am Server (Eingabetaste; Feld leeren, um zum Ordner
-  zurückzukehren).
+  zurückzukehren). Die Liste neben dem Feld erweitert die Suche auf **Alle Ordner** des Kontos oder **Alle Konten**, die verbunden
+  sind: Die Treffer aller Ordner kommen in eine Liste, die neuesten zuerst, jeweils mit ihrem Ordner (und Konto); Sie können sie wie
+  gewohnt lesen, markieren, löschen und beantworten. Die Zeile über den Treffern zählt sie; × führt zum Ordner zurück.
 - **🧵** gruppiert die Liste nach **Unterhaltungen** (standardmäßig an): eine Nachricht und ihre Antworten bilden eine Zeile mit der
   Anzahl der Nachrichten (▸ 4), sortiert nach der neuesten Nachricht; ein Klick auf die Zahl zeigt die Antworten eingerückt
   untereinander. Antworten werden über ihre Verweise erkannt (wie in Thunderbird) und bei Programmen, die diese weglassen, über
@@ -118,6 +120,12 @@ Einladungen (iCalendar) zeigen einen Kasten mit Titel, Zeit, Ort und Organisator
 **📂 .eml/.mbox öffnen** (oder Ziehen von Dateien auf das Fenster) öffnet einzelne Nachrichten und Postfachdateien (z. B.
 aus Thunderbird exportiert). Sie erscheinen unter „Geöffnete Dateien“ in der Seitenleiste; Sie können sie lesen, durchsuchen,
 beantworten, weiterleiten und speichern. Bei verbundenem Konto kopiert 📁 sie in einen IMAP-Ordner.
+
+**🗄 mbox → Als mbox exportieren…** speichert die ausgewählten Nachrichten – ohne Auswahl den ganzen aktuellen Ordner (auch die noch nicht
+geladenen Nachrichten), die Suchtreffer oder die geöffnete Datei – als eine `.mbox`-Datei, die ältesten zuerst, für Thunderbird, mutt, Apple Mail
+oder ein Archiv. Die Markierungen gelesen, beantwortet und markiert bleiben erhalten (Kopfzeilen `Status`/`X-Status`, wie mutt und Thunderbird sie
+lesen). **mbox → mbox in diesen Ordner importieren…** legt alle Nachrichten einer oder mehrerer `.mbox`-Dateien mit diesen Markierungen in den
+geöffneten IMAP-Ordner; ein Fortschrittsbalken zeigt den Stand.
 
 ↗ neben einem Anhang (**Öffnen mit…**) öffnet ihn in einer anderen Anwendung der Suite: Anhänge empfangener Nachrichten als Kopie, Anhänge einer Nachricht in Bearbeitung so, dass Speichern den Anhang ersetzt.
 

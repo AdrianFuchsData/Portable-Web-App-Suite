@@ -24,7 +24,7 @@ def test_text_editor_german(app_page):
     page = app_page("texteditor", init_script=NO_PICKERS)
     select = page.locator("[data-testid=spell-select]")
     expect(select).to_have_value("off")
-    expect(select.locator("option")).to_have_text(["ABC Spelling off", "ABC✓ English (US)", "ABC✓ German (Germany)", "Load dictionary…"])
+    expect(select.locator("option")).to_have_text(["ABC Spelling off", "ABC · English (US)", "ABC · German (Germany)", "Load dictionary…"])
     select.select_option("de_DE")
     page.locator(".cm-content").click()
     page.keyboard.type("Die Rechtschreibprüfung im Gesundheitsministerium ist schön, aber der Weg ist krum. Fehlerr")

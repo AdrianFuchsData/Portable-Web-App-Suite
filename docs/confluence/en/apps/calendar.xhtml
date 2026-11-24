@@ -11,10 +11,32 @@ Google Calendar, Apple Calendar and most other calendar programs. Several calend
   it the calendar for new and imported events.</li>
 <li><strong>Import events…</strong> adds the events of an <code>.ics</code> file (e.g. an invitation received by e-mail) to the selected calendar. An event with the same
   UID replaces the existing one, so an updated invitation updates the event.</li>
+<li><strong>CSV… → Import CSV…</strong> reads events or tasks from a CSV file into the selected calendar – for example an export of Outlook, Google
+  Calendar or a spreadsheet. The columns are found by their names, in English or German (<em>Subject/Betreff, Start Date/Beginnt am, Start
+  Time/Beginnt um, End Date, End Time, All Day Event/Ganztägiges Ereignis, Description, Location, Categories</em>; for tasks <em>Due Date/Fällig am,
+  Priority, Status, % Complete</em>). Dates may be written <code>2026-10-16</code>, <code>16.10.2026</code> or <code>10/16/2026</code> (the order of day and month is taken from
+  the file), times <code>14:30</code> or <code>2:30 PM</code>; comma, semicolon or tab separate the columns. Rows without a readable date are skipped and named.</li>
+<li><strong>CSV… → Export as CSV</strong> writes the events of a period (repeating events as single dates) or the tasks of the shown calendars or the
+  selected one, in the column layout of Outlook and Google Calendar, with dates as ISO, European or US (Google) format.</li>
 <li>💾 saves a calendar: directly into its file in Chrome/Edge on the desktop, as a download in Firefox and on Android (replace the original file
   with it). <strong>Save all</strong> (<code>Ctrl+S</code>) saves every changed calendar; changed calendars are marked with •.</li>
 </ul>
-<p>Everything in the file that the calendar does not edit (further reminders, participants, tasks, other properties) is kept when saving.</p>
+<h3>Online calendars (CalDAV)</h3>
+<p><strong>☁ CalDAV…</strong> opens calendars stored on a server – Nextcloud, ownCloud, Radicale, Baïkal, SOGo, mailbox.org, iCloud and other
+CalDAV servers. A browser page cannot talk to these servers directly, so the <strong>relay</strong> is needed (see the user guide's chapter on
+the relay; enter its address and sign-in under <em>Relay</em> in the dialog).</p>
+<ol>
+<li><strong>Add account</strong>: a name, the address – the server (<code>https://cloud.example.org</code>), its CalDAV address
+   (<code>https://cloud.example.org/remote.php/dav</code>) or the address of one calendar –, user name and password. Many providers want an
+   <em>app password</em> here instead of the normal one. Accounts and passwords are kept in the connections file shown at the top (a KeePass
+   database or a JSON file; <strong>Save</strong> it to keep them).</li>
+<li><strong>Calendars</strong> asks the server for your calendars (also through <code>/.well-known/caldav</code>); <strong>Open</strong> loads one with its events and
+   tasks. It appears in the list with ☁ instead of 💾.</li>
+<li>Change events and tasks as usual. <strong>☁</strong> (or <strong>Save all</strong>) writes only what changed: new items are created, changed ones replaced,
+   deleted ones removed. When someone else changed an item on the server in the meantime, it is not overwritten: the calendar says so,
+   <strong>⟳</strong> loads the current state again and you repeat your change.</li>
+</ol>
+<p>Everything in the file that the calendar does not edit (further reminders, participants, journal entries, other properties) is kept when saving.</p>
 <h2>Views</h2>
 <table>
 <thead>
@@ -46,6 +68,11 @@ Google Calendar, Apple Calendar and most other calendar programs. Several calend
 <td>list of the events of the next 60 days</td>
 </tr>
 <tr>
+<td>Tasks</td>
+<td><code>X</code></td>
+<td>the tasks (to-dos) of the shown calendars (see below)</td>
+</tr>
+<tr>
 <td>Availability</td>
 <td><code>F</code></td>
 <td>free and busy times of the week, one row per calendar (see below)</td>
@@ -56,6 +83,14 @@ Google Calendar, Apple Calendar and most other calendar programs. Several calend
 bottom left). <strong>Search</strong> (<code>/</code>) shows only events whose title, location, description or categories contain the text.</p>
 <p><strong>🖨</strong> prints the current view with the names of the shown calendars and the period as heading (month and week on landscape
 sheets, the whole day on one sheet); with "Save as PDF" as the printer you get a PDF. The search applies to the print as well.</p>
+<h3>Tasks</h3>
+<p>Calendar files can also hold <strong>tasks</strong> (to-dos, <code>VTODO</code> – as Thunderbird, Apple Reminders, Nextcloud Tasks or Outlook export
+them). <strong>Tasks</strong> (<code>X</code>) lists the tasks of the shown calendars: <strong>Overdue</strong> (in red), <strong>Today</strong>, <strong>Upcoming</strong>, <strong>No due date</strong>, and
+the <strong>Done</strong> ones folded away. Type into <em>New task</em> and press Enter to add one to the selected calendar. The box in front ticks a
+task off (and back). A click on a task opens it: title, <strong>due</strong> date with an optional time, <strong>priority</strong> (a red ! marks high),
+<strong>status</strong> (open, in progress with % done, done, cancelled), calendar, location, categories and description; <strong>Delete</strong> removes it.
+Open tasks with a due date also appear on their day in the month view and the agenda (☐); a click opens them. The search finds
+tasks too; undo covers them like events.</p>
 <h3>Availability (free/busy)</h3>
 <p>The <strong>Availability</strong> view helps to find a time that suits several calendars, e.g. your own calendar and the calendars or
 free/busy files of colleagues. For every day of the week it shows the working hours with one bar per shown calendar: busy
@@ -152,8 +187,8 @@ was opened are not shown again.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>M</code> / <code>W</code> / <code>D</code> / <code>A</code> / <code>F</code></td>
-<td>Month / week / day / agenda / availability</td>
+<td><code>M</code> / <code>W</code> / <code>D</code> / <code>A</code> / <code>X</code> / <code>F</code></td>
+<td>Month / week / day / agenda / tasks / availability</td>
 </tr>
 <tr>
 <td><code>T</code></td>

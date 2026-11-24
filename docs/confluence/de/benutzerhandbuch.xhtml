@@ -59,6 +59,11 @@ Dateimanager): Die Datei öffnet sich in der Anwendung, und <strong>Speichern</s
 <td><ac:link><ri:page ri:content-title="KeePass" /><ac:plain-text-link-body><![CDATA[KeePass]]></ac:plain-text-link-body></ac:link></td>
 </tr>
 <tr>
+<td>Authenticator (Zwei-Faktor-Codes)</td>
+<td><code>authenticator.html</code></td>
+<td><ac:link><ri:page ri:content-title="Authenticator" /><ac:plain-text-link-body><![CDATA[Authenticator]]></ac:plain-text-link-body></ac:link></td>
+</tr>
+<tr>
 <td>Archivmanager</td>
 <td><code>archive.html</code></td>
 <td><ac:link><ri:page ri:content-title="Archivmanager" /><ac:plain-text-link-body><![CDATA[Archivmanager]]></ac:plain-text-link-body></ac:link></td>
@@ -178,7 +183,7 @@ von Archiven im Notebook über 512 MiB, ZIP-Archive ohne ZIP64 über 4 GiB).</p>
 </thead>
 <tbody>
 <tr>
-<td>ABC / ABC✓</td>
+<td>ABC / ABC · Sprache</td>
 <td>Rechtschreibung: aus oder die Sprache, in der Textfelder geprüft werden (nur in Anwendungen mit Text, siehe Rechtschreibung)</td>
 </tr>
 <tr>
@@ -186,7 +191,7 @@ von Archiven im Notebook über 512 MiB, ZIP-Archive ohne ZIP64 über 4 GiB).</p>
 <td>Befehlspalette: alle Aktionen der Anwendung durchsuchen (auch <code>Strg+Umschalt+P</code> oder <code>Strg+Umschalt+Leertaste</code>)</td>
 </tr>
 <tr>
-<td>◐ / ☀ / ☾</td>
+<td>Sonne-Mond / Sonne / Mond</td>
 <td>Design: automatisch (wie das System), hell oder dunkel</td>
 </tr>
 <tr>
@@ -201,8 +206,20 @@ von Archiven im Notebook über 512 MiB, ZIP-Archive ohne ZIP64 über 4 GiB).</p>
 <td>☺</td>
 <td>In einem Textfeld mit Fokus: Emoji und Symbole (auch <code>Strg+.</code>, siehe Emoji und Symbole)</td>
 </tr>
+<tr>
+<td>⌃ (Smartphones und schmale Fenster)</td>
+<td>Klappt die Werkzeugleiste der Anwendung ein oder wieder aus – mehr Platz für den Inhalt</td>
+</tr>
+<tr>
+<td>Leisten-Symbol</td>
+<td>Blendet die Titelleiste aus. Eine kleine Schaltfläche rechts oben blendet sie wieder ein (oder <em>Titelleiste einblenden</em> in der Befehlspalette).</td>
+</tr>
 </tbody>
 </table>
+<p>Beide Einstellungen – eine ausgeblendete Titelleiste und eine eingeklappte Werkzeugleiste – bleiben gespeichert und gelten für alle Anwendungen der Suite in diesem Browser.</p>
+<p>Die Schaltflächen zeigen <strong>Symbole (Icons)</strong>, die zur Suite gehören; sie sehen daher in jedem Browser und auf jedem System gleich aus. Diese
+Dokumentation schreibt sie als ähnliche Zeichen (zum Beispiel 💾 für <em>Speichern</em>, 🔍 für <em>Suchen</em>); der Name einer Schaltfläche erscheint,
+wenn Sie den Mauszeiger darüber halten, und Bildschirmleser sagen ihn an.</p>
 <p>Die Anwendungen merken sich Sprache und Design in Ihrem Browser.</p>
 <h3>Befehlspalette</h3>
 <p><strong>⌘</strong> (oder <code>Strg+Umschalt+P</code> / <code>Strg+Umschalt+Leertaste</code>; am Mac <code>Cmd</code> statt <code>Strg</code>) listet alle Aktionen, die die Anwendung
@@ -503,6 +520,11 @@ funktioniert nur, wenn Sie sie ausdrücklich erlauben (nur in vertrauenswürdige
 seine Kopfzeile zeigt <strong>🔓 Netzwerk und Unterbrechen</strong>. Die Anwendungen verwenden dieses Relay standardmäßig; geben Sie sein Token einmal
 ein. Einstellungen und zuletzt verwendete Dateien werden für direkt geöffnete Dateien und für vom Relay bereitgestellte getrennt gehalten
 (exportieren und importieren Sie sie mit <strong>⚙ Einstellungen</strong>). Der Port wird mit <code>--port</code> gesetzt (Standard 8765).</p>
+<p><strong>Als App installieren (PWA).</strong> Vom Relay bereitgestellt (auf <code>localhost</code> oder über <code>https</code>), lassen sich die Suite und jede Anwendung
+wie eine App <strong>installieren</strong>: in Chrome und Edge mit <strong>Als App installieren</strong> in der Titelleiste (oder dem Installationssymbol in der
+Adressleiste), unter Android mit <em>Zum Startbildschirm hinzufügen</em> / <em>App installieren</em> im Browsermenü. Die installierte App öffnet sich in
+einem eigenen Fenster mit eigenem Symbol. Der Browser behält eine Kopie jeder geöffneten Seite, daher startet eine installierte App auch,
+wenn das Relay nicht läuft (die Netzwerkfunktionen warten dann auf das Relay). Das direkte Öffnen der HTML-Dateien ändert sich nicht.</p>
 <p><strong>Ein Firmen-Proxy.</strong> Darf das Relay das Internet nur über einen Proxy erreichen, starten Sie es mit
 <code>--upstream-proxy http://proxy.example.org:3128</code> (bei Bedarf mit <code>benutzer:passwort@</code> vor dem Host; <code>--upstream-proxy env</code> übernimmt den
 Proxy aus den Umgebungsvariablen). <code>--no-proxy</code> führt Server auf, die direkt erreicht werden.</p>

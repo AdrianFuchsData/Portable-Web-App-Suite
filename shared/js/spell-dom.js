@@ -265,7 +265,7 @@ function SpellControl() {
       if (!spell.enabled) { spell.setEnabled(true); if (!supported) Suite.shell.toast(t('sp.unsupported'), 'warning'); }
     }} value=${value}>
     <option value="off" selected=${value === 'off'}>ABC ${t('sp.off')}</option>
-    ${spell.languages().map((l) => html`<option value=${l.name} selected=${value === l.name}>ABC✓ ${l.label}</option>`)}
+    ${spell.languages().map((l) => html`<option value=${l.name} selected=${value === l.name}>ABC · ${l.label}</option>`)}
     <option value="load">${t('sp.load')}</option>
   </select>`;
 }

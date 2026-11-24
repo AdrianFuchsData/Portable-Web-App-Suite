@@ -215,7 +215,9 @@ frequencies better, a smaller one smooths. <strong>Export as CSV</strong> saves 
 shows the loudness in LUFS and the peak.</p>
 <h2>Playing and recording</h2>
 <p>▶ (or <code>Space</code>) plays the selection, or from the cursor to the end; ⏸ pauses, ⏹ stops, ⏮ ⏭ jump to the start or end. 🔁
-repeats the selection. A click on the time ruler moves the playhead.</p>
+repeats the selection. A click on the time ruler moves the playhead. While playing, the view follows the playhead.</p>
+<p>If the browser loses the audio output (for example when the output device changes; Chrome then reports an error of the audio
+device), the editor starts a new output and plays on from the same position; a message says so.</p>
 <p>● starts recording from the microphone (the browser asks for permission); the other tracks are played at the same time.
 ● again stops; the recording becomes a new track with a clip that starts at the cursor.</p>
 <h2>View</h2>
@@ -354,5 +356,12 @@ repeats the selection. A click on the time ruler moves the playhead.</p>
 </tbody>
 </table>
 <h2>On phones and tablets</h2>
-<p>Tap or drag on a track to set the cursor or select; drag a clip by its (slightly taller) title bar to move it. The
-track headers are narrower but keep all buttons and sliders; the toolbar scrolls horizontally.</p>
+<p>On a touch screen, the tracks follow the usual gestures:</p>
+<ul>
+<li><strong>Drag with one finger</strong> to move through the recording (left and right) and through the tracks (up and down).</li>
+<li><strong>Two fingers</strong> apart or together zoom in and out around the place between them.</li>
+<li><strong>Tap</strong> to set the cursor; <strong>touch and hold</strong>, then drag, to select (the selection follows the finger, also across tracks).</li>
+<li>Drag a clip by its (slightly taller) title bar to move it; fade handles and volume points are dragged as with the mouse.</li>
+</ul>
+<p>The scroll bar below the tracks is wider on touch screens. The track headers are narrower but keep all buttons and sliders;
+the toolbar scrolls horizontally.</p>

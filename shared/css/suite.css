@@ -224,3 +224,47 @@ dialog.suite-confirm { z-index: 1000; }
 .suite-chart-grid input[type=color] { width: 1.6rem; height: 1.4rem; padding: 0; margin: 0 0 .15rem; border: none; }
 .suite-chart-rows { margin-top: .4rem; }
 .suite-chart-rows button { font-size: .8rem; padding: .2rem .5rem; }
+
+/* search and replace in the CodeMirror editors (shared/js/cm-search.js), in the layout of the suite */
+.suite-cm-search { display: flex; flex-direction: column; gap: .3rem; padding: .35rem .45rem; font-size: .85rem; background: var(--pico-background-color); border-bottom: 1px solid var(--pico-muted-border-color); }
+.suite-cm-search-row { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; }
+.suite-cm-search-row[hidden] { display: none; }
+.suite-cm-search input { flex: 1 1 12rem; width: auto; min-width: 6rem; max-width: 32rem; margin: 0; padding: .25rem .55rem; height: auto; font-size: .85rem; font-family: var(--pico-font-family-monospace, monospace); }
+.suite-cm-search button { margin: 0; width: auto; padding: .25rem .5rem; font-size: .85rem; line-height: 1.2; min-width: 2rem; display: inline-flex; align-items: center; justify-content: center; gap: .25rem; border-radius: var(--pico-border-radius); }
+.suite-cm-search button svg { width: 1.25em; height: 1.25em; }
+.suite-cm-search-spacer { width: 2rem; flex: 0 0 auto; }
+.suite-cm-search-count { color: var(--pico-muted-color); font-size: .8rem; min-width: 5.5rem; white-space: nowrap; }
+.suite-cm-search input[aria-invalid=true] { border-color: var(--pico-del-color); }
+.cm-panels.cm-panels-top { border-bottom: 0; }
+@media (max-width: 600px) { .suite-cm-search-spacer { display: none; } .suite-cm-search-count { min-width: 0; } }
+
+/* icons (shared/js/icons.js): as high as the text, in its colour */
+.suite-icon { width: 1.15em; height: 1.15em; vertical-align: -.2em; flex: none; display: inline-block; }
+button > .suite-icon:only-child, [role=button] > .suite-icon:only-child { vertical-align: -.22em; }
+button .suite-icon + *, button * + .suite-icon { margin-left: .1em; }
+
+/* hidden title bar: a small button at the top right shows it again; on narrow screens the toolbar row can be collapsed */
+.suite-show-header { position: fixed; top: .2rem; right: .2rem; z-index: 1500; margin: 0; width: auto; padding: .15rem .35rem; line-height: 1;
+  opacity: .55; box-shadow: 0 1px 4px rgba(0, 0, 0, .25); }
+.suite-show-header:hover, .suite-show-header:focus-visible { opacity: 1; }
+.suite-toolbar-toggle { display: none !important; }
+@media (max-width: 760px) {
+  .suite-toolbar-toggle { display: inline-flex !important; align-items: center; justify-content: center; }
+  .suite-header.toolbar-collapsed > nav { display: none; }
+}
+
+/* context menu (Suite.shell.contextMenu) */
+.suite-context-menu { position: fixed; z-index: 2500; list-style: none; margin: 0; padding: .25rem 0; min-width: 12rem; max-width: min(22rem, calc(100vw - 8px));
+  max-height: calc(100vh - 8px); overflow-y: auto; background: var(--pico-card-background-color); border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius); box-shadow: 0 4px 16px rgba(0, 0, 0, .25); font-size: .9rem; }
+.suite-context-menu li { list-style: none; margin: 0; padding: 0; }
+.suite-context-menu li[role=separator] { border-top: 1px solid var(--pico-muted-border-color); margin: .25rem 0; }
+.suite-context-menu button { display: flex; align-items: center; gap: .55rem; width: 100%; margin: 0; padding: .35rem .8rem; border: 0; border-radius: 0;
+  background: none; color: var(--pico-color); text-align: left; font-size: inherit; line-height: 1.3; box-shadow: none; }
+.suite-context-menu button:hover:not([disabled]), .suite-context-menu button:focus-visible { background: var(--suite-selected); outline: none; }
+.suite-context-menu button[disabled] { opacity: .45; cursor: default; }
+.suite-context-menu .suite-cm-icon { width: 1.15em; flex: none; display: inline-flex; }
+.suite-context-menu .suite-cm-label { flex: 1; }
+.suite-context-menu kbd { font-size: .72rem; padding: .05rem .35rem; background: none; color: var(--pico-muted-color); border: 1px solid var(--pico-muted-border-color); }
+@media (pointer: coarse) { .suite-context-menu button { padding: .6rem .9rem; } }
+@media (max-width: 600px) { .suite-install-label { display: none; } }

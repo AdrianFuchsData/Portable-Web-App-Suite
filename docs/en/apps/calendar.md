@@ -12,10 +12,33 @@ Google Calendar, Apple Calendar and most other calendar programs. Several calend
   it the calendar for new and imported events.
 - **Import events…** adds the events of an `.ics` file (e.g. an invitation received by e-mail) to the selected calendar. An event with the same
   UID replaces the existing one, so an updated invitation updates the event.
+- **CSV… → Import CSV…** reads events or tasks from a CSV file into the selected calendar – for example an export of Outlook, Google
+  Calendar or a spreadsheet. The columns are found by their names, in English or German (*Subject/Betreff, Start Date/Beginnt am, Start
+  Time/Beginnt um, End Date, End Time, All Day Event/Ganztägiges Ereignis, Description, Location, Categories*; for tasks *Due Date/Fällig am,
+  Priority, Status, % Complete*). Dates may be written `2026-10-16`, `16.10.2026` or `10/16/2026` (the order of day and month is taken from
+  the file), times `14:30` or `2:30 PM`; comma, semicolon or tab separate the columns. Rows without a readable date are skipped and named.
+- **CSV… → Export as CSV** writes the events of a period (repeating events as single dates) or the tasks of the shown calendars or the
+  selected one, in the column layout of Outlook and Google Calendar, with dates as ISO, European or US (Google) format.
 - 💾 saves a calendar: directly into its file in Chrome/Edge on the desktop, as a download in Firefox and on Android (replace the original file
   with it). **Save all** (`Ctrl+S`) saves every changed calendar; changed calendars are marked with •.
 
-Everything in the file that the calendar does not edit (further reminders, participants, tasks, other properties) is kept when saving.
+### Online calendars (CalDAV)
+
+**☁ CalDAV…** opens calendars stored on a server – Nextcloud, ownCloud, Radicale, Baïkal, SOGo, mailbox.org, iCloud and other
+CalDAV servers. A browser page cannot talk to these servers directly, so the **relay** is needed (see the user guide's chapter on
+the relay; enter its address and sign-in under *Relay* in the dialog).
+
+1. **Add account**: a name, the address – the server (`https://cloud.example.org`), its CalDAV address
+   (`https://cloud.example.org/remote.php/dav`) or the address of one calendar –, user name and password. Many providers want an
+   *app password* here instead of the normal one. Accounts and passwords are kept in the connections file shown at the top (a KeePass
+   database or a JSON file; **Save** it to keep them).
+2. **Calendars** asks the server for your calendars (also through `/.well-known/caldav`); **Open** loads one with its events and
+   tasks. It appears in the list with ☁ instead of 💾.
+3. Change events and tasks as usual. **☁** (or **Save all**) writes only what changed: new items are created, changed ones replaced,
+   deleted ones removed. When someone else changed an item on the server in the meantime, it is not overwritten: the calendar says so,
+   **⟳** loads the current state again and you repeat your change.
+
+Everything in the file that the calendar does not edit (further reminders, participants, journal entries, other properties) is kept when saving.
 
 ## Views
 
@@ -25,6 +48,7 @@ Everything in the file that the calendar does not edit (further reminders, parti
 | Week | `W` | time grid of the week with a line for all-day events; the red line is the current time |
 | Day | `D` | time grid of one day |
 | Agenda | `A` | list of the events of the next 60 days |
+| Tasks | `X` | the tasks (to-dos) of the shown calendars (see below) |
 | Availability | `F` | free and busy times of the week, one row per calendar (see below) |
 
 **Today** (`T`), ‹ and › (`←`/`→`) navigate; the small month on the left jumps to a date. The week starts on Monday or Sunday (setting at the
@@ -32,6 +56,16 @@ bottom left). **Search** (`/`) shows only events whose title, location, descript
 
 **🖨** prints the current view with the names of the shown calendars and the period as heading (month and week on landscape
 sheets, the whole day on one sheet); with "Save as PDF" as the printer you get a PDF. The search applies to the print as well.
+
+### Tasks
+
+Calendar files can also hold **tasks** (to-dos, `VTODO` – as Thunderbird, Apple Reminders, Nextcloud Tasks or Outlook export
+them). **Tasks** (`X`) lists the tasks of the shown calendars: **Overdue** (in red), **Today**, **Upcoming**, **No due date**, and
+the **Done** ones folded away. Type into *New task* and press Enter to add one to the selected calendar. The box in front ticks a
+task off (and back). A click on a task opens it: title, **due** date with an optional time, **priority** (a red ! marks high),
+**status** (open, in progress with % done, done, cancelled), calendar, location, categories and description; **Delete** removes it.
+Open tasks with a due date also appear on their day in the month view and the agenda (☐); a click opens them. The search finds
+tasks too; undo covers them like events.
 
 ### Availability (free/busy)
 
@@ -106,7 +140,7 @@ On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the applicat
 
 | Keys | Function |
 |---|---|
-| `M` / `W` / `D` / `A` / `F` | Month / week / day / agenda / availability |
+| `M` / `W` / `D` / `A` / `X` / `F` | Month / week / day / agenda / tasks / availability |
 | `T` | Today |
 | `←` / `K` | Previous |
 | `→` / `J` | Next |

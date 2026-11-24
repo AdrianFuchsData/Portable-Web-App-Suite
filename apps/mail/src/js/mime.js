@@ -220,27 +220,69 @@ export async function parseMessage(raw) {
   return PostalMime.parse(typeof raw === 'string' ? enc.encode(raw) : raw, { attachmentEncoding: 'arraybuffer' });
 }
 
-/** Split an mbox file into messages (bytes), "From " lines removed and ">From " unescaped. */
-export function splitMbox(bytes) {
+
+/** The date of an mbox "From " line: "Thu Oct 16 10:30:00 2026" (UTC, asctime). */
+function asctime(ms) {
+  const d = new Date(ms);
+  const p = (n) => String(n).padStart(2, '0');
+  return `${DAYS[d.getUTCDay()]} ${MONTHS[d.getUTCMonth()]} ${String(d.getUTCDate()).padStart(2, ' ')} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())} ${d.getUTCFullYear()}`;
+}
+
+/**
+ * Split an mbox file into messages: [{ raw (bytes), flags (IMAP flags from the Status / X-Status headers), date (ms from the
+ * "From " line or null) }]. The "From " lines and the Status / X-Status headers are removed, ">From " is unescaped (mboxrd).
+ */
+export function splitMboxEntries(bytes) {
   const text = new TextDecoder('latin1').decode(bytes); // byte-preserving
   const starts = [];
-  const re = /(^|\n)From [^\n]*\n/g;
+  const re = /(^|\n)From ([^\n]*)\n/g;
   let m;
-  while ((m = re.exec(text))) starts.push({ at: m.index + m[1].length, body: m.index + m[0].length });
+  while ((m = re.exec(text))) starts.push({ at: m.index + m[1].length, body: m.index + m[0].length, line: m[2] });
   const out = [];
   for (let i = 0; i < starts.length; i++) {
     const end = i + 1 < starts.length ? starts[i + 1].at : text.length;
-    const msg = text.slice(starts[i].body, end).replace(/\n$/, '').replace(/^>(>*From )/gm, '$1');
-    out.push(Uint8Array.from(msg, (c) => c.charCodeAt(0)));
+    let msg = text.slice(starts[i].body, end).replace(/\r?\n$/, '').replace(/^>(>*From )/gm, '$1');
+    const headEnd = msg.search(/\r?\n\r?\n/);
+    let head = headEnd < 0 ? msg : msg.slice(0, headEnd);
+    const flags = new Set();
+    head = head.replace(/^(X-)?Status: *([^\r\n]*)\r?\n?/gim, (_, x, v) => {
+      if (!x && /R/.test(v)) flags.add('\\Seen');
+      if (x && /A/.test(v)) flags.add('\\Answered');
+      if (x && /F/.test(v)) flags.add('\\Flagged');
+      if (x && /D/.test(v)) flags.add('\\Deleted');
+      if (x && /T/.test(v)) flags.add('\\Draft');
+      return '';
+    });
+    msg = headEnd < 0 ? head : head + msg.slice(headEnd);
+    const dm = /(\w{3}) +(\w{3}) +(\d{1,2}) +(\d{1,2}):(\d{2})(?::(\d{2}))? +(\d{4})\s*$/.exec(starts[i].line.trim());
+    const date = dm && MONTHS.includes(dm[2]) ? Date.UTC(+dm[7], MONTHS.indexOf(dm[2]), +dm[3], +dm[4], +dm[5], +(dm[6] || 0)) : null;
+    out.push({ raw: Uint8Array.from(msg, (c) => c.charCodeAt(0)), flags: [...flags], date });
   }
   return out;
 }
 
-/** An mbox file of raw messages. */
+/** Split an mbox file into messages (bytes). */
+export function splitMbox(bytes) { return splitMboxEntries(bytes).map((e) => e.raw); }
+
+/**
+ * An mbox file (mboxrd: lines starting with ">*From " get one more ">") of messages: raw bytes or { raw, from (address), date (ms),
+ * flags (IMAP flags, written as Status / X-Status headers like mutt and Thunderbird read them) }.
+ */
 export function joinMbox(messages) {
-  const parts = messages.map((raw) => {
-    const text = new TextDecoder('latin1').decode(raw).replace(/\r\n/g, '\n').replace(/^(>*From )/gm, '>$1');
-    return `From MAILER-DAEMON ${new Date().toUTCString().replace(/^(\w+), (\d+) (\w+) (\d+) (\S+) GMT$/, '$1 $3 $2 $5 $4')}\n${text.replace(/\n?$/, '\n')}\n`;
+  const parts = messages.map((item) => {
+    const it = item instanceof Uint8Array ? { raw: item } : item;
+    let text = new TextDecoder('latin1').decode(it.raw).replace(/\r\n/g, '\n');
+    const flags = it.flags || [];
+    if (it.flags) {
+      const status = `Status: ${flags.includes('\\Seen') ? 'RO' : 'O'}\n`;
+      const x = `${flags.includes('\\Answered') ? 'A' : ''}${flags.includes('\\Flagged') ? 'F' : ''}${flags.includes('\\Deleted') ? 'D' : ''}${flags.includes('\\Draft') ? 'T' : ''}`;
+      const end = text.indexOf('\n\n');
+      const at = end < 0 ? text.length : end + 1;
+      text = text.slice(0, at) + status + (x ? `X-Status: ${x}\n` : '') + text.slice(at);
+    }
+    text = text.replace(/^(>*From )/gm, '>$1');
+    const sender = (it.from && String(it.from).replace(/\s+/g, '')) || 'MAILER-DAEMON';
+    return `From ${sender} ${asctime(it.date || Date.now())}\n${text.replace(/\n?$/, '\n')}\n`;
   });
   const s = parts.join('');
   return Uint8Array.from(s, (c) => c.charCodeAt(0));

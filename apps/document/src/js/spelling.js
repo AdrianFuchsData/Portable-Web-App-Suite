@@ -128,16 +128,16 @@ export function createSpelling(ctx) {
     const current = languages.find((l) => l.name === spell.language);
     return html`<aside class="doc-spell pico" data-testid="spell-panel" aria-label=${t('spell.title')}>
       <header><strong>${t('spell.title')}</strong>
-        <button class="secondary outline" data-testid="spell-close" aria-label=${t('spell.close')} title=${t('spell.close')} onClick=${toggle}>✕</button></header>
+        <button class="secondary outline" data-testid="spell-close" aria-label=${t('spell.close')} title=${t('spell.close')} onClick=${toggle}>${Suite.icon('x')}</button></header>
       <div class="doc-spell-language">
         <select data-testid="spell-language" value=${spell.language} aria-label=${t('spell.language')} onChange=${(e) => setLanguage(e.target.value)}>
           ${languages.map((l) => html`<option value=${l.name} selected=${l.name === spell.language}>${l.label}</option>`)}
         </select>
-        ${current && !current.builtIn ? html`<button class="secondary outline" data-testid="spell-remove" title=${t('spell.remove')} aria-label=${t('spell.remove')} onClick=${() => spell.remove(current.name)}>🗑</button>` : null}
+        ${current && !current.builtIn ? html`<button class="secondary outline" data-testid="spell-remove" title=${t('spell.remove')} aria-label=${t('spell.remove')} onClick=${() => spell.remove(current.name)}>${Suite.icon('trash-2')}</button>` : null}
       </div>
       <div class="doc-spell-actions">
         <button class="secondary outline" data-testid="spell-load" title=${t('spell.loadHint')} onClick=${load}>${t('spell.load')}</button>
-        <button class="secondary outline" data-testid="spell-recheck" onClick=${check} aria-busy=${s.busy ? 'true' : 'false'}>↻ ${t('spell.recheck')}</button>
+        <button class="secondary outline" data-testid="spell-recheck" onClick=${check} aria-busy=${s.busy ? 'true' : 'false'}>${Suite.icon('rotate-cw')} ${t('spell.recheck')}</button>
       </div>
       <p class="doc-spell-status" data-testid="spell-status" aria-live="polite">${s.busy ? t('spell.checking') : !s.errors ? '' : s.errors.length === 1 ? t('spell.count1') : s.errors.length ? t('spell.count', s.errors.length) : t('spell.none')}</p>
       <ul class="doc-spell-list" data-testid="spell-list">

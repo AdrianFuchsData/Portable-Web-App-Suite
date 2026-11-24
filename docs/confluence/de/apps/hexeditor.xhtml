@@ -75,9 +75,28 @@ Bytes). <strong>Bytes pro Zeile</strong> wählt 8, 16 oder 32 Bytes oder passt s
 Gleitkommazahlen (32 und 64 Bit) und das UTF-8-Zeichen. <strong>Little Endian</strong> wechselt die Byte-Reihenfolge.</p>
 <p><strong>Bytewert (hex)</strong> schreibt die eingegebenen Bytes an den Cursor (zum Beispiel <code>FF</code> oder <code>48 65 6C</code>). So bearbeiten Sie
 Bytes am einfachsten auf Smartphones und Tablets.</p>
+<h2>Struktur</h2>
+<p>Der Reiter <strong>Struktur</strong> (neben dem Dateninspektor) zeigt den Aufbau einer Datei, wenn ihr Format bekannt ist: PNG, JPEG, GIF, BMP, WAV und
+andere RIFF-Dateien, ZIP (auch Office-Dokumente, JAR, …), ELF (Linux-Programme und -Bibliotheken) und PE (Windows-<code>.exe</code> und -<code>.dll</code>). Jeder
+Teil steht mit Offset (hex), Größe und Bedeutung in der Liste – etwa die Chunks eines PNG mit Breite, Höhe und Farbtyp, die Dateien eines ZIP
+mit Verfahren und Größen, die Abschnitte eines Programms. Ein Klick auf einen Teil wählt seine Bytes aus; solange der Reiter offen ist,
+sind die Teile in der Hex-Ansicht abwechselnd eingefärbt. Beschädigte Dateien werden gezeigt, so weit sie sich lesen lassen.</p>
+<h2>Marken: Lesezeichen und eingefärbte Bereiche</h2>
+<p><code>Strg+F2</code> setzt (oder entfernt) ein <strong>Lesezeichen</strong> auf dem Byte am Cursor – es erhält einen blauen Rahmen; <code>F2</code> und <code>Umschalt+F2</code> springen zur
+nächsten und vorigen Marke. Um einen Teil der Datei <strong>einzufärben</strong>, wählen Sie ihn aus, öffnen den Reiter <strong>Marken</strong>, wählen eine Farbe, geben
+wahlweise eine Bezeichnung ein (etwa „Kopf“) und klicken <strong>Auswahl einfärben</strong>. Der Reiter listet alle Marken der Datei mit Offset (und Länge);
+ein Klick springt dorthin oder wählt den Bereich wieder aus, ✎ benennt um, × entfernt. Marken wandern mit, wenn Bytes eingefügt oder gelöscht
+werden (und mit Rückgängig zurück); eine Marke, deren Bytes alle gelöscht sind, verschwindet. Jede geöffnete Datei hat eigene Marken; sie werden
+nicht in der Datei gespeichert.</p>
 <h2>Prüfsummen</h2>
 <p><strong>#</strong> zeigt die Prüfsummen der Auswahl oder – ohne Auswahl – der ganzen Datei: CRC-32, Adler-32, MD5, SHA-1, SHA-256 und
 SHA-512 (hexadezimal). ⧉ kopiert einen Wert, etwa um ihn mit einer veröffentlichten Prüfsumme zu vergleichen.</p>
+<h2>Statistik</h2>
+<p><strong>📊</strong> untersucht die Auswahl (oder die ganze Datei): die <strong>Entropie</strong> in Bit pro Byte (0 = immer dasselbe Byte, 8 = völlig zufällig) mit
+einem Hinweis, was sie nahelegt – über 7,5 sind die Daten komprimiert oder verschlüsselt, Text liegt etwa bei 4 bis 5 –, den Anteil an
+Null-Bytes und an druckbarem Text, ein <strong>Histogramm</strong>, wie oft jeder Bytewert 00–FF vorkommt (logarithmisch, um seltene Werte zu sehen), und
+die häufigsten Werte. Bei größeren Daten zeigt eine Kurve die <strong>Entropie entlang der Datei</strong>: komprimierte oder verschlüsselte Teile fallen als
+Plateaus nahe der gestrichelten Linie auf; ein Klick auf die Kurve springt dorthin.</p>
 <h2>Zwei Dateien vergleichen</h2>
 <p><strong>⇆</strong> öffnet eine zweite Datei und vergleicht sie Byte für Byte mit der aktuellen (an denselben Offsets). Ihre Bytes stehen
 in einer zusätzlichen Spalte neben der Hex-Spalte (statt der Textspalte), beide scrollen gemeinsam, und abweichende Bytes
@@ -172,6 +191,14 @@ den Vergleich; <strong>×</strong> (oder erneut ⇆) beendet ihn.</p>
 <tr>
 <td><code>Strg+G</code></td>
 <td>Gehe zu Adresse</td>
+</tr>
+<tr>
+<td><code>Strg+F2</code></td>
+<td>Lesezeichen ein/aus</td>
+</tr>
+<tr>
+<td><code>F2</code> / <code>Umschalt+F2</code></td>
+<td>Nächste / vorige Marke</td>
 </tr>
 <tr>
 <td><code>←</code> / <code>→</code> / <code>↑</code> / <code>↓</code></td>

@@ -9,6 +9,7 @@
  */
 
 import { format as sqlFormatter } from "sql-formatter";
+import { load as yamlLoad, loadAll as yamlLoadAll, dump as yamlDump } from "js-yaml";
 
 export class ToolError extends Error {
   constructor(key, detail = "") { super(key); this.key = key; this.detail = detail; }
@@ -26,7 +27,46 @@ const lineTools = {
   trimTrailing: (lines) => lines.map((l) => l.replace(/[ \t]+$/, "")),
   trimBoth: (lines) => lines.map((l) => l.trim()),
   joinLines: (lines) => [lines.map((l) => l.trim()).filter(Boolean).join(" ")],
+  shuffle: (lines) => { const a = [...lines]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; },
+  numberLines: (lines, o = {}) => {
+    const start = Number.isFinite(+o.start) ? +o.start : 1;
+    const width = String(start + lines.length - 1).length;
+    return lines.map((l, i) => `${o.pad ? String(start + i).padStart(width, "0") : start + i}${o.separator ?? ". "}${l}`);
+  },
+  affix: (lines, o = {}) => lines.map((l) => (o.skipEmpty && !l.trim() ? l : `${o.prefix || ""}${l}${o.suffix || ""}`)),
+  keepMatching: (lines, o) => lines.filter((l) => matcher(o)(l)),
+  removeMatching: (lines, o) => lines.filter((l) => !matcher(o)(l)),
+  hardWrap: (lines, o = {}) => lines.flatMap((l) => wrapLine(l, Math.max(10, Number(o.width) || 80))),
 };
+
+/** A test for a line: text or regular expression (options: pattern, regex, caseSensitive). */
+function matcher({ pattern = "", regex = false, caseSensitive = false } = {}) {
+  if (!pattern) throw new ToolError("te.toolNoPattern");
+  if (regex) {
+    let re;
+    try { re = new RegExp(pattern, caseSensitive ? "u" : "iu"); } catch (e) { throw new ToolError("te.toolBadRegex", e.message); }
+    return (l) => re.test(l);
+  }
+  const p = caseSensitive ? pattern : pattern.toLowerCase();
+  return (l) => (caseSensitive ? l : l.toLowerCase()).includes(p);
+}
+
+/** A line broken at spaces so that no part is longer than width (longer words stay whole); the indentation is kept. */
+function wrapLine(line, width) {
+  if (line.length <= width) return [line];
+  const indent = /^\s*/.exec(line)[0];
+  const words = line.trim().split(/\s+/);
+  const out = [];
+  let cur = indent;
+  for (const w of words) {
+    if (cur.trim() && cur.length + 1 + w.length > width) { out.push(cur); cur = indent + w; } else cur = cur.trim() ? `${cur} ${w}` : indent + w;
+  }
+  if (cur.trim()) out.push(cur);
+  return out;
+}
+
+/** Tools that ask for options first, and the dialog they use. */
+export const LINE_OPTIONS = { numberLines: "number", affix: "affix", keepMatching: "pattern", removeMatching: "pattern", hardWrap: "width" };
 
 const titleCase = (s) => s.toLowerCase().replace(/(^|[^\p{L}\p{N}'’])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
 
@@ -170,6 +210,127 @@ export function minifySql(text) {
   return out.trim();
 }
 
+// ---- syntax checks (JSON, XML, YAML): [{ from, to, message }] (offsets into the text) ---------------------------------------
+
+/** The offset of line `line` (1-based), column `col` (1-based). */
+function offsetOf(text, line, col) {
+  let pos = 0;
+  for (let l = 1; l < line; l++) { const nl = text.indexOf("\n", pos); if (nl < 0) return text.length; pos = nl + 1; }
+  return Math.min(text.length, pos + Math.max(0, col - 1));
+}
+
+/** Where JSON text first goes wrong (a small recursive-descent scanner), or -1 when it is valid. */
+export function jsonErrorAt(text) {
+  let i = 0;
+  const ws = () => { while (i < text.length && " \t\n\r".includes(text[i])) i++; };
+  const fail = () => { throw i; };
+  const lit = (w) => { if (text.startsWith(w, i)) i += w.length; else fail(); };
+  const str = () => {
+    i++;
+    while (i < text.length) {
+      const c = text[i];
+      if (c === '"') { i++; return; }
+      if (c === "\\") { i++; if (text[i] === "u") { if (!/^[0-9a-fA-F]{4}$/.test(text.slice(i + 1, i + 5))) fail(); i += 5; } else if ('"\\/bfnrt'.includes(text[i])) i++; else fail(); continue; }
+      if (c < " ") fail();
+      i++;
+    }
+    fail();
+  };
+  const num = () => { const m = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/.exec(text.slice(i)); if (!m) fail(); i += m[0].length; };
+  const value = (depth) => {
+    if (depth > 2000) fail();
+    ws();
+    const c = text[i];
+    if (c === "{") {
+      i++; ws();
+      if (text[i] === "}") { i++; return; }
+      for (;;) { ws(); if (text[i] !== '"') fail(); str(); ws(); if (text[i] !== ":") fail(); i++; value(depth + 1); ws(); if (text[i] === ",") { i++; continue; } if (text[i] === "}") { i++; return; } fail(); }
+    }
+    if (c === "[") {
+      i++; ws();
+      if (text[i] === "]") { i++; return; }
+      for (;;) { value(depth + 1); ws(); if (text[i] === ",") { i++; continue; } if (text[i] === "]") { i++; return; } fail(); }
+    }
+    if (c === '"') return str();
+    if (c === "t") return lit("true");
+    if (c === "f") return lit("false");
+    if (c === "n") return lit("null");
+    if (c === "-" || (c >= "0" && c <= "9")) return num();
+    fail();
+  };
+  try { value(0); ws(); return i < text.length ? i : -1; } catch (pos) { return typeof pos === "number" ? pos : 0; }
+}
+
+function checkJson(text) {
+  if (!text.trim()) return [];
+  try { JSON.parse(text); return []; } catch (e) {
+    const at = jsonErrorAt(text);
+    const pos = at < 0 ? text.length : at;
+    const message = String(e.message || e).replace(/^JSON\.parse: /, "").replace(/, "[\s\S]*" is not valid JSON$/, "");
+    return [{ from: Math.min(pos, Math.max(0, text.length - 1)), to: Math.min(text.length, pos + 1), message }];
+  }
+}
+
+function checkXml(text) {
+  if (!text.trim()) return [];
+  const doc = new DOMParser().parseFromString(text, "application/xml");
+  const err = doc.querySelector("parsererror");
+  if (!err) return [];
+  const msg = (err.textContent || "").trim();
+  // Chromium: "error on line 3 at column 5: …", Firefox: "XML Parsing Error: … Location: … Line Number 3, Column 5:"
+  const m = /line (\d+) at column (\d+)/i.exec(msg) || /Line Number (\d+), Column (\d+)/i.exec(msg);
+  const pos = m ? offsetOf(text, Number(m[1]), Number(m[2])) : 0;
+  const line = msg.split("\n").find((l) => /error|fehler/i.test(l)) || msg.split("\n")[0];
+  return [{ from: Math.max(0, pos - 1), to: Math.min(text.length, pos), message: line.replace(/^This page contains the following errors:/, "").trim() }];
+}
+
+function checkYaml(text) {
+  if (!text.trim()) return [];
+  try { yamlLoadAll(text, () => {}); return []; } catch (e) {
+    const m = e.mark;
+    const pos = m && Number.isFinite(m.position) ? m.position : 0;
+    return [{ from: Math.min(pos, text.length), to: Math.min(text.length, pos + 1), message: e.reason || String(e.message || e) }];
+  }
+}
+
+/** Languages whose syntax can be checked, and the checks. */
+export const CHECKS = { json: checkJson, xml: checkXml, yaml: checkYaml };
+
+/** Syntax errors of a text in a language (empty when fine or when the language has no check). */
+export function checkSyntax(language, text) {
+  const check = CHECKS[language];
+  return check ? check(text) : [];
+}
+
+function yamlFormat(s) {
+  let docs = [];
+  try { yamlLoadAll(s, (d) => docs.push(d)); } catch (e) { throw new ToolError("te.toolBadYaml", e.reason || e.message); }
+  return docs.map((d) => yamlDump(d, { indent: 2, lineWidth: 120, noRefs: true })).join("---\n");
+}
+
+function jsonToYaml(s) {
+  let value;
+  try { value = JSON.parse(s); } catch (e) { throw new ToolError("te.toolBadJson", e.message); }
+  return yamlDump(value, { indent: 2, lineWidth: 120, noRefs: true });
+}
+
+function yamlToJson(s) {
+  let value;
+  try { value = yamlLoad(s); } catch (e) { throw new ToolError("te.toolBadYaml", e.reason || e.message); }
+  return JSON.stringify(value, null, 2);
+}
+
+/** XML on as few lines as possible: whitespace between elements removed (text and CDATA kept). */
+function xmlMinify(s) {
+  const doc = new DOMParser().parseFromString(s, "application/xml");
+  const err = doc.querySelector("parsererror");
+  if (err) throw new ToolError("te.toolBadXml", (err.textContent || "").split("\n")[0]);
+  const strip = (n) => { for (const c of [...n.childNodes]) { if (c.nodeType === 3 && !c.nodeValue.trim()) c.remove(); else if (c.nodeType === 1) strip(c); } };
+  strip(doc);
+  const decl = /^\s*<\?xml[^>]*\?>/.exec(s);
+  return (decl ? decl[0].trim() : "") + new XMLSerializer().serializeToString(doc).replace(/^<\?xml[^>]*\?>\s*/, "");
+}
+
 const textTools = {
   upper: (s) => s.toUpperCase(),
   lower: (s) => s.toLowerCase(),
@@ -184,19 +345,23 @@ const textTools = {
   jsonFormat: (s) => json(s, 2),
   jsonMinify: (s) => json(s, 0),
   xmlFormat: (s) => formatXml(s),
+  xmlMinify,
+  yamlFormat,
+  jsonToYaml,
+  yamlToJson,
   sqlFormat: (s, options) => formatSql(s, options),
   sqlMinify: (s) => minifySql(s),
 };
 
 export const TOOLS = [
-  ...Object.keys(lineTools).map((id) => ({ id, group: "lines", kind: "lines" })),
+  ...Object.keys(lineTools).map((id) => ({ id, group: "lines", kind: "lines", options: LINE_OPTIONS[id] })),
   ...["upper", "lower", "title", "invert"].map((id) => ({ id, group: "case", kind: "text" })),
   ...["base64Encode", "base64Decode", "urlEncode", "urlDecode", "htmlEscape", "htmlUnescape"].map((id) => ({ id, group: "encode", kind: "text" })),
-  ...["jsonFormat", "jsonMinify", "xmlFormat", "sqlFormat", "sqlMinify"].map((id) => ({ id, group: "format", kind: "text", options: id === "sqlFormat" ? "sql" : undefined })),
+  ...["jsonFormat", "jsonMinify", "xmlFormat", "xmlMinify", "yamlFormat", "jsonToYaml", "yamlToJson", "sqlFormat", "sqlMinify"].map((id) => ({ id, group: "format", kind: "text", options: id === "sqlFormat" ? "sql" : undefined })),
 ];
 
 export function apply(id, text, options = {}) {
-  if (lineTools[id]) return lineTools[id](text.split("\n")).join("\n");
+  if (lineTools[id]) return lineTools[id](text.split("\n"), options).join("\n");
   if (textTools[id]) return textTools[id](text, options);
   throw new Error(`unknown tool ${id}`);
 }

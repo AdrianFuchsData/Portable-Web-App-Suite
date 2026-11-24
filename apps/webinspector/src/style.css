@@ -73,3 +73,13 @@
   .wi-wide { display: none; }
   .wi-url { max-width: 12rem; }
 }
+.wi-a11y button[data-testid=a11y-run] { width: auto; }
+.wi-a11y-rule { border-left: 4px solid var(--pico-muted-border-color); padding: .2rem .6rem; margin: .3rem 0; }
+.wi-a11y-rule.critical { border-color: #b71c1c; } .wi-a11y-rule.serious { border-color: #e65100; } .wi-a11y-rule.moderate { border-color: #f9a825; } .wi-a11y-rule.minor { border-color: #9e9e9e; }
+.wi-impact { font-size: .75rem; padding: 0 .35rem; border-radius: .3rem; background: var(--pico-muted-border-color); }
+.wi-impact.critical { background: #b71c1c; color: #fff; } .wi-impact.serious { background: #e65100; color: #fff; } .wi-impact.moderate { background: #f9a825; color: #000; }
+.wi-a11y-rule ul { list-style: none; padding: 0; font-size: .8rem; }
+.wi-a11y-rule li { list-style: none; margin-bottom: .4rem; }
+.wi-a11y-rule pre { margin: .1rem 0; padding: .2rem .4rem; white-space: pre-wrap; word-break: break-all; font-size: .75rem; }
+.wi-a11y-fix { white-space: pre-wrap; display: block; }
+.wi-good { color: #2e7d32; } .wi-bad { color: #c62828; }

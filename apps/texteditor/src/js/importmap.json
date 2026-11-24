@@ -4,11 +4,14 @@
     "app/tools": "tools.js",
     "app/linediff": "linediff.js",
     "app/sas": "sas.js",
+    "app/preview": "preview.js",
+    "app/bookmarks": "bookmarks.js",
     "app/spell": "../../../../shared/js/spell.js",
     "app/spell-dom": "../../../../shared/js/spell-dom.js",
     "app/cm-spell": "../../../../shared/js/cm-spell.js",
     "app/cm-symbols": "../../../../shared/js/cm-symbols.js",
     "app/cm-colors": "../../../../shared/js/cm-colors.js",
-    "app/cm-indent": "../../../../shared/js/cm-indent.js"
+    "app/cm-indent": "../../../../shared/js/cm-indent.js",
+    "app/cm-search": "../../../../shared/js/cm-search.js"
   }
 }

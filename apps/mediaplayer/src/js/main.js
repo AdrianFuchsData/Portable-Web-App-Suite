@@ -32,7 +32,7 @@
       'mp.eq': 'Equaliser', 'mp.eqOn': 'Equaliser on', 'mp.normalize': 'Normalise loudness', 'mp.preset': 'Preset', 'mp.reset': 'Reset',
       'mp.p.flat': 'Flat', 'mp.p.bass': 'Bass boost', 'mp.p.treble': 'Treble boost', 'mp.p.vocal': 'Voice', 'mp.p.loud': 'Loudness', 'mp.p.custom': 'Custom',
       'mp.eqLocal': 'The equaliser works for local files; streams play unchanged.', 'mp.ab': 'A–B repeat', 'mp.abA': 'A set at {0} – click again for B',
-      'mp.abOn': 'Repeating {0} – {1}', 'mp.frameBack': 'One frame back', 'mp.frameForward': 'One frame forward', 'mp.snapshot': 'Save the picture as PNG',
+      'mp.abOn': 'Repeating {0} – {1}', 'mp.frameBack': 'One frame back', 'mp.frameForward': 'One frame forward', 'mp.snapshot': 'Save the picture as PNG', 'mp.vis': 'Visualisation of the sound (local audio files)', 'mp.vis.off': 'off', 'mp.vis.bars': 'Spectrum', 'mp.vis.wave': 'Waveform', 'mp.vis.circle': 'Circle',
       'mp.resumed': 'Continued at {0} (where you stopped last time).', 'mp.fromStart': 'From the start', 'mp.listView': 'List', 'mp.albumView': 'Albums',
       'mp.unknownAlbum': 'Other titles', 'mp.tracks': '{0} titles',
     },
@@ -50,7 +50,7 @@
       'mp.eq': 'Equalizer', 'mp.eqOn': 'Equalizer an', 'mp.normalize': 'Lautstärke angleichen', 'mp.preset': 'Voreinstellung', 'mp.reset': 'Zurücksetzen',
       'mp.p.flat': 'Neutral', 'mp.p.bass': 'Bässe betonen', 'mp.p.treble': 'Höhen betonen', 'mp.p.vocal': 'Sprache', 'mp.p.loud': 'Loudness', 'mp.p.custom': 'Eigene',
       'mp.eqLocal': 'Der Equalizer wirkt bei lokalen Dateien; Streams werden unverändert abgespielt.', 'mp.ab': 'A–B-Wiederholung', 'mp.abA': 'A bei {0} gesetzt – erneut klicken für B',
-      'mp.abOn': 'Wiederhole {0} – {1}', 'mp.frameBack': 'Ein Bild zurück', 'mp.frameForward': 'Ein Bild vor', 'mp.snapshot': 'Bild als PNG speichern',
+      'mp.abOn': 'Wiederhole {0} – {1}', 'mp.frameBack': 'Ein Bild zurück', 'mp.frameForward': 'Ein Bild vor', 'mp.snapshot': 'Bild als PNG speichern', 'mp.vis': 'Darstellung des Klangs (lokale Audiodateien)', 'mp.vis.off': 'aus', 'mp.vis.bars': 'Spektrum', 'mp.vis.wave': 'Wellenform', 'mp.vis.circle': 'Kreis',
       'mp.resumed': 'Bei {0} fortgesetzt (wo Sie zuletzt aufgehört haben).', 'mp.fromStart': 'Von vorne', 'mp.listView': 'Liste', 'mp.albumView': 'Alben',
       'mp.unknownAlbum': 'Weitere Titel', 'mp.tracks': '{0} Titel',
     },
@@ -64,10 +64,10 @@
     volume: prefs.volume ?? 1, muted: !!prefs.muted, rate: prefs.rate || 1, repeat: prefs.repeat || 'off', shuffle: !!prefs.shuffle,
     showPlaylist: prefs.showPlaylist ?? true, subtitle: -1,
     eq: { on: !!(prefs.eq && prefs.eq.on), gains: (prefs.eq && prefs.eq.gains) || Array(10).fill(0), normalize: !!(prefs.eq && prefs.eq.normalize), open: false },
-    ab: null, view: prefs.view || 'list',
+    ab: null, view: prefs.view || 'list', vis: prefs.vis || 'off', // vis: audio visualisation 'off' | 'bars' | 'wave' | 'circle'
   };
   function savePrefs() {
-    try { localStorage.setItem(PREFS_KEY, JSON.stringify({ volume: state.volume, muted: state.muted, rate: state.rate, repeat: state.repeat, shuffle: state.shuffle, showPlaylist: state.showPlaylist, eq: { on: state.eq.on, gains: state.eq.gains, normalize: state.eq.normalize }, view: state.view })); } catch (e) { /* private mode */ }
+    try { localStorage.setItem(PREFS_KEY, JSON.stringify({ volume: state.volume, muted: state.muted, rate: state.rate, repeat: state.repeat, shuffle: state.shuffle, showPlaylist: state.showPlaylist, eq: { on: state.eq.on, gains: state.eq.gains, normalize: state.eq.normalize }, view: state.view, vis: state.vis })); } catch (e) { /* private mode */ }
   }
 
   let renderQueued = false;
@@ -152,9 +152,13 @@
     const compressor = ctx.createDynamicsCompressor();
     compressor.threshold.value = -24; compressor.knee.value = 24; compressor.ratio.value = 4; compressor.attack.value = 0.01; compressor.release.value = 0.25;
     const makeup = ctx.createGain();
+    const analyser = ctx.createAnalyser(); // (the visualisation reads it; in line before the output)
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = 0.75;
+    analyser.connect(ctx.destination);
     let node = source;
     for (const f of filters) { node.connect(f); node = f; }
-    graph = { el, ctx, filters, compressor, makeup, last: node };
+    graph = { el, ctx, filters, compressor, makeup, analyser, last: node };
     applyEq();
     return el;
   }
@@ -164,7 +168,8 @@
     const { filters, compressor, makeup, last, ctx } = graph;
     filters.forEach((f, i) => { f.gain.value = state.eq.on ? state.eq.gains[i] : 0; });
     last.disconnect(); compressor.disconnect(); makeup.disconnect();
-    if (state.eq.on && state.eq.normalize) { makeup.gain.value = 1.6; last.connect(compressor); compressor.connect(makeup); makeup.connect(ctx.destination); } else last.connect(ctx.destination);
+    const out = graph.analyser;
+    if (state.eq.on && state.eq.normalize) { makeup.gain.value = 1.6; last.connect(compressor); compressor.connect(makeup); makeup.connect(out); } else last.connect(out);
   }
 
   /** Show and use another media element (keeps volume, speed and the position). */
@@ -180,7 +185,7 @@
     video = el;
   }
 
-  const wantsEq = (item) => state.eq.on && item && item.file;
+  const wantsEq = (item) => (state.eq.on || state.vis !== 'off') && item && item.file; // (the equaliser and the visualisation need the Web Audio element)
 
   function setEq(changes) {
     const before = state.eq.on;
@@ -195,6 +200,71 @@
       play(state.current, { at: time, paused: !playing });
     }
     render();
+  }
+
+  // ---- audio visualisation: spectrum bars, waveform or a circle, drawn from the analyser while sound plays ------------------
+
+  function setVis(mode) {
+    const before = state.vis;
+    state.vis = mode;
+    savePrefs();
+    const item = state.items[state.current];
+    // switching moves a local file to the Web Audio element (or back) without losing the position
+    if ((before === 'off') !== (mode === 'off') && !state.eq.on && item && item.file && video.getAttribute('src')) {
+      const time = video.currentTime, playing = !video.paused;
+      play(state.current, { at: time, paused: !playing });
+    }
+    render();
+    drawVis();
+  }
+
+  let visFrame = 0;
+  function drawVis() {
+    cancelAnimationFrame(visFrame);
+    const c = document.querySelector('[data-testid=visualiser]');
+    if (!c || state.vis === 'off' || !graph || video !== graph.el) return;
+    const a = graph.analyser;
+    const dpr = window.devicePixelRatio || 1;
+    const w = Math.max(1, Math.round(c.clientWidth * dpr)), h = Math.max(1, Math.round(c.clientHeight * dpr));
+    if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+    const g = c.getContext('2d');
+    g.clearRect(0, 0, w, h);
+    const accent = getComputedStyle(document.body).getPropertyValue('--pico-primary').trim() || '#1e88e5';
+    if (state.vis === 'wave') {
+      const data = new Uint8Array(a.fftSize);
+      a.getByteTimeDomainData(data);
+      g.strokeStyle = accent; g.lineWidth = 2 * dpr; g.beginPath();
+      for (let i = 0; i < data.length; i++) { const x = (i / (data.length - 1)) * w, y = (data[i] / 255) * h; if (i) g.lineTo(x, y); else g.moveTo(x, y); }
+      g.stroke();
+    } else {
+      const data = new Uint8Array(a.frequencyBinCount);
+      a.getByteFrequencyData(data);
+      // logarithmic bands from 30 Hz to the top: like the ear hears it
+      const n = state.vis === 'circle' ? 96 : Math.max(16, Math.min(96, Math.floor(w / (8 * dpr))));
+      const nyquist = graph.ctx.sampleRate / 2, f0 = 30;
+      const level = (i) => {
+        const lo = Math.floor(((f0 * (nyquist / f0) ** (i / n)) / nyquist) * data.length), hi = Math.max(lo + 1, Math.floor(((f0 * (nyquist / f0) ** ((i + 1) / n)) / nyquist) * data.length));
+        let m = 0;
+        for (let k = lo; k < Math.min(hi, data.length); k++) if (data[k] > m) m = data[k];
+        return m / 255;
+      };
+      g.fillStyle = accent; g.strokeStyle = accent;
+      if (state.vis === 'bars') {
+        const bw = w / n;
+        for (let i = 0; i < n; i++) { const v = level(i) * h; g.globalAlpha = 0.45 + 0.55 * level(i); g.fillRect(i * bw + bw * 0.15, h - v, bw * 0.7, v); }
+      } else {
+        const cx = w / 2, cy = h / 2, r = Math.min(w, h) * 0.22;
+        g.lineWidth = Math.max(2, (Math.PI * 2 * r) / n * 0.6);
+        g.lineCap = 'round';
+        for (let i = 0; i < n; i++) {
+          const ang = (i / n) * Math.PI * 2 - Math.PI / 2, len = level(i) * Math.min(w, h) * 0.25 + 2 * dpr;
+          g.globalAlpha = 0.45 + 0.55 * level(i);
+          g.beginPath(); g.moveTo(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r); g.lineTo(cx + Math.cos(ang) * (r + len), cy + Math.sin(ang) * (r + len)); g.stroke();
+        }
+      }
+      g.globalAlpha = 1;
+    }
+    visFrame = requestAnimationFrame(drawVis);
   }
 
   // ---- resume positions (per file: name and size), A–B repeat, frames, snapshots ------------------------------
@@ -631,7 +701,7 @@
       <button class="secondary outline" data-testid="open-url" onClick=${() => { state.urlDialog = true; render(); }}>${t('mp.openUrl')}</button>
       <button class="secondary outline" data-testid="save-playlist" disabled=${!state.items.length} onClick=${savePlaylist}>${t('mp.savePlaylist')}</button>
       <button class=${`secondary ${state.showPlaylist ? '' : 'outline'}`} data-testid="toggle-playlist" aria-pressed=${state.showPlaylist}
-        onClick=${() => { state.showPlaylist = !state.showPlaylist; savePrefs(); render(); }}>☰ ${t('mp.playlist')}</button>
+        onClick=${() => { state.showPlaylist = !state.showPlaylist; savePrefs(); render(); }}>${Suite.icon('menu')} ${t('mp.playlist')}</button>
     </nav>`;
   }
 
@@ -642,7 +712,8 @@
     return html`<div class="mp-stage" onClick=${(e) => { if (e.target === video || e.target.closest('.mp-info')) togglePlay(); }} onDblClick=${toggleFullscreen}>
       <div class="mp-video" ref=${(el) => { if (el && video.parentNode !== el) el.appendChild(video); }}></div>
       ${!isVideo ? html`<div class="mp-info" data-testid="now-playing">
-        ${cover ? html`<img src=${cover} alt="" data-testid="cover" />` : html`<div class="mp-note">${item ? '♪' : '▶'}</div>`}
+        ${state.vis !== 'off' && item && item.file ? html`<canvas class="mp-vis" data-testid="visualiser" ref=${(el) => { if (el && !el.dataset.started) { el.dataset.started = '1'; requestAnimationFrame(drawVis); } }}></canvas>`
+          : cover ? html`<img src=${cover} alt="" data-testid="cover" />` : html`<div class="mp-note">${item ? Suite.icon('music') : Suite.icon('play')}</div>`}
         ${item ? html`<strong data-testid="now-title">${item.title || item.name}</strong>${item.artist ? html`<span data-testid="now-artist">${item.artist}</span>` : null}${item.album ? html`<small>${item.album}</small>` : null}`
           : html`<p>${state.items.length ? t('mp.nothing') : t('mp.empty')}</p>`}
       </div>` : null}
@@ -660,18 +731,18 @@
         <span data-testid="duration">${fmtTime(duration || NaN)}</span>
       </div>
       <div class="mp-buttons">
-        <button class="secondary outline" title=${t('mp.previous')} data-testid="previous" onClick=${previous}>⏮</button>
-        <button class="mp-play" title=${state.playing ? t('mp.pause') : t('mp.play')} data-testid="play" onClick=${togglePlay}>${state.playing ? '⏸' : '▶'}</button>
-        <button class="secondary outline" title=${t('mp.stop')} data-testid="stop" onClick=${stop}>⏹</button>
-        <button class="secondary outline" title=${t('mp.next')} data-testid="next" onClick=${() => next()}>⏭</button>
+        <button class="secondary outline" title=${t('mp.previous')} data-testid="previous" onClick=${previous}>${Suite.icon('skip-back')}</button>
+        <button class="mp-play" title=${state.playing ? t('mp.pause') : t('mp.play')} data-testid="play" onClick=${togglePlay}>${state.playing ? Suite.icon('pause') : Suite.icon('play')}</button>
+        <button class="secondary outline" title=${t('mp.stop')} data-testid="stop" onClick=${stop}>${Suite.icon('square')}</button>
+        <button class="secondary outline" title=${t('mp.next')} data-testid="next" onClick=${() => next()}>${Suite.icon('skip-forward')}</button>
         <button class=${`secondary ${state.ab ? '' : 'outline'}`} title=${state.ab ? (state.ab.b == null ? t('mp.abA', fmtTime(state.ab.a)) : t('mp.abOn', fmtTime(state.ab.a), fmtTime(state.ab.b))) : t('mp.ab')}
-          data-testid="ab" data-state=${state.ab ? (state.ab.b == null ? 'a' : 'ab') : 'off'} disabled=${!duration} onClick=${cycleAb}>${state.ab ? (state.ab.b == null ? 'A–' : 'A–B ✓') : 'A–B'}</button>
-        ${video.videoWidth ? html`<button class="secondary outline" title=${t('mp.frameBack')} data-testid="frame-back" onClick=${() => stepFrame(-1)}>⏴</button>
-          <button class="secondary outline" title=${t('mp.frameForward')} data-testid="frame-forward" onClick=${() => stepFrame(1)}>⏵</button>
-          <button class="secondary outline" title=${t('mp.snapshot')} data-testid="snapshot" onClick=${snapshot}>📷</button>` : null}
+          data-testid="ab" data-state=${state.ab ? (state.ab.b == null ? 'a' : 'ab') : 'off'} disabled=${!duration} onClick=${cycleAb}>${state.ab ? (state.ab.b == null ? 'A–' : html`A–B ${Suite.icon('check')}`) : 'A–B'}</button>
+        ${video.videoWidth ? html`<button class="secondary outline" title=${t('mp.frameBack')} data-testid="frame-back" onClick=${() => stepFrame(-1)}>${Suite.icon('rewind')}</button>
+          <button class="secondary outline" title=${t('mp.frameForward')} data-testid="frame-forward" onClick=${() => stepFrame(1)}>${Suite.icon('play')}</button>
+          <button class="secondary outline" title=${t('mp.snapshot')} data-testid="snapshot" onClick=${snapshot}>${Suite.icon('camera')}</button>` : null}
         <span class="mp-gap"></span>
-        <button class=${`secondary ${state.shuffle ? '' : 'outline'}`} title=${t('mp.shuffle')} aria-pressed=${state.shuffle} data-testid="shuffle" onClick=${toggleShuffle}>🔀</button>
-        <button class=${`secondary ${state.repeat === 'off' ? 'outline' : ''}`} title=${t(`mp.repeat${state.repeat[0].toUpperCase()}${state.repeat.slice(1)}`)} data-testid="repeat" data-mode=${state.repeat} onClick=${cycleRepeat}>${state.repeat === 'one' ? '🔂' : '🔁'}</button>
+        <button class=${`secondary ${state.shuffle ? '' : 'outline'}`} title=${t('mp.shuffle')} aria-pressed=${state.shuffle} data-testid="shuffle" onClick=${toggleShuffle}>${Suite.icon('shuffle')}</button>
+        <button class=${`secondary ${state.repeat === 'off' ? 'outline' : ''}`} title=${t(`mp.repeat${state.repeat[0].toUpperCase()}${state.repeat.slice(1)}`)} data-testid="repeat" data-mode=${state.repeat} onClick=${cycleRepeat}>${state.repeat === 'one' ? Suite.icon('repeat-1') : Suite.icon('repeat')}</button>
         <select class="mp-rate" title=${t('mp.speed')} data-testid="rate" onChange=${(e) => setRate(+e.target.value)}>
           ${RATES.map((r) => html`<option value=${r} selected=${state.rate === r}>${r}×</option>`)}
         </select>
@@ -679,12 +750,14 @@
           <option value="-1" selected=${state.subtitle < 0}>${t('mp.subtitlesOff')}</option>
           ${subs.map((s, i) => html`<option value=${i} selected=${state.subtitle === i}>${s.label}</option>`)}</select>` : null}
         <span class="mp-gap"></span>
-        <button class=${`secondary ${state.eq.on ? '' : 'outline'}`} title=${t('mp.eq')} data-testid="eq" aria-pressed=${state.eq.open} onClick=${() => { state.eq.open = !state.eq.open; render(); }}>🎚</button>
-        <button class="secondary outline" title=${state.muted ? t('mp.unmute') : t('mp.mute')} data-testid="mute" onClick=${toggleMute}>${state.muted || state.volume === 0 ? '🔇' : '🔊'}</button>
+        <select class="mp-vis-mode" title=${t('mp.vis')} aria-label=${t('mp.vis')} data-testid="vis" onChange=${(e) => setVis(e.target.value)}>
+          ${['off', 'bars', 'wave', 'circle'].map((m) => html`<option value=${m} selected=${state.vis === m}>${t(`mp.vis.${m}`)}</option>`)}</select>
+        <button class=${`secondary ${state.eq.on ? '' : 'outline'}`} title=${t('mp.eq')} data-testid="eq" aria-pressed=${state.eq.open} onClick=${() => { state.eq.open = !state.eq.open; render(); }}>${Suite.icon('sliders-horizontal')}</button>
+        <button class="secondary outline" title=${state.muted ? t('mp.unmute') : t('mp.mute')} data-testid="mute" onClick=${toggleMute}>${state.muted || state.volume === 0 ? Suite.icon('volume-x') : Suite.icon('volume-2')}</button>
         <input type="range" class="mp-volume" min="0" max="1" step="0.01" value=${state.muted ? 0 : state.volume} aria-label=${t('mp.volume')} data-testid="volume"
           onInput=${(e) => setVolume(+e.target.value)} />
-        ${document.pictureInPictureEnabled ? html`<button class="secondary outline" title=${t('mp.pip')} data-testid="pip" disabled=${!video.videoWidth} onClick=${togglePip}>⧉</button>` : null}
-        <button class="secondary outline" title=${t('mp.fullscreen')} data-testid="fullscreen" onClick=${toggleFullscreen}>⛶</button>
+        ${document.pictureInPictureEnabled ? html`<button class="secondary outline" title=${t('mp.pip')} data-testid="pip" disabled=${!video.videoWidth} onClick=${togglePip}>${Suite.icon('copy')}</button>` : null}
+        <button class="secondary outline" title=${t('mp.fullscreen')} data-testid="fullscreen" onClick=${toggleFullscreen}>${Suite.icon('maximize')}</button>
       </div>
     </div>`;
   }
@@ -722,7 +795,7 @@
 
   function AlbumView() {
     return html`<div class="mp-albums" data-testid="albums">${albums().map((a) => html`<button class="mp-album" data-testid="album" onClick=${() => play(a.items[0])}>
-      ${a.cover ? html`<img src=${a.cover} alt="" />` : html`<span class="mp-album-note">♪</span>`}
+      ${a.cover ? html`<img src=${a.cover} alt="" />` : html`<span class="mp-album-note">${Suite.icon('music')}</span>`}
       <strong>${a.album || t('mp.unknownAlbum')}</strong><small>${a.artist}${a.artist ? ' · ' : ''}${t('mp.tracks', a.items.length)}</small></button>`)}</div>`;
   }
 
@@ -735,7 +808,7 @@
         <input type="search" placeholder=${t('mp.filter')} value=${state.filter} data-testid="filter" onInput=${(e) => { state.filter = e.target.value; render(); }} />
         <button class="secondary outline" data-testid="clear" disabled=${!state.items.length} onClick=${clearPlaylist}>${t('mp.clear')}</button>
         <button class="secondary outline" data-testid="view" title=${state.view === 'list' ? t('mp.albumView') : t('mp.listView')}
-          onClick=${() => { state.view = state.view === 'list' ? 'albums' : 'list'; savePrefs(); render(); }}>${state.view === 'list' ? '▦' : '☰'}</button>
+          onClick=${() => { state.view = state.view === 'list' ? 'albums' : 'list'; savePrefs(); render(); }}>${state.view === 'list' ? Suite.icon('layout-grid') : Suite.icon('list')}</button>
       </div>
       ${state.view === 'albums' ? html`<${AlbumView} />` : null}
       <ol class="mp-list" hidden=${state.view === 'albums'}>${state.items.map((item, index) => {
@@ -748,12 +821,12 @@
             onDrop=${(e) => { if (state.dragging != null) { e.preventDefault(); e.stopPropagation(); move(state.dragging, index); state.dragging = null; } }}
             onDragEnd=${() => { state.dragging = null; render(); }}>
           <button class="mp-item" data-testid="item-play" onClick=${(e) => { if (e.detail === 0 || coarse.matches) play(index); }}>
-            <span class="mp-item-title" data-testid="item-title">${index === state.current ? (state.playing ? '▶ ' : '❚❚ ') : ''}${label(item)}</span>
+            <span class="mp-item-title" data-testid="item-title">${index === state.current ? (state.playing ? Suite.icon('play') : Suite.icon('pause')) : ''}${label(item)}</span>
             <span class="mp-item-time" data-testid="item-duration">${item.duration ? fmtTime(item.duration) : ''}</span>
           </button>
           <span class="mp-item-actions">
-            <button class="secondary outline" title=${t('mp.moveUp')} data-testid="item-up" onClick=${() => move(index, index - 1)}>↑</button>
-            <button class="secondary outline" title=${t('mp.moveDown')} data-testid="item-down" onClick=${() => move(index, index + 1)}>↓</button>
+            <button class="secondary outline" title=${t('mp.moveUp')} data-testid="item-up" onClick=${() => move(index, index - 1)}>${Suite.icon('arrow-up')}</button>
+            <button class="secondary outline" title=${t('mp.moveDown')} data-testid="item-down" onClick=${() => move(index, index + 1)}>${Suite.icon('arrow-down')}</button>
             <button class="secondary outline" title=${t('mp.remove')} data-testid="item-remove" onClick=${() => removeItem(index)}>×</button>
           </span>
         </li>`;
@@ -808,6 +881,6 @@
   Suite.bridge.receive((picked) => addFiles([picked.file], { playFirst: true }), { app: 'mediaplayer' }); // files opened from other apps ("Open with…")
 
   // for tests
-  MP.app = { state, get video() { return video; }, addFiles, play, next, previous, setEq, get graph() { return graph; } };
+  MP.app = { state, get video() { return video; }, addFiles, play, next, previous, setEq, setVis, get graph() { return graph; } };
   document.body.dataset.ready = 'true';
 })();

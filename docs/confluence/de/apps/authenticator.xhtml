@@ -1,0 +1,153 @@
+<!-- Generated from docs/de/apps/authenticator.md by tools/build_docs.py - do not edit. Confluence page title: Authenticator -->
+<ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
+<p>Der Authenticator (<code>authenticator.html</code>) zeigt die Einmalpasswörter (Zwei-Faktor-Codes) einer KeePass-Datenbank – wie eine
+Authenticator-App am Smartphone, aber die Geheimnisse bleiben in Ihrer eigenen verschlüsselten <code>.kdbx</code>-Datei. Unterstützt
+werden <strong>TOTP</strong> (zeitbasiert, der übliche Fall), <strong>HOTP</strong> (zählerbasiert) und <strong>Steam</strong>-Codes. Alles läuft im Browser; nichts
+wird irgendwohin gesendet.</p>
+<p>Die Tokens werden so gespeichert, wie es KeePassXC, KeePass 2 (ab 2.47), KeePassDX und Strongbox tun (das Feld <code>otp</code> sowie die
+Felder <code>TimeOtp-…</code>/<code>HmacOtp-…</code> von KeePass 2). Dieselbe Datenbank funktioniert also auch in diesen Programmen und in der
+<ac:link><ri:page ri:content-title="KeePass" /><ac:plain-text-link-body><![CDATA[KeePass]]></ac:plain-text-link-body></ac:link>-Anwendung der Suite. Ältere KeePassXC-Felder (<code>TOTP Seed</code>/<code>TOTP Settings</code>) und KeeOtp-Einträge werden
+ebenfalls gelesen.</p>
+<h2>Eine Datenbank entsperren oder anlegen</h2>
+<ol>
+<li><strong>Datenbank wählen…</strong> wählt die <code>.kdbx</code>-Datei; Sie können sie auch auf das Fenster ziehen, zusammen mit ihrer
+   Schlüsseldatei. In Chrome/Edge am Desktop listet <strong>Zuletzt geöffnet</strong> die zuvor geöffneten Datenbanken.</li>
+<li>Geben Sie das Passwort ein (👁 zeigt es an) und wählen Sie, falls die Datenbank eine hat, die <strong>Schlüsseldatei</strong>.</li>
+<li><strong>Entsperren</strong>. Ein falsches Passwort oder eine falsche Schlüsseldatei ergibt eine Fehlermeldung.</li>
+</ol>
+<p><strong>Eine neue Datenbank anlegen</strong> fragt nach einem Namen und einem Passwort (zweimal); optional wird auch eine
+<strong>Schlüsseldatei</strong> angelegt und sofort heruntergeladen – bewahren Sie sie sicher auf, ohne sie lässt sich die Datenbank nicht
+öffnen. Die neue Datenbank ist eine KDBX-4-Datei (AES-256, Argon2id); sie wird geschrieben, wenn Sie sie <strong>speichern</strong>.</p>
+<h2>Die Codes</h2>
+<p>Jeder Eintrag mit Einmalpasswort-Daten (außerhalb des Papierkorbs) erscheint als Karte, nach Namen sortiert, mit Konto und
+Gruppe. Für TOTP- und Steam-Tokens zeigt die Karte drei Codes: den <strong>vorherigen</strong>, den <strong>aktuellen</strong> (groß) und den
+<strong>nächsten</strong> Code sowie einen Balken mit den verbleibenden Sekunden. Ein Klick auf einen Code kopiert ihn. Der aktuelle Code
+wird in seinen letzten fünf Sekunden rot – dann ist der nächste Code der richtige. Der vorherige Code hilft, wenn ein Server
+etwas nachgeht.</p>
+<p>HOTP-Tokens zeigen den Code zum aktuellen Zähler; <strong>⟳ n</strong> geht zum nächsten Code weiter (der Zähler wird erhöht und mit der
+Datenbank gespeichert).</p>
+<p><strong>Suchen</strong> (<code>Strg+F</code>) filtert nach Name, Konto, Aussteller und Gruppe.</p>
+<h2>Die Uhr stellen</h2>
+<p>TOTP-Codes hängen von der Zeit ab: Weicht die Uhr Ihres Geräts von der des Servers ab, werden die Codes abgelehnt. Die Leiste
+über den Codes zeigt die Uhr, mit der die Codes erzeugt werden:</p>
+<ul>
+<li><strong>−30 s</strong> / <strong>+30 s</strong> stellen die Uhr eine halbe Minute zurück oder vor (einen Code-Schritt).</li>
+<li><strong>⏸</strong> hält die Uhr an (die Codes bleiben stehen), <strong>▶</strong> lässt sie von dort weiterlaufen.</li>
+<li><strong>⚙</strong> öffnet die Einstellungen: einen <strong>Versatz zur lokalen Uhr</strong> in Sekunden (z. B. <code>-90</code>) oder ein festes <strong>Datum mit
+  Uhrzeit</strong> (die Uhr hält dabei an).</li>
+<li><strong>↺</strong> kehrt zur lokalen Uhr zurück. Solange die Uhr von der lokalen Uhr abweicht, ist die Leiste gelb.</li>
+</ul>
+<p>Die Einstellung der Uhr wird nicht gespeichert; beim nächsten Öffnen der Anwendung gilt wieder die lokale Uhr.</p>
+<h2>Tokens hinzufügen und bearbeiten</h2>
+<p><strong>+ Hinzufügen</strong> öffnet das Formular:</p>
+<ul>
+<li><strong>Aus einem otpauth://-Link übernehmen</strong>: Fügen Sie einen Link ein, wie ihn eine Website beim Einrichten der
+  Zwei-Faktor-Anmeldung anbietet (<code>otpauth://totp/Beispiel:anna@example.org?secret=…&amp;issuer=Beispiel</code>) – alle Felder werden
+  ausgefüllt.</li>
+<li>Oder geben Sie <strong>Aussteller</strong>, <strong>Konto</strong>, <strong>Name</strong> (den Titel des KeePass-Eintrags) und den <strong>geheimen Schlüssel</strong> ein
+  (Base32, Leerzeichen werden ignoriert). 🎲 erzeugt einen zufälligen Schlüssel (für ein eigenes Token).</li>
+<li><strong>Erweiterte Einstellungen</strong>: Typ (TOTP, HOTP, Steam), Algorithmus (SHA1, SHA256, SHA512), Stellen, Intervall (TOTP) oder
+  Zähler (HOTP) und die KeePass-<strong>Gruppe</strong> für den neuen Eintrag.</li>
+<li>Der <strong>aktuelle Code</strong> wird schon beim Tippen angezeigt, sodass Sie ihn vor dem Speichern mit der Website vergleichen können.</li>
+</ul>
+<p><strong>✎ Bearbeiten</strong> ändert ein Token auf dieselbe Weise; die vorige Fassung des Eintrags kommt in seinen Verlauf.</p>
+<h2>Tokens löschen</h2>
+<p><strong>🗑 Löschen</strong> fragt zuerst nach und warnt: Schalten Sie die Zwei-Faktor-Anmeldung für das Konto ab (oder stellen Sie sicher,
+dass Sie sich anders anmelden können), bevor Sie das Token löschen – sonst sperren Sie sich womöglich aus. Enthält der
+KeePass-Eintrag mehr als das Token – ein Passwort, eine URL, Notizen, Anhänge oder weitere Felder –, können Sie <strong>nur das
+Token entfernen</strong> und den Eintrag behalten oder den ganzen Eintrag löschen. Gelöschte Einträge kommen in den Papierkorb der
+Datenbank, falls sie einen hat.</p>
+<h2>Importieren</h2>
+<p><strong>⇩ Importieren</strong> liest mehrere Tokens auf einmal:</p>
+<ul>
+<li><strong>Text</strong>: <code>otpauth://</code>-Links (einer je Zeile), Export-Links von <strong>Google Authenticator</strong> (<code>otpauth-migration://</code>, aus den
+  QR-Codes von „Konten übertragen“) und unverschlüsselte <strong>Aegis</strong>-JSON-Exporte.</li>
+<li><strong>🖼 QR-Code aus einem Bild…</strong> liest die QR-Codes von Bildschirmfotos oder Fotos; Sie können ein Bildschirmfoto auch
+  <strong>einfügen</strong> (<code>Strg+V</code>) oder Bilder auf das Fenster ziehen.</li>
+<li><strong>📷 Mit der Kamera scannen</strong> liest QR-Codes, die Sie vor die Kamera halten (der Browser fragt nach der Erlaubnis).</li>
+<li><strong>📄 Aus einer Datei…</strong> liest Text- und JSON-Dateien.</li>
+</ul>
+<p>Die Liste darunter zeigt die gefundenen Tokens; Tokens, die schon in der Datenbank sind, sind als <em>schon vorhanden</em> markiert
+und nicht angehakt. Wählen Sie die <strong>Gruppe</strong> für die neuen Einträge und <strong>Importieren</strong>. Fügen Sie einen <code>otpauth://</code>-Link
+oder ein Bildschirmfoto eines QR-Codes irgendwo im Fenster ein (außerhalb der Textfelder), öffnet sich der Import damit.</p>
+<h2>Exportieren</h2>
+<ul>
+<li><strong>▦</strong> auf einer Karte zeigt das Token als <strong>QR-Code</strong> und als <code>otpauth://</code>-Link (nach einer Warnung – wer ihn sieht, kann
+  Ihre Codes erzeugen). Scannen Sie den QR-Code mit einer anderen Authenticator-App, um ein Token dorthin zu übertragen.</li>
+<li><strong>⇧ Alle exportieren</strong> lädt alle <code>otpauth://</code>-Links als Textdatei herunter oder zeigt alle QR-Codes. Der Export ist <strong>nicht
+  verschlüsselt</strong> – löschen Sie ihn nach Gebrauch.</li>
+</ul>
+<h2>Speichern</h2>
+<p><strong>💾 Speichern</strong> (<code>Strg+S</code>) schreibt die Datenbank in Chrome/Edge am Desktop in ihre Datei zurück. In anderen Browsern
+(Firefox, Android) wird sie heruntergeladen: Ersetzen Sie die Originaldatei durch die heruntergeladene, sonst gehen die
+Änderungen verloren. <strong>Speichern unter</strong> (<code>Strg+Umschalt+S</code>) schreibt eine Kopie. Vor dem Speichern wird die neue Datei zur
+Kontrolle wieder entschlüsselt.</p>
+<h2>Sperren</h2>
+<p><strong>🔒 Sperren</strong> (<code>Strg+L</code>) schließt die Datenbank. Sie wird auch nach <strong>10 Minuten</strong> ohne Aktivität gesperrt – aber nie,
+solange es ungespeicherte Änderungen gibt.</p>
+<h2>Tastenkürzel</h2>
+<p>Auf einem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
+<h3>Dateien</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+S</code></td>
+<td>Speichern</td>
+</tr>
+<tr>
+<td><code>Strg+Umschalt+S</code></td>
+<td>Speichern unter</td>
+</tr>
+<tr>
+<td><code>Strg+L</code></td>
+<td>Sperren</td>
+</tr>
+</tbody>
+</table>
+<h3>Codes</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Strg+F</code></td>
+<td>Suchen</td>
+</tr>
+<tr>
+<td><code>Strg+V</code></td>
+<td>Einen eingefügten <code>otpauth://</code>-Link oder ein QR-Code-Bild importieren</td>
+</tr>
+<tr>
+<td><code>Escape</code></td>
+<td>Den Dialog schließen</td>
+</tr>
+</tbody>
+</table>
+<h3>Hilfe</h3>
+<table>
+<thead>
+<tr>
+<th>Tasten</th>
+<th>Funktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F1</code> / <code>?</code></td>
+<td>diese Liste zeigen (außerhalb von Textfeldern)</td>
+</tr>
+</tbody>
+</table>
+<h2>Auf Smartphones und Tablets</h2>
+<p>Die Karten stehen in einer Spalte; die Werkzeugleiste bricht um. Zum Scannen von QR-Codes wird die rückseitige Kamera
+verwendet. Unter Android wird die Datenbank als Download gespeichert (siehe <em>Speichern</em>).</p>

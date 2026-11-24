@@ -4,6 +4,7 @@
  */
 import { read, write, detect, formatOfName, cleanPath, ArchiveError, addPassword, clearPasswords, locked, encryptionOf } from '@app/archive.js';
 import { detectMulti, readMulti, write7z, compress } from '@app/multi.js';
+import { searchNames, searchContents, contentPattern, SearchError, compareEntries } from '@app/search.js';
 
 const { html } = Suite.shell;
 const t = Suite.t;
@@ -40,12 +41,12 @@ Suite.i18n.register({
     'ar.passwordTitle': 'Password', 'ar.passwordPrompt': '“{0}” is encrypted. Enter the password:', 'ar.passwordWrong': 'The password is wrong. Try again:',
     'ar.encryption': 'Encryption', 'ar.encNone': 'none', 'ar.encAes': 'AES-256 (recommended)', 'ar.encZipCrypto': 'ZipCrypto (weak; for Windows Explorer)',
     'ar.password': 'Password', 'ar.passwordRepeat': 'Repeat the password', 'ar.passwordMismatch': 'The passwords do not match.',
-    'ar.encryptedWith': '🔒 {0}', 'ar.encryptionHint': 'New and changed files are encrypted; encrypted files stay as they are.',
+    'ar.encryptedWith': '{0}', 'ar.encryptionHint': 'New and changed files are encrypted; encrypted files stay as they are.',
     'ar.unsupportedMethod': '“{0}” uses an unsupported compression method ({1}).', 'ar.crc': '“{0}” is damaged (checksum error).',
     'ar.tooLarge': 'The archive is too large for the ZIP format without ZIP64 (4 GiB, 65,535 entries).',
     'ar.gzSingle': 'A GZ file contains exactly one file. Choose TAR.GZ or ZIP for several files.', 'ar.link': 'Link → {0}', 'ar.lock': 'encrypted',
     'ar.root': 'Archive root', 'ar.undo': 'Undo', 'ar.redo': 'Redo', 'ar.updated': '“{0}” was updated in the archive. Save the archive to keep the change.',
-    'ar.closeArchive': '✕ Close', 'ar.notFound': '“{0}” is not in the archive.', 'ar.closeTitle': 'Close the archive',
+    'ar.closeArchive': 'Close', 'ar.notFound': '“{0}” is not in the archive.', 'ar.closeTitle': 'Close the archive',
     'ar.linksOpen': 'Files of this archive are open in other applications: {0}. After closing, they can neither be loaded from nor saved into this archive. Close it anyway?',
     'ar.linkSaveTitle': 'Save “{0}” in the archive', 'ar.linkOpenTitle': 'Open from the archive', 'ar.linkMountTitle': 'Mount the archive',
     'ar.linkFrom': 'Requested by {0}.', 'ar.linkNoArchive': 'Open an archive or create a new one first.', 'ar.folder': 'Folder',
@@ -53,6 +54,15 @@ Suite.i18n.register({
     'ar.linkAll': 'Show all files', 'ar.linkNone': 'No matching files in this archive.', 'ar.mounted': 'mounted',
     'ar.mountConfirm': '{0} wants to mount “{1}”: it can read, change and delete all files of the archive. Allow?',
     'ar.badName': 'Enter a file name without “/”.', 'ar.linkDone': 'Done – you can go back to {0}.', 'ar.linkBusy': 'Another application is already waiting for an answer here.',
+    'ar.compare': 'Compare with another archive…', 'ar.archives': 'Archives', 'ar.comparedWith': 'Compared with {0}', 'ar.cmpOnlyA': 'only here', 'ar.cmpOnlyB': 'only in the other', 'ar.cmpChanged': 'different', 'ar.cmpSame': 'the same', 'ar.cmpUnknown': 'cannot be read',
+    'ar.cmpDifferences': 'Differences ({0})', 'ar.cmpAll': 'All files ({0})', 'ar.cmpIdentical': 'The archives contain the same {0} files.', 'ar.takeOver': 'Take', 'ar.takeOverHint': 'Put the other archive’s version of this file into this archive', 'ar.takenOver': '“{0}” was taken from the other archive. Save to keep it.',
+    'ar.split': 'Split into parts (e.g. for e-mail or a FAT32 stick)', 'ar.partSize': 'Size of a part (MB)', 'ar.splitHint': 'The parts are named …001, …002 and so on, like 7-Zip writes them. To open them, select all parts together.',
+    'ar.partsSaved': '{0} parts saved in “{1}”.', 'ar.partsDownloaded': '{0} parts were downloaded. Keep them together; to open the archive, select all parts at once.',
+    'ar.partsMixed': 'Select only the parts of one split archive (…001, …002, …).', 'ar.partsMissing': 'Part {0} is missing: select all parts together.', 'ar.partsOne': 'This archive consisted of one part only.', 'ar.partsSelectAll': 'This is one part of a split archive: select all its parts together.',
+    'ar.search': 'Search', 'ar.searchName': 'Name (e.g. *.txt or part of a name)', 'ar.searchInContents': 'In the contents', 'ar.searchText': 'Text to find', 'ar.searchRegex': 'Regular expression', 'ar.searchCase': 'Match case',
+    'ar.searchGo': 'Search', 'ar.searchStop': 'Stop', 'ar.searchHint': 'Type a name to find files and folders in the whole archive (* and ? as wildcards).', 'ar.searchContentsHint': 'Type the text and press Search (or Enter). The name field limits which files are searched.',
+    'ar.searchNone': 'Nothing found.', 'ar.searchNeedText': 'Type the text to search for.', 'ar.searchBadRegex': 'The regular expression is not valid: {0}', 'ar.lineCol': 'line {0}, column {1}',
+    'ar.searchSummary': 'Found in {0} of {1} searched files.', 'ar.searchSkipped': 'Skipped: {0} binary, {1} encrypted, {2} too large.',
   },
   de: {
     'app.title': 'Archivmanager',
@@ -77,12 +87,12 @@ Suite.i18n.register({
     'ar.passwordTitle': 'Passwort', 'ar.passwordPrompt': '„{0}“ ist verschlüsselt. Geben Sie das Passwort ein:', 'ar.passwordWrong': 'Das Passwort ist falsch. Bitte erneut versuchen:',
     'ar.encryption': 'Verschlüsselung', 'ar.encNone': 'keine', 'ar.encAes': 'AES-256 (empfohlen)', 'ar.encZipCrypto': 'ZipCrypto (schwach; für den Windows-Explorer)',
     'ar.password': 'Passwort', 'ar.passwordRepeat': 'Passwort wiederholen', 'ar.passwordMismatch': 'Die Passwörter stimmen nicht überein.',
-    'ar.encryptedWith': '🔒 {0}', 'ar.encryptionHint': 'Neue und geänderte Dateien werden verschlüsselt; verschlüsselte Dateien bleiben, wie sie sind.',
+    'ar.encryptedWith': '{0}', 'ar.encryptionHint': 'Neue und geänderte Dateien werden verschlüsselt; verschlüsselte Dateien bleiben, wie sie sind.',
     'ar.unsupportedMethod': '„{0}“ verwendet ein nicht unterstütztes Kompressionsverfahren ({1}).', 'ar.crc': '„{0}“ ist beschädigt (Prüfsummenfehler).',
     'ar.tooLarge': 'Das Archiv ist für das ZIP-Format ohne ZIP64 zu groß (4 GiB, 65.535 Einträge).',
     'ar.gzSingle': 'Eine GZ-Datei enthält genau eine Datei. Wählen Sie TAR.GZ oder ZIP für mehrere Dateien.', 'ar.link': 'Verknüpfung → {0}', 'ar.lock': 'verschlüsselt',
     'ar.root': 'Archivwurzel', 'ar.undo': 'Rückgängig', 'ar.redo': 'Wiederholen', 'ar.updated': '„{0}“ wurde im Archiv aktualisiert. Speichern Sie das Archiv, um die Änderung zu behalten.',
-    'ar.closeArchive': '✕ Schließen', 'ar.notFound': '„{0}“ ist nicht im Archiv.', 'ar.closeTitle': 'Das Archiv schließen',
+    'ar.closeArchive': 'Schließen', 'ar.notFound': '„{0}“ ist nicht im Archiv.', 'ar.closeTitle': 'Das Archiv schließen',
     'ar.linksOpen': 'Dateien dieses Archivs sind in anderen Anwendungen geöffnet: {0}. Nach dem Schließen lassen sie sich weder aus diesem Archiv laden noch in es speichern. Trotzdem schließen?',
     'ar.linkSaveTitle': '„{0}“ im Archiv speichern', 'ar.linkOpenTitle': 'Aus dem Archiv öffnen', 'ar.linkMountTitle': 'Das Archiv einbinden',
     'ar.linkFrom': 'Angefordert von {0}.', 'ar.linkNoArchive': 'Öffnen Sie zuerst ein Archiv oder legen Sie ein neues an.', 'ar.folder': 'Ordner',
@@ -90,6 +100,15 @@ Suite.i18n.register({
     'ar.linkAll': 'Alle Dateien zeigen', 'ar.linkNone': 'Keine passenden Dateien in diesem Archiv.', 'ar.mounted': 'eingebunden',
     'ar.mountConfirm': '{0} möchte „{1}“ einbinden: Es kann alle Dateien des Archivs lesen, ändern und löschen. Erlauben?',
     'ar.badName': 'Geben Sie einen Dateinamen ohne „/“ ein.', 'ar.linkDone': 'Fertig – Sie können zu {0} zurückkehren.', 'ar.linkBusy': 'Eine andere Anwendung wartet hier bereits auf eine Antwort.',
+    'ar.compare': 'Mit einem anderen Archiv vergleichen…', 'ar.archives': 'Archive', 'ar.comparedWith': 'Verglichen mit {0}', 'ar.cmpOnlyA': 'nur hier', 'ar.cmpOnlyB': 'nur im anderen', 'ar.cmpChanged': 'verschieden', 'ar.cmpSame': 'gleich', 'ar.cmpUnknown': 'nicht lesbar',
+    'ar.cmpDifferences': 'Unterschiede ({0})', 'ar.cmpAll': 'Alle Dateien ({0})', 'ar.cmpIdentical': 'Die Archive enthalten dieselben {0} Dateien.', 'ar.takeOver': 'Übernehmen', 'ar.takeOverHint': 'Die Fassung dieser Datei aus dem anderen Archiv in dieses übernehmen', 'ar.takenOver': '„{0}“ wurde aus dem anderen Archiv übernommen. Speichern Sie, um es zu behalten.',
+    'ar.split': 'In Teile aufteilen (etwa für E-Mail oder einen FAT32-Stick)', 'ar.partSize': 'Größe eines Teils (MB)', 'ar.splitHint': 'Die Teile heißen …001, …002 und so weiter, wie 7-Zip sie schreibt. Um sie zu öffnen, wählen Sie alle Teile zusammen aus.',
+    'ar.partsSaved': '{0} Teile in „{1}“ gespeichert.', 'ar.partsDownloaded': '{0} Teile wurden heruntergeladen. Bewahren Sie sie zusammen auf; zum Öffnen wählen Sie alle Teile auf einmal aus.',
+    'ar.partsMixed': 'Wählen Sie nur die Teile eines aufgeteilten Archivs aus (…001, …002, …).', 'ar.partsMissing': 'Teil {0} fehlt: Wählen Sie alle Teile zusammen aus.', 'ar.partsOne': 'Dieses Archiv bestand nur aus einem Teil.', 'ar.partsSelectAll': 'Das ist ein Teil eines aufgeteilten Archivs: Wählen Sie alle seine Teile zusammen aus.',
+    'ar.search': 'Suchen', 'ar.searchName': 'Name (z. B. *.txt oder ein Teil des Namens)', 'ar.searchInContents': 'Im Inhalt', 'ar.searchText': 'Gesuchter Text', 'ar.searchRegex': 'Regulärer Ausdruck', 'ar.searchCase': 'Groß-/Kleinschreibung',
+    'ar.searchGo': 'Suchen', 'ar.searchStop': 'Anhalten', 'ar.searchHint': 'Geben Sie einen Namen ein, um Dateien und Ordner im ganzen Archiv zu finden (* und ? als Platzhalter).', 'ar.searchContentsHint': 'Geben Sie den Text ein und drücken Sie Suchen (oder Eingabe). Das Namensfeld schränkt ein, welche Dateien durchsucht werden.',
+    'ar.searchNone': 'Nichts gefunden.', 'ar.searchNeedText': 'Geben Sie den gesuchten Text ein.', 'ar.searchBadRegex': 'Der reguläre Ausdruck ist ungültig: {0}', 'ar.lineCol': 'Zeile {0}, Spalte {1}',
+    'ar.searchSummary': 'In {0} von {1} durchsuchten Dateien gefunden.', 'ar.searchSkipped': 'Übersprungen: {0} binär, {1} verschlüsselt, {2} zu groß.',
   },
 });
 
@@ -98,6 +117,8 @@ const state = {
   cwd: '', selected: new Set(), anchor: null, sort: { key: 'name', asc: true },
   renaming: null, preview: null, saveAs: null, recent: [], busy: false, test: null, // test: { total, errors: [{ path, message }] }
   encryption: null, passwordPrompt: null, // encryption: { password, method: 'aes' | 'zipcrypto' } of new and changed files
+  compare: null, // { name, diffs, filter, running }
+  search: null, // { name, contents, text, regex, caseSensitive, results, running, progress, summary }
   session: 1, link: null, // session: number of the open archive (links to an earlier one fail); link: a connection request shown in its dialog
 };
 if (Suite.archiveLink) Suite.archiveLink.disabled = true; // (Open and Save as here are about archives themselves)
@@ -245,9 +266,62 @@ async function openPicked(picked) {
 async function openArchive() {
   if (!(await confirmDiscard())) return;
   try {
-    const picked = await Suite.files.open({ types: [{ description: t('app.title'), accept: { 'application/octet-stream': EXTENSIONS } }] });
-    if (picked) await openPicked(picked[0]);
+    const picked = await Suite.files.open({ multiple: true, types: [{ description: t('app.title'), accept: { 'application/octet-stream': [...EXTENSIONS, '.001'] } }] });
+    if (!picked || !picked.length) return;
+    if (picked.length > 1 || PART_RE.test(picked[0].file.name)) await openParts(picked);
+    else await openPicked(picked[0]);
   } catch (e) { fail(e); }
+}
+
+// ---- split archives: parts name.zip.001, .002, … (raw pieces, as 7-Zip writes them) --------------------------------------------
+
+const PART_RE = /^(.*)\.(\d{3})$/;
+
+/** Open the parts of a split archive (all selected together): joined in the order of their numbers. */
+async function openParts(picked) {
+  const parts = picked.map((p) => ({ p, m: PART_RE.exec(p.file.name) }));
+  if (parts.some((x) => !x.m) || new Set(parts.map((x) => x.m[1])).size > 1) { Suite.shell.toast(t('ar.partsMixed'), 'error'); return; }
+  parts.sort((a, b) => Number(a.m[2]) - Number(b.m[2]));
+  const missing = parts.findIndex((x, i) => Number(x.m[2]) !== i + 1);
+  if (missing >= 0) { Suite.shell.toast(t('ar.partsMissing', String(missing + 1).padStart(3, '0')), 'error'); return; }
+  await busy(async () => {
+    const chunks = await Promise.all(parts.map((x) => x.p.file.arrayBuffer().then((b) => new Uint8Array(b))));
+    const joined = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0));
+    let o = 0;
+    for (const c of chunks) { joined.set(c, o); o += c.length; }
+    try {
+      await load(parts[0].m[1], joined, null);
+      if (parts.length === 1) Suite.shell.toast(t('ar.partsOne'), 'warning');
+    } catch (e) {
+      if (parts.length === 1) Suite.shell.toast(t('ar.partsSelectAll'), 'error'); else fail(e);
+    }
+  });
+}
+
+/** Save the archive as parts of at most partSize bytes: into a chosen folder where the browser can, otherwise as downloads. */
+async function saveParts({ name, format, partSize }) {
+  await busy(async () => {
+    try {
+      if (format !== 'zip' && !(await unlock(state.entries))) return;
+      const bytes = await encodeArchive(ordered(), format, { level: state.level, encryption: format === 'zip' ? state.encryption : null });
+      const count = Math.max(1, Math.ceil(bytes.length / partSize));
+      const parts = Array.from({ length: count }, (_, i) => ({ name: `${name}.${String(i + 1).padStart(3, '0')}`, data: bytes.subarray(i * partSize, Math.min(bytes.length, (i + 1) * partSize)) }));
+      if (window.showDirectoryPicker) {
+        let dir;
+        try { dir = await window.showDirectoryPicker({ mode: 'readwrite' }); } catch (e) { if (e.name === 'AbortError') return; throw e; }
+        for (const part of parts) {
+          const handle = await dir.getFileHandle(part.name, { create: true });
+          const w = await handle.createWritable();
+          await w.write(part.data);
+          await w.close();
+        }
+        Suite.shell.toast(t('ar.partsSaved', count, dir.name));
+      } else {
+        for (const part of parts) { Suite.files.download(part.data, part.name); await new Promise((r) => setTimeout(r, 250)); }
+        Suite.shell.banner(t('ar.partsDownloaded', count));
+      }
+    } catch (e) { fail(e); }
+  });
 }
 
 async function newArchive() {
@@ -496,9 +570,9 @@ function TestDialog() {
   const close = () => { state.test = null; render(); };
   return html`<dialog open data-testid="test-dialog"><article>
     <header><strong>${t('ar.testResult')}</strong></header>
-    ${r.errors.length ? html`<p data-testid="test-summary" class="ar-test-bad">✗ ${t('ar.testFailed', r.errors.length, r.total)}</p>
+    ${r.errors.length ? html`<p data-testid="test-summary" class="ar-test-bad">${Suite.icon('x')} ${t('ar.testFailed', r.errors.length, r.total)}</p>
       <ul class="ar-test-errors">${r.errors.map((e) => html`<li data-testid="test-error"><code>${e.path}</code>: ${e.message}</li>`)}</ul>`
-      : html`<p data-testid="test-summary" class="ar-test-ok">✓ ${t('ar.testOk', r.total)}</p>`}
+      : html`<p data-testid="test-summary" class="ar-test-ok">${Suite.icon('check')} ${t('ar.testOk', r.total)}</p>`}
     <footer><button data-testid="test-close" onClick=${close}>${t('ar.close')}</button></footer>
   </article></dialog>`;
 }
@@ -829,30 +903,167 @@ function Toolbar() {
     <button class="secondary" data-testid="new" onClick=${newArchive}>${t('ar.new')}</button>
     <button class="secondary" data-testid="open" onClick=${openArchive}>${t('ar.open')}</button>
     ${open ? html`
-      <button class="secondary outline" data-testid="close-archive" title=${t('ar.closeTitle')} onClick=${closeArchive}>${t('ar.closeArchive')}</button>
+      <button class="secondary outline" data-testid="close-archive" title=${t('ar.closeTitle')} onClick=${closeArchive}>${Suite.icon('x')} ${t('ar.closeArchive')}</button>
       <button class=${state.dirty ? '' : 'secondary'} data-testid="save" onClick=${() => save()}>${t('ar.save')}</button>
       <button class="secondary outline" data-testid="save-as" onClick=${openSaveAs}>${t('ar.saveAs')}</button>
-      <button class="secondary outline" title="${t('ar.undo')} (Ctrl+Z)" data-testid="undo" disabled=${!history.canUndo} onClick=${undo}>↶</button>
-      <button class="secondary outline" title="${t('ar.redo')} (Ctrl+Y)" data-testid="redo" disabled=${!history.canRedo} onClick=${redo}>↷</button>
+      <button class="secondary outline" title="${t('ar.undo')} (Ctrl+Z)" data-testid="undo" disabled=${!history.canUndo} onClick=${undo}>${Suite.icon('undo-2')}</button>
+      <button class="secondary outline" title="${t('ar.redo')} (Ctrl+Y)" data-testid="redo" disabled=${!history.canRedo} onClick=${redo}>${Suite.icon('redo-2')}</button>
       <span class="ar-sep"></span>
       <button class="secondary outline" data-testid="add-files" onClick=${() => pickFiles(false)}>+ ${t('ar.addFiles')}</button>
       <button class="secondary outline" data-testid="add-folder" onClick=${() => pickFiles(true)}>+ ${t('ar.addFolder')}</button>
-      <button class="secondary outline" data-testid="new-folder" onClick=${newFolder}>📁 ${t('ar.newFolder')}</button>
+      <button class="secondary outline" data-testid="new-folder" onClick=${newFolder}>${Suite.icon('folder')} ${t('ar.newFolder')}</button>
       <span class="ar-sep"></span>
       <button class="secondary outline" data-testid="extract" disabled=${!sel} onClick=${() => extract(false)}>${t('ar.extract')}</button>
       <button class="secondary outline" data-testid="extract-all" onClick=${() => extract(true)}>${t('ar.extractAll')}</button>
-      <button class="secondary outline" data-testid="test" title=${t('ar.testTitle')} onClick=${testArchive}>✓ ${t('ar.test')}</button>
+      <button class="secondary outline" data-testid="test" title=${t('ar.testTitle')} onClick=${testArchive}>${Suite.icon('check')} ${t('ar.test')}</button>
+      <button class=${state.compare ? '' : 'secondary outline'} data-testid="compare" title=${t('ar.compare')} onClick=${() => (state.compare ? (state.compare = null, render()) : startCompare())}>${Suite.icon('arrow-left-right')}</button>
+      <button class=${state.search ? '' : 'secondary outline'} data-testid="search" title="${t('ar.search')} (Ctrl+F)" onClick=${() => (state.search ? closeSearch() : openSearch())}>${Suite.icon('search')}</button>
       <button class="secondary outline" data-testid="open-with" disabled=${!selectedFiles()} onClick=${() => openWith(selectedFiles())}>${t('bridge.openWith')}</button>
       <button class="secondary outline" data-testid="rename" disabled=${sel !== 1} onClick=${() => { state.renaming = [...state.selected][0]; render(); }}>${t('ar.rename')}</button>
       <button class="secondary outline" data-testid="delete" disabled=${!sel} onClick=${deleteSelected}>${t('ar.delete')}</button>` : null}
   </nav>`;
 }
 
+// ---- search: by name through all folders, and in the contents of the files (search.js) ----------------------------------------
+
+function openSearch() {
+  if (!state.entries) return;
+  state.search = state.search || { name: '', contents: false, text: '', regex: false, caseSensitive: false, results: null, running: false, progress: 0, summary: null };
+  render();
+  requestAnimationFrame(() => { const el = document.querySelector('[data-testid=search-name]'); if (el) el.focus(); });
+}
+
+function closeSearch() { if (state.search) state.search.cancelled = true; state.search = null; render(); }
+
+let searchRun = 0;
+async function runContentSearch() {
+  const s = state.search;
+  if (!s) return;
+  let re;
+  try { re = contentPattern(s.text, s); } catch (e) { Suite.shell.toast(e instanceof SearchError && e.message === 'empty' ? t('ar.searchNeedText') : t('ar.searchBadRegex', e.message), 'error'); return; }
+  const run = ++searchRun;
+  const candidates = searchNames(state.entries, s.name).filter((r) => r.entry && !r.dir).map((r) => r.entry);
+  Object.assign(s, { running: true, results: [], summary: null, progress: 0, cancelled: false });
+  render();
+  try {
+    const summary = await searchContents(candidates, re, {
+      onResult: (r) => { if (run === searchRun) { s.results.push(r); render(); } },
+      onProgress: (i, n) => { if (run === searchRun) { s.progress = n ? i / n : 1; render(); } },
+      isCancelled: () => run !== searchRun || s.cancelled,
+    });
+    if (run === searchRun) s.summary = summary;
+  } catch (e) { fail(e); } finally { if (run === searchRun) { s.running = false; render(); } }
+}
+
+/** Show a search result in its folder, selected. */
+function revealPath(path, dir) {
+  cd(dir ? path : parentOf(path));
+  if (!dir) { state.selected = new Set([path]); state.anchor = path; }
+  state.search = null;
+  render();
+  requestAnimationFrame(() => { const row = document.querySelector(`[data-testid=row][data-path="${CSS.escape(path)}"]`); if (row) row.scrollIntoView({ block: 'nearest' }); });
+}
+
+function SearchBar() {
+  const s = state.search;
+  if (!s) return null;
+  const set = (k) => (e) => { s[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value; if (k === 'name' && !s.contents) s.results = null; render(); };
+  return html`<form class="ar-search" data-testid="search-bar" onSubmit=${(e) => { e.preventDefault(); if (s.contents) runContentSearch(); }}>
+    <input data-testid="search-name" placeholder=${t('ar.searchName')} value=${s.name} onInput=${set('name')}
+      onKeyDown=${(e) => { if (e.key === 'Escape') closeSearch(); }} />
+    <label class="ar-inline"><input type="checkbox" data-testid="search-contents" checked=${s.contents} onChange=${set('contents')} /> ${t('ar.searchInContents')}</label>
+    ${s.contents ? html`<input data-testid="search-text" placeholder=${t('ar.searchText')} value=${s.text} onInput=${set('text')} onKeyDown=${(e) => { if (e.key === 'Escape') closeSearch(); }} />
+      <label class="ar-inline"><input type="checkbox" data-testid="search-regex" checked=${s.regex} onChange=${set('regex')} /> ${t('ar.searchRegex')}</label>
+      <label class="ar-inline"><input type="checkbox" data-testid="search-case" checked=${s.caseSensitive} onChange=${set('caseSensitive')} /> ${t('ar.searchCase')}</label>
+      ${s.running ? html`<button type="button" class="secondary" data-testid="search-stop" onClick=${() => { s.cancelled = true; }}>${t('ar.searchStop')}</button>`
+        : html`<button type="submit" data-testid="search-go">${t('ar.searchGo')}</button>`}` : null}
+    <button type="button" class="secondary outline" data-testid="search-close" title=${t('ar.close')} onClick=${closeSearch}>×</button>
+  </form>`;
+}
+
+function SearchResults() {
+  const s = state.search;
+  const nameOnly = !s.contents;
+  const list = nameOnly ? (s.name.trim() ? searchNames(state.entries, s.name) : []) : s.results || [];
+  const highlight = (m) => html`<span>${m.before}</span><mark>${m.match}</mark><span>${m.after}</span>`;
+  return html`<div class="ar-list ar-results" data-testid="search-results">
+    ${s.running ? html`<progress value=${s.progress} max="1" data-testid="search-progress"></progress>` : null}
+    ${nameOnly && !s.name.trim() ? html`<p class="ar-empty">${t('ar.searchHint')}</p>` : null}
+    ${!nameOnly && !s.results && !s.running ? html`<p class="ar-empty">${t('ar.searchContentsHint')}</p>` : null}
+    ${list.length ? html`<ul class="ar-hits">${list.map((r) => html`<li data-testid="hit" data-path=${r.path}>
+      <a href="#" class="ar-hit-path" onClick=${(e) => { e.preventDefault(); revealPath(r.path, r.dir); }}
+        onDblClick=${(e) => { e.preventDefault(); if (!r.dir) { const entry = r.entry || state.entries.find((x) => x.path === r.path); if (entry) preview({ path: r.path, name: baseName(r.path), entry }); } }}>
+        <span class="ar-icon">${r.dir ? Suite.icon('folder') : Suite.icon('file')}</span><strong>${baseName(r.path)}</strong> <small>${parentOf(r.path) || '/'}</small></a>
+      ${r.size != null ? html` <small class="ar-hit-size">${fmtSize(r.size)}</small>` : null}
+      ${r.matches ? html`<ul class="ar-hit-lines">${r.matches.map((m) => html`<li data-testid="hit-line"><small>${t('ar.lineCol', m.line, m.column)}</small> <code>${highlight(m)}</code></li>`)}</ul>` : null}
+    </li>`)}</ul>` : (nameOnly ? s.name.trim() : s.results && !s.running) ? html`<p class="ar-empty" data-testid="search-none">${t('ar.searchNone')}</p>` : null}
+    ${s.summary ? html`<p class="ar-search-summary" data-testid="search-summary">${t('ar.searchSummary', s.summary.files, s.summary.searched)}${s.summary.skipped.binary + s.summary.skipped.encrypted + s.summary.skipped.large
+      ? ` ${t('ar.searchSkipped', s.summary.skipped.binary, s.summary.skipped.encrypted, s.summary.skipped.large)}` : ''}</p>` : null}
+  </div>`;
+}
+
+// ---- compare with another archive (search.js compareEntries) ------------------------------------------------------------------
+
+async function startCompare() {
+  const picked = await Suite.files.open({ types: [{ description: t('ar.archives'), accept: { 'application/zip': EXTENSIONS } }] }).catch(fail);
+  if (!picked || !picked[0]) return;
+  const file = picked[0].file;
+  await busy(async () => {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const multi = detectMulti(bytes, file.name);
+    const other = multi ? await readMulti(bytes, file.name, (wrong) => askPassword(file.name, wrong)) : read(bytes, file.name);
+    state.search = null;
+    state.compare = { name: file.name, diffs: null, filter: 'differences', running: true };
+    render();
+    const diffs = await compareEntries(state.entries, other.entries);
+    if (state.compare) Object.assign(state.compare, { diffs, running: false });
+  });
+}
+
+/** Take the other archive's version of a file into this archive (undoable). */
+function takeOver(d) {
+  recordUndo();
+  const b = d.b;
+  const copy = { ...b, path: d.path, modified: true };
+  state.entries = state.entries.filter((e) => e.path !== d.path);
+  ensureFolders(d.path);
+  state.entries.push(copy);
+  d.status = 'same';
+  d.a = copy;
+  setDirty();
+  Suite.shell.toast(t('ar.takenOver', d.path));
+  render();
+}
+
+function CompareView() {
+  const c = state.compare;
+  const counts = { onlyA: 0, onlyB: 0, changed: 0, same: 0, unknown: 0 };
+  for (const d of c.diffs || []) counts[d.status]++;
+  const shown = (c.diffs || []).filter((d) => (c.filter === 'differences' ? d.status !== 'same' : c.filter === 'all' || d.status === c.filter));
+  const label = { onlyA: t('ar.cmpOnlyA'), onlyB: t('ar.cmpOnlyB'), changed: t('ar.cmpChanged'), same: t('ar.cmpSame'), unknown: t('ar.cmpUnknown') };
+  return html`<div class="ar-list ar-results" data-testid="compare-view">
+    <div class="ar-search">
+      <span>${t('ar.comparedWith', c.name)}</span>
+      ${c.diffs ? html`<select data-testid="compare-filter" onChange=${(e) => { c.filter = e.target.value; render(); }}>
+        ${['differences', 'onlyA', 'onlyB', 'changed', 'same', 'all'].map((f) => html`<option value=${f} selected=${c.filter === f}>${f === 'differences' ? t('ar.cmpDifferences', counts.onlyA + counts.onlyB + counts.changed + counts.unknown) : f === 'all' ? t('ar.cmpAll', c.diffs.length) : `${label[f]} (${counts[f]})`}</option>`)}</select>` : null}
+      <button type="button" class="secondary outline" data-testid="compare-close" title=${t('ar.close')} onClick=${() => { state.compare = null; render(); }}>×</button>
+    </div>
+    ${c.running ? html`<p aria-busy="true"></p>` : null}
+    ${c.diffs && !counts.onlyA && !counts.onlyB && !counts.changed && !counts.unknown ? html`<p class="ar-empty" data-testid="compare-identical">${t('ar.cmpIdentical', c.diffs.length)}</p>` : null}
+    ${shown.length ? html`<table class="ar-table"><tbody>${shown.map((d) => html`<tr data-testid="diff" data-path=${d.path} data-status=${d.status}>
+      <td><span class=${`ar-diff ${d.status}`}>${label[d.status]}</span></td>
+      <td class="ar-name"><a href="#" onClick=${(e) => { e.preventDefault(); if (d.a) { state.compare = null; revealPath(d.path, false); } }}>${d.path}</a></td>
+      <td class="ar-num">${d.a ? fmtSize(d.a.size || 0) : '–'}</td><td class="ar-num">${d.b ? fmtSize(d.b.size || 0) : '–'}</td>
+      <td>${d.b && (d.status === 'onlyB' || d.status === 'changed') ? html`<button class="secondary outline" data-testid="take-over" title=${t('ar.takeOverHint')} onClick=${() => takeOver(d)}>${Suite.icon('arrow-big-left')} ${t('ar.takeOver')}</button>` : null}</td>
+    </tr>`)}</tbody></table>` : null}
+  </div>`;
+}
+
 function Breadcrumbs() {
   const parts = state.cwd ? state.cwd.split('/') : [];
   return html`<div class="ar-path" data-testid="path">
-    <button class="secondary outline" data-testid="up" disabled=${!state.cwd} title=${t('ar.up')} onClick=${() => cd(parentOf(state.cwd))}>↑</button>
-    <a href="#" data-testid="crumb" onClick=${(e) => { e.preventDefault(); cd(''); }} title=${t('ar.root')}>📦 ${state.name}</a>
+    <button class="secondary outline" data-testid="up" disabled=${!state.cwd} title=${t('ar.up')} onClick=${() => cd(parentOf(state.cwd))}>${Suite.icon('arrow-up')}</button>
+    <a href="#" data-testid="crumb" onClick=${(e) => { e.preventDefault(); cd(''); }} title=${t('ar.root')}>${Suite.icon('package')} ${state.name}</a>
     ${parts.map((p, i) => html`<span class="ar-crumb-sep">›</span><a href="#" data-testid="crumb" onClick=${(e) => { e.preventDefault(); cd(parts.slice(0, i + 1).join('/')); }}>${p}</a>`)}
   </div>`;
 }
@@ -860,7 +1071,7 @@ function Breadcrumbs() {
 function SortHeader({ k, label, cls }) {
   const active = state.sort.key === k;
   return html`<th class=${cls} onClick=${() => { state.sort = { key: k, asc: active ? !state.sort.asc : true }; render(); }} aria-sort=${active ? (state.sort.asc ? 'ascending' : 'descending') : 'none'}>
-    ${label}${active ? (state.sort.asc ? ' ▲' : ' ▼') : ''}</th>`;
+    ${label}${active ? (state.sort.asc ? Suite.icon('chevron-up') : Suite.icon('chevron-down')) : ''}</th>`;
 }
 
 function Listing() {
@@ -883,7 +1094,7 @@ function Listing() {
           ? html`<form onSubmit=${(e) => { e.preventDefault(); rename(node.path, e.target.elements.name.value); }}>
               <input name="name" data-testid="rename-input" defaultValue=${node.name} autofocus onClick=${(e) => e.stopPropagation()}
                 onKeyDown=${(e) => { if (e.key === 'Escape') { state.renaming = null; render(); } }} onBlur=${(e) => rename(node.path, e.target.value)} /></form>`
-          : html`<span class="ar-icon">${node.dir ? '📁' : node.entry && node.entry.link ? '🔗' : '📄'}</span><span data-testid="name">${node.name}</span>${node.entry && node.entry.encrypted ? html` <small title=${`${t('ar.lock')}: ${encryptionOf(node.entry)}`} data-testid="lock">🔒</small>` : null}`}</td>
+          : html`<span class="ar-icon">${node.dir ? Suite.icon('folder') : node.entry && node.entry.link ? Suite.icon('link') : Suite.icon('file')}</span><span data-testid="name">${node.name}</span>${node.entry && node.entry.encrypted ? html` <small title=${`${t('ar.lock')}: ${encryptionOf(node.entry)}`} data-testid="lock">${Suite.icon('lock')}</small>` : null}`}</td>
         <td class="ar-num">${node.dir ? t('ar.items', children(node.path).length) : fmtSize(node.size)}</td>
         <td class="ar-num ar-wide">${node.dir || node.csize == null || !node.entry || node.entry.csize == null ? '' : fmtSize(node.csize)}</td>
         <td class="ar-wide">${fmtDate(node.mtime)}</td>
@@ -900,7 +1111,7 @@ function StatusBar() {
   return html`<footer class="ar-status" data-testid="status">
     <span>${t('ar.summary', formatLabel(), files.length, folders.size, fmtSize(total))}${state.fileSize ? ` · ${fmtSize(state.fileSize)}` : ''}</span>
     ${state.selected.size ? html`<span data-testid="selection">${t('ar.selected', state.selected.size)}</span>` : null}
-    ${state.format === 'zip' && state.encryption ? html`<span data-testid="encryption">${t('ar.encryptedWith', state.encryption.method === 'aes' ? 'AES-256' : 'ZipCrypto')}</span>` : null}
+    ${state.format === 'zip' && state.encryption ? html`<span data-testid="encryption">${Suite.icon('lock')} ${t('ar.encryptedWith', state.encryption.method === 'aes' ? 'AES-256' : 'ZipCrypto')}</span>` : null}
     ${state.format === 'zip' || state.format === 'tgz' || state.format === 'gz' ? html`<label class="ar-level">${t('ar.compression')}
         <select data-testid="level" value=${state.level} onChange=${(e) => { state.level = +e.target.value; render(); }}>
           ${[0, 1, 6, 9].filter((l) => l || state.format === 'zip').map((l) => html`<option value=${l} selected=${state.level === l}>${t(`ar.level${l}`)}</option>`)}
@@ -937,7 +1148,8 @@ function SaveAsDialog() {
       if (encrypt && (!s.password || s.password !== s.repeat)) { s.error = t('ar.passwordMismatch'); render(); return; }
       if (s.format === 'zip') state.encryption = encrypt ? { password: s.password, method: s.encryption, all: true } : null;
       state.saveAs = null;
-      save({ as: true, name: `${s.stem}${FORMATS[s.format].ext}`, format: s.format });
+      if (s.split) saveParts({ name: `${s.stem}${FORMATS[s.format].ext}`, format: s.format, partSize: Math.max(1, Math.round((Number(s.partMb) || 100) * 1024 * 1024)) });
+      else save({ as: true, name: `${s.stem}${FORMATS[s.format].ext}`, format: s.format });
     }}>
       <label>${t('ar.fileName')}<input data-testid="save-as-name" value=${s.stem} onInput=${(e) => { s.stem = e.target.value; }} /></label>
       <label>${t('ar.format')}<select data-testid="save-as-format" onChange=${(e) => { s.format = e.target.value; render(); }}>
@@ -949,6 +1161,9 @@ function SaveAsDialog() {
           <small>${t('ar.encryptionHint')}</small>` : null}
         ${s.error ? html`<p class="ar-error" data-testid="save-as-error">${s.error}</p>` : null}` : null}
       ${s.format === '7z' ? html`<small data-testid="save-as-7z-hint">${t('ar.sevenZipHint')}</small>` : null}
+      <label><input type="checkbox" data-testid="save-as-split" checked=${!!s.split} onChange=${(e) => { s.split = e.target.checked; render(); }} /> ${t('ar.split')}</label>
+      ${s.split ? html`<label>${t('ar.partSize')}<input type="number" min="0.001" step="any" data-testid="save-as-part-size" value=${s.partMb ?? 100} onInput=${(e) => { s.partMb = e.target.value; }} /></label>
+        <small>${t('ar.splitHint')}</small>` : null}
       <footer>
         <button type="button" class="secondary" onClick=${() => { state.saveAs = null; render(); }}>${t('ar.close')}</button>
         <button type="submit" data-testid="save-as-ok">${t('ar.saveAs')}</button>
@@ -987,7 +1202,7 @@ function Welcome() {
 
 function Main() {
   return html`<div class="ar-main" aria-busy=${state.busy}>
-    ${state.entries ? html`<${Breadcrumbs} /><${Listing} /><${StatusBar} />` : html`<${Welcome} />`}
+    ${state.entries ? html`<${Breadcrumbs} /><${SearchBar} />${state.compare ? html`<${CompareView} />` : state.search ? html`<${SearchResults} />` : html`<${Listing} />`}<${StatusBar} />` : html`<${Welcome} />`}
     <${PreviewDialog} /><${SaveAsDialog} /><${PasswordDialog} /><${TestDialog} /><${LinkDialog} />
   </div>`;
 }
@@ -1002,6 +1217,7 @@ document.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if (mod && k === 's') { e.preventDefault(); if (e.shiftKey) openSaveAs(); else save(); return; }
   if (mod && k === 'o') { e.preventDefault(); openArchive(); return; }
+  if (mod && k === 'f' && state.entries) { e.preventDefault(); openSearch(); return; }
   if (inField || !state.entries || state.preview || state.saveAs || state.passwordPrompt || state.link) { if (e.key === 'Escape' && state.preview) closePreview(); return; }
   const step = Suite.UndoHistory.key(e);
   if (step) { e.preventDefault(); if (step === 'undo') undo(); else redo(); return; }
@@ -1020,5 +1236,5 @@ Suite.files.recent(APP).then((r) => { state.recent = r; render(); });
 Suite.bridge.receive((picked) => openPicked(picked), { app: 'archive' }); // files opened from other apps ("Open with…")
 
 // for tests
-window.AR = { app: { state, history, undo, redo, load: (name, bytes) => load(name, new Uint8Array(bytes)), save, addFiles, write, read, readMulti, write7z, addPassword } };
+window.AR = { app: { openParts, saveParts, state, history, undo, redo, load: (name, bytes) => load(name, new Uint8Array(bytes)), save, addFiles, write, read, readMulti, write7z, addPassword } };
 document.body.dataset.ready = 'true';

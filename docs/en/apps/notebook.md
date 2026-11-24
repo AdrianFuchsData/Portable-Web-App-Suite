@@ -4,7 +4,7 @@ The Python notebook (`notebook.html`) runs Python 3 in the browser — without i
 like Jupyter: notebooks with code and text cells, results directly below the code, plots, tables. A console runs single commands.
 
 Included libraries: numpy, pandas, matplotlib, seaborn, scipy, scikit-learn, sympy, networkx, lxml, beautifulsoup4, pyyaml, openpyxl, xlrd, regex, requests,
-sqlite3, SQLAlchemy, pykeepass, nzpy, micropip; for office files python-docx, python-pptx, XlsxWriter (also as pandas' Excel writer), pypdf and
+sqlite3, SQLAlchemy, pykeepass, cryptography, pycryptodome, nzpy, micropip; for office files python-docx, python-pptx, XlsxWriter (also as pandas' Excel writer), pypdf and
 icalendar; for databases over the relay pg8000 (PostgreSQL) and PyMySQL (MySQL/MariaDB), also through SQLAlchemy; Jinja2 (with MarkupSafe),
 Markdown, tabulate and tqdm. They are loaded when they are imported for the first time; numpy, pandas and matplotlib
 are prepared in the background after the start. The first start takes a few seconds; the status at the top right shows when Python is

@@ -489,6 +489,64 @@
 
   function events(cal) { return cal.comps.filter((c) => c.name === 'VEVENT').map(eventFromComp).filter(Boolean); }
 
+  // ---- tasks (VTODO) --------------------------------------------------------------------------------------------------
+
+  const TODO_MANAGED = ['UID', 'DTSTAMP', 'DTSTART', 'DUE', 'DURATION', 'COMPLETED', 'SUMMARY', 'DESCRIPTION', 'STATUS', 'PERCENT-COMPLETE', 'PRIORITY',
+    'CATEGORIES', 'LAST-MODIFIED', 'SEQUENCE', 'CREATED', 'URL', 'LOCATION'];
+
+  /**
+   * A task: { uid, summary, description, location, url, start, due (zoned times or null), completed (UTC time or null),
+   * status ('NEEDS-ACTION' | 'IN-PROCESS' | 'COMPLETED' | 'CANCELLED' | ''), percent (0..100), priority (0 = none, 1 highest … 9 lowest),
+   * categories, sequence, comp }. Recurring tasks keep their RRULE in comp (not expanded).
+   */
+  function todoFromComp(comp) {
+    const due = parseDateValue(prop(comp, 'DUE'));
+    const start = parseDateValue(prop(comp, 'DTSTART'));
+    const dur = prop(comp, 'DURATION');
+    return {
+      uid: text(comp, 'UID') || `${Date.now()}-${Math.random().toString(36).slice(2)}@suite`,
+      summary: text(comp, 'SUMMARY'), description: text(comp, 'DESCRIPTION'), location: text(comp, 'LOCATION'), url: text(comp, 'URL'),
+      start, due: due || (start && dur ? fromInstant(toInstant(start) + parseDuration(dur.value), start.tz, start.date) : null),
+      completed: parseDateValue(prop(comp, 'COMPLETED')),
+      status: text(comp, 'STATUS').toUpperCase(),
+      percent: Math.max(0, Math.min(100, parseInt(text(comp, 'PERCENT-COMPLETE') || '0', 10) || 0)),
+      priority: Math.max(0, Math.min(9, parseInt(text(comp, 'PRIORITY') || '0', 10) || 0)),
+      categories: props(comp, 'CATEGORIES').flatMap((p) => p.value.split(/(?<!\\),/).map(unescapeText)).filter(Boolean),
+      sequence: parseInt(text(comp, 'SEQUENCE') || '0', 10),
+      comp,
+    };
+  }
+
+  /** Whether a task is done (completed or cancelled). */
+  const todoDone = (todo) => todo.status === 'COMPLETED' || todo.status === 'CANCELLED' || (!!todo.completed && todo.status !== 'NEEDS-ACTION' && todo.status !== 'IN-PROCESS');
+
+  function compFromTodo(todo) {
+    const base = todo.comp || { name: 'VTODO', props: [], comps: [] };
+    const kept = base.props.filter((p) => !TODO_MANAGED.includes(p.name));
+    const out = [];
+    const add = (name, value, params = {}) => out.push({ name, params, value });
+    add('UID', escapeText(todo.uid));
+    add('DTSTAMP', stamp());
+    if (todo.start) { const v = formatDateValue(todo.start); add('DTSTART', v.value, v.params); }
+    if (todo.due) { const v = formatDateValue(todo.due); add('DUE', v.value, v.params); }
+    add('SUMMARY', escapeText(todo.summary || ''));
+    if (todo.description) add('DESCRIPTION', escapeText(todo.description));
+    if (todo.location) add('LOCATION', escapeText(todo.location));
+    if (todo.url) add('URL', todo.url);
+    if (todo.status) add('STATUS', todo.status);
+    if (todo.status === 'COMPLETED') add('COMPLETED', formatDateValue(todo.completed && !todo.completed.date ? { ...fromInstant(toInstant(todo.completed), 'UTC') } : fromInstant(Date.now(), 'UTC')).value);
+    if (todo.percent) add('PERCENT-COMPLETE', String(todo.percent));
+    if (todo.priority) add('PRIORITY', String(todo.priority));
+    if (todo.categories && todo.categories.length) add('CATEGORIES', todo.categories.map(escapeText).join(','));
+    add('SEQUENCE', String(todo.sequence || 0));
+    add('LAST-MODIFIED', stamp());
+    const created = prop(base, 'CREATED');
+    add('CREATED', created ? created.value : stamp());
+    return { name: 'VTODO', props: [...out, ...kept], comps: base.comps };
+  }
+
+  function todos(cal) { return cal.comps.filter((c) => c.name === 'VTODO').map(todoFromComp); }
+
   function newCalendar(name) {
     return {
       name: 'VCALENDAR', comps: [],
@@ -499,14 +557,18 @@
     };
   }
 
-  /** Calendar component with the given events (VTIMEZONEs for the used TZIDs; other components are kept). */
-  function buildCalendar(cal, evs) {
-    const others = cal.comps.filter((c) => c.name !== 'VEVENT' && c.name !== 'VTIMEZONE');
+  /**
+   * Calendar component with the given events and – when given – tasks (VTIMEZONEs for the used TZIDs; other components, and
+   * the VTODOs when no tasks are given, are kept).
+   */
+  function buildCalendar(cal, evs, tds = null) {
+    const others = cal.comps.filter((c) => c.name !== 'VEVENT' && c.name !== 'VTIMEZONE' && (tds === null || c.name !== 'VTODO'));
     const known = new Map(cal.comps.filter((c) => c.name === 'VTIMEZONE').map((c) => [text(c, 'TZID'), c]));
     const tzids = new Set();
-    for (const ev of evs) for (const zt of [ev.start, ev.end, ev.recurrenceIdValue]) if (zt && !zt.date && zt.tz !== 'UTC' && zt.tz !== 'floating') tzids.add(zt.tz);
+    const zoned = [...evs.flatMap((ev) => [ev.start, ev.end, ev.recurrenceIdValue]), ...(tds || []).flatMap((td) => [td.start, td.due])];
+    for (const zt of zoned) if (zt && !zt.date && zt.tz !== 'UTC' && zt.tz !== 'floating') tzids.add(zt.tz);
     const zones = [...tzids].map((id) => known.get(id) || vtimezone(id)).filter(Boolean);
-    return { ...cal, comps: [...zones, ...evs.map(compFromEvent), ...others] };
+    return { ...cal, comps: [...zones, ...evs.map(compFromEvent), ...(tds || []).map(compFromTodo), ...others] };
   }
 
   // ---- free/busy (RFC 5545 VFREEBUSY) -----------------------------------------------------------------------------------
@@ -588,7 +650,7 @@
   });
 
   Suite.ical = {
-    parse, serialize, events, eventFromComp, compFromEvent, buildCalendar, newCalendar, expand, vtimezone,
+    parse, serialize, events, eventFromComp, compFromEvent, todos, todoFromComp, compFromTodo, todoDone, buildCalendar, newCalendar, expand, vtimezone,
     toInstant, fromInstant, parseDateValue, formatDateValue, parseRRule, formatRRule, parseDuration, ianaZone, localZone, wallKey, addDays,
     escapeText, unescapeText, prop, text, alarmMinutes, mergeBusy, freeBusyPeriods, freeBusyText, freeSlots,
   };

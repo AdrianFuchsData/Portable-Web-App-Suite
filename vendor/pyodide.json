@@ -17,6 +17,7 @@
     "regex",
     "requests",
     "pycryptodome",
+    "cryptography",
     "argon2-cffi",
     "sqlalchemy",
     "jinja2",

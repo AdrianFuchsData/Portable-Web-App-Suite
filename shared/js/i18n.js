@@ -57,6 +57,9 @@
     for (const fn of listeners) fn(lang);
   }
 
+  // the language chosen in another window or frame of this origin (e.g. the overview and its tabs, an app in a window of its own)
+  window.addEventListener('storage', (e) => { if (e.key === STORAGE_KEY && LANGUAGES.includes(e.newValue)) setLanguage(e.newValue); });
+
   /** Call fn(language) whenever the language changes; returns a function that removes the listener. */
   function onChange(fn) {
     listeners.add(fn);
@@ -86,8 +89,10 @@
       'lang.name': 'English', 'lang.switch': 'Deutsch',
       'err.unknown': 'Error: {0}',
       'common.ok': 'OK', 'common.cancel': 'Cancel', 'common.close': 'Close', 'common.save': 'Save',
+      'common.panels': 'Show or hide the side panel', 'common.up': 'Up one folder', 'common.edit': 'Edit', 'common.copy': 'Copy', 'common.regenerate': 'Generate again', 'common.fit': 'Fit to the window', 'common.signatures': 'Signatures',
       'common.open': 'Open', 'common.new': 'New', 'common.delete': 'Delete', 'common.yes': 'Yes', 'common.no': 'No',
       'theme.light': 'Light', 'theme.dark': 'Dark', 'theme.auto': 'Automatic',
+      'shell.install': 'Install as an app', 'shell.hideHeader': 'Hide the title bar', 'shell.showHeader': 'Show the title bar', 'shell.hideToolbar': 'Hide the toolbar', 'shell.showToolbar': 'Show the toolbar',
       'shell.menu': 'Menu', 'shell.language': 'Language', 'shell.theme': 'Theme', 'shell.about': 'About',
       'shell.offline': 'Runs completely offline in your browser.',
       'shell.licence': 'Licence', 'shell.licensedUnder': 'Licensed under the {0}', 'shell.source': 'Source code', 'shell.notice': 'Licence notice (modified versions, no warranty)',
@@ -101,8 +106,10 @@
       'lang.name': 'Deutsch', 'lang.switch': 'English',
       'err.unknown': 'Fehler: {0}',
       'common.ok': 'OK', 'common.cancel': 'Abbrechen', 'common.close': 'Schließen', 'common.save': 'Speichern',
+      'common.panels': 'Seitenleiste ein- oder ausblenden', 'common.up': 'Einen Ordner nach oben', 'common.edit': 'Bearbeiten', 'common.copy': 'Kopieren', 'common.regenerate': 'Neu erzeugen', 'common.fit': 'An das Fenster anpassen', 'common.signatures': 'Signaturen',
       'common.open': 'Öffnen', 'common.new': 'Neu', 'common.delete': 'Löschen', 'common.yes': 'Ja', 'common.no': 'Nein',
       'theme.light': 'Hell', 'theme.dark': 'Dunkel', 'theme.auto': 'Automatisch',
+      'shell.install': 'Als App installieren', 'shell.hideHeader': 'Titelleiste ausblenden', 'shell.showHeader': 'Titelleiste einblenden', 'shell.hideToolbar': 'Werkzeugleiste ausblenden', 'shell.showToolbar': 'Werkzeugleiste einblenden',
       'shell.menu': 'Menü', 'shell.language': 'Sprache', 'shell.theme': 'Design', 'shell.about': 'Über',
       'shell.licence': 'Lizenz', 'shell.licensedUnder': 'Lizenziert unter der {0}', 'shell.source': 'Quellcode', 'shell.notice': 'Lizenzhinweis (geänderte Fassungen, keine Gewährleistung)',
       'shell.licenceText': 'Lizenztext ({0})', 'shell.components': 'Komponenten Dritter ({0})', 'shell.noLicenceText': 'Kein Lizenztext erforderlich (gemeinfrei).',

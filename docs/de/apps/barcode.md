@@ -35,12 +35,32 @@ Code 93, **EAN-13**, EAN-8, UPC-A, UPC-E, ITF und Codabar (1D-Strichcodes). Beim
    sein darf (L 7 %, M 15 %, Q 25 %, H 30 %). 1D-Codes nehmen nur bestimmte Zeichen an (EAN/UPC: Ziffern, die Prüfziffer
    wird berechnet) – beim Wechsel wird ein Beispiel eingetragen; eine Fehlermeldung erklärt ungültige Inhalte.
 3. Stellen Sie die **Modulgröße** (Pixel je Quadrat bzw. Balken), die **Ruhezone** (weißer Rand in Modulen; Scanner brauchen
-   ihn), bei 1D-Codes die **Balkenhöhe** und den Text unter den Balken sowie die **Farben** oder einen transparenten
-   Hintergrund ein. Dunkle Codes auf hellem Grund mit genug Kontrast sind am sichersten.
+   ihn), bei 1D-Codes die **Balkenhöhe** sowie die **Farben** oder einen transparenten Hintergrund ein. Dunkle Codes auf hellem
+   Grund mit genug Kontrast sind am sichersten.
+4. Text zum Code: 1D-Codes zeigen ihre Ziffern unter den Balken (**Text unter den Balken**); bei 2D-Codes fügt **Den kodierten Text
+   unter dem Code zeigen** den Inhalt hinzu, umbrochen auf die Breite des Codes (lange Inhalte werden nach 12 Zeilen gekürzt). Eine
+   eigene **Beschriftung** – ein Name, ein Preis, „Scannen Sie mich“ – steht unter oder über dem Code (*Position der Beschriftung*).
+   Der Text ist Teil von SVG und PNG, so ist ein Etikett fertig zum Drucken.
 
 Die Vorschau wird automatisch zurückgelesen: **✓ lesbar** bestätigt, dass der Code gescannt werden kann. **⬇ SVG**
 (skalierbar, für den Druck) und **⬇ PNG** laden den Code herunter, **Bild kopieren** legt ihn in die Zwischenablage,
 **🖨 Drucken** druckt nur den Code.
+
+## Stapel: viele Codes auf einmal
+
+**📑 Stapel** erstellt viele Codes in einem Durchgang – etwa Etiketten für ein Regal, Eintrittskarten oder Inventarnummern:
+
+- Tippen oder fügen Sie die Inhalte ein, **ein Code je Zeile**, oder **öffnen Sie eine CSV- oder Textdatei**. Bei einer CSV-Datei (Komma,
+  Strichpunkt oder Tabulator) wählen Sie die Spalte mit dem **Inhalt** und auf Wunsch eine Spalte mit der **Beschriftung** (wird zu jedem Code
+  gedruckt) und eine mit dem **Dateinamen**; geben Sie an, ob die erste Zeile die Spaltennamen enthält. Eine Datei mit nur einer Spalte gilt
+  als Liste.
+- Das **Format** lässt sich hier wählen; Größe, Farben, Text zum Code und Beschriftung (wenn es keine Beschriftungsspalte gibt) sind die unter
+  **▦ Erstellen** eingestellten.
+- **Ergebnis**: ein **PDF**-Etikettenbogen (A4 oder Letter, Spalten × Zeilen je Seite, die Codes in ihren Feldern zentriert) oder ein **ZIP**
+  mit einem **PNG**- oder **SVG**-Bild je Code (benannt nach der Dateinamensspalte, sonst nummeriert nach dem Inhalt).
+
+Inhalte, die das Format nicht kodieren kann (etwa Buchstaben bei EAN-13), werden übersprungen und mit ihrer Zeilennummer aufgelistet; ein ZIP
+enthält sie zusätzlich in `errors.txt`.
 
 ## Tastenkürzel
 

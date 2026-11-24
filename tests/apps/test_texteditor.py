@@ -130,11 +130,35 @@ def test_search_replace_and_goto(app_page):
     open_bytes(page, "s.txt", b"foo bar foo\nline2\nline3 foo\n")
     page.click(".cm-content")
     page.keyboard.press("Control+f")
-    page.fill(".cm-search input[name=search]", "foo")
-    page.fill(".cm-search input[name=replace]", "baz")
-    page.click(".cm-search button[name=replaceAll]")
+    # the suite's own panel (shared/js/cm-search.js): matches counted, Enter/Shift+Enter move, options as toggle buttons
+    panel = page.locator("[data-testid=search-panel]")
+    expect(panel).to_be_visible()
+    expect(page.locator(".cm-search")).to_have_count(0)  # (not CodeMirror's panel)
+    page.fill("[data-testid=search-field]", "foo")
+    expect(panel.locator("[data-testid=search-count]")).to_have_text("3 matches")
+    page.keyboard.press("Enter")
+    expect(panel.locator("[data-testid=search-count]")).to_have_text("1 of 3")
+    page.keyboard.press("Enter")
+    expect(panel.locator("[data-testid=search-count]")).to_have_text("2 of 3")
+    page.keyboard.press("Shift+Enter")
+    expect(panel.locator("[data-testid=search-count]")).to_have_text("1 of 3")
+    page.click("[data-testid=search-regex]")
+    page.fill("[data-testid=search-field]", "fo+ ")
+    expect(panel.locator("[data-testid=search-count]")).to_contain_text("1")
+    page.fill("[data-testid=search-field]", "(")
+    expect(panel.locator("[data-testid=search-count]")).to_have_text("Invalid expression")
+    page.click("[data-testid=search-regex]")
+    page.fill("[data-testid=search-field]", "FOO")
+    page.click("[data-testid=search-case]")
+    expect(panel.locator("[data-testid=search-count]")).to_have_text("No matches")
+    page.click("[data-testid=search-case]")
+    expect(page.locator("[data-testid=replace-field]")).to_be_hidden()
+    page.click("[data-testid=search-toggle-replace]")
+    page.fill("[data-testid=replace-field]", "baz")
+    page.click("[data-testid=replace-all]")
     assert page.evaluate("TE.app.view.state.doc.toString()") == "baz bar baz\nline2\nline3 baz\n"
     page.keyboard.press("Escape")
+    expect(panel).to_have_count(0)
     page.click(".cm-content")
     page.keyboard.press("Control+g")
     page.fill(".cm-goto-line input[name=line]", "3")
@@ -204,7 +228,9 @@ def test_mobile_layout(app_page):
         page.locator(f"[data-testid={testid}]").scroll_into_view_if_needed()
         assert page.locator(f"[data-testid={testid}]").is_visible(), testid
     page.locator("[data-testid=find]").tap()
-    assert page.locator(".cm-search").is_visible()
+    expect(page.locator("[data-testid=search-panel]")).to_be_visible()
+    box = page.locator("[data-testid=search-panel]").bounding_box()
+    assert box["x"] >= 0 and box["x"] + box["width"] <= page.viewport_size["width"] + 1
     assert page.errors == []
 
 
@@ -619,3 +645,15 @@ def test_newer_version_of_an_open_file(app_page):
     page.wait_for_function("() => TE.app.view.state.doc.toString() === 'two'")
     assert page.evaluate("TE.app.docs.filter((d) => d.name === 'notes.txt').length") == 1
     assert page.errors == []
+
+
+def test_font_choice_is_shown_and_can_be_changed_again(app_page):
+    page = app_page("texteditor")
+    family = lambda: page.evaluate("getComputedStyle(document.querySelector('.cm-content')).fontFamily")
+    font = page.locator("[data-testid=font]")
+    for name in ["JetBrains Mono", "Fira Code", "JetBrains Mono", ""]:
+        font.select_option(name)
+        expect(font).to_have_value(name)
+        page.wait_for_timeout(100)
+        assert font.evaluate("(s) => s.options[s.selectedIndex].value") == name
+        assert (family().startswith(f'"{name}"') if name else not family().startswith('"'))

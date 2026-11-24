@@ -37,6 +37,23 @@
       'cal.thisOne': 'Only this', 'cal.all': 'All', 'cal.noCalendar': 'Create or open a calendar first.', 'cal.closeConfirm': '“{0}” has unsaved changes. Close it anyway?',
       'cal.imported': '{0} event(s) imported into “{1}”.', 'cal.recent': 'Recently used', 'cal.week.short': 'W', 'cal.weekStart': 'Week starts on',
       'cal.monday': 'Monday', 'cal.sunday': 'Sunday', 'cal.sidebar': 'Calendars', 'cal.endBeforeStart': 'The end is before the start.', 'cal.local': 'local time',
+      'cal.tasks': 'Tasks', 'cal.task': 'Task', 'cal.taskNew': 'New task – type and press Enter', 'cal.taskDone': 'Done', 'cal.tasks.overdue': 'Overdue', 'cal.tasks.today': 'Today',
+      'cal.tasks.upcoming': 'Upcoming', 'cal.tasks.nodate': 'No due date', 'cal.tasks.done': 'Done', 'cal.noTasks': 'No open tasks.', 'cal.due': 'Due', 'cal.time': 'Time',
+      'cal.priority': 'Priority', 'cal.prioNone': 'None', 'cal.prioHigh': 'High', 'cal.prioMedium': 'Medium', 'cal.prioLow': 'Low', 'cal.status': 'Status', 'cal.percent': '% done',
+      'cal.st.NEEDS-ACTION': 'Open', 'cal.st.IN-PROCESS': 'In progress', 'cal.st.COMPLETED': 'Done', 'cal.st.CANCELLED': 'Cancelled',
+      'cal.csvImport': 'Import CSV…', 'cal.csvExport': 'Export as CSV', 'cal.csvWhat': 'Export', 'cal.csvWhatEvents': 'Events', 'cal.from': 'From', 'cal.to': 'To',
+      'cal.csvCalendars': 'Calendars', 'cal.csvVisible': 'All shown calendars', 'cal.csvStyle': 'Date format', 'cal.csvExportOk': 'Export',
+      'cal.csvHint': 'Repeating events are written as single dates within the period. The columns follow Outlook and Google Calendar.',
+      'cal.csvEvents': '{0} events imported into “{1}”.', 'cal.csvTasks': '{0} tasks imported into “{1}”.', 'cal.csvSkipped': '{0} rows without a readable date were skipped (lines {1}).',
+      'cal.csvNone': 'No events or tasks found in the file ({0} rows without a readable date).', 'cal.csvExported': '{0} rows exported.',
+      'cal.dav.button': 'CalDAV…', 'cal.dav.title': 'Online calendars (CalDAV)', 'cal.dav.hint': 'Calendars on a server (Nextcloud, ownCloud, Radicale, Baïkal, iCloud, mailbox.org, …) are reached through the relay. Accounts and passwords are kept in the connections file.',
+      'cal.dav.accounts': 'Accounts', 'cal.dav.add': 'Add account', 'cal.dav.name': 'Name', 'cal.dav.url': 'Server or calendar address', 'cal.dav.user': 'User name', 'cal.dav.password': 'Password or app password',
+      'cal.dav.insecure': 'Accept an untrusted certificate (own servers only)', 'cal.dav.connect': 'Calendars', 'cal.dav.calendars': 'Calendars on the server', 'cal.dav.open': 'Open', 'cal.dav.show': 'Show',
+      'cal.dav.none': 'No calendars were found at this address.', 'cal.dav.relay': 'Set up the relay first (address and sign-in).', 'cal.dav.auth': 'The server refused the user name or password.',
+      'cal.dav.noAccount': 'The account of this calendar is no longer available. Open the connections file or add the account again.',
+      'cal.dav.opened': '“{0}” loaded: {1} events, {2} tasks.', 'cal.dav.reload': 'Load again from the server', 'cal.dav.sync': 'Write the changes to the server',
+      'cal.dav.reloadConfirm': '“{0}” has changes that were not written to the server. Load it again anyway (the changes are lost)?', 'cal.dav.reloaded': '“{0}” was loaded again.',
+      'cal.dav.synced': '“{0}” is up to date on the server ({1} written, {2} deleted).', 'cal.dav.conflict': '{0} item(s) of “{1}” were changed on the server in the meantime and were not written. Load the calendar again (⟳) and repeat your change.',
       'cal.floating': 'floating (no time zone)',
     },
     de: {
@@ -60,6 +77,23 @@
       'cal.thisOne': 'Nur diesen', 'cal.all': 'Alle', 'cal.noCalendar': 'Legen Sie zuerst einen Kalender an oder öffnen Sie einen.', 'cal.closeConfirm': '„{0}“ hat ungespeicherte Änderungen. Trotzdem schließen?',
       'cal.imported': '{0} Termin(e) in „{1}“ importiert.', 'cal.recent': 'Zuletzt verwendet', 'cal.week.short': 'KW', 'cal.weekStart': 'Woche beginnt am',
       'cal.monday': 'Montag', 'cal.sunday': 'Sonntag', 'cal.sidebar': 'Kalender', 'cal.endBeforeStart': 'Das Ende liegt vor dem Beginn.', 'cal.local': 'Ortszeit',
+      'cal.tasks': 'Aufgaben', 'cal.task': 'Aufgabe', 'cal.taskNew': 'Neue Aufgabe – eintippen und Enter drücken', 'cal.taskDone': 'Erledigt', 'cal.tasks.overdue': 'Überfällig', 'cal.tasks.today': 'Heute',
+      'cal.tasks.upcoming': 'Demnächst', 'cal.tasks.nodate': 'Ohne Fälligkeit', 'cal.tasks.done': 'Erledigt', 'cal.noTasks': 'Keine offenen Aufgaben.', 'cal.due': 'Fällig', 'cal.time': 'Uhrzeit',
+      'cal.priority': 'Priorität', 'cal.prioNone': 'Keine', 'cal.prioHigh': 'Hoch', 'cal.prioMedium': 'Mittel', 'cal.prioLow': 'Niedrig', 'cal.status': 'Status', 'cal.percent': '% erledigt',
+      'cal.st.NEEDS-ACTION': 'Offen', 'cal.st.IN-PROCESS': 'In Arbeit', 'cal.st.COMPLETED': 'Erledigt', 'cal.st.CANCELLED': 'Abgesagt',
+      'cal.csvImport': 'CSV importieren…', 'cal.csvExport': 'Als CSV exportieren', 'cal.csvWhat': 'Exportieren', 'cal.csvWhatEvents': 'Termine', 'cal.from': 'Von', 'cal.to': 'Bis',
+      'cal.csvCalendars': 'Kalender', 'cal.csvVisible': 'Alle angezeigten Kalender', 'cal.csvStyle': 'Datumsformat', 'cal.csvExportOk': 'Exportieren',
+      'cal.csvHint': 'Wiederkehrende Termine werden als einzelne Termine im Zeitraum geschrieben. Die Spalten folgen Outlook und Google Kalender.',
+      'cal.csvEvents': '{0} Termine in „{1}“ importiert.', 'cal.csvTasks': '{0} Aufgaben in „{1}“ importiert.', 'cal.csvSkipped': '{0} Zeilen ohne lesbares Datum wurden übersprungen (Zeilen {1}).',
+      'cal.csvNone': 'Keine Termine oder Aufgaben in der Datei gefunden ({0} Zeilen ohne lesbares Datum).', 'cal.csvExported': '{0} Zeilen exportiert.',
+      'cal.dav.button': 'CalDAV…', 'cal.dav.title': 'Online-Kalender (CalDAV)', 'cal.dav.hint': 'Kalender auf einem Server (Nextcloud, ownCloud, Radicale, Baïkal, iCloud, mailbox.org, …) werden über das Relay erreicht. Konten und Passwörter liegen in der Verbindungsdatei.',
+      'cal.dav.accounts': 'Konten', 'cal.dav.add': 'Konto hinzufügen', 'cal.dav.name': 'Name', 'cal.dav.url': 'Adresse des Servers oder Kalenders', 'cal.dav.user': 'Benutzername', 'cal.dav.password': 'Passwort oder App-Passwort',
+      'cal.dav.insecure': 'Nicht vertrauenswürdiges Zertifikat annehmen (nur eigene Server)', 'cal.dav.connect': 'Kalender', 'cal.dav.calendars': 'Kalender auf dem Server', 'cal.dav.open': 'Öffnen', 'cal.dav.show': 'Anzeigen',
+      'cal.dav.none': 'An dieser Adresse wurden keine Kalender gefunden.', 'cal.dav.relay': 'Richten Sie zuerst das Relay ein (Adresse und Anmeldung).', 'cal.dav.auth': 'Der Server hat Benutzername oder Passwort abgelehnt.',
+      'cal.dav.noAccount': 'Das Konto dieses Kalenders ist nicht mehr verfügbar. Öffnen Sie die Verbindungsdatei oder legen Sie das Konto erneut an.',
+      'cal.dav.opened': '„{0}“ geladen: {1} Termine, {2} Aufgaben.', 'cal.dav.reload': 'Erneut vom Server laden', 'cal.dav.sync': 'Änderungen auf den Server schreiben',
+      'cal.dav.reloadConfirm': '„{0}“ hat Änderungen, die nicht auf den Server geschrieben wurden. Trotzdem neu laden (die Änderungen gehen verloren)?', 'cal.dav.reloaded': '„{0}“ wurde neu geladen.',
+      'cal.dav.synced': '„{0}“ ist auf dem Server aktuell ({1} geschrieben, {2} gelöscht).', 'cal.dav.conflict': '{0} Element(e) von „{1}“ wurden inzwischen auf dem Server geändert und nicht geschrieben. Laden Sie den Kalender neu (⟳) und wiederholen Sie Ihre Änderung.',
       'cal.floating': 'unverankert (ohne Zeitzone)',
     },
   });
@@ -91,9 +125,9 @@
   }
 
   // Undo covers the content of the open calendars (events, name, color, time zones), not opening/closing files.
-  const snapshot = () => state.cals.map((c) => ({ id: c.id, name: c.name, color: c.color, cal: c.cal, events: c.events }));
+  const snapshot = () => state.cals.map((c) => ({ id: c.id, name: c.name, color: c.color, cal: c.cal, events: c.events, todos: c.todos }));
   const history = new Suite.UndoHistory({
-    clone: (cals) => cals.map((c) => ({ ...c, cal: structuredClone(c.cal), events: structuredClone(c.events) })),
+    clone: (cals) => cals.map((c) => ({ ...c, cal: structuredClone(c.cal), events: structuredClone(c.events), todos: structuredClone(c.todos) })),
     onChange: () => render(),
   });
   const recordUndo = (coalesce = null) => history.record(snapshot(), coalesce);
@@ -104,12 +138,13 @@
     for (const s of snap) {
       const c = state.cals.find((x) => x.id === s.id);
       if (!c) continue; // closed in the meantime
-      const changed = c.name !== s.name || c.color !== s.color || JSON.stringify(c.events) !== JSON.stringify(s.events) || JSON.stringify(c.cal) !== JSON.stringify(s.cal);
-      Object.assign(c, { name: s.name, color: s.color, cal: s.cal, events: s.events });
+      const changed = c.name !== s.name || c.color !== s.color || JSON.stringify(c.events) !== JSON.stringify(s.events) || JSON.stringify(c.todos) !== JSON.stringify(s.todos) || JSON.stringify(c.cal) !== JSON.stringify(s.cal);
+      Object.assign(c, { name: s.name, color: s.color, cal: s.cal, events: s.events, todos: s.todos });
       if (changed) c.dirty = true;
     }
     state.dialog = null;
     state.scope = null;
+    state.task = null;
     Suite.shell.setDirty(state.cals.some((c) => c.dirty));
     render();
   }
@@ -195,13 +230,441 @@
     return key >= sk && (key < ek || (ek === sk && key === sk));
   }
 
+  // ---- tasks (VTODO) ------------------------------------------------------------------------------------------------
+
+  /** The local day a task is due (null without a due date). */
+  function dueDay(td) {
+    if (!td.due) return null;
+    return td.due.date ? new Date(td.due.y, td.due.m - 1, td.due.d) : startOfDay(new Date(ical.toInstant(td.due)));
+  }
+  /** When a task becomes overdue: its due time, or the end of its due day. */
+  const dueMs = (td) => (!td.due ? Infinity : td.due.date ? +addDaysDate(dueDay(td), 1) : ical.toInstant(td.due));
+  const prio = (td) => td.priority || 10;
+  const byDue = (a, b) => dueMs(a) - dueMs(b) || prio(a) - prio(b) || (a.summary || '').localeCompare(b.summary || '');
+
+  /** The tasks of the visible calendars, filtered by the search. */
+  function allTasks() {
+    const q = state.search.trim().toLowerCase();
+    return state.cals.filter((c) => c.visible).flatMap((c) => c.todos.map((td) => ({ td, cal: c })))
+      .filter(({ td }) => !q || [td.summary, td.description, td.location, ...(td.categories || [])].some((v) => (v || '').toLowerCase().includes(q)));
+  }
+
+  /** Open tasks due on a day. */
+  const tasksDue = (day) => allTasks().filter(({ td }) => !ical.todoDone(td) && td.due && sameDay(dueDay(td), day)).map((x) => x.td).sort(byDue);
+
+  const calOfTask = (td) => state.cals.find((c) => c.id === td.calId) || state.cals.find((c) => c.todos.includes(td));
+
+  function toggleTask(td, done = !ical.todoDone(td)) {
+    const c = calOfTask(td);
+    if (!c) return;
+    recordUndo();
+    const i = c.todos.indexOf(td);
+    const next = done ? { ...td, status: 'COMPLETED', percent: 100, completed: ical.fromInstant(Date.now(), 'UTC') } : { ...td, status: 'NEEDS-ACTION', percent: 0, completed: null };
+    next.sequence = (td.sequence || 0) + 1;
+    c.todos = c.todos.map((x, j) => (j === i ? next : x));
+    markDirty(c);
+  }
+
+  function addTask(summary, due = null) {
+    const c = activeCal();
+    if (!c) { Suite.shell.toast(t('cal.noCalendar'), 'warning'); return null; }
+    recordUndo();
+    const td = { uid: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}@suite`, summary, description: '', location: '', url: '', start: null, due, completed: null,
+      status: 'NEEDS-ACTION', percent: 0, priority: 0, categories: [], sequence: 0, comp: null, calId: c.id };
+    c.todos = [...c.todos, td];
+    markDirty(c);
+    return td;
+  }
+
+  function openTask(td, isNew = false) {
+    const d = dueDay(td);
+    state.task = {
+      isNew, uid: td.uid, calId: td.calId || state.active, summary: td.summary || '', description: td.description || '', location: td.location || '',
+      due: d ? isoDate(d) : '', time: td.due && !td.due.date ? fmt(new Date(ical.toInstant(td.due)), { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }) : '',
+      priority: String(td.priority || 0), status: td.status || 'NEEDS-ACTION', percent: td.percent || 0, categories: (td.categories || []).join(', '),
+    };
+    render();
+  }
+
+  function saveTask() {
+    const d = state.task;
+    const from = state.cals.find((c) => c.todos.some((x) => x.uid === d.uid));
+    const target = findCal(+d.calId) || from || activeCal();
+    if (!target) { Suite.shell.toast(t('cal.noCalendar'), 'warning'); return; }
+    const old = from ? from.todos.find((x) => x.uid === d.uid) : null;
+    let due = null;
+    if (d.due) {
+      const [y, m, day] = d.due.split('-').map(Number);
+      if (d.time) { const [hh, mm] = d.time.split(':').map(Number); due = ztOf(+new Date(y, m - 1, day, hh, mm), zone()); } else due = { y, m, d: day, hh: 0, mm: 0, ss: 0, date: true, tz: 'floating' };
+    }
+    const status = d.status;
+    const td = {
+      ...(old || { uid: d.uid, start: null, url: '', comp: null, sequence: 0 }),
+      summary: d.summary.trim(), description: d.description, location: d.location, due, priority: +d.priority || 0, status,
+      percent: status === 'COMPLETED' ? 100 : Math.max(0, Math.min(100, +d.percent || 0)),
+      completed: status === 'COMPLETED' ? (old && old.completed) || ical.fromInstant(Date.now(), 'UTC') : null,
+      categories: d.categories.split(',').map((x) => x.trim()).filter(Boolean), calId: target.id,
+    };
+    if (old) td.sequence = (old.sequence || 0) + 1;
+    recordUndo();
+    if (from && from !== target) { from.todos = from.todos.filter((x) => x !== old); markDirty(from); }
+    target.todos = target.todos.some((x) => x.uid === td.uid) ? target.todos.map((x) => (x.uid === td.uid ? td : x)) : [...target.todos, td];
+    state.task = null;
+    markDirty(target);
+  }
+
+  function deleteTask() {
+    const d = state.task;
+    const c = state.cals.find((x) => x.todos.some((td) => td.uid === d.uid));
+    state.task = null;
+    if (!c) { render(); return; }
+    recordUndo();
+    c.todos = c.todos.filter((td) => td.uid !== d.uid);
+    markDirty(c);
+  }
+
+  const PRIORITIES = [['0', 'cal.prioNone'], ['1', 'cal.prioHigh'], ['5', 'cal.prioMedium'], ['9', 'cal.prioLow']];
+  const prioClass = (p) => (!p ? '' : p <= 4 ? 'high' : p === 5 ? 'medium' : 'low');
+
+  function dueLabel(td) {
+    if (!td.due) return '';
+    const d = dueDay(td);
+    const day = sameDay(d, new Date()) ? t('cal.today') : fmt(d, { weekday: 'short', day: 'numeric', month: 'short', year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
+    return td.due.date ? day : `${day} ${fmtTime(ical.toInstant(td.due))}`;
+  }
+
+  function TaskChip({ td }) {
+    const c = calOfTask(td);
+    return html`<div class="cal-chip cal-task-chip" style=${`--c:${c ? c.color : '#888'}`} data-testid="task-chip" title=${td.summary}
+      onClick=${(e) => { e.stopPropagation(); openTask(td); }}>${Suite.icon('square')} ${td.summary || '—'}</div>`;
+  }
+
+  function TaskRow({ td, cal }) {
+    const done = ical.todoDone(td);
+    const overdue = !done && dueMs(td) < Date.now();
+    return html`<li class=${`cal-task ${done ? 'done' : ''} ${overdue ? 'overdue' : ''}`} style=${`--c:${cal.color}`} data-testid="task">
+      <input type="checkbox" checked=${done} data-testid="task-done" aria-label=${t('cal.taskDone')} onChange=${(e) => toggleTask(td, e.target.checked)} />
+      <button class="cal-task-title" data-testid="task-open" onClick=${() => openTask(td)}>
+        <span class=${`cal-prio ${prioClass(td.priority)}`}>${td.priority && td.priority <= 4 ? '!' : ''}</span>${td.summary || '—'}
+        ${td.percent && !done ? html`<small> · ${td.percent} %</small>` : null}</button>
+      <small class="cal-task-due" data-testid="task-due">${dueLabel(td)}</small>
+    </li>`;
+  }
+
+  function TasksView() {
+    const list = allTasks();
+    const now = Date.now();
+    const today = startOfDay(new Date());
+    const open = list.filter(({ td }) => !ical.todoDone(td)).sort((a, b) => byDue(a.td, b.td));
+    const groups = [
+      ['overdue', open.filter(({ td }) => dueMs(td) < now)],
+      ['today', open.filter(({ td }) => dueMs(td) >= now && td.due && sameDay(dueDay(td), today))],
+      ['upcoming', open.filter(({ td }) => td.due && dueMs(td) >= now && !sameDay(dueDay(td), today))],
+      ['nodate', open.filter(({ td }) => !td.due)],
+    ];
+    const done = list.filter(({ td }) => ical.todoDone(td)).sort((a, b) => (b.td.completed ? ical.toInstant(b.td.completed) : 0) - (a.td.completed ? ical.toInstant(a.td.completed) : 0));
+    return html`<div class="cal-tasks" data-testid="tasks">
+      <form class="cal-task-add" onSubmit=${(e) => { e.preventDefault(); const v = e.target.elements.summary.value.trim(); if (v && addTask(v)) e.target.reset(); }}>
+        <input name="summary" data-testid="task-new" placeholder=${t('cal.taskNew')} autocomplete="off" />
+        <button type="submit" class="secondary" data-testid="task-add">+</button>
+      </form>
+      ${groups.filter(([, items]) => items.length).map(([key, items]) => html`<section data-testid=${`tasks-${key}`}><h4>${t(`cal.tasks.${key}`)} <small>(${items.length})</small></h4>
+        <ul>${items.map(({ td, cal }) => html`<${TaskRow} td=${td} cal=${cal} key=${td.uid} />`)}</ul></section>`)}
+      ${!open.length ? html`<p class="cal-empty" data-testid="tasks-empty">${t(state.cals.length ? 'cal.noTasks' : 'cal.noCalendar')}</p>` : null}
+      ${done.length ? html`<details data-testid="tasks-done"><summary>${t('cal.tasks.done')} (${done.length})</summary>
+        <ul>${done.map(({ td, cal }) => html`<${TaskRow} td=${td} cal=${cal} key=${td.uid} />`)}</ul></details>` : null}
+    </div>`;
+  }
+
+  function TaskDialog() {
+    const d = state.task;
+    if (!d) return null;
+    const set = (k) => (e) => { d[k] = e.target.value; render(); };
+    const close = () => { state.task = null; render(); };
+    return html`<dialog open data-testid="task-dialog"><article class="cal-dialog">
+      <header><strong>${t('cal.task')}</strong></header>
+      <form onSubmit=${(e) => { e.preventDefault(); saveTask(); }}>
+        <label>${t('cal.title')}<input data-testid="task-summary" value=${d.summary} onInput=${set('summary')} autofocus required /></label>
+        <div class="cal-row">
+          <label>${t('cal.due')}<input type="date" data-testid="task-due-date" value=${d.due} onInput=${set('due')} /></label>
+          <label>${t('cal.time')}<input type="time" data-testid="task-due-time" value=${d.time} disabled=${!d.due} onInput=${set('time')} /></label>
+        </div>
+        <div class="cal-row">
+          <label>${t('cal.priority')}<select data-testid="task-priority" onChange=${set('priority')}>${PRIORITIES.map(([v, k]) => html`<option value=${v} selected=${(+d.priority <= 4 && +d.priority > 0 ? '1' : +d.priority >= 6 ? '9' : String(+d.priority)) === v}>${t(k)}</option>`)}</select></label>
+          <label>${t('cal.status')}<select data-testid="task-status" onChange=${set('status')}>${['NEEDS-ACTION', 'IN-PROCESS', 'COMPLETED', 'CANCELLED'].map((v) => html`<option value=${v} selected=${d.status === v}>${t(`cal.st.${v}`)}</option>`)}</select></label>
+          ${d.status === 'IN-PROCESS' ? html`<label>${t('cal.percent')}<input type="number" min="0" max="100" step="10" data-testid="task-percent" value=${d.percent} onInput=${set('percent')} /></label>` : null}
+        </div>
+        <label>${t('cal.calendar')}<select data-testid="task-calendar" onChange=${set('calId')}>${state.cals.map((c) => html`<option value=${c.id} selected=${+d.calId === c.id}>${c.name}</option>`)}</select></label>
+        <label>${t('cal.location')}<input data-testid="task-location" value=${d.location} onInput=${set('location')} /></label>
+        <label>${t('cal.categories')}<input data-testid="task-categories" value=${d.categories} onInput=${set('categories')} /></label>
+        <label>${t('cal.description')}<textarea rows="3" data-testid="task-description" value=${d.description} onInput=${set('description')}></textarea></label>
+        <footer>
+          ${!d.isNew ? html`<button type="button" class="secondary outline" data-testid="task-delete" onClick=${deleteTask}>${t('cal.delete')}</button>` : null}
+          <button type="button" class="secondary" onClick=${close}>${t('cal.cancel')}</button>
+          <button type="submit" data-testid="task-save">${t('cal.saveEvent')}</button>
+        </footer>
+      </form>
+    </article></dialog>`;
+  }
+
+  // ---- CSV import and export ----------------------------------------------------------------------------------------
+
+  const CSV_TYPES = [{ description: 'CSV', accept: { 'text/csv': ['.csv', '.txt'] } }];
+  const newUid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}@portable-web-app-suite`;
+
+  function decodeText(bytes) {
+    try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch (e) { return new TextDecoder('windows-1252').decode(bytes); }
+  }
+
+  async function importCsv() {
+    const target = activeCal();
+    if (!target) { Suite.shell.toast(t('cal.noCalendar'), 'warning'); return; }
+    const picked = await Suite.files.open({ types: CSV_TYPES }).catch(fail);
+    if (!picked) return;
+    try {
+      const { kind, items, errors } = CALCSV.records(Suite.csv.parse(decodeText(new Uint8Array(await picked[0].file.arrayBuffer()))));
+      if (!items.length) { Suite.shell.toast(t('cal.csvNone', errors.length), 'warning'); return; }
+      recordUndo();
+      const tz = zone();
+      if (kind === 'tasks') {
+        for (const it of items) {
+          const due = !it.due ? null : it.dueTime ? ztOf(+new Date(it.due.y, it.due.m - 1, it.due.d, it.dueTime.hh, it.dueTime.mm), tz) : { ...it.due, hh: 0, mm: 0, ss: 0, date: true, tz: 'floating' };
+          target.todos.push({ uid: newUid(), summary: it.summary, description: it.description, location: it.location, url: '', start: null, due, status: it.status, percent: it.percent,
+            completed: it.status === 'COMPLETED' ? ical.fromInstant(Date.now(), 'UTC') : null, priority: it.priority, categories: it.categories, sequence: 0, comp: null, calId: target.id });
+        }
+      } else {
+        for (const it of items) {
+          let start, end;
+          if (it.allDay) {
+            start = { ...it.start, hh: 0, mm: 0, ss: 0, date: true, tz: 'floating' };
+            const last = it.end && +new Date(it.end.y, it.end.m - 1, it.end.d) >= +new Date(it.start.y, it.start.m - 1, it.start.d) ? it.end : it.start;
+            end = ical.addDays({ ...last, hh: 0, mm: 0, ss: 0, date: true, tz: 'floating' }, 1); // (CSV: last day; iCalendar: the day after)
+          } else {
+            const s0 = +new Date(it.start.y, it.start.m - 1, it.start.d, it.startTime.hh, it.startTime.mm);
+            const e0 = it.endTime ? +new Date((it.end || it.start).y, (it.end || it.start).m - 1, (it.end || it.start).d, it.endTime.hh, it.endTime.mm) : s0 + 3600000;
+            start = ztOf(s0, tz); end = ztOf(e0 > s0 ? e0 : s0 + 3600000, tz);
+          }
+          target.events.push({ uid: newUid(), summary: it.summary, location: it.location, description: it.description, start, end, rrule: null, exdates: [], categories: it.categories, sequence: 0, calId: target.id });
+        }
+      }
+      markDirty(target);
+      Suite.shell.toast(t(kind === 'tasks' ? 'cal.csvTasks' : 'cal.csvEvents', items.length, target.name) + (errors.length ? ` ${t('cal.csvSkipped', errors.length, errors.slice(0, 5).map((e) => e.line).join(', '))}` : ''), errors.length ? 'warning' : undefined);
+      if (kind === 'tasks') state.view = 'tasks';
+      else { const first = items.map((it) => new Date(it.start.y, it.start.m - 1, it.start.d)).sort((a, b) => a - b)[0]; state.date = startOfDay(first); }
+      render();
+    } catch (e) { fail(e); }
+  }
+
+  function openCsvExport() {
+    const y = state.date.getFullYear();
+    state.csvExport = { what: state.view === 'tasks' ? 'tasks' : 'events', from: `${y}-01-01`, to: `${y}-12-31`, style: Suite.i18n.language === 'de' ? 'eu' : 'iso', which: 'visible' };
+    render();
+  }
+
+  async function exportCsv() {
+    const d = state.csvExport;
+    const cals = d.which === 'active' ? [activeCal()].filter(Boolean) : state.cals.filter((c) => c.visible);
+    const rows = [];
+    if (d.what === 'tasks') {
+      rows.push(CALCSV.TASK_HEADER);
+      for (const c of cals) for (const td of c.todos) {
+        const day = dueDay(td);
+        rows.push([td.summary, day ? CALCSV.format(day, d.style) : '', td.due && !td.due.date ? CALCSV.formatTime(new Date(ical.toInstant(td.due)), d.style) : '',
+          !td.priority ? '' : td.priority <= 4 ? 'High' : td.priority === 5 ? 'Normal' : 'Low', { 'IN-PROCESS': 'In Progress', COMPLETED: 'Completed', CANCELLED: 'Cancelled' }[td.status] || 'Not Started',
+          td.status === 'COMPLETED' ? '100' : String(td.percent || 0), td.description || '', td.location || '', (td.categories || []).join(';'), c.name]);
+      }
+    } else {
+      rows.push(CALCSV.EVENT_HEADER);
+      const [fy, fm, fd] = d.from.split('-').map(Number), [ty, tm, tdd] = d.to.split('-').map(Number);
+      for (const o of occurrences(new Date(fy, fm - 1, fd), new Date(ty, tm - 1, tdd + 1), { cals, all: true })) {
+        const s = new Date(o.start), e = new Date(o.allDay ? o.end - 86400000 : o.end);
+        rows.push([o.event.summary, CALCSV.format(s, d.style), o.allDay ? '' : CALCSV.formatTime(s, d.style), CALCSV.format(o.allDay && e < s ? s : e, d.style), o.allDay ? '' : CALCSV.formatTime(e, d.style),
+          o.allDay ? 'True' : 'False', o.event.description || '', o.event.location || '', (o.event.categories || []).join(';'), o.cal.name]);
+      }
+    }
+    state.csvExport = null;
+    render();
+    try {
+      const name = `${(cals.length === 1 ? cals[0].name : t('app.title')).replace(/[\\/:*?"<>|]/g, '_')}${d.what === 'tasks' ? `-${t('cal.tasks')}` : ''}.csv`;
+      const result = await Suite.files.saveAs(new TextEncoder().encode(`﻿${Suite.csv.stringify(rows)}`), { suggestedName: name, types: CSV_TYPES, type: 'text/csv' });
+      if (result) { report(result); Suite.shell.toast(t('cal.csvExported', rows.length - 1)); }
+    } catch (e) { fail(e); }
+  }
+
+  function CsvExportDialog() {
+    const d = state.csvExport;
+    if (!d) return null;
+    const set = (k) => (e) => { d[k] = e.target.value; render(); };
+    return html`<dialog open data-testid="csv-dialog"><article class="cal-dialog">
+      <header><strong>${t('cal.csvExport')}</strong></header>
+      <label>${t('cal.csvWhat')}<select data-testid="csv-what" onChange=${set('what')}><option value="events" selected=${d.what === 'events'}>${t('cal.csvWhatEvents')}</option><option value="tasks" selected=${d.what === 'tasks'}>${t('cal.tasks')}</option></select></label>
+      ${d.what === 'events' ? html`<div class="cal-row"><label>${t('cal.from')}<input type="date" data-testid="csv-from" value=${d.from} onInput=${set('from')} /></label>
+        <label>${t('cal.to')}<input type="date" data-testid="csv-to" value=${d.to} onInput=${set('to')} /></label></div>` : null}
+      <label>${t('cal.csvCalendars')}<select data-testid="csv-which" onChange=${set('which')}><option value="visible" selected=${d.which === 'visible'}>${t('cal.csvVisible')}</option><option value="active" selected=${d.which === 'active'}>${activeCal() ? activeCal().name : ''}</option></select></label>
+      <label>${t('cal.csvStyle')}<select data-testid="csv-style" onChange=${set('style')}>
+        <option value="iso" selected=${d.style === 'iso'}>2026-10-16 14:30 (ISO)</option><option value="eu" selected=${d.style === 'eu'}>16.10.2026 14:30</option><option value="us" selected=${d.style === 'us'}>10/16/2026 2:30 PM (Google, Outlook US)</option></select></label>
+      <p><small>${t('cal.csvHint')}</small></p>
+      <footer><button type="button" class="secondary" onClick=${() => { state.csvExport = null; render(); }}>${t('cal.cancel')}</button><button type="button" data-testid="csv-ok" onClick=${exportCsv}>${t('cal.csvExportOk')}</button></footer>
+    </article></dialog>`;
+  }
+
+  // ---- CalDAV (through the relay) ----------------------------------------------------------------------------------
+
+  const data = Suite.appdata.create(APP, { onChange: () => render() });
+  /** Text of a calendar without the lines that change on every write (for detecting changed objects). */
+  const signature = (text) => text.split(/\r?\n/).filter((l) => !/^(DTSTAMP|LAST-MODIFIED)[:;]/.test(l)).join('\n');
+
+  /** One calendar object (all components with this UID) as iCalendar text. */
+  function objectText(c, uid) {
+    const base = { name: 'VCALENDAR', props: [{ name: 'VERSION', params: {}, value: '2.0' }, { name: 'PRODID', params: {}, value: '-//Portable Web App Suite//Calendar//EN' }],
+      comps: c.cal.comps.filter((x) => x.name === 'VTIMEZONE') };
+    return ical.serialize(ical.buildCalendar(base, c.events.filter((e) => e.uid === uid), c.todos.filter((td) => td.uid === uid)));
+  }
+
+  const remoteUids = (c) => [...new Set([...c.events.map((e) => e.uid), ...c.todos.map((td) => td.uid)])];
+  const accountOf = (c) => data.connections().find((a) => a.id === c.remote.accountId);
+
+  function openCaldav() { state.caldav = { found: null, busy: false, error: '', form: null, accountId: (data.connections()[0] || {}).id || null }; render(); }
+
+  async function discoverCalendars(account) {
+    const d = state.caldav;
+    if (!data.relayConfigured()) { d.error = t('cal.dav.relay'); render(); return; }
+    Object.assign(d, { busy: true, error: '', found: null, accountId: account.id });
+    render();
+    try { d.found = await CALDAV.discover(data.relayConfig(), account); if (!d.found.length) d.error = t('cal.dav.none'); } catch (e) { d.error = describeDav(e); }
+    d.busy = false;
+    render();
+  }
+
+  const describeDav = (e) => (e instanceof CALDAV.HttpError && (e.status === 401 || e.status === 403) ? t('cal.dav.auth') : Suite.i18n.describe(e));
+
+  /** Load the objects of a remote calendar into a calendar of the app (a new one, or `into` when reloading). */
+  async function loadRemote(account, info, into = null) {
+    const objs = await CALDAV.objects(data.relayConfig(), account, info.url);
+    const cal = ical.newCalendar(info.name);
+    const events = [], todos = [], objects = {};
+    for (const o of objs) {
+      let parsed;
+      try { parsed = ical.parse(o.data); } catch (e) { console.warn('CalDAV object skipped', o.url, e); continue; }
+      for (const tz of parsed.comps.filter((x) => x.name === 'VTIMEZONE')) if (!cal.comps.some((x) => x.name === 'VTIMEZONE' && ical.text(x, 'TZID') === ical.text(tz, 'TZID'))) cal.comps.push(tz);
+      const evs = ical.events(parsed), tds = ical.todos(parsed);
+      const uid = (evs[0] || tds[0] || {}).uid;
+      if (!uid) continue;
+      events.push(...evs); todos.push(...tds);
+      objects[uid] = { url: o.url, etag: o.etag };
+    }
+    let c = into;
+    if (c) { c.cal = cal; c.events = events; c.todos = todos; for (const x of [...events, ...todos]) x.calId = c.id; } else {
+      c = addCalendar({ name: info.name, cal, events, todos });
+      if (info.color) c.color = info.color;
+    }
+    c.remote = { accountId: account.id, url: info.url, name: info.name, objects };
+    for (const uid of Object.keys(objects)) objects[uid].sig = signature(objectText(c, uid));
+    c.dirty = false;
+    Suite.shell.setDirty(state.cals.some((x) => x.dirty));
+    return c;
+  }
+
+  async function openRemote(info) {
+    const d = state.caldav;
+    const account = data.connections().find((a) => a.id === d.accountId);
+    if (!account) return;
+    const open = state.cals.find((c) => c.remote && c.remote.url === info.url);
+    if (open) { state.active = open.id; state.caldav = null; render(); return; }
+    d.busy = true; render();
+    try {
+      const c = await loadRemote(account, info);
+      state.active = c.id;
+      state.caldav = null;
+      Suite.shell.toast(t('cal.dav.opened', c.name, c.events.length, c.todos.length));
+    } catch (e) { d.error = describeDav(e); d.busy = false; }
+    render();
+  }
+
+  async function reloadRemote(c) {
+    if (c.dirty && !(await Suite.shell.confirm(t('cal.dav.reloadConfirm', c.name)))) return;
+    const account = accountOf(c);
+    if (!account) { Suite.shell.toast(t('cal.dav.noAccount'), 'error'); return; }
+    try { await loadRemote(account, { url: c.remote.url, name: c.remote.name || c.name }, c); history.clear(); Suite.shell.toast(t('cal.dav.reloaded', c.name)); } catch (e) { Suite.shell.toast(describeDav(e), 'error'); }
+    render();
+  }
+
+  /** Write the changes of a remote calendar: new and changed objects with PUT, removed ones with DELETE (conditional on the ETag). */
+  async function syncRemote(c) {
+    const account = accountOf(c);
+    if (!account || !data.relayConfigured()) { Suite.shell.toast(t(account ? 'cal.dav.relay' : 'cal.dav.noAccount'), 'error'); return; }
+    const relay = data.relayConfig();
+    const objects = c.remote.objects;
+    const base = c.remote.url.endsWith('/') ? c.remote.url : `${c.remote.url}/`;
+    const current = remoteUids(c);
+    let written = 0, deleted = 0;
+    const conflicts = [], errors = [];
+    for (const uid of current) {
+      const text = objectText(c, uid);
+      const sig = signature(text);
+      const old = objects[uid];
+      if (old && old.sig === sig) continue;
+      const url = old ? old.url : new URL(`${encodeURIComponent(uid.replace(/[^\w.@-]+/g, '_'))}.ics`, base).href;
+      try {
+        const etag = await CALDAV.put(relay, account, url, text, old ? old.etag : null);
+        objects[uid] = { url, etag, sig };
+        written++;
+      } catch (e) { (e instanceof CALDAV.HttpError && e.status === 412 ? conflicts : errors).push(e); }
+    }
+    for (const uid of Object.keys(objects).filter((u) => !current.includes(u))) {
+      try { await CALDAV.remove(relay, account, objects[uid].url, objects[uid].etag); delete objects[uid]; deleted++; } catch (e) { (e instanceof CALDAV.HttpError && e.status === 412 ? conflicts : errors).push(e); }
+    }
+    if (!conflicts.length && !errors.length) {
+      c.dirty = false;
+      Suite.shell.setDirty(state.cals.some((x) => x.dirty));
+      Suite.shell.toast(t('cal.dav.synced', c.name, written, deleted));
+    } else if (conflicts.length) Suite.shell.toast(t('cal.dav.conflict', conflicts.length, c.name), 'error');
+    else Suite.shell.toast(describeDav(errors[0]), 'error');
+    render();
+  }
+
+  function CaldavDialog() {
+    const d = state.caldav;
+    if (!d) return null;
+    const accounts = data.connections();
+    const close = () => { state.caldav = null; render(); };
+    const f = d.form;
+    return html`<dialog open data-testid="caldav-dialog"><article class="cal-dialog cal-caldav">
+      <header><strong>${t('cal.dav.title')}</strong></header>
+      <p><small>${t('cal.dav.hint')}</small></p>
+      <${data.Bar} />
+      <details open=${!data.relayConfigured()}><summary>${t('appdata.relay')}</summary><${data.RelayFields} /></details>
+      <h5>${t('cal.dav.accounts')}</h5>
+      <ul class="cal-dav-accounts">${accounts.map((a) => html`<li data-testid="caldav-account" class=${d.accountId === a.id ? 'active' : ''}>
+        <span><b>${a.name}</b><br /><small>${a.username ? `${a.username} · ` : ''}${a.url}</small></span>
+        <button type="button" data-testid="caldav-connect" aria-busy=${d.busy && d.accountId === a.id} onClick=${() => discoverCalendars(a)}>${t('cal.dav.connect')}</button>
+        <button type="button" class="secondary outline" data-testid="caldav-edit" onClick=${() => { d.form = { ...a }; render(); }}>${Suite.icon('pencil')}</button>
+        <button type="button" class="secondary outline" data-testid="caldav-delete" onClick=${() => { data.deleteConnection(a.id); render(); }}>×</button></li>`)}</ul>
+      ${f ? html`<form class="cal-dav-form" data-testid="caldav-form" onSubmit=${(e) => { e.preventDefault(); const id = data.saveConnection({ ...f, name: f.name || new URL(f.url).host }); d.form = null; d.accountId = id; render(); }}>
+          <label>${t('cal.dav.name')}<input data-testid="caldav-name" value=${f.name || ''} onInput=${(e) => { f.name = e.target.value; }} /></label>
+          <label>${t('cal.dav.url')}<input type="url" required data-testid="caldav-url" placeholder="https://cloud.example.org/remote.php/dav" value=${f.url || ''} onInput=${(e) => { f.url = e.target.value; }} /></label>
+          <div class="cal-row"><label>${t('cal.dav.user')}<input data-testid="caldav-user" autocomplete="off" value=${f.username || ''} onInput=${(e) => { f.username = e.target.value; }} /></label>
+          <label>${t('cal.dav.password')}<input type="password" data-testid="caldav-password" autocomplete="new-password" value=${f.password || ''} onInput=${(e) => { f.password = e.target.value; }} /></label></div>
+          <label class="cal-check"><input type="checkbox" checked=${!!f.insecure} onChange=${(e) => { f.insecure = e.target.checked; }} /> ${t('cal.dav.insecure')}</label>
+          <div class="cal-row"><button type="button" class="secondary" onClick=${() => { d.form = null; render(); }}>${t('cal.cancel')}</button><button type="submit" data-testid="caldav-save">${t('cal.saveEvent')}</button></div>
+        </form>`
+        : html`<button type="button" class="secondary outline" data-testid="caldav-add" onClick=${() => { d.form = { name: '', url: '', username: '', password: '' }; render(); }}>+ ${t('cal.dav.add')}</button>`}
+      ${d.error ? html`<p class="cal-error" data-testid="caldav-error">${d.error}</p>` : null}
+      ${d.found && d.found.length ? html`<h5>${t('cal.dav.calendars')}</h5><ul class="cal-dav-found">${d.found.map((c) => html`<li data-testid="caldav-calendar">
+        <span class="cal-dot" style=${`background:${c.color || '#888'}`}></span><span>${c.name}<br /><small>${c.components.filter((x) => x === 'VEVENT' || x === 'VTODO').map((x) => t(x === 'VEVENT' ? 'cal.csvWhatEvents' : 'cal.tasks')).join(', ')}</small></span>
+        <button type="button" data-testid="caldav-open" aria-busy=${d.busy} onClick=${() => openRemote(c)}>${state.cals.some((x) => x.remote && x.remote.url === c.url) ? t('cal.dav.show') : t('cal.dav.open')}</button></li>`)}</ul>` : null}
+      <footer><button type="button" class="secondary" data-testid="caldav-close" onClick=${close}>${t('cal.close')}</button></footer>
+    </article></dialog>`;
+  }
+
   // ---- calendars ------------------------------------------------------------------------------------------------
 
-  function addCalendar({ name, cal, events, fileName = null, handle = null }) {
-    const c = { id: nextCalId++, name, color: COLORS[state.cals.length % COLORS.length], visible: true, cal, events, fileName, handle, dirty: false };
+  function addCalendar({ name, cal, events, todos = [], fileName = null, handle = null }) {
+    const c = { id: nextCalId++, name, color: COLORS[state.cals.length % COLORS.length], visible: true, cal, events, todos, fileName, handle, dirty: false };
     const color = ical.prop(cal, 'X-APPLE-CALENDAR-COLOR') || ical.prop(cal, 'COLOR');
     if (color && /^#[0-9a-f]{6}/i.test(color.value)) c.color = color.value.slice(0, 7);
     for (const ev of events) ev.calId = c.id;
+    for (const td of todos) td.calId = c.id;
     state.cals.push(c);
     if (!state.active) state.active = c.id;
     render();
@@ -218,7 +681,7 @@
   function parseIcs(textContent, fallbackName) {
     const cal = ical.parse(textContent);
     const name = ical.text(cal, 'X-WR-CALNAME') || fallbackName;
-    return { cal, name, events: ical.events(cal) };
+    return { cal, name, events: ical.events(cal), todos: ical.todos(cal) };
   }
 
   async function openFiles() {
@@ -231,12 +694,13 @@
   Suite.autosave.register({
     app: APP,
     save: () => {
-      const list = state.cals.filter((c) => c.dirty).map((c) => ({ name: c.name, fileName: c.fileName, handle: c.handle || null, ics: calendarText(c) }));
+      const list = state.cals.filter((c) => c.dirty).map((c) => ({ name: c.name, fileName: c.fileName, handle: c.handle || null, ics: calendarText(c), remote: c.remote ? structuredClone(c.remote) : null }));
       return list.length ? { name: list.map((c) => c.fileName || c.name).join(', '), cals: list } : null;
     },
     restore: (snap) => {
       for (const x of snap.cals) {
         const c = addCalendar({ ...parseIcs(x.ics, x.name), fileName: x.fileName, handle: x.handle });
+        if (x.remote) c.remote = x.remote;
         state.active = c.id;
         markDirty(c);
       }
@@ -270,7 +734,8 @@
     recordUndo();
     for (const p of picked) {
       try {
-        const { cal, events } = parseIcs(await p.file.text(), p.file.name);
+        const { cal, events, todos } = parseIcs(await p.file.text(), p.file.name);
+        for (const td of todos) { target.todos = target.todos.filter((x) => x.uid !== td.uid); td.calId = target.id; target.todos.push(td); n++; }
         for (const ev of events) {
           // replace an event with the same UID (and RECURRENCE-ID), e.g. an updated invitation
           target.events = target.events.filter((x) => !(x.uid === ev.uid && x.recurrenceId === ev.recurrenceId));
@@ -290,12 +755,13 @@
   function calendarText(c) {
     const props = c.cal.props.filter((p) => p.name !== 'X-WR-CALNAME' && p.name !== 'X-APPLE-CALENDAR-COLOR');
     props.push({ name: 'X-WR-CALNAME', params: {}, value: ical.escapeText(c.name) }, { name: 'X-APPLE-CALENDAR-COLOR', params: {}, value: c.color });
-    return ical.serialize(ical.buildCalendar({ ...c.cal, props }, c.events));
+    return ical.serialize(ical.buildCalendar({ ...c.cal, props }, c.events, c.todos));
   }
 
   function report(result) { if (result.mode === 'downloaded') Suite.shell.banner(result.message); else Suite.shell.toast(result.message); }
 
   async function saveCalendar(c, as = false) {
+    if (c.remote && !as) { await syncRemote(c); return; }
     try {
       const bytes = new TextEncoder().encode(calendarText(c));
       const name = c.fileName || `${c.name.replace(/[\\/:*?"<>|]/g, '_')}.ics`;
@@ -530,6 +996,7 @@
 
   function title() {
     const d = state.date;
+    if (state.view === 'tasks') return t('cal.tasks');
     if (state.view === 'month') return fmt(d, { month: 'long', year: 'numeric' });
     if (state.view === 'day') return fmt(d, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     if (state.view === 'week' || state.view === 'freebusy') {
@@ -541,19 +1008,19 @@
 
   function Toolbar() {
     return html`<nav class="cal-toolbar" role="toolbar">
-      <button class="secondary outline cal-only-phone" data-testid="toggle-sidebar" onClick=${() => { state.sidebar = !state.sidebar; render(); }}>☰</button>
+      <button class="secondary outline cal-only-phone" data-testid="toggle-sidebar" title=${Suite.t('common.panels')} onClick=${() => { state.sidebar = !state.sidebar; render(); }}>${Suite.icon('menu')}</button>
       <button class="secondary" data-testid="today" onClick=${() => { state.date = startOfDay(new Date()); render(); }}>${t('cal.today')}</button>
       <button class="secondary outline" data-testid="prev" aria-label="previous" onClick=${() => move(-1)}>‹</button>
       <button class="secondary outline" data-testid="next" aria-label="next" onClick=${() => move(1)}>›</button>
       <strong class="cal-title" data-testid="title">${title()}</strong>
-      <span class="cal-views">${['month', 'week', 'day', 'agenda', 'freebusy'].map((v) => html`<button class=${state.view === v ? '' : 'secondary outline'} data-testid=${`view-${v}`} aria-pressed=${state.view === v}
+      <span class="cal-views">${['month', 'week', 'day', 'agenda', 'tasks', 'freebusy'].map((v) => html`<button class=${state.view === v ? '' : 'secondary outline'} data-testid=${`view-${v}`} aria-pressed=${state.view === v}
         onClick=${() => { state.view = v; savePrefs(); render(); }}>${t(`cal.${v}`)}</button>`)}</span>
       <input type="search" class="cal-search" placeholder=${t('cal.search')} value=${state.search} data-testid="search" onInput=${(e) => { state.search = e.target.value; render(); }} />
-      <button class="secondary outline" title="${t('cal.undo')} (Ctrl+Z)" data-testid="undo" disabled=${!history.canUndo} onClick=${() => step(false)}>↶</button>
-      <button class="secondary outline" title="${t('cal.redo')} (Ctrl+Y)" data-testid="redo" disabled=${!history.canRedo} onClick=${() => step(true)}>↷</button>
+      <button class="secondary outline" title="${t('cal.undo')} (Ctrl+Z)" data-testid="undo" disabled=${!history.canUndo} onClick=${() => step(false)}>${Suite.icon('undo-2')}</button>
+      <button class="secondary outline" title="${t('cal.redo')} (Ctrl+Y)" data-testid="redo" disabled=${!history.canRedo} onClick=${() => step(true)}>${Suite.icon('redo-2')}</button>
       <button data-testid="new-event" onClick=${() => { const s = new Date(state.date); s.setHours(9, 0, 0, 0); newEventDraft(+s, +s + 3600000); }}>+ ${t('cal.new')}</button>
-      <button class="secondary outline" data-testid="print" title=${t('cal.print')} onClick=${printView}>🖨</button>
-      <button class=${state.notify ? '' : 'secondary outline'} data-testid="notify" title=${t('cal.remEnable')} aria-pressed=${!!state.notify} onClick=${toggleNotify}>🔔</button>
+      <button class="secondary outline" data-testid="print" title=${t('cal.print')} onClick=${printView}>${Suite.icon('printer')}</button>
+      <button class=${state.notify ? '' : 'secondary outline'} data-testid="notify" title=${t('cal.remEnable')} aria-pressed=${!!state.notify} onClick=${toggleNotify}>${Suite.icon('bell')}</button>
       ${state.cals.some((c) => c.dirty) ? html`<button class="secondary" data-testid="save-all" onClick=${saveAll}>${t('cal.saveAll')}</button>` : null}
     </nav>`;
   }
@@ -588,13 +1055,17 @@
               onBlur=${(e) => { if (state.renaming !== c.id) return; state.renaming = null; const name = e.target.value.trim(); if (name && name !== c.name) { recordUndo(); c.name = name; markDirty(c); } else render(); }} />`
           : html`<span class="cal-name" data-testid="cal-name" onClick=${() => { state.active = c.id; render(); }}
               onDblClick=${() => { state.renaming = c.id; render(); }}>${c.name}${c.dirty ? ' •' : ''}</span>`}
-        <button class="secondary outline" title=${t('cal.save')} data-testid="cal-save" onClick=${() => saveCalendar(c)}>💾</button>
+        ${c.remote ? html`<button class="secondary outline" title=${t('cal.dav.reload')} data-testid="cal-reload" onClick=${() => reloadRemote(c)}>${Suite.icon('rotate-cw')}</button>` : null}
+        <button class="secondary outline" title=${c.remote ? t('cal.dav.sync') : t('cal.save')} data-testid="cal-save" onClick=${() => saveCalendar(c)}>${c.remote ? Suite.icon('cloud') : Suite.icon('save')}</button>
         <button class="secondary outline" title=${t('cal.close')} data-testid="cal-close" onClick=${() => closeCalendar(c)}>×</button>
       </li>`)}</ul>
       <div class="cal-side-buttons">
         <button class="secondary outline" data-testid="new-calendar" onClick=${newCalendar}>+ ${t('cal.newCalendar')}</button>
         <button class="secondary outline" data-testid="open" onClick=${openFiles}>${t('cal.open')}</button>
+        <button class="secondary outline" data-testid="caldav" onClick=${openCaldav}>${Suite.icon('cloud')} ${t('cal.dav.button')}</button>
         <button class="secondary outline" data-testid="import" disabled=${!state.cals.length} onClick=${importEvents}>${t('cal.import')}</button>
+        <select class="cal-csv-menu" data-testid="csv-menu" aria-label="CSV" disabled=${!state.cals.length} onChange=${(e) => { const v = e.target.value; e.target.value = ''; if (v === 'import') importCsv(); else if (v === 'export') openCsvExport(); }}>
+          <option value="">CSV…</option><option value="import">${t('cal.csvImport')}</option><option value="export">${t('cal.csvExport')}</option></select>
       </div>
       ${state.recent.length ? html`<div class="cal-recent"><small>${t('cal.recent')}</small><ul>${state.recent.map((r) => html`<li><a href="#" onClick=${async (e) => {
         e.preventDefault(); const picked = await Suite.files.reopen(r.handle); if (picked) openPicked(picked);
@@ -615,7 +1086,7 @@
   function Chip({ o, day }) {
     return html`<div class=${`cal-chip ${o.allDay ? 'allday' : ''}`} style=${`--c:${o.cal.color}`} data-testid="event" draggable="true" title=${o.event.summary}
       onDragStart=${(e) => { state.drag = { kind: 'chip', o, day }; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', o.event.uid); }}
-      onClick=${(e) => { e.stopPropagation(); openDialog({ calId: o.cal.id, event: o.event, occ: o }); }}>${o.recurring ? '↻ ' : ''}${chipLabel(o, day)}</div>`;
+      onClick=${(e) => { e.stopPropagation(); openDialog({ calId: o.cal.id, event: o.event, occ: o }); }}>${o.recurring ? Suite.icon('rotate-cw') : ''}${chipLabel(o, day)}</div>`;
   }
 
   function dropOnDay(e, day) {
@@ -646,6 +1117,7 @@
             onDragOver=${(e) => { if (state.drag) e.preventDefault(); }} onDrop=${(e) => dropOnDay(e, day)}>
           <button class="cal-daynum" data-testid="day-number" onClick=${() => { state.date = day; state.view = 'day'; render(); }}>${day.getDate()}</button>
           ${items.slice(0, max).map((o) => html`<${Chip} o=${o} day=${day} key=${o.event.uid + o.key} />`)}
+          ${tasksDue(day).slice(0, max).map((td) => html`<${TaskChip} td=${td} key=${`task-${td.uid}`} />`)}
           ${items.length > max ? html`<button class="cal-more" onClick=${() => { state.date = day; state.view = 'day'; render(); }}>${t('cal.more', items.length - max)}</button>` : null}
         </div>`;
       })}</div>
@@ -693,7 +1165,7 @@
               const top = ((s - dayStart) / 3600000) * HOUR, height = Math.max(18, ((e - s) / 3600000) * HOUR);
               return html`<div class=${`cal-ev ${preview ? 'dragging' : ''}`} key=${o.event.uid + o.key} data-testid="event" style=${`--c:${o.cal.color};top:${top}px;height:${height}px;left:${(col / cols) * 100}%;width:${100 / cols}%`}
                   onPointerDown=${(ev) => startMove(ev, o, day)}>
-                <b>${o.event.summary || '—'}</b><small>${fmtTime(o.start)}–${fmtTime(o.end)}${o.recurring ? ' ↻' : ''}${o.event.location ? ` · ${o.event.location}` : ''}</small>
+                <b>${o.event.summary || '—'}</b><small>${fmtTime(o.start)}–${fmtTime(o.end)}${o.recurring ? Suite.icon('rotate-cw') : ''}${o.event.location ? ` · ${o.event.location}` : ''}</small>
                 <span class="cal-ev-resize" data-testid="resize" onPointerDown=${(ev) => startResize(ev, o)}></span>
               </div>`;
             })}
@@ -798,13 +1270,15 @@
     const days = [];
     for (let d = start; d < end; d = addDaysDate(d, 1)) {
       const items = forDay(list, d);
-      if (items.length) days.push({ d, items });
+      const due = tasksDue(d);
+      if (items.length || due.length) days.push({ d, items, due });
     }
-    return html`<div class="cal-agenda" data-testid="agenda">${days.length ? days.map(({ d, items }) => html`<section class=${sameDay(d, new Date()) ? 'today' : ''}>
+    return html`<div class="cal-agenda" data-testid="agenda">${days.length ? days.map(({ d, items, due }) => html`<section class=${sameDay(d, new Date()) ? 'today' : ''}>
       <h4>${fmt(d, { weekday: 'long', day: 'numeric', month: 'long' })}</h4>
+      ${due.map((td) => html`<${TaskChip} td=${td} key=${`task-${td.uid}`} />`)}
       ${items.map((o) => html`<button class="cal-agenda-item" style=${`--c:${o.cal.color}`} data-testid="event" onClick=${() => openDialog({ calId: o.cal.id, event: o.event, occ: o })}>
         <span class="cal-agenda-time">${o.allDay ? t('cal.allDay') : `${fmtTime(o.start)}–${fmtTime(o.end)}`}</span>
-        <span><b>${o.event.summary || '—'}</b>${o.recurring ? ' ↻' : ''}${o.event.location ? html`<small> · ${o.event.location}</small>` : null}</span>
+        <span><b>${o.event.summary || '—'}</b>${o.recurring ? Suite.icon('rotate-cw') : ''}${o.event.location ? html`<small> · ${o.event.location}</small>` : null}</span>
       </button>`)}
     </section>`) : html`<p class="cal-empty">${t('cal.noEvents')}</p>`}</div>`;
   }
@@ -889,7 +1363,7 @@
     const set = (patch) => { Object.assign(rp, patch); render(); };
     if (rp.custom && rp.freq !== 'NONE') {
       return html`<p class="cal-custom" data-testid="ev-custom-rule">${t('cal.custom', rp.custom)}</p>
-        <button type="button" class="secondary outline" onClick=${() => set({ custom: null })}>✎</button>`;
+        <button type="button" class="secondary outline" title=${Suite.t('common.edit')} onClick=${() => set({ custom: null })}>${Suite.icon('pencil')}</button>`;
     }
     return html`<div class="cal-repeat">
       <select data-testid="ev-repeat" onChange=${(e) => set({ freq: e.target.value })}>
@@ -939,7 +1413,7 @@
         <label>${t('cal.location')}<input data-testid="ev-location" ...${bind('location')} /></label>
         <label>${t('cal.description')}<textarea rows="3" data-testid="ev-description" onInput=${(e) => { d.description = e.target.value; }}>${d.description}</textarea></label>
         <label>${t('cal.categories')}<input data-testid="ev-categories" ...${bind('categories')} /></label>
-        <label>🔔 ${t('cal.reminder')}<select data-testid="ev-reminder" onChange=${(e) => { d.reminder = e.target.value === '' ? null : +e.target.value; }}>
+        <label>${Suite.icon('bell')} ${t('cal.reminder')}<select data-testid="ev-reminder" onChange=${(e) => { d.reminder = e.target.value === '' ? null : +e.target.value; }}>
           ${[null, ...new Set([...REMINDERS, ...(d.reminder != null ? [d.reminder] : [])])].sort((a, b) => (a ?? -1) - (b ?? -1)).map((m) => html`<option value=${m ?? ''} selected=${m === d.reminder}>${reminderLabel(m)}</option>`)}</select></label>
         ${d.alarms - (d.original.reminder != null ? 1 : 0) > 0 ? html`<small>${t('cal.remOther', d.alarms - (d.original.reminder != null ? 1 : 0))}</small>` : null}
         <footer>
@@ -1037,8 +1511,9 @@
     else if (state.view === 'week') { const s = startOfWeek(state.date); view = html`<${TimeGrid} days=${Array.from({ length: 7 }, (_, i) => addDaysDate(s, i))} />`; }
     else if (state.view === 'day') view = html`<${TimeGrid} days=${[startOfDay(state.date)]} />`;
     else if (state.view === 'freebusy') view = html`<${FreeBusyView} />`;
+    else if (state.view === 'tasks') view = html`<${TasksView} />`;
     else view = html`<${AgendaView} />`;
-    return html`<div class="cal-layout"><${Sidebar} />${state.sidebar ? Suite.shell.backdrop(() => { state.sidebar = false; render(); }) : null}<div class=${`cal-main view-${state.view}`}><h2 class="cal-print-title" data-testid="print-title">${state.cals.filter((c) => c.visible).map((c) => c.name).join(', ')} · ${title()}</h2>${view}</div><${EventDialog} /><${ScopeDialog} /></div>`;
+    return html`<div class="cal-layout"><${Sidebar} />${state.sidebar ? Suite.shell.backdrop(() => { state.sidebar = false; render(); }) : null}<div class=${`cal-main view-${state.view}`}><h2 class="cal-print-title" data-testid="print-title">${state.cals.filter((c) => c.visible).map((c) => c.name).join(', ')} · ${title()}</h2>${view}</div><${EventDialog} /><${ScopeDialog} /><${TaskDialog} /><${CsvExportDialog} /><${CaldavDialog} /><${data.Dialog} /></div>`;
   }
 
   Suite.shell.mount({ id: APP, title: 'app.title', version: '%%BUILD_VERSION%%', toolbar: () => html`<${Toolbar} />`, main: () => html`<${Main} />` });
@@ -1048,7 +1523,7 @@
   });
 
   document.addEventListener('keydown', (e) => {
-    if (state.dialog || state.scope) { if (e.key === 'Escape') { state.dialog = null; state.scope = null; render(); } return; }
+    if (state.dialog || state.scope || state.task || state.csvExport || state.caldav) { if (e.key === 'Escape') { state.dialog = null; state.scope = null; state.task = null; state.csvExport = null; state.caldav = null; render(); } return; }
     const tag = document.activeElement && document.activeElement.tagName;
     const mod = e.ctrlKey || e.metaKey;
     if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); saveAll(); return; }
@@ -1057,7 +1532,7 @@
     if (undoKey) { e.preventDefault(); step(undoKey === 'redo'); return; }
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || mod || e.altKey) return;
     const k = e.key.toLowerCase();
-    const views = { m: 'month', w: 'week', d: 'day', a: 'agenda', f: 'freebusy' };
+    const views = { m: 'month', w: 'week', d: 'day', a: 'agenda', f: 'freebusy', x: 'tasks' };
     if (views[k]) { state.view = views[k]; savePrefs(); render(); } else if (k === 't') { state.date = startOfDay(new Date()); render(); } else if (e.key === 'ArrowLeft' || k === 'k') move(-1);
     else if (e.key === 'ArrowRight' || k === 'j') move(1);
     else if (k === 'n') { e.preventDefault(); const s = new Date(state.date); s.setHours(9, 0, 0, 0); newEventDraft(+s, +s + 3600000); } else if (k === '/') { e.preventDefault(); document.querySelector('[data-testid=search]')?.focus(); }
@@ -1072,6 +1547,6 @@
   Suite.openFiles.register(() => state.cals.map((c) => ({ name: c.fileName || `${c.name.replace(/[\\/:*?"<>|]/g, '_')}.ics`, bytes: new TextEncoder().encode(calendarText(c)), dirty: !!c.dirty })));
 
   // for tests
-  window.CAL = { state, history, step, calendarText, addCalendar, parseIcs, occurrences, checkReminders };
+  window.CAL = { state, data, syncRemote, reloadRemote, importCsv, toggleTask, addTask, history, step, calendarText, addCalendar, parseIcs, occurrences, checkReminders };
   document.body.dataset.ready = 'true';
 })();

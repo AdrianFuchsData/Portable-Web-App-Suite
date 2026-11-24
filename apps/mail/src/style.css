@@ -121,3 +121,8 @@ select.mail-templates-pick { width: auto; max-width: 11rem; margin: 0 !important
 .mail-acc { display: inline-block; font-size: .68rem; padding: 0 .35rem; margin-right: .2rem; border-radius: .3rem; background: var(--pico-muted-border-color); color: var(--pico-color); max-width: 8rem; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
 .mail-accounts li.connected > a { font-weight: 600; }
 .mail-unified { margin-bottom: 0; }
+.mail-scope { width: auto; margin: 0; padding-top: .25rem; padding-bottom: .25rem; font-size: .85rem; flex: none; max-width: 9rem; }
+.mail-found { display: flex; align-items: center; justify-content: space-between; gap: .4rem; margin: .2rem .5rem; font-size: .85rem; }
+.mail-found button { width: auto; margin: 0; padding: .1rem .5rem; }
+.mail-folder-tag { opacity: .85; font-style: italic; }
+.mail-mbox { width: auto; margin: 0; padding-top: .25rem; padding-bottom: .25rem; font-size: .85rem; flex: none; }

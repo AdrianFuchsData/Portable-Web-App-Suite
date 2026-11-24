@@ -97,7 +97,39 @@
     }
   }
 
-  function openTunnel(relay, token, { host, port, tls = false, insecure = false }) {
+  /** Take a connection that arrived at a port the relay listens on (see listen). Resolves to a connection like connect(). */
+  async function accept(relay, id) {
+    return openTunnel(relay, await credential(relay), { accept: id });
+  }
+
+  /**
+   * Let the relay listen on 127.0.0.1:port (0 = any free port) – port forwarding. onConnection(connection) is called for every
+   * incoming connection (already taken). Resolves to { port, close() }. Only a relay on the local machine listens.
+   */
+  async function listen(relay, port, onConnection) {
+    const token = await credential(relay);
+    return new Promise((resolve, reject) => {
+      const ws = new WebSocket(`${relay.url.replace(/^http/, 'ws')}/tcp`);
+      let opened = false;
+      const listener = { port: 0, closed: false, close() { listener.closed = true; ws.close(); } };
+      ws.onopen = () => ws.send(JSON.stringify({ token, listen: { port: Number(port) || 0 } }));
+      ws.onmessage = (event) => {
+        if (typeof event.data !== 'string') return;
+        const msg = JSON.parse(event.data);
+        if (!opened) {
+          if (!msg.ok) { reject(new Error(msg.error || 'the relay does not listen')); ws.close(); return; }
+          opened = true;
+          listener.port = msg.port;
+          resolve(listener);
+        } else if (msg.op === 'accept' && msg.id) {
+          accept(relay, msg.id).then(onConnection, () => {});
+        }
+      };
+      ws.onclose = () => { listener.closed = true; if (!opened) reject(new Error('relay connection failed')); if (listener.onclose) listener.onclose(); };
+    });
+  }
+
+  function openTunnel(relay, token, { host, port, tls = false, insecure = false, accept: acceptId = null }) {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(`${relay.url.replace(/^http/, 'ws')}/tcp`);
       ws.binaryType = 'arraybuffer';
@@ -112,7 +144,7 @@
         else chunks.push(chunk);
       };
 
-      ws.onopen = () => ws.send(JSON.stringify({ token, host, port, tls, insecure }));
+      ws.onopen = () => ws.send(JSON.stringify(acceptId ? { token, accept: acceptId } : { token, host, port, tls, insecure }));
       ws.onmessage = (event) => {
         if (typeof event.data === 'string') {
           const msg = JSON.parse(event.data);
@@ -197,5 +229,5 @@
     return { ...result, body: fromBase64(result.body) };
   }
 
-  Suite.relay = { config, info, login, logout, connect, http, checkTransport };
+  Suite.relay = { config, info, login, logout, connect, listen, accept, http, checkTransport };
 })(window.Suite = window.Suite || {});

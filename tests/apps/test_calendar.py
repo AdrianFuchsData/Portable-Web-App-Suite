@@ -135,7 +135,7 @@ def test_open_and_views(cal_page, team_ics):
     open_ics(page, team_ics)
     page.click("[data-testid=view-month]")
     expect(page.locator("[data-testid=title]")).to_have_text("October 2026")
-    expect(day_cell(page, "2026-10-14").locator("[data-testid=event]")).to_have_text(["↻ 09:00 Standup", "14:00 Review"])
+    expect(day_cell(page, "2026-10-14").locator("[data-testid=event]")).to_have_text(["09:00 Standup", "14:00 Review"])
     expect(day_cell(page, "2026-10-17").locator("[data-testid=event]")).to_have_count(0)  # Saturday
     for d in ("2026-10-19", "2026-10-20", "2026-10-21"):
         expect(day_cell(page, d).locator("[data-testid=event]").first).to_have_text("Trip")

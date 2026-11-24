@@ -183,7 +183,10 @@ shows the loudness in LUFS and the peak.
 ## Playing and recording
 
 ▶ (or `Space`) plays the selection, or from the cursor to the end; ⏸ pauses, ⏹ stops, ⏮ ⏭ jump to the start or end. 🔁
-repeats the selection. A click on the time ruler moves the playhead.
+repeats the selection. A click on the time ruler moves the playhead. While playing, the view follows the playhead.
+
+If the browser loses the audio output (for example when the output device changes; Chrome then reports an error of the audio
+device), the editor starts a new output and plays on from the same position; a message says so.
 
 ● starts recording from the microphone (the browser asks for permission); the other tracks are played at the same time.
 ● again stops; the recording becomes a new track with a clip that starts at the cursor.
@@ -242,5 +245,12 @@ On a Mac, use Cmd instead of Ctrl. `F1` (or `?`) shows this list in the applicat
 
 ## On phones and tablets
 
-Tap or drag on a track to set the cursor or select; drag a clip by its (slightly taller) title bar to move it. The
-track headers are narrower but keep all buttons and sliders; the toolbar scrolls horizontally.
+On a touch screen, the tracks follow the usual gestures:
+
+- **Drag with one finger** to move through the recording (left and right) and through the tracks (up and down).
+- **Two fingers** apart or together zoom in and out around the place between them.
+- **Tap** to set the cursor; **touch and hold**, then drag, to select (the selection follows the finger, also across tracks).
+- Drag a clip by its (slightly taller) title bar to move it; fade handles and volume points are dragged as with the mouse.
+
+The scroll bar below the tracks is wider on touch screens. The track headers are narrower but keep all buttons and sliders;
+the toolbar scrolls horizontally.

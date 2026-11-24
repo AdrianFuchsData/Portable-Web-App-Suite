@@ -6,6 +6,7 @@
     "app/cm-spell": "../../../../shared/js/cm-spell.js",
     "app/cm-symbols": "../../../../shared/js/cm-symbols.js",
     "app/cm-indent": "../../../../shared/js/cm-indent.js",
-    "@app/terminal.js": "terminal.js"
+    "@app/terminal.js": "terminal.js",
+    "app/cm-search": "../../../../shared/js/cm-search.js"
   }
 }

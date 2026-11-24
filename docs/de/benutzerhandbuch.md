@@ -41,6 +41,7 @@ Dateimanager): Die Datei öffnet sich in der Anwendung, und **Speichern** schrei
 | Hex-Editor | `hexeditor.html` | [Hex-Editor](apps/hexeditor.md) |
 | PDF-Betrachter | `pdfviewer.html` | [PDF-Betrachter](apps/pdfviewer.md) |
 | KeePass | `keepass.html` | [KeePass](apps/keepass.md) |
+| Authenticator (Zwei-Faktor-Codes) | `authenticator.html` | [Authenticator](apps/authenticator.md) |
 | Archivmanager | `archive.html` | [Archivmanager](apps/archive.md) |
 | Medienplayer | `mediaplayer.html` | [Medienplayer](apps/mediaplayer.md) |
 | Bildbearbeitung | `imageeditor.html` | [Bildbearbeitung](apps/imageeditor.md) |
@@ -83,12 +84,20 @@ Jede Anwendung hat dieselbe Kopfzeile:
 
 | Schaltfläche | Funktion |
 |---|---|
-| ABC / ABC✓ | Rechtschreibung: aus oder die Sprache, in der Textfelder geprüft werden (nur in Anwendungen mit Text, siehe [Rechtschreibung](#rechtschreibung)) |
+| ABC / ABC · Sprache | Rechtschreibung: aus oder die Sprache, in der Textfelder geprüft werden (nur in Anwendungen mit Text, siehe [Rechtschreibung](#rechtschreibung)) |
 | ⌘ | Befehlspalette: alle Aktionen der Anwendung durchsuchen (auch `Strg+Umschalt+P` oder `Strg+Umschalt+Leertaste`) |
-| ◐ / ☀ / ☾ | Design: automatisch (wie das System), hell oder dunkel |
+| Sonne-Mond / Sonne / Mond | Design: automatisch (wie das System), hell oder dunkel |
 | DE / EN | Wechselt die Sprache zwischen Deutsch und Englisch |
 | ? | Informationen über die Anwendung und ihre Tastenkürzel (auch `F1`, oder `?` außerhalb von Textfeldern) |
 | ☺ | In einem Textfeld mit Fokus: Emoji und Symbole (auch `Strg+.`, siehe [Emoji und Symbole](#emoji-und-symbole)) |
+| ⌃ (Smartphones und schmale Fenster) | Klappt die Werkzeugleiste der Anwendung ein oder wieder aus – mehr Platz für den Inhalt |
+| Leisten-Symbol | Blendet die Titelleiste aus. Eine kleine Schaltfläche rechts oben blendet sie wieder ein (oder *Titelleiste einblenden* in der Befehlspalette). |
+
+Beide Einstellungen – eine ausgeblendete Titelleiste und eine eingeklappte Werkzeugleiste – bleiben gespeichert und gelten für alle Anwendungen der Suite in diesem Browser.
+
+Die Schaltflächen zeigen **Symbole (Icons)**, die zur Suite gehören; sie sehen daher in jedem Browser und auf jedem System gleich aus. Diese
+Dokumentation schreibt sie als ähnliche Zeichen (zum Beispiel 💾 für *Speichern*, 🔍 für *Suchen*); der Name einer Schaltfläche erscheint,
+wenn Sie den Mauszeiger darüber halten, und Bildschirmleser sagen ihn an.
 
 Die Anwendungen merken sich Sprache und Design in Ihrem Browser.
 
@@ -438,6 +447,12 @@ python3 relay.py --serve C:\Users\anna\suite
 seine Kopfzeile zeigt **🔓 Netzwerk und Unterbrechen**. Die Anwendungen verwenden dieses Relay standardmäßig; geben Sie sein Token einmal
 ein. Einstellungen und zuletzt verwendete Dateien werden für direkt geöffnete Dateien und für vom Relay bereitgestellte getrennt gehalten
 (exportieren und importieren Sie sie mit **⚙ Einstellungen**). Der Port wird mit `--port` gesetzt (Standard 8765).
+
+**Als App installieren (PWA).** Vom Relay bereitgestellt (auf `localhost` oder über `https`), lassen sich die Suite und jede Anwendung
+wie eine App **installieren**: in Chrome und Edge mit **Als App installieren** in der Titelleiste (oder dem Installationssymbol in der
+Adressleiste), unter Android mit *Zum Startbildschirm hinzufügen* / *App installieren* im Browsermenü. Die installierte App öffnet sich in
+einem eigenen Fenster mit eigenem Symbol. Der Browser behält eine Kopie jeder geöffneten Seite, daher startet eine installierte App auch,
+wenn das Relay nicht läuft (die Netzwerkfunktionen warten dann auf das Relay). Das direkte Öffnen der HTML-Dateien ändert sich nicht.
 
 **Ein Firmen-Proxy.** Darf das Relay das Internet nur über einen Proxy erreichen, starten Sie es mit
 `--upstream-proxy http://proxy.example.org:3128` (bei Bedarf mit `benutzer:passwort@` vor dem Host; `--upstream-proxy env` übernimmt den

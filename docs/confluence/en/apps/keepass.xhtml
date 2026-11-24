@@ -45,7 +45,7 @@ database cannot be opened. The new database is stored only after you <strong>sav
 </tr>
 <tr>
 <td>One-time password</td>
-<td>shown with its remaining seconds if the entry has an <code>otp</code> field (<code>otpauth://totp/…</code>, as written by KeePassXC)</td>
+<td>the current code with the remaining seconds (see below); 🔑 <strong>Set up one-time password…</strong> adds one</td>
 </tr>
 <tr>
 <td>Tags</td>
@@ -73,10 +73,36 @@ database cannot be opened. The new database is stored only after you <strong>sav
 </tr>
 </tbody>
 </table>
-<p>Each time you edit an entry, the previous version is stored once in the <strong>history</strong> (not on every key press).</p>
+<p>Each time you edit an entry, the previous version is stored once in the <strong>history</strong> (not on every key press). The history
+lists the versions newest first, each with what was changed after it (for example “Password changed afterwards”). Click a
+version to see its fields – the ones that differ from the current entry are highlighted, passwords and protected fields stay
+hidden until you click 👁 – and to <strong>Restore</strong> it, copy its password or <strong>Delete this version</strong>. <strong>Delete the whole history</strong>
+removes all older versions of the entry (for example after an old password should no longer be stored anywhere). Under
+<strong>⚙ Database</strong>, <em>Older versions kept per entry</em> limits the history (KeePass's default is 10; −1 keeps all); older versions
+beyond the limit are removed when saving.</p>
 <p>Copied values are removed from the clipboard after 30 seconds.</p>
 <p>Undo (↶, <code>Ctrl+Z</code>) and redo (↷, <code>Ctrl+Y</code>) cover all changes to the database since it was unlocked: fields, new and deleted entries and groups, moving, attachments and settings. Typing into one field counts as one step. Locking clears the history.</p>
 <p>↗ next to an attachment (<strong>Open with…</strong>) opens it in another application of the suite; saving there replaces the attachment. Save the database afterwards.</p>
+<h2>One-time passwords (two-factor codes)</h2>
+<p>An entry can hold the secret of a one-time password, so the database also replaces an authenticator app. The entry shows
+the current code (⧉ copies it; the bar shows how long it is valid). <strong>🔑 Set up one-time password…</strong> – or ✎ for an
+existing one – opens a dialog: paste the <code>otpauth://</code> link a service offers (it fills in all fields) or enter the <strong>secret
+key</strong> (Base32, spaces are ignored) and, if the service says so, the type (<strong>TOTP</strong>: time-based, the usual one; <strong>HOTP</strong>:
+counter-based; <strong>Steam</strong>: Steam Guard's five characters), algorithm, digits and period or counter. 🎲 creates a new random
+secret, for example for your own server. × removes the one-time password.</p>
+<p>For HOTP the entry shows the code for the current counter; <strong>Next code</strong> copies it and moves the counter on (save the
+database afterwards, so the counter is kept).</p>
+<p>The secret is stored protected in the field <code>otp</code> as an <code>otpauth://</code> link (as KeePassXC, KeeWeb, KeePassDX and Strongbox
+do) and additionally in the <code>TimeOtp-…</code> / <code>HmacOtp-…</code> fields of KeePass 2.47+, so every common KeePass app shows the same
+codes. Entries that only have the KeePass 2 fields, the older KeePassXC fields <code>TOTP Seed</code> / <code>TOTP Settings</code> or the KeeOtp
+format are read too. These fields are not listed under <em>Additional fields</em>.</p>
+<p><strong>QR codes.</strong> In the set-up dialog, <strong>📷 Scan QR code</strong> reads the QR code a service shows with the device's camera (the
+browser asks for permission; nothing leaves the device), <strong>🖼 QR code from a picture…</strong> reads it from a screenshot or photo.
+A Google Authenticator export (<em>Transfer accounts</em>, <code>otpauth-migration://</code>) works too: the first account goes into the
+entry, <strong>Add them as new entries</strong> creates an entry for each further account in the same group. To move a secret to
+another device – for example your phone's authenticator app – click <strong>▦ QR</strong> next to the code: after a warning, <strong>Show QR
+code</strong> displays it as a QR code (and the secret as text). Anyone who sees it can create your codes, so show it only to scan
+it yourself.</p>
 <h2>Password generator</h2>
 <p>🎲 <strong>Generate</strong> opens the generator: length (4 to 64), lower case, upper case, digits, symbols, and the option to avoid similar
 characters (l, 1, O, 0). ⟳ creates a new password; <strong>Use</strong> sets it as the password of the entry.</p>
@@ -106,6 +132,18 @@ open the new one.</p>
 (less than 60 bits of estimated strength, the same estimate as in the generator), passwords used in several entries,
 expired entries and passwords unchanged for more than a year (from the entry history). Click an entry to open it.
 The check runs completely in the browser; no password leaves the device.</p>
+<h2>CSV import and export</h2>
+<p><strong>⇅ CSV → Export CSV…</strong> writes the entries of the whole database or of the current group (with its subgroups) into a CSV
+file (columns <code>Group</code>, <code>Title</code>, <code>Username</code>, <code>Password</code>, <code>URL</code>, <code>Notes</code>, <code>TOTP</code>, <code>Tags</code>, <code>Last Modified</code>, <code>Created</code> – the
+layout of KeePassXC, which most password managers can import). <strong>A CSV file is not encrypted</strong>: the dialog warns about this,
+and the export button says so. Export only when you need it, keep the file on your own device and delete it afterwards.</p>
+<p><strong>⇅ CSV → Import CSV…</strong> reads a CSV file of another password manager into a new group. The column headers of KeePassXC,
+KeePass, Bitwarden, Chrome/Edge, Firefox, Safari, LastPass, 1Password, Dashlane, Proton Pass and similar exports are
+recognised (also German headers such as <em>Benutzername</em> or <em>Kennwort</em>); the dialog shows which column becomes which field.
+Columns without meaning for KeePass (favourite, IDs, timestamps) are ignored, unknown columns become additional fields. A
+group/folder column creates subgroups; a TOTP column (an <code>otpauth://</code> link or a Base32 secret) becomes the entry's one-time
+password; entries without a title are named after the web site. The separator (comma, semicolon or tab) and the encoding
+(UTF-8 or Windows-1252) are detected. Delete the CSV file after the import – it contains your passwords in plain text.</p>
 <h2>Locking</h2>
 <p><strong>Lock</strong> (<code>Ctrl+L</code>) closes the database; unsaved changes require a confirmation. After 15 minutes without activity the
 database is locked automatically, unless there are unsaved changes.</p>

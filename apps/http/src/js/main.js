@@ -3,15 +3,17 @@
  * responses, collections (Postman v2.1 files), environments with variables (stored with Suite.appdata), cURL, history.
  */
 import { EditorView, basicSetup } from 'codemirror';
+import { suiteSearch } from 'app/cm-search';
 import { EditorState, Compartment } from '@codemirror/state';
 import { json } from '@codemirror/lang-json';
 import { xml } from '@codemirror/lang-xml';
 import { html as htmlLang } from '@codemirror/lang-html';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { newRequest, newId, paramsOf, withParams, variableMap, build, fromCurl, toCurl, fromPostman, toPostman } from '@app/model.js';
+import { newRequest, newId, paramsOf, withParams, variableMap, build, fromCurl, fromPostman, toPostman } from '@app/model.js';
 import { runScript } from '@app/scripts.js';
 import { fromOpenApi } from '@app/openapi.js';
+import { LANGUAGES, generate } from '@app/codegen.js';
 import 'app/cm-symbols'; // emoji and symbols insert through the editor (shared/js/cm-symbols.js)
 import { indentKeys } from 'app/cm-indent'; // Tab indents, Ctrl+Alt+I inserts a tab character (shared/js/cm-indent.js)
 
@@ -25,7 +27,7 @@ Suite.i18n.register({
   en: {
     'app.title': 'HTTP analyzer',
     'h.newRequest': 'New request', 'h.newFolder': 'New folder', 'h.open': 'Open collection…', 'h.save': 'Save collection', 'h.importCurl': 'Import cURL…', 'h.send': 'Send',
-    'h.method': 'Method', 'h.params': 'Params', 'h.headers': 'Headers', 'h.body': 'Body', 'h.auth': 'Auth', 'h.code': 'cURL', 'h.key': 'Key', 'h.value': 'Value', 'h.none': 'none',
+    'h.method': 'Method', 'h.params': 'Params', 'h.headers': 'Headers', 'h.body': 'Body', 'h.auth': 'Auth', 'h.code': 'Code', 'h.key': 'Key', 'h.value': 'Value', 'h.none': 'none',
     'h.raw': 'raw', 'h.urlencoded': 'x-www-form-urlencoded', 'h.formdata': 'form-data', 'h.file': 'file', 'h.chooseFile': 'Choose file…', 'h.authNone': 'No auth',
     'h.basic': 'Basic', 'h.bearer': 'Bearer token', 'h.user': 'User', 'h.password': 'Password', 'h.token': 'Token', 'h.response': 'Response', 'h.pretty': 'Pretty',
     'h.preview': 'Preview', 'h.saveBody': 'Save body', 'h.noResponse': 'Send a request to see the response.', 'h.sending': 'Sending…', 'h.collection': 'Collection',
@@ -40,6 +42,14 @@ Suite.i18n.register({
     'h.wsDirect': 'WebSockets are opened directly by the browser (not through the relay). Subprotocols: header "Sec-WebSocket-Protocol".',
     'h.wsBinary': 'binary, {0}', 'h.wsEmpty': 'No messages yet.',
     'h.openapiImported': '{0} requests created from the OpenAPI description. Fill in the values of the (collection) variables.',
+    'h.runner': 'Run collection', 'h.runTitle': 'Run “{0}”', 'h.runScope': 'Requests', 'h.runAll': 'The whole collection ({0} requests)', 'h.runIterations': 'Iterations', 'h.runDelay': 'Pause between requests (ms)',
+    'h.runChooseData': 'Data file (CSV or JSON)…', 'h.runData': '{0}: {1} rows = iterations', 'h.runNoData': 'Without data file', 'h.runStop': 'Stop at the first failure', 'h.runStart': 'Start',
+    'h.runHint': 'The requests run in order with their scripts; variables set by scripts apply to the following requests. Each row of a data file is one iteration: its columns are {{variables}} and pm.iterationData.',
+    'h.running': 'Running…', 'h.runDone': '{0} requests in {1} ms', 'h.runTests': '{0} tests passed, {1} failed', 'h.runFailed': '{0} requests failed', 'h.runExport': 'Save results (JSON)', 'h.runAgain': 'New run',
+    'h.status': 'Status', 'h.runDataInvalid': 'The JSON data file must contain an array of objects.',
+    'h.codeTitle': 'Code for this request', 'h.codeLanguage': 'Language', 'h.codeSave': 'Save as file', 'h.codeBinary': 'The binary body is read from the file body.bin (save it with the request).',
+    'h.graphql': 'GraphQL', 'h.gqlQuery': 'Query', 'h.gqlVariables': 'Variables (JSON)', 'h.gqlSchema': 'Load schema', 'h.gqlNoSchema': 'The server sent no schema (introspection switched off?).',
+    'h.gqlSchemaHint': 'Load the schema from the server (introspection) to see the queries, mutations and fields; a click inserts a field at the cursor.',
     'h.scripts': 'Scripts', 'h.prerequest': 'Pre-request', 'h.testsScript': 'Tests (after the response)', 'h.tests': 'Tests', 'h.console': 'Console',
     'h.scriptHint': 'JavaScript with pm.* as in Postman: pm.environment/collectionVariables/variables, pm.request, pm.response, pm.test(), pm.expect(). Runs isolated, without access to the suite.',
     'h.scriptError': 'Script error: {0}', 'h.passed': '{0} of {1} tests passed',
@@ -48,7 +58,7 @@ Suite.i18n.register({
   de: {
     'app.title': 'HTTP-Analyse',
     'h.newRequest': 'Neue Anfrage', 'h.newFolder': 'Neuer Ordner', 'h.open': 'Sammlung öffnen…', 'h.save': 'Sammlung speichern', 'h.importCurl': 'cURL importieren…', 'h.send': 'Senden',
-    'h.method': 'Methode', 'h.params': 'Parameter', 'h.headers': 'Header', 'h.body': 'Body', 'h.auth': 'Anmeldung', 'h.code': 'cURL', 'h.key': 'Schlüssel', 'h.value': 'Wert', 'h.none': 'keiner',
+    'h.method': 'Methode', 'h.params': 'Parameter', 'h.headers': 'Header', 'h.body': 'Body', 'h.auth': 'Anmeldung', 'h.code': 'Code', 'h.key': 'Schlüssel', 'h.value': 'Wert', 'h.none': 'keiner',
     'h.raw': 'roh', 'h.urlencoded': 'x-www-form-urlencoded', 'h.formdata': 'form-data', 'h.file': 'Datei', 'h.chooseFile': 'Datei wählen…', 'h.authNone': 'Keine Anmeldung',
     'h.basic': 'Basic', 'h.bearer': 'Bearer-Token', 'h.user': 'Benutzer', 'h.password': 'Passwort', 'h.token': 'Token', 'h.response': 'Antwort', 'h.pretty': 'Formatiert',
     'h.preview': 'Vorschau', 'h.saveBody': 'Body speichern', 'h.noResponse': 'Senden Sie eine Anfrage, um die Antwort zu sehen.', 'h.sending': 'Sende…', 'h.collection': 'Sammlung',
@@ -63,6 +73,14 @@ Suite.i18n.register({
     'h.wsDirect': 'WebSockets werden direkt vom Browser geöffnet (nicht über das Relay). Unterprotokolle: Header „Sec-WebSocket-Protocol“.',
     'h.wsBinary': 'binär, {0}', 'h.wsEmpty': 'Noch keine Nachrichten.',
     'h.openapiImported': '{0} Anfragen aus der OpenAPI-Beschreibung erstellt. Tragen Sie die Werte der Variablen (Sammlung) ein.',
+    'h.runner': 'Sammlung ausführen', 'h.runTitle': '„{0}“ ausführen', 'h.runScope': 'Anfragen', 'h.runAll': 'Die ganze Sammlung ({0} Anfragen)', 'h.runIterations': 'Durchläufe', 'h.runDelay': 'Pause zwischen Anfragen (ms)',
+    'h.runChooseData': 'Datendatei (CSV oder JSON)…', 'h.runData': '{0}: {1} Zeilen = Durchläufe', 'h.runNoData': 'Ohne Datendatei', 'h.runStop': 'Beim ersten Fehler anhalten', 'h.runStart': 'Starten',
+    'h.runHint': 'Die Anfragen laufen der Reihe nach mit ihren Skripten; von Skripten gesetzte Variablen gelten für die folgenden Anfragen. Jede Zeile einer Datendatei ist ein Durchlauf: Ihre Spalten sind {{Variablen}} und pm.iterationData.',
+    'h.running': 'Läuft…', 'h.runDone': '{0} Anfragen in {1} ms', 'h.runTests': '{0} Tests bestanden, {1} fehlgeschlagen', 'h.runFailed': '{0} Anfragen fehlgeschlagen', 'h.runExport': 'Ergebnisse speichern (JSON)', 'h.runAgain': 'Neuer Lauf',
+    'h.status': 'Status', 'h.runDataInvalid': 'Die JSON-Datendatei muss ein Array von Objekten enthalten.',
+    'h.codeTitle': 'Code für diese Anfrage', 'h.codeLanguage': 'Sprache', 'h.codeSave': 'Als Datei speichern', 'h.codeBinary': 'Der binäre Body wird aus der Datei body.bin gelesen (speichern Sie sie mit der Anfrage).',
+    'h.graphql': 'GraphQL', 'h.gqlQuery': 'Abfrage', 'h.gqlVariables': 'Variablen (JSON)', 'h.gqlSchema': 'Schema laden', 'h.gqlNoSchema': 'Der Server hat kein Schema geschickt (Introspection ausgeschaltet?).',
+    'h.gqlSchemaHint': 'Laden Sie das Schema vom Server (Introspection), um Abfragen, Mutationen und Felder zu sehen; ein Klick fügt ein Feld an der Schreibmarke ein.',
     'h.scripts': 'Skripte', 'h.prerequest': 'Vor der Anfrage', 'h.testsScript': 'Tests (nach der Antwort)', 'h.tests': 'Tests', 'h.console': 'Konsole',
     'h.scriptHint': 'JavaScript mit pm.* wie in Postman: pm.environment/collectionVariables/variables, pm.request, pm.response, pm.test(), pm.expect(). Läuft abgeschottet ohne Zugriff auf die Suite.',
     'h.scriptError': 'Skriptfehler: {0}', 'h.passed': '{0} von {1} Tests bestanden',
@@ -155,7 +173,7 @@ function makeEditor(readOnly, onChange) {
   const theme = new Compartment();
   const view = new EditorView({
     doc: '',
-    extensions: [basicSetup, ...(readOnly ? [] : [indentKeys()]), lang.of([]), theme.of(dark() ? oneDark : []), EditorState.readOnly.of(readOnly), EditorView.lineWrapping,
+    extensions: [basicSetup, suiteSearch(), ...(readOnly ? [] : [indentKeys()]), lang.of([]), theme.of(dark() ? oneDark : []), EditorState.readOnly.of(readOnly), EditorView.lineWrapping,
       EditorView.updateListener.of((u) => { if (u.docChanged && onChange && !view.silent) onChange(u.state.doc.toString()); })],
   });
   view.setLang = (name) => view.dispatch({ effects: lang.reconfigure((LANGS[name] || LANGS.text)()) });
@@ -312,9 +330,9 @@ function applyVariables(result, before) {
   }
 }
 
-async function runRequestScript(kind, req, request, response = null, variables = {}) {
+async function runRequestScript(kind, req, request, response = null, variables = {}, iter = {}) {
   const env = environment();
-  const context = { kind, name: req.name, request, response, environment: toObject(env && env.variables), collection: toObject(state.collection.variables), variables };
+  const context = { kind, name: req.name, request, response, environment: toObject(env && env.variables), collection: toObject(state.collection.variables), variables, ...iter };
   const result = await runScript(kind === 'prerequest' ? req.prerequest : req.tests, context);
   applyVariables(result, context);
   return result;
@@ -368,7 +386,7 @@ function WsPanel() {
   return html`<section class="h-response h-ws" data-testid="ws">
     <p class="h-ws-note"><small>${t('h.wsDirect')}</small></p>
     <ol class="h-ws-log" data-testid="ws-log">${w && w.messages.length ? w.messages.map((m) => html`<li class=${`h-ws-${m.dir}`} data-testid="ws-message" data-dir=${m.dir}>
-      <span class="h-ws-meta">${m.dir === 'in' ? '↓' : m.dir === 'out' ? '↑' : '•'} ${fmt(m.time)}${m.binary ? ` · ${t('h.wsBinary', fmtSize(m.size))}` : ''}</span>
+      <span class="h-ws-meta">${m.dir === 'in' ? Suite.icon('arrow-down') : m.dir === 'out' ? Suite.icon('arrow-up') : '•'} ${fmt(m.time)}${m.binary ? ` · ${t('h.wsBinary', fmtSize(m.size))}` : ''}</span>
       <code>${m.text}</code></li>`) : html`<li class="h-empty">${t('h.wsEmpty')}</li>`}</ol>
     <div class="h-ws-compose">
       <textarea rows="3" data-testid="ws-input" placeholder=${t('h.wsMessage')} disabled=${!w || w.status !== 'open'} value=${w ? w.draft : ''}
@@ -379,30 +397,28 @@ function WsPanel() {
   </section>`;
 }
 
-async function send() {
-  const req = state.current;
-  if (isWs(req.url)) { wsConnect(); return; }
-  if (!req.url.trim() || state.sending) return;
-  state.sending = true;
-  state.response = null;
-  state.scriptRun = null;
-  render();
-  let built;
+/**
+ * Send one request with its scripts: { built, response, run: { logs, tests, error } }. iter: { iterationData, iteration,
+ * iterationCount } of a collection run ({{variables}} of the data row count before the environment). Throws on errors
+ * (error.run holds what the scripts logged).
+ */
+async function execute(req, iter = {}) {
   const run = { logs: [], tests: [], error: null };
+  let built;
   try {
     let effective = req;
     let local = {};
+    const rowVars = Object.entries(iter.iterationData || {});
     if ((req.prerequest || '').trim()) {
-      const pre = await runRequestScript('prerequest', req, { method: req.method, url: req.url, headers: req.headers.filter((h) => h.enabled && h.key).map((h) => [h.key, h.value]), body: req.body.mode === 'raw' ? req.body.raw : '' });
+      const pre = await runRequestScript('prerequest', req, { method: req.method, url: req.url, headers: req.headers.filter((h) => h.enabled && h.key).map((h) => [h.key, h.value]), body: req.body.mode === 'raw' ? req.body.raw : '' }, null, {}, iter);
       run.logs.push(...pre.logs);
       if (pre.error) throw new Error(t('h.scriptError', pre.error));
       local = pre.variables;
       effective = { ...req, method: pre.request.method, url: pre.request.url, headers: pre.request.headers.map(([key, value]) => ({ key, value, enabled: true })) };
     }
-    built = await build(effective, new Map([...vars(), ...Object.entries(local)]));
+    built = await build(effective, new Map([...vars(), ...rowVars, ...Object.entries(local)]));
     let response;
     if (via() === 'relay') {
-      const r = data.relay;
       if (!data.relayConfigured()) throw new Error(t('h.relayMissing'));
       response = await Suite.relay.http(data.relayConfig(), { method: built.method, url: built.url, headers: built.headers, body: built.body || undefined, insecure: state.insecure, followRedirects: state.followRedirects, timeout: 60 });
     } else {
@@ -414,21 +430,38 @@ async function send() {
       const body = new Uint8Array(await res.arrayBuffer());
       response = { status: res.status, reason: res.statusText, url: res.url, headers: [...res.headers.entries()], body, timeMs: Math.round(performance.now() - t0), direct: true };
     }
-    state.response = response;
-    showResponse(response);
     if ((req.tests || '').trim()) {
       const text = bodyText(response) ?? '';
       let sentBody = '';
       try { sentBody = built.body ? new TextDecoder('utf-8', { fatal: true }).decode(built.body) : ''; } catch (e) { sentBody = ''; }
       const after = await runRequestScript('test', req, { method: built.method, url: built.url, headers: built.headers, body: sentBody },
-        { code: response.status, status: response.reason || '', headers: response.headers, body: text, responseTime: response.timeMs }, local);
+        { code: response.status, status: response.reason || '', headers: response.headers, body: text, responseTime: response.timeMs }, local, iter);
       run.logs.push(...after.logs);
       run.tests = after.tests;
       run.error = after.error;
     }
-    state.history.unshift({ id: newId(), method: built.method, url: built.url, status: response.status, time: new Date(), request: structuredClone({ ...req, body: { ...req.body, file: null, fields: req.body.fields.map((f) => ({ ...f, file: null })) } }) });
+    return { built, response, run };
+  } catch (e) { e.run = run; throw e; }
+}
+
+async function send() {
+  const req = state.current;
+  if (isWs(req.url)) { wsConnect(); return; }
+  if (!req.url.trim() || state.sending) return;
+  state.sending = true;
+  state.response = null;
+  state.scriptRun = null;
+  render();
+  let run = { logs: [], tests: [], error: null };
+  try {
+    const result = await execute(req);
+    run = result.run;
+    state.response = result.response;
+    showResponse(result.response);
+    state.history.unshift({ id: newId(), method: result.built.method, url: result.built.url, status: result.response.status, time: new Date(), request: structuredClone({ ...req, body: { ...req.body, file: null, fields: req.body.fields.map((f) => ({ ...f, file: null })) } }) });
     state.history = state.history.slice(0, 50);
   } catch (e) {
+    if (e.run) run = e.run;
     state.response = { error: e.message };
   } finally {
     state.scriptRun = run.logs.length || run.tests.length || run.error ? run : null;
@@ -436,6 +469,113 @@ async function send() {
     state.sending = false;
     render();
   }
+}
+
+// ---- collection runner ----------------------------------------------------------------------------------------------
+
+/** The requests of a folder (or the collection) in order, with their folder path. */
+function requestsIn(items, path = []) {
+  const out = [];
+  for (const it of items) {
+    if (it.type === 'folder') out.push(...requestsIn(it.items, [...path, it.name]));
+    else if (!isWs(it.url)) out.push({ req: it, path: path.join(' / ') });
+  }
+  return out;
+}
+
+function folders(items, path = [], out = []) {
+  for (const it of items) if (it.type === 'folder') { out.push({ id: it.id, label: [...path, it.name].join(' / '), folder: it }); folders(it.items, [...path, it.name], out); }
+  return out;
+}
+
+/** Rows of a data file: CSV (first line = variable names) or JSON (an array of objects). */
+function dataRows(text, name) {
+  if (/\.json$/i.test(name) || /^\s*\[/.test(text)) {
+    const rows = JSON.parse(text);
+    if (!Array.isArray(rows)) throw new Error(t('h.runDataInvalid'));
+    return rows.map((r) => Object.fromEntries(Object.entries(r || {}).map(([k, v]) => [k, typeof v === 'string' ? v : JSON.stringify(v)])));
+  }
+  const [head, ...body] = Suite.csv.parse(text);
+  if (!head) return [];
+  return body.map((r) => Object.fromEntries(head.map((k, i) => [k.trim(), r[i] ?? ''])));
+}
+
+function openRunner(folder = null) {
+  state.runner = { folderId: folder ? folder.id : '', iterations: 1, delay: 0, stopOnFailure: false, data: null, dataName: '', results: [], running: false, done: false };
+  render();
+}
+
+async function startRun() {
+  const r = state.runner;
+  const scope = r.folderId ? (folders(state.collection.items).find((f) => f.id === r.folderId) || {}).folder : null;
+  const list = requestsIn(scope ? scope.items : state.collection.items);
+  const iterations = r.data ? r.data.length : Math.max(1, Number(r.iterations) || 1);
+  Object.assign(r, { results: [], running: true, done: false, cancelled: false, total: list.length * iterations, started: performance.now() });
+  render();
+  outer: for (let i = 0; i < iterations; i++) {
+    for (const { req, path } of list) {
+      if (r.cancelled) break outer;
+      const row = { iteration: i + 1, name: req.name, path, method: req.method, status: null, timeMs: null, tests: [], error: null, logs: [] };
+      r.results.push(row);
+      render();
+      try {
+        const { built, response, run } = await execute(req, { iterationData: r.data ? r.data[i] : {}, iteration: i, iterationCount: iterations });
+        Object.assign(row, { url: built.url, status: response.status, timeMs: response.timeMs, size: response.body ? response.body.length : 0, tests: run.tests, error: run.error, logs: run.logs });
+      } catch (e) { row.error = e.message; if (e.run) Object.assign(row, { tests: e.run.tests, logs: e.run.logs }); }
+      row.failed = !!row.error || row.tests.some((x) => !x.passed) || (row.status !== null && row.status >= 400 && !row.tests.length);
+      render();
+      if (row.failed && r.stopOnFailure) break outer;
+      if (r.delay) await new Promise((res) => setTimeout(res, Number(r.delay)));
+    }
+  }
+  Object.assign(r, { running: false, done: true, elapsed: Math.round(performance.now() - r.started) });
+  render();
+}
+
+function exportRun() {
+  const r = state.runner;
+  const report = { collection: state.collection.name, timestamp: new Date().toISOString(), elapsedMs: r.elapsed, results: r.results.map(({ iteration, name, path, method, url, status, timeMs, size, tests, error }) => ({ iteration, name, folder: path, method, url, status, timeMs, size, tests, error })) };
+  Suite.files.download(new TextEncoder().encode(JSON.stringify(report, null, 2)), `${state.collection.name.replace(/[\\/:*?"<>|]/g, '_')}-run.json`, 'application/json');
+}
+
+function RunnerDialog() {
+  const r = state.runner;
+  if (!r) return null;
+  const fs = folders(state.collection.items);
+  const passed = r.results.reduce((n, x) => n + x.tests.filter((y) => y.passed).length, 0);
+  const failedTests = r.results.reduce((n, x) => n + x.tests.filter((y) => !y.passed).length, 0);
+  const failedRequests = r.results.filter((x) => x.failed).length;
+  const close = () => { r.cancelled = true; state.runner = null; render(); };
+  return html`<dialog open data-testid="runner-dialog" class="h-runner"><article>
+    <header><strong>${t('h.runTitle', state.collection.name)}</strong></header>
+    ${!r.running && !r.done ? html`<div class="h-run-options">
+      <label>${t('h.runScope')}<select data-testid="run-folder" onChange=${(e) => { r.folderId = e.target.value; render(); }}>
+        <option value="">${t('h.runAll', requestsIn(state.collection.items).length)}</option>
+        ${fs.map((f) => html`<option value=${f.id} selected=${r.folderId === f.id}>${f.label} (${requestsIn(f.folder.items).length})</option>`)}</select></label>
+      <div class="h-row">
+        <label>${t('h.runIterations')}<input type="number" min="1" max="1000" data-testid="run-iterations" value=${r.data ? r.data.length : r.iterations} disabled=${!!r.data} onInput=${(e) => { r.iterations = e.target.value; }} /></label>
+        <label>${t('h.runDelay')}<input type="number" min="0" step="100" data-testid="run-delay" value=${r.delay} onInput=${(e) => { r.delay = e.target.value; }} /></label>
+      </div>
+      <label class="h-file" role="button">${r.data ? t('h.runData', r.dataName, r.data.length) : t('h.runChooseData')}<input type="file" hidden accept=".csv,.json,.txt" data-testid="run-data"
+        onChange=${async (e) => { const f = e.target.files[0]; if (!f) return; try { r.data = dataRows(await f.text(), f.name); r.dataName = f.name; } catch (err) { fail(err); } render(); }} /></label>
+      ${r.data ? html`<button type="button" class="secondary outline" onClick=${() => { r.data = null; r.dataName = ''; render(); }}>${t('h.runNoData')}</button>` : null}
+      <label><input type="checkbox" checked=${r.stopOnFailure} data-testid="run-stop" onChange=${(e) => { r.stopOnFailure = e.target.checked; }} /> ${t('h.runStop')}</label>
+      <small>${t('h.runHint')}</small>
+    </div>` : html`<p data-testid="run-summary" class=${failedRequests ? 'h-run-bad' : 'h-run-good'}>${r.running ? `${t('h.running')} ${r.results.length}/${r.total}` : t('h.runDone', r.results.length, r.elapsed)} ·
+        ${t('h.runTests', passed, failedTests)}${failedRequests ? ` · ${t('h.runFailed', failedRequests)}` : ''}</p>
+      <div class="h-run-table"><table data-testid="run-results"><thead><tr><th>#</th><th>${t('h.name')}</th><th>${t('h.status')}</th><th class="num">ms</th><th>${t('h.tests')}</th></tr></thead>
+        <tbody>${r.results.map((x) => html`<tr data-testid="run-row" class=${x.failed ? 'h-run-bad' : ''}>
+          <td>${x.iteration}</td><td><b>${x.method}</b> ${x.path ? html`<small>${x.path} / </small>` : null}${x.name}${x.error ? html`<br /><small class="h-run-bad">${x.error}</small>` : null}</td>
+          <td><span class=${`h-status ${x.status ? statusClass(x.status) : ''}`}>${x.status ?? (x.error ? '—' : '…')}</span></td><td class="num">${x.timeMs ?? ''}</td>
+          <td>${x.tests.map((y) => html`<div class=${y.passed ? 'h-run-good' : 'h-run-bad'}>${y.passed ? Suite.icon('check') : Suite.icon('x')} ${y.name}${y.error ? html` <small>${y.error}</small>` : null}</div>`)}</td></tr>`)}</tbody></table></div>`}
+    <footer>
+      <button class="secondary" data-testid="run-close" onClick=${close}>${t('h.close')}</button>
+      ${r.done ? html`<button class="secondary outline" data-testid="run-export" onClick=${exportRun}>${t('h.runExport')}</button>
+        <button class="secondary outline" data-testid="run-again" onClick=${() => { r.done = false; r.results = []; render(); }}>${t('h.runAgain')}</button>` : null}
+      ${r.running ? html`<button class="secondary outline" data-testid="run-cancel" onClick=${() => { r.cancelled = true; }}>${t('h.cancel')}</button>`
+        : !r.done ? html`<button data-testid="run-start" onClick=${startRun}>${Suite.icon('play')} ${t('h.runStart')}</button>` : null}
+    </footer>
+  </article></dialog>`;
 }
 
 const header = (res, name) => ((res.headers || []).find(([k]) => k.toLowerCase() === name) || [])[1] || '';
@@ -494,6 +634,69 @@ function Rows({ rows, onChange, testid, files = false }) {
 
 // ---- UI: request ---------------------------------------------------------------------------------------------------
 
+// ---- GraphQL: query and variables, the schema from introspection ------------------------------------------------------
+
+const INTROSPECTION = `query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name }
+  types { kind name description fields(includeDeprecated: true) { name description args { name type { ...T } defaultValue } type { ...T } }
+    inputFields { name type { ...T } } enumValues(includeDeprecated: true) { name } } } }
+fragment T on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } }`;
+
+const typeName = (t) => (!t ? '' : t.kind === 'NON_NULL' ? `${typeName(t.ofType)}!` : t.kind === 'LIST' ? `[${typeName(t.ofType)}]` : t.name);
+const baseType = (t) => (t && t.ofType ? baseType(t.ofType) : t);
+
+async function loadSchema(req) {
+  const probe = { ...req, method: 'POST', prerequest: '', tests: '', body: { ...req.body, mode: 'graphql', graphql: { query: INTROSPECTION, variables: '' } } };
+  req.schemaState = { loading: true };
+  render();
+  try {
+    const { response } = await execute(probe);
+    const json = JSON.parse(bodyText(response) || '{}');
+    if (!json.data || !json.data.__schema) throw new Error(json.errors && json.errors[0] ? json.errors[0].message : t('h.gqlNoSchema'));
+    const sc = json.data.__schema;
+    req.schemaState = { schema: { types: new Map(sc.types.map((x) => [x.name, x])), roots: [sc.queryType, sc.mutationType, sc.subscriptionType].filter(Boolean).map((x) => x.name) }, open: new Set() };
+  } catch (e) { req.schemaState = { error: e.message }; }
+  render();
+}
+
+function insertField(name) {
+  const ta = document.querySelector('[data-testid=gql-query]');
+  const g = state.current.body.graphql;
+  const at = ta ? ta.selectionStart : g.query.length;
+  g.query = `${g.query.slice(0, at)}${name}${g.query.slice(at)}`;
+  changed();
+  requestAnimationFrame(() => { const el = document.querySelector('[data-testid=gql-query]'); if (el) { el.focus(); el.selectionStart = el.selectionEnd = at + name.length; } });
+}
+
+function SchemaType({ st, name, depth = 0 }) {
+  const type = st.schema.types.get(name);
+  if (!type || depth > 6) return null;
+  return html`<ul class="h-gql-fields">${(type.fields || type.inputFields || []).map((f) => {
+    const target = baseType(f.type);
+    const key = `${name}.${f.name}`;
+    const nested = target && (target.kind === 'OBJECT' || target.kind === 'INTERFACE');
+    return html`<li data-testid="gql-field">
+      ${nested ? html`<button type="button" class="h-gql-toggle" onClick=${() => { if (st.open.has(key)) st.open.delete(key); else st.open.add(key); render(); }}>${st.open.has(key) ? Suite.icon('chevron-down') : Suite.icon('chevron-right')}</button>` : html`<span class="h-gql-toggle"></span>`}
+      <a href="#" title=${f.description || ''} onClick=${(e) => { e.preventDefault(); insertField(f.args && f.args.length ? `${f.name}(${f.args.map((a) => `${a.name}: `).join(', ')})` : f.name); }}>${f.name}</a>${f.args && f.args.length ? html`<small>(${f.args.map((a) => `${a.name}: ${typeName(a.type)}`).join(', ')})</small>` : null}<small>: ${typeName(f.type)}</small>
+      ${nested && st.open.has(key) ? html`<${SchemaType} st=${st} name=${target.name} depth=${depth + 1} />` : null}</li>`;
+  })}</ul>`;
+}
+
+function GraphqlBody({ req }) {
+  const g = req.body.graphql || (req.body.graphql = { query: '', variables: '' });
+  const st = req.schemaState;
+  return html`<div class="h-gql">
+    <div class="h-gql-editors">
+      <label>${t('h.gqlQuery')}<textarea rows="10" spellcheck="false" data-testid="gql-query" value=${g.query} placeholder="query { … }" onInput=${(e) => { g.query = e.target.value; changed(); }}></textarea></label>
+      <label>${t('h.gqlVariables')}<textarea rows="4" spellcheck="false" data-testid="gql-variables" value=${g.variables} placeholder='{ "id": 1 }' onInput=${(e) => { g.variables = e.target.value; changed(); }}></textarea></label>
+    </div>
+    <div class="h-gql-schema" data-testid="gql-schema">
+      <button type="button" class="secondary outline" data-testid="gql-load-schema" aria-busy=${!!(st && st.loading)} onClick=${() => loadSchema(req)}>${t('h.gqlSchema')}</button>
+      ${st && st.error ? html`<p class="h-run-bad"><small>${st.error}</small></p>` : null}
+      ${st && st.schema ? st.schema.roots.map((root) => html`<details open><summary><b>${root}</b></summary><${SchemaType} st=${st} name=${root} /></details>`) : html`<p><small>${t('h.gqlSchemaHint')}</small></p>`}
+    </div>
+  </div>`;
+}
+
 function RequestEditor() {
   const req = state.current;
   const params = paramsOf(req.url);
@@ -509,14 +712,15 @@ function RequestEditor() {
       <button type="submit" data-testid="send" aria-busy=${state.sending || (isWs(req.url) && ws && ws.request === req && ws.status === 'connecting')}>${isWs(req.url) ? (ws && ws.request === req && ws.status !== 'closed' ? t('h.disconnect') : t('h.connect')) : t('h.send')}</button>
     </form>
     <div class="h-tabs-row"><div class="h-tabs" role="tablist">${tabs.map(([id, label]) => html`<button role="tab" aria-selected=${state.tab === id ? 'true' : 'false'} class=${state.tab === id ? '' : 'secondary outline'} data-testid=${`tab-${id}`} onClick=${() => { state.tab = id; render(); }}>${label}</button>`)}</div>
-    <div class="h-tabs-extra"><button class="secondary outline" data-testid="show-curl" onClick=${async () => { try { state.dialog = { kind: 'curl-out', text: toCurl(await build(req, vars())) }; render(); } catch (e) { fail(e); } }}>${t('h.code')}</button></div></div>
+    <div class="h-tabs-extra"><button class="secondary outline" data-testid="show-curl" onClick=${async () => { try { state.dialog = { kind: 'curl-out', built: await build(req, vars()), lang: (() => { try { return localStorage.getItem('suite.http.codeLang') || 'curl'; } catch (x) { return 'curl'; } })() }; render(); } catch (e) { fail(e); } }}>${t('h.code')}</button></div></div>
     <div class="h-tab-body">
       ${state.tab === 'params' ? html`<${Rows} rows=${params} testid="params" onChange=${setParams} />` : null}
       ${state.tab === 'headers' ? html`<${Rows} rows=${req.headers} testid="headers" onChange=${changed} />` : null}
       ${state.tab === 'body' ? html`<div class="h-body">
-        <div class="h-body-modes">${['none', 'raw', 'urlencoded', 'formdata', 'file'].map((m) => html`<label><input type="radio" name="bodymode" checked=${b.mode === m} data-testid=${`body-${m}`} onChange=${() => { b.mode = m; changed(); }} /> ${t(`h.${m}`)}</label>`)}
+        <div class="h-body-modes">${['none', 'raw', 'urlencoded', 'formdata', 'file', 'graphql'].map((m) => html`<label><input type="radio" name="bodymode" checked=${b.mode === m} data-testid=${`body-${m}`} onChange=${() => { b.mode = m; changed(); }} /> ${t(`h.${m}`)}</label>`)}
           ${b.mode === 'raw' ? html`<select data-testid="body-language" onChange=${(e) => { b.language = e.target.value; bodyEditor.setLang(b.language); changed(); }}>${['json', 'xml', 'text', 'html', 'javascript'].map((l) => html`<option value=${l} selected=${b.language === l}>${l}</option>`)}</select>` : null}</div>
         ${b.mode === 'raw' ? null : b.mode === 'urlencoded' || b.mode === 'formdata' ? html`<${Rows} rows=${b.fields} testid="fields" files=${b.mode === 'formdata'} onChange=${changed} />`
+          : b.mode === 'graphql' ? html`<${GraphqlBody} req=${req} />`
           : b.mode === 'file' ? html`<label class="h-file" role="button">${b.file ? `${b.file.name} (${fmtSize(b.file.size)})` : t('h.chooseFile')}<input type="file" hidden data-testid="body-file" onChange=${(e) => { b.file = e.target.files[0] || null; changed(); }} /></label>` : null}
         <div class="h-editor" hidden=${b.mode !== 'raw'} ref=${mountEditor(bodyEditor)}></div>
       </div>` : null}
@@ -551,7 +755,7 @@ function TestResults({ run }) {
   return html`<div class="h-tests" data-testid="test-results">
     ${run.error ? html`<p class="h-error" data-testid="script-error">${t('h.scriptError', run.error)}</p>` : null}
     ${run.tests.length ? html`<p data-testid="tests-summary" class=${passed === run.tests.length ? 'h-pass' : 'h-fail'}>${t('h.passed', passed, run.tests.length)}</p>` : null}
-    <ul>${run.tests.map((x) => html`<li data-testid="test-result" class=${x.passed ? 'h-pass' : 'h-fail'}>${x.passed ? '✓' : '✗'} ${x.name}${x.error ? html`<br /><small>${x.error}</small>` : null}</li>`)}</ul>
+    <ul>${run.tests.map((x) => html`<li data-testid="test-result" class=${x.passed ? 'h-pass' : 'h-fail'}>${x.passed ? Suite.icon('check') : Suite.icon('x')} ${x.name}${x.error ? html`<br /><small>${x.error}</small>` : null}</li>`)}</ul>
     ${run.logs.length ? html`<strong>${t('h.console')}</strong><pre class="h-console" data-testid="script-console">${run.logs.map((l) => `${l.level === 'log' ? '' : `[${l.level}] `}${l.text}`).join('\n')}</pre>` : null}
   </div>`;
 }
@@ -585,15 +789,15 @@ function Response() {
 
 function Tree({ items, depth = 0 }) {
   return html`<ul class="h-tree">${items.map((it) => (it.type === 'folder'
-    ? html`<li key=${it.id}><details open><summary data-testid="folder"><span>📁 ${it.name}</span>
+    ? html`<li key=${it.id}><details open><summary data-testid="folder"><span>${Suite.icon('folder')} ${it.name}</span>
         <span class="h-tree-actions"><button class="secondary outline" title=${t('h.newRequest')} onClick=${(e) => { e.preventDefault(); addRequest(it); }}>+</button>
-        <button class="secondary outline" title=${t('h.rename')} onClick=${(e) => { e.preventDefault(); renameItem(it); }}>✎</button>
+        <button class="secondary outline" title=${t('h.rename')} onClick=${(e) => { e.preventDefault(); renameItem(it); }}>${Suite.icon('pencil')}</button>
         <button class="secondary outline" title=${t('h.delete')} onClick=${(e) => { e.preventDefault(); removeItem(it); }}>×</button></span></summary>
         <${Tree} items=${it.items} depth=${depth + 1} /></details></li>`
     : html`<li key=${it.id} class=${state.current === it ? 'active' : ''} data-testid="tree-request">
         <a href="#" onClick=${(e) => { e.preventDefault(); select(it); }}><b class=${`h-m h-m-${it.method}`}>${it.method}</b> ${it.name}</a>
-        <span class="h-tree-actions"><button class="secondary outline" title=${t('h.duplicate')} onClick=${() => duplicate(it)}>⧉</button>
-        <button class="secondary outline" title=${t('h.rename')} data-testid="rename-request" onClick=${() => renameItem(it)}>✎</button>
+        <span class="h-tree-actions"><button class="secondary outline" title=${t('h.duplicate')} onClick=${() => duplicate(it)}>${Suite.icon('copy')}</button>
+        <button class="secondary outline" title=${t('h.rename')} data-testid="rename-request" onClick=${() => renameItem(it)}>${Suite.icon('pencil')}</button>
         <button class="secondary outline" title=${t('h.delete')} data-testid="delete-request" onClick=${() => removeItem(it)}>×</button></span></li>`))}</ul>`;
 }
 
@@ -620,12 +824,13 @@ function Sidebar() {
 function Toolbar() {
   const s = settings();
   return html`<nav class="h-toolbar" role="toolbar">
-    <button class="secondary outline h-only-phone" data-testid="toggle-panels" onClick=${() => { state.panels = !state.panels; render(); }}>☰</button>
+    <button class="secondary outline h-only-phone" data-testid="toggle-panels" title=${Suite.t('common.panels')} onClick=${() => { state.panels = !state.panels; render(); }}>${Suite.icon('menu')}</button>
     <button class="secondary" data-testid="open" onClick=${openCollection}>${t('h.open')}</button>
     <button class=${state.dirty ? '' : 'secondary outline'} data-testid="save" onClick=${() => saveCollection()}>${t('h.save')}</button>
-    <button class="secondary outline" title="${t('h.undo')} (Ctrl+Z)" data-testid="undo" disabled=${!history.canUndo} onClick=${() => undoStep(false)}>↶</button>
-    <button class="secondary outline" title="${t('h.redo')} (Ctrl+Y)" data-testid="redo" disabled=${!history.canRedo} onClick=${() => undoStep(true)}>↷</button>
+    <button class="secondary outline" title="${t('h.undo')} (Ctrl+Z)" data-testid="undo" disabled=${!history.canUndo} onClick=${() => undoStep(false)}>${Suite.icon('undo-2')}</button>
+    <button class="secondary outline" title="${t('h.redo')} (Ctrl+Y)" data-testid="redo" disabled=${!history.canRedo} onClick=${() => undoStep(true)}>${Suite.icon('redo-2')}</button>
     <button class="secondary outline" data-testid="import-curl" onClick=${() => { state.dialog = { kind: 'curl-in', text: '' }; render(); }}>${t('h.importCurl')}</button>
+    <button class="secondary outline" data-testid="runner" onClick=${() => openRunner()}>${Suite.icon('play')}${Suite.icon('play')} ${t('h.runner')}</button>
     <span class="h-sep"></span>
     <label class="h-inline">${t('h.environment')}<select data-testid="environment" onChange=${(e) => { data.settings = { ...s, activeEnv: e.target.value || null }; }}>
       <option value="">${t('h.noEnvironment')}</option>${s.environments.map((env) => html`<option value=${env.id} selected=${s.activeEnv === env.id}>${env.name}</option>`)}</select></label>
@@ -654,9 +859,16 @@ function Dialog() {
       }}>${t('h.import')}</button></footer></article></dialog>`;
   }
   if (d.kind === 'curl-out') {
-    return html`<dialog open data-testid="curl-out-dialog"><article class="h-dialog"><header><strong>cURL</strong></header>
-      <pre class="h-curl" data-testid="curl-output">${d.text}</pre>
-      <footer><button class="secondary" onClick=${close}>${t('h.close')}</button><button data-testid="curl-copy" onClick=${() => navigator.clipboard.writeText(d.text).then(() => Suite.shell.toast(t('h.copied')), fail)}>${t('h.copy')}</button></footer></article></dialog>`;
+    const text = generate(d.lang, d.built);
+    const lang = LANGUAGES.find((l) => l.id === d.lang) || LANGUAGES[0];
+    return html`<dialog open data-testid="curl-out-dialog"><article class="h-dialog h-code"><header><strong>${t('h.codeTitle')}</strong></header>
+      <select data-testid="code-language" aria-label=${t('h.codeLanguage')} onChange=${(e) => { d.lang = e.target.value; try { localStorage.setItem('suite.http.codeLang', d.lang); } catch (x) { /* blocked */ } render(); }}>
+        ${LANGUAGES.map((l) => html`<option value=${l.id} selected=${l.id === d.lang}>${l.label}</option>`)}</select>
+      <pre class="h-curl" data-testid="curl-output">${text}</pre>
+      ${/body\.bin/.test(text) ? html`<small>${t('h.codeBinary')}</small>` : null}
+      <footer><button class="secondary" onClick=${close}>${t('h.close')}</button>
+        <button class="secondary outline" data-testid="code-save" onClick=${() => Suite.files.download(new TextEncoder().encode(`${text}\n`), `request.${lang.ext}`, 'text/plain')}>${t('h.codeSave')}</button>
+        <button data-testid="curl-copy" onClick=${() => navigator.clipboard.writeText(text).then(() => Suite.shell.toast(t('h.copied')), fail)}>${t('h.copy')}</button></footer></article></dialog>`;
   }
   // environments
   const s = settings();
@@ -676,7 +888,7 @@ function Dialog() {
 }
 
 function Main() {
-  return html`<div class="h-layout"><${Sidebar} />${state.panels ? Suite.shell.backdrop(() => { state.panels = false; render(); }) : null}<div class="h-work"><${RequestEditor} />${isWs(state.current.url) ? html`<${WsPanel} />` : html`<${Response} />`}</div><${Dialog} /><${data.Dialog} /></div>`;
+  return html`<div class="h-layout"><${Sidebar} />${state.panels ? Suite.shell.backdrop(() => { state.panels = false; render(); }) : null}<div class="h-work"><${RequestEditor} />${isWs(state.current.url) ? html`<${WsPanel} />` : html`<${Response} />`}</div><${Dialog} /><${RunnerDialog} /><${data.Dialog} /></div>`;
 }
 
 Suite.shell.mount({ id: APP, title: 'app.title', version: '%%BUILD_VERSION%%', toolbar: () => html`<${Toolbar} />`, main: () => html`<${Main} />` });
@@ -695,7 +907,7 @@ Suite.openFiles.register(() => (state.dirty || state.file ? [{
   bytes: new TextEncoder().encode(`${JSON.stringify(toPostman(state.collection), null, 2)}\n`), dirty: state.dirty }] : []));
 
 // for tests
-window.HTTP = { state, history, undoStep, data, select, get ws() { return ws; } };
+window.HTTP = { generate, startRun, openRunner, dataRows, state, history, undoStep, data, select, get ws() { return ws; } };
 // collections opened from other apps or as an example (Help: Examples)
 Suite.bridge.receive(async (picked) => { if (!state.dirty || await Suite.shell.confirm(t('h.discard'))) await loadCollection(picked); }, { app: APP });
 

@@ -67,6 +67,11 @@ in der Vorschau und in der gespeicherten Präsentation gesetzt, auch offline; nu
 - Reiter **Präsentation**: Titel, Design (14 reveal.js-Designs), Code-Farben, Übergänge, Foliengröße (z. B. 16:9),
   Pfeil-Steuerung, Fortschrittsbalken, Foliennummern, senkrechtes Zentrieren, Endlosschleife, Foliennummer in der Adresse,
   Navigationsart, Ansicht als scrollende Seite, automatisches Weiterschalten, Sprache und eigenes CSS.
+- **🎨 Design anpassen…** verändert das gewählte Design: Farben von Hintergrund, Text, Überschriften, Links und Markierung, ein Hintergrundbild oder ein
+  CSS-Verlauf, die Schriften für Text, Überschriften und Code (die mitgelieferten Schriften der Suite und Ihre importierten Schriften – die Präsentation
+  bettet die verwendeten ein, damit die gespeicherte Datei sie überall zeigt), Text- und Titelgröße, Stärke und Schreibweise der Überschriften. Leere Felder
+  behalten den Wert des Designs; die Vorschau ändert sich sofort, Rückgängig wirkt wie gewohnt. **Design speichern (CSS)** legt die Einstellungen als
+  CSS-Datei ab (reveal.js-Variablen), **Design laden (CSS)…** übernimmt sie in eine andere Präsentation, **Zurück zum Design** entfernt sie.
 
 ## Präsentieren
 
@@ -74,6 +79,10 @@ in der Vorschau und in der gespeicherten Präsentation gesetzt, auch offline; nu
 `O` oder `Esc` Übersicht, `S` Referentenansicht mit Notizen und Uhr, `F` Vollbild. **↗** präsentiert in einem neuen Fenster
 (praktisch mit einem zweiten Bildschirm), **🖨** öffnet die Druckansicht zum Speichern als PDF (im Druckdialog „Als PDF
 speichern“ wählen) – mit *Drucken / PDF mit Sprechernotizen* folgt auf jede Folie eine Seite mit ihren Notizen.
+
+**🖨 → Als PDF-Datei speichern** erzeugt die PDF direkt, ohne Druckdialog: eine Seite je Folie in der Größe der Folie, so wie sie in der Präsentation
+aussieht (Design, Schriften, Code-Farben). *Eine Seite je Schritt* fügt für jeden Fragment-Schritt eine Seite hinzu, wie beim Präsentieren. Die Seiten
+sind Bilder der Folien (der Text lässt sich nicht markieren); Bilder von Webadressen fehlen – betten Sie sie in die Präsentation ein.
 
 ## Dateien
 

@@ -113,3 +113,12 @@ textarea.dg-tree-edit { height: auto; padding: .1rem .3rem; resize: vertical; wh
 input.dg-layer-name { margin: 0; padding: 0 .3rem; height: auto; }
 .dg-lib { margin: .3rem 0 0; }
 .dg-lib summary { font-size: .78rem; padding: .1rem 0; }
+.dg-templates { max-width: min(48rem, 96vw); }
+.dg-template-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr)); gap: .5rem; max-height: 60vh; overflow: auto; padding: 2px; }
+.dg-template-list > button { display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: .15rem; margin: 0; padding: .5rem .6rem; }
+.dg-template-list small { font-size: .75rem; opacity: .8; }
+.dg-template-icon { font-size: 1.5rem; line-height: 1; }
+.dg-template-list > button { min-width: 0; overflow-wrap: anywhere; hyphens: auto; font-size: .9rem; }
+.dg-template-list > button[aria-selected="true"] { color: var(--pico-primary-inverse, #fff); background: var(--pico-primary-background, #0172ad); border-color: var(--pico-primary-border, #0172ad); }
+.dg-template-list > button[aria-selected="true"] small { opacity: .95; }
+@media (max-width: 40rem) { .dg-template-list { grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); } .dg-template-list small { display: none; } }

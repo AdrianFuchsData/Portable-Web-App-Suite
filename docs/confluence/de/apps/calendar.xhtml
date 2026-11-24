@@ -11,10 +11,33 @@ Kalender, Apple Kalender und den meisten anderen Kalenderprogrammen. Mehrere Kal
   Ein Klick auf den Namen macht ihn zum Kalender für neue und importierte Termine.</li>
 <li><strong>Termine importieren…</strong> fügt die Termine einer <code>.ics</code>-Datei (z. B. einer per E-Mail erhaltenen Einladung) zum gewählten Kalender hinzu. Ein
   Termin mit derselben UID ersetzt den vorhandenen, sodass eine aktualisierte Einladung den Termin aktualisiert.</li>
+<li><strong>CSV… → CSV importieren…</strong> liest Termine oder Aufgaben aus einer CSV-Datei in den gewählten Kalender – etwa einen Export von Outlook, Google
+  Kalender oder einer Tabelle. Die Spalten werden an ihren Namen erkannt, deutsch oder englisch (<em>Betreff/Subject, Beginnt am/Start Date, Beginnt
+  um/Start Time, Endet am, Endet um, Ganztägiges Ereignis/All Day Event, Beschreibung, Ort, Kategorien</em>; für Aufgaben <em>Fällig am/Due Date,
+  Priorität, Status, % erledigt</em>). Daten dürfen als <code>2026-10-16</code>, <code>16.10.2026</code> oder <code>10/16/2026</code> geschrieben sein (die Reihenfolge von Tag und
+  Monat wird aus der Datei bestimmt), Uhrzeiten als <code>14:30</code> oder <code>2:30 PM</code>; Komma, Strichpunkt oder Tabulator trennen die Spalten. Zeilen ohne
+  lesbares Datum werden übersprungen und genannt.</li>
+<li><strong>CSV… → Als CSV exportieren</strong> schreibt die Termine eines Zeitraums (wiederkehrende als einzelne Termine) oder die Aufgaben der angezeigten
+  Kalender oder des gewählten, im Spaltenaufbau von Outlook und Google Kalender, mit Daten im ISO-, europäischen oder US-Format (Google).</li>
 <li>💾 speichert einen Kalender: in Chrome/Edge am Desktop direkt in seine Datei, in Firefox und unter Android als Download (ersetzen Sie die
   ursprüngliche Datei damit). <strong>Alle speichern</strong> (<code>Strg+S</code>) speichert jeden geänderten Kalender; geänderte Kalender sind mit • markiert.</li>
 </ul>
-<p>Alles in der Datei, was der Kalender nicht bearbeitet (weitere Erinnerungen, Teilnehmende, Aufgaben, weitere Eigenschaften), bleibt beim Speichern erhalten.</p>
+<h3>Online-Kalender (CalDAV)</h3>
+<p><strong>☁ CalDAV…</strong> öffnet Kalender, die auf einem Server liegen – Nextcloud, ownCloud, Radicale, Baïkal, SOGo, mailbox.org, iCloud und andere
+CalDAV-Server. Eine Browserseite kann nicht direkt mit diesen Servern sprechen, darum braucht es das <strong>Relay</strong> (siehe das Kapitel zum Relay im
+Benutzerhandbuch; Adresse und Anmeldung tragen Sie im Dialog unter <em>Relay</em> ein).</p>
+<ol>
+<li><strong>Konto hinzufügen</strong>: ein Name, die Adresse – der Server (<code>https://cloud.example.org</code>), seine CalDAV-Adresse
+   (<code>https://cloud.example.org/remote.php/dav</code>) oder die Adresse eines Kalenders –, Benutzername und Passwort. Viele Anbieter verlangen hier ein
+   <em>App-Passwort</em> statt des normalen. Konten und Passwörter liegen in der oben angezeigten Verbindungsdatei (eine KeePass-Datenbank oder eine
+   JSON-Datei; <strong>speichern</strong> Sie sie, um sie zu behalten).</li>
+<li><strong>Kalender</strong> fragt den Server nach Ihren Kalendern (auch über <code>/.well-known/caldav</code>); <strong>Öffnen</strong> lädt einen mit seinen Terminen und Aufgaben.
+   Er erscheint in der Liste mit ☁ statt 💾.</li>
+<li>Ändern Sie Termine und Aufgaben wie gewohnt. <strong>☁</strong> (oder <strong>Alle speichern</strong>) schreibt nur, was sich geändert hat: Neues wird angelegt, Geändertes
+   ersetzt, Gelöschtes entfernt. Hat inzwischen jemand anderer ein Element auf dem Server geändert, wird es nicht überschrieben: Der Kalender meldet
+   das, <strong>⟳</strong> lädt den aktuellen Stand neu und Sie wiederholen Ihre Änderung.</li>
+</ol>
+<p>Alles in der Datei, was der Kalender nicht bearbeitet (weitere Erinnerungen, Teilnehmende, Journaleinträge, weitere Eigenschaften), bleibt beim Speichern erhalten.</p>
 <h2>Ansichten</h2>
 <table>
 <thead>
@@ -46,6 +69,11 @@ Kalender, Apple Kalender und den meisten anderen Kalenderprogrammen. Mehrere Kal
 <td>Liste der Termine der nächsten 60 Tage</td>
 </tr>
 <tr>
+<td>Aufgaben</td>
+<td><code>X</code></td>
+<td>die Aufgaben (To-dos) der angezeigten Kalender (siehe unten)</td>
+</tr>
+<tr>
 <td>Verfügbarkeit</td>
 <td><code>F</code></td>
 <td>freie und belegte Zeiten der Woche, eine Zeile je Kalender (siehe unten)</td>
@@ -56,6 +84,14 @@ Kalender, Apple Kalender und den meisten anderen Kalenderprogrammen. Mehrere Kal
 (Einstellung links unten). <strong>Suchen</strong> (<code>/</code>) zeigt nur Termine, deren Titel, Ort, Beschreibung oder Kategorien den Text enthalten.</p>
 <p><strong>🖨</strong> druckt die aktuelle Ansicht mit den Namen der angezeigten Kalender und dem Zeitraum als Überschrift (Monat und Woche im
 Querformat, der ganze Tag auf einem Blatt); mit „Als PDF speichern“ als Drucker entsteht ein PDF. Die Suche gilt auch für den Ausdruck.</p>
+<h3>Aufgaben</h3>
+<p>Kalenderdateien können auch <strong>Aufgaben</strong> enthalten (To-dos, <code>VTODO</code> – wie Thunderbird, Apple Erinnerungen, Nextcloud Tasks oder Outlook sie
+exportieren). <strong>Aufgaben</strong> (<code>X</code>) listet die Aufgaben der angezeigten Kalender: <strong>Überfällig</strong> (rot), <strong>Heute</strong>, <strong>Demnächst</strong>, <strong>Ohne Fälligkeit</strong>
+und die <strong>erledigten</strong> zusammengeklappt. Tippen Sie in <em>Neue Aufgabe</em> und drücken Sie Enter, um eine im gewählten Kalender anzulegen. Das Kästchen
+davor hakt eine Aufgabe ab (und wieder auf). Ein Klick auf eine Aufgabe öffnet sie: Titel, <strong>Fälligkeit</strong> mit optionaler Uhrzeit, <strong>Priorität</strong>
+(ein rotes ! markiert hoch), <strong>Status</strong> (offen, in Arbeit mit % erledigt, erledigt, abgesagt), Kalender, Ort, Kategorien und Beschreibung;
+<strong>Löschen</strong> entfernt sie. Offene Aufgaben mit Fälligkeit erscheinen auch an ihrem Tag in der Monatsansicht und der Liste (☐); ein Klick öffnet sie.
+Die Suche findet auch Aufgaben; Rückgängig gilt für sie wie für Termine.</p>
 <h3>Verfügbarkeit (frei/belegt)</h3>
 <p>Die Ansicht <strong>Verfügbarkeit</strong> hilft, einen Termin zu finden, der für mehrere Kalender passt, z. B. den eigenen Kalender und die
 Kalender oder Frei/Belegt-Dateien von Kolleginnen und Kollegen. Für jeden Tag der Woche zeigt sie die Arbeitszeit mit einem Balken
@@ -153,8 +189,8 @@ als fünf Minuten vor dem Öffnen der Seite fällig waren, werden nicht nachgeho
 </thead>
 <tbody>
 <tr>
-<td><code>M</code> / <code>W</code> / <code>D</code> / <code>A</code> / <code>F</code></td>
-<td>Monat / Woche / Tag / Agenda / Verfügbarkeit</td>
+<td><code>M</code> / <code>W</code> / <code>D</code> / <code>A</code> / <code>X</code> / <code>F</code></td>
+<td>Monat / Woche / Tag / Liste / Aufgaben / Verfügbarkeit</td>
 </tr>
 <tr>
 <td><code>T</code></td>

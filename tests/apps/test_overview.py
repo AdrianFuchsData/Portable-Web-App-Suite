@@ -166,3 +166,20 @@ def test_mobile_layout(app_page):
     assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     box = page.locator("iframe[data-app=texteditor]").bounding_box()
     assert box["width"] >= 380 and box["height"] > 500
+
+
+def test_language_switch_keeps_the_open_apps(app_page):
+    page = app_page("overview", init_script=NO_PICKERS)
+    editor = start_tab(page, "texteditor")
+    editor.locator(".cm-content").click()
+    page.keyboard.type("still here")
+    page.click("[data-testid=language]")
+    expect(page.locator("[data-testid=language]")).to_have_text("EN")
+    # the tab and its content stay; the app follows the language
+    expect(page.locator("iframe[data-app=texteditor]")).to_be_visible()
+    expect(editor.locator(".cm-content")).to_have_text("still here")
+    expect(editor.locator("[data-testid=language]")).to_have_text("EN")
+    page.click("[data-testid=language]")
+    expect(editor.locator(".cm-content")).to_have_text("still here")
+    expect(editor.locator("[data-testid=language]")).to_have_text("DE")
+    assert not [e for e in page.errors if "ResizeObserver" not in e]

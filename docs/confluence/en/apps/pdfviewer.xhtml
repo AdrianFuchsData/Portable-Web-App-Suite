@@ -23,6 +23,29 @@ pages by 90 degrees (only the view; the file is not changed).</p>
 <h2>Search</h2>
 <p>🔍 or <code>Ctrl+F</code> opens the search bar. The viewer highlights all matches and shows "1 of 3 matches". <strong>Next</strong> and
 <strong>Previous</strong> move between the matches; <strong>Match case</strong> distinguishes upper and lower case.</p>
+<h2>Text</h2>
+<p>Select text on a page with the mouse (or by touch) and copy it with <code>Ctrl+C</code>. <strong>🛠 Text and export</strong> also copies the text of the
+current page or of the whole document at once, or saves it as a text file (<code>.txt</code>, one line per line of the page, a blank line
+between pages). Scanned pages are pictures and contain no text.</p>
+<h2>Pages as pictures</h2>
+<p><strong>🛠 Text and export → Pages as pictures (PNG, JPEG)…</strong> saves the current page, the selected pages (in the page sidebar) or all
+pages as pictures. Choose PNG (sharp, lossless, larger) or JPEG (smaller, for photos and scans) and the resolution: 150 dpi suits
+the screen, 300 dpi printing. One page becomes one picture (<code>name-001.png</code>), several pages a ZIP with one picture per page.
+Filled-in form fields appear in the pictures.</p>
+<h2>Making a document smaller</h2>
+<p><strong>🛠 Text and export → Make smaller (compress)…</strong> shrinks large PDFs, typically scans and documents with photos. Choose a level:
+<strong>Screen</strong> (96 dpi, strong JPEG compression, the smallest file), <strong>E-book</strong> (150 dpi) or <strong>Print</strong> (300 dpi, light compression).
+Pictures that are larger than the level needs for an A4 page are scaled down and stored as JPEG; text, fonts and drawings are
+not touched and stay sharp. Uncompressed parts of the file are packed and leftovers of earlier edits are dropped. The message
+shows the size before and after; when the document cannot become noticeably smaller, it stays as it is. <code>Ctrl+Z</code> undoes it until
+you save. Transparency masks, CMYK and black-and-white pictures are left as they are.</p>
+<h2>Redaction (blacking out)</h2>
+<p><strong>🛠 Text and export → Black out (redact)…</strong> removes confidential content for good. Drag a box over everything that must
+disappear (a click on a box removes it again), or type a word or name and click <strong>Mark</strong> to box it everywhere in the document.
+<strong>Remove for good</strong> then turns every page with boxes into a picture of the page with black boxes – what was under them,
+including the text, is gone, and the text of these pages can no longer be selected or found. The document is rebuilt from its
+pages, so nothing hidden survives; its outline, form fields and metadata (author, title, …) are not kept. Until you save,
+<strong>Pages → Undo</strong> brings the original back. Unlike black rectangles drawn as annotations, this cannot be undone by others.</p>
 <h2>Forms and annotations</h2>
 <p>Form fields can be filled in directly. The <strong>Annotate</strong> list switches the mode:</p>
 <table>

@@ -1,6 +1,6 @@
 <!-- Generated from docs/en/apps/dbtool.md by tools/build_docs.py - do not edit. Confluence page title: Database tool -->
 <ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">3</ac:parameter></ac:structured-macro>
-<p>The database tool (<code>dbtool.html</code>) opens <strong>SQLite</strong> database files and connects to <strong>PostgreSQL</strong> servers: browse the schema, write and
+<p>The database tool (<code>dbtool.html</code>) opens <strong>SQLite</strong> database files and connects to <strong>PostgreSQL</strong>, <strong>MySQL</strong> and <strong>MariaDB</strong> servers: browse the schema, write and
 run SQL, view and edit table data, export results.</p>
 <h2>SQLite databases</h2>
 <ul>
@@ -10,15 +10,18 @@ run SQL, view and edit table data, export results.</p>
   as a download in Firefox and on Android (replace the original file with it). Changed databases are marked with •.</li>
 </ul>
 <p>SQLite works completely offline.</p>
-<h2>PostgreSQL servers</h2>
-<p>A Postgres server is reached through the <strong>local relay</strong> (see the user guide, "Network functions and the relay").</p>
+<h2>PostgreSQL, MySQL and MariaDB servers</h2>
+<p>A database server is reached through the <strong>local relay</strong> (see the user guide, "Network functions and the relay").</p>
 <ol>
-<li><strong>Connect to Postgres…</strong> opens the connection dialog: name, host, port (5432), database, user, password, SSL (prefer, require, disable;
+<li><strong>Connect to a server…</strong> opens the connection dialog: the <strong>server type</strong> (PostgreSQL or MySQL / MariaDB), name, host, port (5432 or 3306), database, user, password, SSL (prefer, require, disable;
    optionally accept self-signed certificates) and the relay address and token. <strong>Test</strong> checks the relay.</li>
 <li><strong>Connect</strong> opens the connection; <strong>Save connection</strong> adds it to <strong>Saved connections</strong> (the password only if you tick the box).</li>
 <li>A click on a saved connection connects (or asks for the password if it was not saved); ✎ edits and × deletes a connection.</li>
 </ol>
-<p>Password, MD5 and SCRAM-SHA-256 authentication are supported.</p>
+<p>PostgreSQL: password, MD5 and SCRAM-SHA-256 authentication are supported. MySQL / MariaDB: <code>caching_sha2_password</code> (the default of
+MySQL 8; the first sign-in of a user is completed over SSL or with the server's RSA key) and <code>mysql_native_password</code> (MariaDB, older
+MySQL), also when the server switches between them. 🐬 marks MySQL connections, 🐘 Postgres ones. A MySQL connection works in the chosen
+database: its tables appear without a prefix, the editor uses the MySQL dialect (backquotes, MySQL functions in the completion).</p>
 <h3>Saving connections</h3>
 <p>Saved connections and the relay settings are kept in a <strong>connections file</strong>. <strong>Save</strong> in the "Connections" area asks for the format:</p>
 <ul>
@@ -31,11 +34,20 @@ run SQL, view and edit table data, export results.</p>
 <ul>
 <li><strong>Schema</strong> lists the tables (▦) and views (👁) of the active database; unfold a table to see its columns (🔑 = primary key, types, NOT NULL).
   ⟳ reloads the schema; it is reloaded automatically after <code>CREATE</code>, <code>ALTER</code> and <code>DROP</code>.</li>
-<li>The SQL editor highlights SQL and completes keywords, table and column names (<code>Ctrl+Space</code>).</li>
+<li>The SQL editor highlights SQL and completes while you type (or with <code>Ctrl+Space</code>): keywords, tables, the columns of the tables named
+  in the statement – also without a table name (<code>SELECT ▮ FROM people</code>, <code>WHERE a…</code>), with the table and type shown next to them –,
+  columns after <code>table.</code> or an alias (<code>p.</code> for <code>FROM people p</code>), and the common functions of SQLite or PostgreSQL (<code>upper(▮)</code>,
+  <code>strftime</code>, <code>date_trunc</code>, <code>string_agg</code>, …), which are inserted with their parentheses.</li>
 <li><strong>Run</strong> (<code>Ctrl+Enter</code>) runs the selected text, or the statement at the cursor; <strong>Run all</strong> (<code>Ctrl+Shift+Enter</code>) runs all statements.</li>
 <li>Every statement with a result gets a result tab. The message line shows the number of changed rows, the duration or the error
   (for Postgres with SQL state code, detail and hint).</li>
-<li><strong>CSV</strong> and <strong>JSON</strong> export the shown result.</li>
+<li><strong>CSV</strong>, <strong>XLSX</strong> (Excel, LibreOffice, Google Sheets) and <strong>JSON</strong> export the shown result. For a browsed table they export all
+  of its rows, not only the loaded page. The XLSX file has a bold, frozen header row and an autofilter.</li>
+<li><strong>⇪ Import</strong> reads a CSV file (comma, semicolon or tab; UTF-8 or Windows-1252) or the first sheet of an Excel file (<code>.xlsx</code>) into
+  a <strong>new table</strong> (named after the file; column types – integer, real or text – are guessed from the values) or an <strong>existing table</strong>
+  (columns matched by name, other columns are left out and named). A preview shows the first rows; <em>The first row holds the column
+  names</em> can be switched off. Empty cells become NULL; Excel dates become <code>YYYY-MM-DD</code>. The rows are inserted in one transaction –
+  either all or none – and the table is shown afterwards. Undo (SQLite) removes the import again.</li>
 <li><strong>⛁ ER diagram</strong> (above the schema) draws the tables and views with their columns (🔑 primary key, → foreign key) and the
   foreign-key relations, and opens the drawing in the diagram editor (referenced tables above the referencing ones), where it
   can be arranged, edited, printed or exported.</li>

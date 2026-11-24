@@ -40,6 +40,10 @@ Das Menüband hat die Reiter **Start** (Zwischenablage, fett/kursiv/unterstriche
 Schrift, Farben, Ausrichtung, Listen, Checklisten) und **Einfügen** (Tabellen, Bilder, Links, horizontale Linie, Emoji, Symbole, Kopf- und Fußzeile, Datum und Uhrzeit). Die üblichen
 Tastenkombinationen funktionieren: `Strg+B/I/U`, `Strg+Z/Y`, `Strg+C/X/V`, `Strg+F` zum Suchen. Die Statusleiste zeigt die Wortanzahl und den Zoom.
 
+Ein neues Dokument hat A4-Seiten mit 2,5 cm Rändern, wie in Word. **Einfügen → Kopf- & Fußzeile → Kopfzeile bearbeiten** (oder **Fußzeile
+bearbeiten**) setzt die Schreibmarke in die Kopf- oder Fußzeile der Seite; ein Doppelklick in den oberen oder unteren Seitenrand tut dasselbe.
+Ein Dokument ohne Seiten (etwa eine Textdatei) bekommt zuerst A4-Seiten, denn nur Seiten haben Kopf- und Fußzeilen.
+
 **📐 Diagramm** in der Werkzeugleiste öffnet ein leeres Diagramm im Diagramm-Editor (ein neues Fenster oder ein neuer Tab); das erste
 **Speichern** dort fügt das Diagramm als Bild an der Schreibmarke ein, spätere Speichervorgänge aktualisieren es. Ist ein Diagrammbild
 ausgewählt (ein Klick darauf), öffnet **📐 Diagramm bearbeiten** es wieder im Diagramm-Editor. Ein aktualisiertes Bild behält Stelle und

@@ -40,6 +40,10 @@ The ribbon has the tabs **Start** (clipboard, bold/italic/underline/strike, sub-
 alignment, lists, checklists) and **Insert** (tables, images, links, horizontal line, emoji, symbols, header and footer, date and time). The usual shortcuts work: `Ctrl+B/I/U`,
 `Ctrl+Z/Y`, `Ctrl+C/X/V`, `Ctrl+F` to find. The status bar shows the word count and the zoom.
 
+A new document has A4 pages with 2.5 cm margins, as in Word. **Insert → Header & footer → Edit header** (or **Edit footer**) puts the
+cursor into the header or footer of the page; a double click into the top or bottom page margin does the same. A document without
+pages (a text file, for example) gets A4 pages first, because only pages have headers and footers.
+
 **📐 Diagram** in the toolbar opens an empty diagram in the diagram editor (a new window or tab); its first **Save** inserts
 the diagram as a picture at the cursor, later saves update it. When a diagram picture is selected (a click on it), **📐 Edit
 diagram** opens it in the diagram editor again. An updated picture keeps its place and scale (at most the width of the text);

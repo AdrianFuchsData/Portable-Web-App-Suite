@@ -25,7 +25,7 @@
   const ID_FIELD = 'SuiteId';
   const STANDARD = { name: 'Title', username: 'UserName', password: 'Password', url: 'URL', notes: 'Notes' };
   /** Connection properties that are stored protected in KeePass. */
-  const SECRETS = new Set(['password', 'smtpPassword', 'privateKey', 'passphrase', 'token', 'secret', 'apiKey']);
+  const SECRETS = new Set(['password', 'smtpPassword', 'privateKey', 'passphrase', 'token', 'secret', 'apiKey', 'proxyPassword']);
 
   Suite.i18n.register({
     en: { 'settings.badFile': 'This file is neither an application data file (JSON) nor a KeePass database.' },

@@ -16,6 +16,7 @@
       this.undoStack = [];
       this.redoStack = [];
       this.version = 0;
+      this.marks = []; // bookmarks and coloured ranges: [{ id, from, to, kind: 'bookmark' | 'range', color, label }] (end exclusive)
       this.savedVersion = 0;
       this.nextVersion = 1;
     }
@@ -56,6 +57,7 @@
         return inverse;
       }
       if (op.type === 'insert') {
+        this.shiftMarks(op.offset, op.data.length);
         this.ensure(this.length + op.data.length);
         this.data.copyWithin(op.offset + op.data.length, op.offset, this.length);
         this.data.set(op.data, op.offset);
@@ -63,12 +65,24 @@
         return { type: 'remove', offset: op.offset, count: op.data.length };
       }
       if (op.type === 'remove') {
+        this.shiftMarks(op.offset, -op.count);
         const removed = this.data.slice(op.offset, op.offset + op.count);
         this.data.copyWithin(op.offset, op.offset + op.count, this.length);
         this.length -= op.count;
         return { type: 'insert', offset: op.offset, data: removed };
       }
       throw new Error(`unknown operation ${op.type}`);
+    }
+
+    /** Marks follow inserted (delta > 0) and removed (delta < 0) bytes; a mark whose bytes are all removed goes away. */
+    shiftMarks(offset, delta) {
+      if (!this.marks.length || !delta) return;
+      const end = offset - delta; // (removal: [offset, end))
+      const map = (p, isEnd) => {
+        if (delta > 0) return p > offset || (p === offset && !isEnd) ? p + delta : p;
+        return p >= end ? p + delta : p > offset ? offset : p;
+      };
+      this.marks = this.marks.map((m) => ({ ...m, from: map(m.from, false), to: map(m.to, true) })).filter((m) => m.to > m.from);
     }
 
     run(op, merge = false) {

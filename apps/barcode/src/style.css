@@ -44,3 +44,6 @@
   body.bc-printing .bc-main > section > :not(.bc-output), body.bc-printing .bc-output > :not(#bc-print) { display: none !important; }
   body.bc-printing #bc-print { background: none; }
 }
+.bc-batch .bc-file { display: flex; align-items: center; gap: .5rem; }
+.bc-batch .bc-file button { width: auto; margin: 0; padding: .1rem .5rem; }
+.bc-errors { font-size: .85rem; max-height: 40vh; overflow: auto; }

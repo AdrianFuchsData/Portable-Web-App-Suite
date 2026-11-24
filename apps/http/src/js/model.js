@@ -2,8 +2,8 @@
  * Requests and collections of the HTTP analyzer: request model, {{variables}}, request body encoding (raw, form,
  * multipart, file), cURL import/export and Postman collection v2.1 import/export.
  *
- * request: { id, name, method, url, prerequest, tests (JavaScript, see scripts.js), headers: [{ key, value, enabled }], body: { mode: 'none'|'raw'|'urlencoded'|'formdata'|'file',
- *            raw, language, fields: [{ key, value, enabled, type: 'text'|'file', file }], file }, auth: { type: 'none'|'basic'|'bearer', username, password, token } }
+ * request: { id, name, method, url, prerequest, tests (JavaScript, see scripts.js), headers: [{ key, value, enabled }], body: { mode: 'none'|'raw'|'urlencoded'|'formdata'|'file'|'graphql',
+ *            raw, language, fields: [{ key, value, enabled, type: 'text'|'file', file }], file, graphql: { query, variables (JSON text) } }, auth: { type: 'none'|'basic'|'bearer', username, password, token } }
  * collection: { name, items: [{ type: 'folder', name, items } | { type: 'request', ...request }], variables: [{ key, value, enabled }] }
  */
 
@@ -13,7 +13,7 @@ export const newId = () => `${Date.now().toString(36)}${(counter++).toString(36)
 export function newRequest(props = {}) {
   return {
     type: 'request', id: newId(), name: 'New request', method: 'GET', url: '', prerequest: '', tests: '',
-    headers: [], body: { mode: 'none', raw: '', language: 'json', fields: [], file: null }, auth: { type: 'none', username: '', password: '', token: '' },
+    headers: [], body: { mode: 'none', raw: '', language: 'json', fields: [], file: null, graphql: { query: '', variables: '' } }, auth: { type: 'none', username: '', password: '', token: '' },
     ...props,
   };
 }
@@ -97,6 +97,14 @@ export async function build(req, vars) {
       parts.push(enc.encode(`--${boundary}--\r\n`));
       body = concat(parts);
       if (!has('content-type')) headers.push(['Content-Type', `multipart/form-data; boundary=${boundary}`]);
+    } else if (b.mode === 'graphql') {
+      const g = b.graphql || {};
+      const text = r(g.variables || '').trim();
+      let variables;
+      try { variables = text ? JSON.parse(text) : undefined; } catch (e) { throw new Error(`GraphQL variables: ${e.message}`); }
+      const op = /^\s*(?:query|mutation|subscription)\s+([_A-Za-z][_0-9A-Za-z]*)/m.exec(g.query || '');
+      body = enc.encode(JSON.stringify({ query: r(g.query || ''), ...(variables !== undefined ? { variables } : {}), ...(op ? { operationName: op[1] } : {}) }));
+      if (!has('content-type')) headers.push(['Content-Type', 'application/json']);
     } else if (b.mode === 'file' && b.file) {
       body = new Uint8Array(await b.file.arrayBuffer());
       if (!has('content-type')) headers.push(['Content-Type', b.file.type || 'application/octet-stream']);
@@ -210,6 +218,7 @@ export function fromPostman(json) {
     req.headers = (r.header || []).map((h) => ({ key: h.key, value: h.value ?? '', enabled: !h.disabled }));
     const b = r.body;
     if (b && b.mode === 'raw') req.body = { ...req.body, mode: 'raw', raw: b.raw || '', language: (b.options && b.options.raw && b.options.raw.language) || 'text' };
+    else if (b && b.mode === 'graphql') req.body = { ...req.body, mode: 'graphql', graphql: { query: (b.graphql && b.graphql.query) || '', variables: (b.graphql && (typeof b.graphql.variables === 'string' ? b.graphql.variables : b.graphql.variables ? JSON.stringify(b.graphql.variables, null, 2) : '')) || '' } };
     else if (b && (b.mode === 'urlencoded' || b.mode === 'formdata')) req.body = { ...req.body, mode: b.mode, fields: (b[b.mode] || []).map((f) => ({ key: f.key, value: f.value ?? f.src ?? '', enabled: !f.disabled, type: f.type === 'file' ? 'file' : 'text' })) };
     const a = r.auth;
     const authValue = (list, key) => ((list || []).find((x) => x.key === key) || {}).value ?? '';
@@ -237,6 +246,7 @@ export function toPostman(collection) {
     };
     const b = it.body;
     if (b.mode === 'raw') request.body = { mode: 'raw', raw: b.raw, options: { raw: { language: b.language } } };
+    if (b.mode === 'graphql') request.body = { mode: 'graphql', graphql: { query: (b.graphql && b.graphql.query) || '', variables: (b.graphql && b.graphql.variables) || '' } };
     if (b.mode === 'urlencoded' || b.mode === 'formdata') {
       request.body = { mode: b.mode, [b.mode]: b.fields.map((f) => ({ key: f.key, ...(f.type === 'file' ? { type: 'file', src: f.file ? f.file.name : f.value } : { value: f.value, type: 'text' }), ...(f.enabled ? {} : { disabled: true }) })) };
     }

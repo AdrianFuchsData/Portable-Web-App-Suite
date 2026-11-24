@@ -643,11 +643,11 @@ function Toolbar() {
     <${Suite.shell.Recent} app=${APP} before=${confirmDiscard} onOpen=${(p) => openPicked(p)} />
     <button class=${state.dirty ? '' : 'secondary outline'} data-testid="save" onClick=${() => save()}>${t('ss.save')}</button>
     <button class="secondary outline" data-testid="save-as" onClick=${() => { state.dialog = { stem: state.name.replace(/\.[^.]+$/, ''), format: state.format }; render(); }}>${t('ss.saveAs')}</button>
-    <button class="secondary outline" data-testid="print" title=${t('ss.printTitle')} onClick=${openPrint}>🖨 ${t('ss.print')}</button>
-    <button class="secondary outline" data-testid="add-diagram" title=${t('dia.insert')} onClick=${insertDiagram}>📐 ${t('ss.diagram')}</button>
-    ${focusedDiagram() ? html`<button class="secondary" data-testid="edit-diagram" onClick=${editDiagram}>📐 ${t('dia.edit')}</button>` : null}
-    <button class="secondary outline" data-testid="add-chart" title=${t('ch.insert')} onClick=${() => insertChart().catch(fail)}>📊 ${t('ch.chart')}</button>
-    ${focusedChart() ? html`<button class="secondary" data-testid="edit-chart" onClick=${editChart}>📊 ${t('ch.edit')}</button>` : null}
+    <button class="secondary outline" data-testid="print" title=${t('ss.printTitle')} onClick=${openPrint}>${Suite.icon('printer')} ${t('ss.print')}</button>
+    <button class="secondary outline" data-testid="add-diagram" title=${t('dia.insert')} onClick=${insertDiagram}>${Suite.icon('shapes')} ${t('ss.diagram')}</button>
+    ${focusedDiagram() ? html`<button class="secondary" data-testid="edit-diagram" onClick=${editDiagram}>${Suite.icon('shapes')} ${t('dia.edit')}</button>` : null}
+    <button class="secondary outline" data-testid="add-chart" title=${t('ch.insert')} onClick=${() => insertChart().catch(fail)}>${Suite.icon('chart-column')} ${t('ch.chart')}</button>
+    ${focusedChart() ? html`<button class="secondary" data-testid="edit-chart" onClick=${editChart}>${Suite.icon('chart-column')} ${t('ch.edit')}</button>` : null}
     <span class="ss-name" data-testid="file-name">${state.name}${state.dirty ? ' •' : ''}</span>
   </nav>`;
 }

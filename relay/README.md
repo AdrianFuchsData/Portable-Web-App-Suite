@@ -164,7 +164,7 @@ send it with WebSocket connections.
 
 ## Protocol (version 2)
 
-* `GET /info` → `{"relay": "portable-web-app-suite", "version": 2, "implementation": "…", "auth": ["token", "password", "proxy"], "tls": true|false}`
+* `GET /info` → `{"relay": "portable-web-app-suite", "version": 2, "implementation": "…", "auth": ["token", "password", "proxy"], "tls": true|false, "features": ["listen"]}`
 * `POST /auth` with `{"user", "password"}` → `{"token", "user", "expires"}` (unix time); `401` for wrong credentials,
   `429` after 5 failed attempts within 15 minutes (per user and per client address; the delay doubles up to 15 minutes).
   `POST /auth/logout` with header `X-Relay-Token` ends a session.
@@ -173,6 +173,11 @@ send it with WebSocket connections.
   proxy sign-in); answer `{"ok": true}` or `{"ok": false, "error": "…"}`. Then binary messages carry the raw TCP data
   in both directions. Text messages are control messages: `{"op": "starttls", "insecure": false}` upgrades the
   connection to TLS (SMTP/IMAP STARTTLS, Postgres SSLRequest); answer `{"ok": true, "op": "starttls"}`.
+* **Listening (port forwarding of the SSH client):** first message `{"token", "listen": {"port": N}}` (`N` ≥ 1024, `0` = any free
+  port) → the relay listens on `127.0.0.1:N` and answers `{"ok": true, "port": N}`. For every incoming connection it sends
+  `{"op": "accept", "id": "…"}`; a new WebSocket to `/tcp` with `{"token", "accept": "<id>"}` takes that connection within
+  30 seconds and is a tunnel to it as above. Closing the listening WebSocket stops listening and closes connections not taken.
+  Only a relay bound to a loopback address listens (`"listen"` in the `features` of `/info`); a shared relay refuses.
 * **HTTP proxy:** `POST /http` with header `X-Relay-Token` and body
   `{"method", "url", "headers": [[name, value]], "body": "<base64>", "insecure", "followRedirects", "timeout"}`;
   answer `{"status", "reason", "url", "httpVersion", "headers": [[name, value]], "body": "<base64>", "timeMs"}`
@@ -194,6 +199,8 @@ implementation. SSH stays encrypted end to end by the SSH client in the browser.
 * Requests from other web pages are rejected (the `Origin` header must be allowed), and so are requests with an
   unknown `Host` header (DNS rebinding). Forwarded headers are only trusted from `--trusted-proxy` addresses.
 * Allow-lists of targets for everybody (`--allow`) and per account.
+* Port forwarding (listening) only on `127.0.0.1`, only ports from 1024, and only when the relay itself is bound to a loopback
+  address – a relay on a server never opens ports for its users.
 * Served files (`--serve`) need no credentials; only regular files inside the folder are served (no `..`, no hidden files).
   Pages served by the relay can use it with its token like `file://` pages, so serve only the apps of the suite there.
 

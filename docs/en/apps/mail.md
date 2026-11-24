@@ -42,7 +42,9 @@ when new mail arrives. To move messages into folders, open the account.
   often used for tracking); **Plain text** shows the text version. Links open in a new tab.
 - Attachments are listed above the text: click one to save it.
 - **Search** searches the subject, sender and text of the current folder on the server (press Enter; clear the field to
-  return to the folder).
+  return to the folder). The list next to the field widens the search to **All folders** of the account or **All accounts**
+  that are connected: the results of every folder come together in one list, newest first, each with its folder (and account);
+  you can read, flag, delete and answer them as usual. The line above the results counts them; × goes back to the folder.
 - `Ctrl`+click selects several messages, `Shift`+click a range.
 - **🧵** groups the list by **conversation** (on by default): a message and its replies form one row with the number of
   messages (▸ 4), sorted by the newest message; click the number to show the replies, indented below each other.
@@ -110,6 +112,12 @@ the answer to the organizer (needs a connected account). **Save .ics** saves the
 **📂 Open .eml/.mbox** (or dropping files onto the window) opens single messages and mailbox files (exported from
 Thunderbird and others). They appear under "Opened files" in the side bar; you can read, search, reply, forward and save
 them. With an account connected, 📁 copies them into an IMAP folder.
+
+**🗄 mbox → Export as mbox…** saves the selected messages – without a selection the whole current folder (also the messages
+not loaded yet), the search results or the opened file – as one `.mbox` file, oldest first, for Thunderbird, mutt, Apple Mail or
+an archive. The marks read, answered and flagged are kept (`Status`/`X-Status` headers, as mutt and Thunderbird read them).
+**mbox → Import mbox into this folder…** puts all messages of one or more `.mbox` files into the open IMAP folder, with these
+marks; a progress bar shows how far it is.
 
 ↗ next to an attachment (**Open with…**) opens it in another application of the suite: attachments of received messages as a copy, attachments of a message being written so that saving replaces the attachment.
 

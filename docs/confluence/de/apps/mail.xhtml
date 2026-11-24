@@ -38,7 +38,9 @@ gedacht.</p>
   Bilder</strong> (oft zur Nachverfolgung benutzt) angezeigt; <strong>Nur Text</strong> zeigt die Textfassung. Links öffnen in einem neuen Tab.</li>
 <li>Anhänge stehen über dem Text: Ein Klick speichert sie.</li>
 <li><strong>Suchen</strong> durchsucht Betreff, Absender und Text des aktuellen Ordners am Server (Eingabetaste; Feld leeren, um zum Ordner
-  zurückzukehren).</li>
+  zurückzukehren). Die Liste neben dem Feld erweitert die Suche auf <strong>Alle Ordner</strong> des Kontos oder <strong>Alle Konten</strong>, die verbunden
+  sind: Die Treffer aller Ordner kommen in eine Liste, die neuesten zuerst, jeweils mit ihrem Ordner (und Konto); Sie können sie wie
+  gewohnt lesen, markieren, löschen und beantworten. Die Zeile über den Treffern zählt sie; × führt zum Ordner zurück.</li>
 <li><strong>🧵</strong> gruppiert die Liste nach <strong>Unterhaltungen</strong> (standardmäßig an): eine Nachricht und ihre Antworten bilden eine Zeile mit der
   Anzahl der Nachrichten (▸ 4), sortiert nach der neuesten Nachricht; ein Klick auf die Zahl zeigt die Antworten eingerückt
   untereinander. Antworten werden über ihre Verweise erkannt (wie in Thunderbird) und bei Programmen, die diese weglassen, über
@@ -131,6 +133,11 @@ den Kontakten hinzu. Kontakte werden mit der Verbindungsdatei gespeichert.</p>
 <p><strong>📂 .eml/.mbox öffnen</strong> (oder Ziehen von Dateien auf das Fenster) öffnet einzelne Nachrichten und Postfachdateien (z. B.
 aus Thunderbird exportiert). Sie erscheinen unter „Geöffnete Dateien“ in der Seitenleiste; Sie können sie lesen, durchsuchen,
 beantworten, weiterleiten und speichern. Bei verbundenem Konto kopiert 📁 sie in einen IMAP-Ordner.</p>
+<p><strong>🗄 mbox → Als mbox exportieren…</strong> speichert die ausgewählten Nachrichten – ohne Auswahl den ganzen aktuellen Ordner (auch die noch nicht
+geladenen Nachrichten), die Suchtreffer oder die geöffnete Datei – als eine <code>.mbox</code>-Datei, die ältesten zuerst, für Thunderbird, mutt, Apple Mail
+oder ein Archiv. Die Markierungen gelesen, beantwortet und markiert bleiben erhalten (Kopfzeilen <code>Status</code>/<code>X-Status</code>, wie mutt und Thunderbird sie
+lesen). <strong>mbox → mbox in diesen Ordner importieren…</strong> legt alle Nachrichten einer oder mehrerer <code>.mbox</code>-Dateien mit diesen Markierungen in den
+geöffneten IMAP-Ordner; ein Fortschrittsbalken zeigt den Stand.</p>
 <p>↗ neben einem Anhang (<strong>Öffnen mit…</strong>) öffnet ihn in einer anderen Anwendung der Suite: Anhänge empfangener Nachrichten als Kopie, Anhänge einer Nachricht in Bearbeitung so, dass Speichern den Anhang ersetzt.</p>
 <h2>Tastenkürzel</h2>
 <p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>

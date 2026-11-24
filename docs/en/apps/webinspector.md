@@ -40,6 +40,18 @@ without loading it (optionally with its address, so that relative links work).
   relay (browsers hide `Set-Cookie` from pages). localStorage and similar storage are filled by scripts, which the preview
   does not run; the bookmarklet shows them in the real page.
 
+### Accessibility
+
+**Accessibility** → **Check accessibility** tests the page with [axe-core](https://github.com/dequelabs/axe-core), the rule set used by
+many accessibility tools (WCAG 2.x levels A and AA, plus best practices): missing alternative texts, form fields without labels, buttons
+and links without names, too little colour contrast, missing language, wrong ARIA, headings and landmarks and more. The problems are
+listed most severe first (*critical*, *serious*, *moderate*, *minor*), each with the affected elements (selector and HTML), a hint how to
+fix it and a link to the explanation. *To review by hand* lists what the rules could not decide.
+
+The check runs in an isolated frame with the page's HTML and CSS; the page's own scripts do not run (content that scripts would add is
+not checked). In German, rule titles and descriptions are German, the hints per element English. Automatic rules find only part of
+the problems – a check with a keyboard and a screen reader stays necessary.
+
 ## HAR viewer
 
 A HAR file is the network log of a browser (in the developer tools: Network → "Save all as HAR"). **Open HAR file** (or

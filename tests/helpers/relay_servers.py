@@ -1,5 +1,6 @@
 """Local test servers for the relay tests: TCP echo, TLS echo, STARTTLS echo, HTTP (without CORS)."""
 import http.server
+import gzip
 import json
 import socketserver
 import ssl
@@ -106,6 +107,12 @@ def http_server():
             }).encode()
             self.send_response(404 if self.path == "/missing" else 200)
             self.send_header("Content-Type", "application/json")
+            # /gzip and /deflate: compressed as a web server does when the client accepts it
+            coding = self.path.strip("/").split("?")[0]
+            if coding in ("gzip", "deflate") and coding in self.headers.get("Accept-Encoding", ""):
+                import zlib
+                body = gzip.compress(body) if coding == "gzip" else zlib.compress(body)
+                self.send_header("Content-Encoding", coding)
             self.send_header("Set-Cookie", "session=abc; HttpOnly")
             if self.path.startswith("/cors/"):  # like a credential-aware API: echo the origin
                 self.send_header("Access-Control-Allow-Origin", self.headers.get("Origin") or "*")

@@ -63,6 +63,10 @@ Long files (two minutes or more) continue where you stopped last time (the last 
 loudness) and **Normalise loudness**, which evens out loud and quiet passages. It works for local files; stream URLs are
 played unchanged (the browser does not allow processing their sound).
 
+**Visualisation**: the selector next to 🎚 shows the sound of a local audio file while it plays, in place of the cover: a
+**spectrum** (bars from deep to high notes), the **waveform** (like an oscilloscope) or a **circle** of bars. Like the equaliser
+it works for local files only.
+
 Volume, mute, speed, shuffle, repeat and whether the playlist is shown are remembered in this browser.
 Media keys of the keyboard and the playback notification on Android work as well.
 

@@ -40,6 +40,7 @@ In Chrome and Edge on the desktop, installed applications are offered by the ope
 | Hex editor | `hexeditor.html` | [Hex editor](apps/hexeditor.md) |
 | PDF viewer | `pdfviewer.html` | [PDF viewer](apps/pdfviewer.md) |
 | KeePass | `keepass.html` | [KeePass](apps/keepass.md) |
+| Authenticator (two-factor codes) | `authenticator.html` | [Authenticator](apps/authenticator.md) |
 | Archive manager | `archive.html` | [Archive manager](apps/archive.md) |
 | Media player | `mediaplayer.html` | [Media player](apps/mediaplayer.md) |
 | Image editor | `imageeditor.html` | [Image editor](apps/imageeditor.md) |
@@ -82,12 +83,20 @@ Every application has the same header:
 
 | Button | Function |
 |---|---|
-| ABC / ABC✓ | Spelling: off, or the language that text fields are checked in (only in applications with text, see [Spelling](#spelling)) |
+| ABC / ABC · language | Spelling: off, or the language that text fields are checked in (only in applications with text, see [Spelling](#spelling)) |
 | ⌘ | Command palette: search all actions of the application (also `Ctrl+Shift+P` or `Ctrl+Shift+Space`) |
-| ◐ / ☀ / ☾ | Design: automatic (follows the system), light or dark |
+| Sun-moon / sun / moon | Design: automatic (follows the system), light or dark |
 | DE / EN | Switches the language between German and English |
 | ? | Information about the application and its keyboard shortcuts (also `F1`, or `?` outside of text fields) |
 | ☺ | In a focused text field: emoji and symbols (also `Ctrl+.`, see [Emoji and symbols](#emoji-and-symbols)) |
+| ⌃ (phones and narrow windows) | Collapses the toolbar row of the application, or shows it again – more room for the content |
+| Panel icon | Hides the title bar. A small button at the top right shows it again (or *Show the title bar* in the command palette). |
+
+Both settings – a hidden title bar and a collapsed toolbar – are remembered and apply to all applications of the suite in this browser.
+
+The buttons show **icons** that are part of the suite, so they look the same in every browser and on every system. This documentation
+writes them as similar characters (for example 💾 for *Save*, 🔍 for *Find*); the name of a button appears when you hold the pointer over
+it, and screen readers announce it.
 
 The applications remember the language and the design in your browser.
 
@@ -424,6 +433,12 @@ Open the address it prints (e.g. `http://127.0.0.1:8765/`, the overview). Pages 
 its header shows **🔓 Network and interrupt**. The apps use that relay by default; enter its token once. Settings and recently
 used files are kept separately for the files opened directly and for those served by the relay (export and import them with
 **⚙ Settings**). The port is set with `--port` (default 8765).
+
+**Installing as an app (PWA).** Served by the relay (on `localhost`, or over `https`), the suite and every application can be
+**installed** like an app: in Chrome and Edge with **Install as an app** in the title bar (or the install icon in the address bar), on
+Android with *Add to home screen* / *Install app* in the browser menu. The installed app opens in its own window with its own icon. The
+browser keeps a copy of every page that was opened, so an installed app also starts when the relay does not run (the network functions
+then wait for the relay). Opening the HTML files directly does not change.
 
 **A company proxy.** If the relay may only reach the internet through a proxy, start it with
 `--upstream-proxy http://proxy.example.org:3128` (with `user:password@` before the host if needed; `--upstream-proxy env` takes

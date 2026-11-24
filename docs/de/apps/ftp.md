@@ -73,6 +73,17 @@ Vergleich standardmäßig auf die Größen. Je Seite werden höchstens 5000 Date
 
 **Neuer Ordner**, **Umbenennen** (ein gewählter Eintrag) und **Löschen** (gewählte Einträge; Ordner werden nach einer Bestätigung mit Inhalt gelöscht).
 
+**Rechte.** Wenn der Server sie meldet (SFTP immer, FTP mit `MLSD` oder Unix-Auflistungen), zeigt die Liste die Rechte jedes Eintrags (`rwxr-xr-x`).
+**🔐 Rechte** ändert sie für die gewählten Einträge: Lesen, Schreiben und Ausführen für Eigentümer, Gruppe und Andere ankreuzen oder den Oktalwert
+eintippen (`644`, `755`, …). FTP-Server müssen `SITE CHMOD` unterstützen (die meisten Unix-Server tun das, Windows-Server meist nicht).
+
+**👁 Vorschau** zeigt die gewählte Datei, ohne sie zu speichern: Bilder, Audio und Video (bis 20 MB), Textdateien (die ersten 256 KB) und andere Dateien
+als Hex-Ansicht ihres Anfangs.
+
+**✎ Bearbeiten** öffnet eine Textdatei (bis 2 MB) in einem einfachen Editor im Client; **Auf dem Server speichern** (`Strg+S`) lädt sie wieder hoch.
+Zeilenenden (`CRLF` oder `LF`) bleiben erhalten. Hat sich die Datei seit dem Öffnen auf dem Server geändert, wird vor dem Überschreiben gefragt. Für
+größere Dateien, Binärdateien und Syntaxhervorhebung verwenden Sie **Öffnen mit…** mit dem Text- oder Hex-Editor.
+
 **Öffnen mit…** öffnet die gewählte entfernte Datei in einer anderen Anwendung der Suite; Speichern dort lädt sie wieder hoch (in der Übertragungsliste sichtbar). Sind **mehrere Dateien** gewählt (`Strg+Klick`), öffnet der Texteditor oder der Hex-Editor alle in einem Fenster, jede in einem eigenen Tab.
 
 ## Tastenkürzel

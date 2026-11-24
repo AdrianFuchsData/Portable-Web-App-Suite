@@ -32,12 +32,30 @@ von selbst.</p></ac:rich-text-body></ac:structured-macro>
    sein darf (L 7 %, M 15 %, Q 25 %, H 30 %). 1D-Codes nehmen nur bestimmte Zeichen an (EAN/UPC: Ziffern, die Prüfziffer
    wird berechnet) – beim Wechsel wird ein Beispiel eingetragen; eine Fehlermeldung erklärt ungültige Inhalte.</li>
 <li>Stellen Sie die <strong>Modulgröße</strong> (Pixel je Quadrat bzw. Balken), die <strong>Ruhezone</strong> (weißer Rand in Modulen; Scanner brauchen
-   ihn), bei 1D-Codes die <strong>Balkenhöhe</strong> und den Text unter den Balken sowie die <strong>Farben</strong> oder einen transparenten
-   Hintergrund ein. Dunkle Codes auf hellem Grund mit genug Kontrast sind am sichersten.</li>
+   ihn), bei 1D-Codes die <strong>Balkenhöhe</strong> sowie die <strong>Farben</strong> oder einen transparenten Hintergrund ein. Dunkle Codes auf hellem
+   Grund mit genug Kontrast sind am sichersten.</li>
+<li>Text zum Code: 1D-Codes zeigen ihre Ziffern unter den Balken (<strong>Text unter den Balken</strong>); bei 2D-Codes fügt <strong>Den kodierten Text
+   unter dem Code zeigen</strong> den Inhalt hinzu, umbrochen auf die Breite des Codes (lange Inhalte werden nach 12 Zeilen gekürzt). Eine
+   eigene <strong>Beschriftung</strong> – ein Name, ein Preis, „Scannen Sie mich“ – steht unter oder über dem Code (<em>Position der Beschriftung</em>).
+   Der Text ist Teil von SVG und PNG, so ist ein Etikett fertig zum Drucken.</li>
 </ol>
 <p>Die Vorschau wird automatisch zurückgelesen: <strong>✓ lesbar</strong> bestätigt, dass der Code gescannt werden kann. <strong>⬇ SVG</strong>
 (skalierbar, für den Druck) und <strong>⬇ PNG</strong> laden den Code herunter, <strong>Bild kopieren</strong> legt ihn in die Zwischenablage,
 <strong>🖨 Drucken</strong> druckt nur den Code.</p>
+<h2>Stapel: viele Codes auf einmal</h2>
+<p><strong>📑 Stapel</strong> erstellt viele Codes in einem Durchgang – etwa Etiketten für ein Regal, Eintrittskarten oder Inventarnummern:</p>
+<ul>
+<li>Tippen oder fügen Sie die Inhalte ein, <strong>ein Code je Zeile</strong>, oder <strong>öffnen Sie eine CSV- oder Textdatei</strong>. Bei einer CSV-Datei (Komma,
+  Strichpunkt oder Tabulator) wählen Sie die Spalte mit dem <strong>Inhalt</strong> und auf Wunsch eine Spalte mit der <strong>Beschriftung</strong> (wird zu jedem Code
+  gedruckt) und eine mit dem <strong>Dateinamen</strong>; geben Sie an, ob die erste Zeile die Spaltennamen enthält. Eine Datei mit nur einer Spalte gilt
+  als Liste.</li>
+<li>Das <strong>Format</strong> lässt sich hier wählen; Größe, Farben, Text zum Code und Beschriftung (wenn es keine Beschriftungsspalte gibt) sind die unter
+  <strong>▦ Erstellen</strong> eingestellten.</li>
+<li><strong>Ergebnis</strong>: ein <strong>PDF</strong>-Etikettenbogen (A4 oder Letter, Spalten × Zeilen je Seite, die Codes in ihren Feldern zentriert) oder ein <strong>ZIP</strong>
+  mit einem <strong>PNG</strong>- oder <strong>SVG</strong>-Bild je Code (benannt nach der Dateinamensspalte, sonst nummeriert nach dem Inhalt).</li>
+</ul>
+<p>Inhalte, die das Format nicht kodieren kann (etwa Buchstaben bei EAN-13), werden übersprungen und mit ihrer Zeilennummer aufgelistet; ein ZIP
+enthält sie zusätzlich in <code>errors.txt</code>.</p>
 <h2>Tastenkürzel</h2>
 <p>Auf dem Mac verwenden Sie Cmd statt Strg. <code>F1</code> (oder <code>?</code>) zeigt diese Liste in der Anwendung.</p>
 <h3>Dateien</h3>

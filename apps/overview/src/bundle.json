@@ -2,6 +2,7 @@
   "files": {
     "archive": "../../../dist/archive.html",
     "audioeditor": "../../../dist/audioeditor.html",
+    "authenticator": "../../../dist/authenticator.html",
     "barcode": "../../../dist/barcode.html",
     "calendar": "../../../dist/calendar.html",
     "dbtool": "../../../dist/dbtool.html",

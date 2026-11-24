@@ -33,25 +33,25 @@
 
   Suite.i18n.register({
     en: {
-      'alink.openTitle': 'Open from', 'alink.mountTitle': 'Mount an archive', 'alink.saveTitle': 'Save “{0}” to', 'alink.fs': '💾 File system', 'alink.archives': 'Archives',
-      'alink.other': '📦 Another archive… (open or create one)', 'alink.searching': 'Looking for open archives…', 'alink.cancel': 'Cancel',
+      'alink.openTitle': 'Open from', 'alink.mountTitle': 'Mount an archive', 'alink.saveTitle': 'Save “{0}” to', 'alink.fs': 'File system', 'alink.archives': 'Archives',
+      'alink.other': 'Another archive… (open or create one)', 'alink.searching': 'Looking for open archives…', 'alink.cancel': 'Cancel',
       'alink.saved': 'Saved as “{0}” in the archive “{1}”.', 'alink.waiting': 'Choose in the archive manager…',
       'alink.setting': 'Offer archives when opening and saving files (the archive manager opens, creates and saves them)',
       'alink.closed': 'The archive “{0}” was closed or replaced: “{1}” cannot be loaded or saved there any more. Use “Save as”.',
       'alink.timeout': 'The archive manager does not answer.',
-      'alink.python': 'Python notebooks (in memory)', 'alink.pythonItem': '🐍 {0}',
+      'alink.python': 'Python notebooks (in memory)', 'alink.pythonItem': '{0}',
       'alink.pythonWarning': 'The Python file system lives only in memory: files saved there are gone when the notebook page is closed or Python restarts. Download or save them elsewhere to keep them.',
       'alink.savedPython': 'Saved as “{0}” in the Python file system of “{1}” (in memory only).',
       'alink.closedPython': 'Python in “{0}” was restarted or its page was closed: “{1}” is gone from its file system. Use “Save as”.',
     },
     de: {
-      'alink.openTitle': 'Öffnen aus', 'alink.mountTitle': 'Ein Archiv einbinden', 'alink.saveTitle': '„{0}“ speichern in', 'alink.fs': '💾 Dateisystem', 'alink.archives': 'Archive',
-      'alink.other': '📦 Anderes Archiv… (öffnen oder neu anlegen)', 'alink.searching': 'Suche geöffnete Archive…', 'alink.cancel': 'Abbrechen',
+      'alink.openTitle': 'Öffnen aus', 'alink.mountTitle': 'Ein Archiv einbinden', 'alink.saveTitle': '„{0}“ speichern in', 'alink.fs': 'Dateisystem', 'alink.archives': 'Archive',
+      'alink.other': 'Anderes Archiv… (öffnen oder neu anlegen)', 'alink.searching': 'Suche geöffnete Archive…', 'alink.cancel': 'Abbrechen',
       'alink.saved': 'Als „{0}“ im Archiv „{1}“ gespeichert.', 'alink.waiting': 'Wählen Sie im Archivmanager…',
       'alink.setting': 'Beim Öffnen und Speichern von Dateien Archive anbieten (der Archivmanager öffnet, erstellt und speichert sie)',
       'alink.closed': 'Das Archiv „{0}“ wurde geschlossen oder ersetzt: „{1}“ lässt sich dort nicht mehr laden oder speichern. Verwenden Sie „Speichern unter“.',
       'alink.timeout': 'Der Archivmanager antwortet nicht.',
-      'alink.python': 'Python-Notebooks (im Speicher)', 'alink.pythonItem': '🐍 {0}',
+      'alink.python': 'Python-Notebooks (im Speicher)', 'alink.pythonItem': '{0}',
       'alink.pythonWarning': 'Das Python-Dateisystem existiert nur im Speicher: Dort gespeicherte Dateien sind weg, wenn die Notebook-Seite geschlossen oder Python neu gestartet wird. Laden Sie sie herunter oder speichern Sie sie anderswo, um sie zu behalten.',
       'alink.savedPython': 'Als „{0}“ im Python-Dateisystem von „{1}“ gespeichert (nur im Speicher).',
       'alink.closedPython': 'Python in „{0}“ wurde neu gestartet oder seine Seite geschlossen: „{1}“ ist nicht mehr in seinem Dateisystem. Verwenden Sie „Speichern unter“.',
@@ -127,16 +127,17 @@
       const header = document.createElement('header');
       header.textContent = kind === 'save' ? Suite.t('alink.saveTitle', name) : kind === 'mount' ? Suite.t('alink.mountTitle') : Suite.t('alink.openTitle');
       const done = (value) => { dialog.close(); dialog.remove(); resolve(value); };
-      const button = (text, testid, onClick, cls = 'secondary outline') => {
+      const button = (text, testid, onClick, cls = 'secondary outline', icon = null) => {
         const b = document.createElement('button');
         b.type = 'button';
         b.className = cls;
         b.dataset.testid = testid;
-        b.textContent = text;
+        if (icon && Suite.icons) b.innerHTML = `${Suite.icons.svg(icon)} `;
+        b.append(text);
         b.addEventListener('click', onClick);
         return b;
       };
-      const fs = button(Suite.t('alink.fs'), 'storage-fs', () => done({ kind: 'fs' }), '');
+      const fs = button(Suite.t('alink.fs'), 'storage-fs', () => done({ kind: 'fs' }), '', 'hard-drive');
       const list = document.createElement('div');
       list.className = 'suite-open-with-list';
       list.dataset.testid = 'storage-archives';
@@ -145,7 +146,7 @@
       const legend = document.createElement('strong');
       legend.textContent = Suite.t('alink.archives');
       // (window.open must run in the click itself, popup blockers)
-      list.append(button(Suite.t('alink.other'), 'storage-other', () => { try { done({ kind: 'archive', target: startArchiveManager() }); } catch (err) { done(null); Suite.shell.toast(Suite.i18n.describe(err), 'error'); } }));
+      list.append(button(Suite.t('alink.other'), 'storage-other', () => { try { done({ kind: 'archive', target: startArchiveManager() }); } catch (err) { done(null); Suite.shell.toast(Suite.i18n.describe(err), 'error'); } }, undefined, 'package-plus'));
       const footer = document.createElement('footer');
       footer.append(button(Suite.t('alink.cancel'), 'storage-cancel', () => done(null), 'secondary'));
       article.append(header, ...(kind === 'mount' ? [] : [fs]), legend, list, status, footer);
@@ -157,7 +158,7 @@
       listArchives().then((found) => {
         status.remove();
         const archives = found.filter((a) => a.kind !== 'python');
-        for (const a of archives.reverse()) list.prepend(button(`📦 ${a.name}${a.format ? ` (${a.format})` : ''}`, 'storage-archive', () => done({ kind: 'archive', target: a.target })));
+        for (const a of archives.reverse()) list.prepend(button(`${a.name}${a.format ? ` (${a.format})` : ''}`, 'storage-archive', () => done({ kind: 'archive', target: a.target }), undefined, 'package'));
         // Python notebooks: their file system, with the warning that it lives only in memory (not for mounting)
         const pythons = kind === 'mount' ? [] : found.filter((a) => a.kind === 'python');
         if (pythons.length) {
@@ -166,11 +167,12 @@
           const plist = document.createElement('div');
           plist.className = 'suite-open-with-list';
           plist.dataset.testid = 'storage-pythons';
-          for (const a of pythons) plist.append(button(Suite.t('alink.pythonItem', a.name), 'storage-python', () => done({ kind: 'archive', target: a.target })));
+          for (const a of pythons) plist.append(button(Suite.t('alink.pythonItem', a.name), 'storage-python', () => done({ kind: 'archive', target: a.target }), undefined, 'notebook-pen'));
           const warning = document.createElement('p');
           warning.className = 'suite-storage-warning';
           warning.dataset.testid = 'storage-python-warning';
-          warning.textContent = `⚠ ${Suite.t('alink.pythonWarning')}`;
+          if (Suite.icons) warning.innerHTML = `${Suite.icons.svg('triangle-alert')} `;
+          warning.append(Suite.t('alink.pythonWarning'));
           footer.before(title, plist, warning);
         }
       }, () => status.remove());
