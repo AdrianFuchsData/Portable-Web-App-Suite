@@ -29,12 +29,12 @@ RELAYS_V2 = {
                                      "base_path": "--base-path", "trusted_proxy": "--trusted-proxy", "proxy_user_header": "--proxy-user-header",
                                      "session_hours": "--session-hours", "tls": ("--tls-cert", "--tls-key"), "cafile": "--cafile",
                                      "serve": "--serve", "upstream_proxy": "--upstream-proxy", "no_proxy": "--no-proxy", "origins": "--origin",
-                                     "insecure_transport": "--insecure-transport"}),
+                                     "insecure_transport": "--insecure-transport", "no_listen": "--no-listen"}),
     "powershell": (RELAYS["powershell"][0], {"port": "-Port", "token": "-Token", "users": "-Users", "bind": "-Bind", "hosts": "-HostName",
                                              "base_path": "-BasePath", "trusted_proxy": "-TrustedProxy", "proxy_user_header": "-ProxyUserHeader",
                                              "session_hours": "-SessionHours", "tls": ("-TlsCert", "-TlsKey"), "cafile": "-CaFile",
                                              "serve": "-Serve", "upstream_proxy": "-UpstreamProxy", "no_proxy": "-NoProxy", "origins": "-Origin",
-                                             "insecure_transport": "-InsecureTransport"}),
+                                             "insecure_transport": "-InsecureTransport", "no_listen": "-NoListen"}),
 }
 
 

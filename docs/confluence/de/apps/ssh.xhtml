@@ -28,7 +28,7 @@ eingebauten Dateibereich. Verbindungen laufen über das <strong>lokale Relay</st
 <li><strong>Lokal (hier → Server)</strong>: Das Relay lauscht auf diesem Rechner an <code>127.0.0.1</code> und einem Port (leer = ein freier Port, nach dem Start angezeigt);
   jede Verbindung dorthin gibt der SSH-Server an <em>Host:Port</em> weiter – etwa eine Datenbank oder Weboberfläche, die nur der Server erreicht
   (<code>localhost:5432</code> vom Server aus gesehen). Andere Programme auf diesem Rechner und die anderen Apps der Suite verbinden sich mit <code>127.0.0.1</code> am
-  angezeigten Port. Das braucht das Relay auf dem eigenen Rechner (ein gemeinsames Relay lauscht an keinen Ports).</li>
+  angezeigten Port. Das braucht das Relay auf dem eigenen Rechner (ein gemeinsames Relay oder eines, das mit <code>--no-listen</code> gestartet wurde, lauscht an keinen Ports).</li>
 <li><strong>Entfernt (Server → hier)</strong>: Der SSH-Server lauscht an seinem <code>127.0.0.1</code> am angegebenen Port; Verbindungen dorthin kommen über den Browser und
   das Relay zu <em>Host:Port</em> auf dieser Seite zurück.</li>
 </ul>

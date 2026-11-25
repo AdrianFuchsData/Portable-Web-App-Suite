@@ -85,15 +85,17 @@ works the same in the source tree and in the built file.
 ### Hosted PWA variant
 
 `python3 tools/build_pwa.py [dir]` (default `build/pwa`, git-ignored) turns the built apps into a web site that can be
-installed: each `<app>.html` gets a `<link rel="manifest">`, the registration of `sw.js` (only on http/https) and a CSP
+installed: each `<app>.html` gets – right after its CSP meta tag, since inlined code further down may contain `</head>` in strings –
+a `<link rel="manifest">`, the registration of `sw.js` (only on http/https) and a CSP
 extended by `manifest-src 'self'` and `'self'` in `worker-src`/`img-src`; next to it `<app>.webmanifest` (id/start URL
-`./<app>.html`, standalone, the favicon as `icons/<app>.svg`, `file_handlers` with the extensions of the app from the app
+`./<app>.html`, standalone, the favicon as `icons/<app>.svg` plus the suite icon as `icons/suite-192.png` and `suite-512.png` (drawn with the standard
+library; raster icons for start screens and splash screens), `file_handlers` with the extensions of the app from the app
 list in `shared/js/bridge.js`) and `index.html` forwarding to the overview. The service worker uses one cache: the overview,
 manifests and icons are added on installation, every other file on its first load; requests are answered from the cache
 and refreshed in the background (stale-while-revalidate, query strings ignored). Files opened through a file handler
 arrive at `window.launchQueue`; `Suite.bridge.receive` passes the first one (apps with tabs: all of them) with its real
 `FileSystemFileHandle` to the app (so saving writes back). Serve `.webmanifest` as `application/manifest+json`. Test: `tests/apps/test_pwa.py` (output,
-offline reload and the forwarding index in Chromium, the launch queue with a stub). The relay's `--serve` mode offers the same without a
+the tags at the top of `<head>`, every app starts, offline reload and the forwarding index in Chromium, the launch queue with a stub). The relay's `--serve` mode offers the same without a
 build step (see *PWA* in the relay section; `tests/apps/test_pwa_relay.py`).
 
 ### Releases and the public repository
@@ -1031,7 +1033,7 @@ WebSocket `{"listen": {"port"}}` receives `{"op": "accept", "id"}`, `Suite.relay
 connection) and `client.dial(host, port)`; remote forwardings use `client.listen('127.0.0.1', port)` (SSH `tcpip-forward`), whose
 `accept()` gives channels that are connected to `Suite.relay.connect(host, port)`. `pipe(a, b)` copies in both directions until one
 side ends. Saved forwardings (`forwards: [{type, listenPort, host, port}]`) start after connecting; all stop with the tab. The relays
-listen only when bound to loopback, on 127.0.0.1, ports ≥ 1024; unclaimed connections are closed after 30 s
+listen only when bound to loopback and not started with `--no-listen` / `-NoListen`, on 127.0.0.1, ports ≥ 1024; unclaimed connections are closed after 30 s
 (`tests/relay/test_listen.py`, both implementations).
 
 Tests: `tests/apps/test_ssh_client.py` against a local OpenSSH server (`tests/helpers/ssh_fixtures.py`, key authentication) through both relays:
@@ -1929,6 +1931,199 @@ relay is unreachable; everything else (the relay's API, WebSockets) passes untou
 that nothing of the tunnel is consumed) and put TLS on top if requested (`upgrade_tls`, shared with STARTTLS; `SslStream`). `/http`
 uses `urllib`'s `ProxyHandler` (Python; an explicit empty one for `--no-proxy` hosts) or the same `CONNECT` tunnel (PowerShell's raw
 HTTP client). `--no-proxy` patterns match the host, `*.domain` globs and domain suffixes.
+
+
+### Public online service (nginx and systemd)
+
+To offer the suite as a public web site, with the network functions for your own users only: **nginx serves the apps** as
+static files (anyone may use them, without signing in), and **the relay** behind it serves only its API to users with an
+account. nginx should serve the files, not `relay.py --serve`: the relay answers every request in full (no ETag/304), so
+every visit would download the whole app again (the overview is about 133 MB).
+
+**Files.** On your own machine, with `dist/` built (or the files of a release in `dist/`), make the static site:
+
+```sh
+python3 tools/build_pwa.py build/pwa
+```
+
+`build/pwa/` holds the 25 apps (no prototypes or test pages), a manifest and an icon per app, the service worker `sw.js`
+(answers from its cache, refreshes in the background: fast repeat visits, offline use) and `index.html`, which forwards to
+the overview. On the server you need nothing else from the repository:
+
+| On the server | From | Purpose |
+|---|---|---|
+| `/srv/suite/www/` | the contents of `build/pwa/` | the public site (read-only) |
+| `/opt/suite-relay/relay.py` | `relay/python/relay.py` | the relay; Python 3.8 or later, standard library only |
+| `/etc/suite-relay/users.json` | made on the server (below) | the relay accounts |
+
+```sh
+sudo useradd --system --no-create-home --shell /usr/sbin/nologin suite-relay
+sudo install -d -m 750 -o root -g suite-relay /etc/suite-relay
+sudo python3 /opt/suite-relay/relay.py --users /etc/suite-relay/users.json --add-user anna --allow-user 'mail.example.org:993'
+sudo chown root:suite-relay /etc/suite-relay/users.json && sudo chmod 640 /etc/suite-relay/users.json
+```
+
+`--allow-user` restricts what one account may reach, within the relay's `--allow` list.
+
+**systemd** (`/etc/systemd/system/suite-relay.service`):
+
+```ini
+[Unit]
+Description=Portable Web App Suite relay
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=suite-relay
+Group=suite-relay
+ExecStart=/usr/bin/python3 /opt/suite-relay/relay.py \
+    --users /etc/suite-relay/users.json \
+    --bind 127.0.0.1 --port 8765 \
+    --trusted-proxy 127.0.0.1 \
+    --host suite.example.org \
+    --origin https://suite.example.org \
+    --no-listen \
+    --allow 'mail.example.org:993' --allow 'mail.example.org:587' \
+    --allow 'git.internal.example.org:22'
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+MemoryMax=1G
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```sh
+sudo systemctl daemon-reload && sudo systemctl enable --now suite-relay
+journalctl -u suite-relay -f
+```
+
+- **`--allow` is the important part.** Without it, a signed-in user can reach every host and port the server can reach,
+  including your internal network. Name only the services meant for the suite.
+- **`--users`, no `--token`:** every person has an account of their own that can be removed alone; a shared token cannot be
+  revoked for one person, and one leak gives everyone access.
+- **`--trusted-proxy 127.0.0.1`:** the relay believes nginx's `X-Forwarded-*` headers (TLS, the client's address for the
+  login rate limit); requests with forwarded headers from other addresses are refused.
+- **`--host` and `--origin`:** the public name (protection against DNS rebinding) and the origin of the pages – nginx
+  serves them, so the relay does not add its own origin as with `--serve`.
+- **`--no-listen`:** a relay on loopback would otherwise let its users open ports on the server's `127.0.0.1` (port
+  forwarding of the SSH client).
+- Behind a company proxy add `--upstream-proxy http://proxy:3128` and `--no-proxy …`.
+
+**nginx** (`/etc/nginx/sites-available/suite`):
+
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+    server_name suite.example.org;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name suite.example.org;
+    ssl_certificate     /etc/letsencrypt/live/suite.example.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/suite.example.org/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    root /srv/suite/www;
+    index index.html;
+    gzip on;
+    gzip_types application/javascript application/manifest+json image/svg+xml;
+
+    # for every response (no location below sets headers of its own, so all of them inherit these)
+    add_header Cache-Control                "no-cache" always;
+    add_header Cross-Origin-Opener-Policy   "same-origin" always;
+    add_header Cross-Origin-Embedder-Policy "require-corp" always;
+    add_header Cross-Origin-Resource-Policy "same-origin" always;
+    add_header X-Content-Type-Options       "nosniff" always;
+    add_header Referrer-Policy              "no-referrer" always;
+    add_header Strict-Transport-Security    "max-age=31536000" always;
+
+    # the public apps: no sign-in; revalidated (ETag/Last-Modified, 304 when unchanged)
+    location / {
+        try_files $uri $uri/ =404;
+    }
+    # web app manifests: the type is set here (a types { } block would replace nginx's whole MIME table)
+    location ~ \.webmanifest$ {
+        default_type application/manifest+json;
+        types { }
+        try_files $uri =404;
+    }
+
+    # the relay: only its API paths, everything there needs an account
+    location ~ ^/(info|auth|auth/logout|http)$ {
+        proxy_pass http://127.0.0.1:8765;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        client_max_body_size 100m;
+        proxy_read_timeout 120s;
+    }
+    location = /tcp {
+        proxy_pass http://127.0.0.1:8765;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade           $http_upgrade;
+        proxy_set_header Connection        "upgrade";
+        proxy_set_header Host              $host;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 1d;
+        proxy_send_timeout 1d;
+        proxy_buffering off;
+    }
+}
+```
+
+- **`/tcp` carries the WebSocket tunnels** (mail, SSH, SFTP, FTP, databases, Python sockets). A WebSocket starts as an HTTP
+  request with `Upgrade: websocket` and `Connection: upgrade`; nginx does not pass these hop-by-hop headers on by itself,
+  so they are set again. At `/tcp` every request is a WebSocket, so `Connection` is the fixed value `upgrade` (the common
+  `map $http_upgrade $connection_upgrade { … }` only matters where plain requests and upgrades share a location, and
+  a `map` must be in the `http {}` context).
+- **Long timeouts** keep idle SSH and mail sessions open; `client_max_body_size` allows the HTTP analyzer's request
+  bodies (the relay itself accepts up to 64 MiB).
+- **`X-Forwarded-For`:** the relay uses the last address of the header, the one nginx adds, so a visitor cannot pretend to
+  come from another address.
+- **No `--serve`:** the relay answers only its API; the paths above are all it has. The pages are cross-origin isolated by
+  the headers, so the apps use `https://suite.example.org` as their relay address by themselves – users only enter their
+  account in the relay settings (sign-in “User name and password”).
+- **Headers and types:** `add_header` lines in a `location` would replace all of those of the `server` block, so no `location`
+  sets any. A `types { }` block likewise replaces nginx's whole MIME table (HTML would then be downloaded as
+  `application/octet-stream` instead of shown), so only the manifests get their type, in a `location` of their own.
+
+**Updating.** Copy a new `build/pwa/` over `/srv/suite/www/`; visitors get it at their next start (the service worker
+refreshes in the background). A new relay: replace `relay.py`, `systemctl restart suite-relay`.
+
+**Installing.** Chrome and Edge (desktop) show an install icon in the address bar and the title bar of the suite shows **Install as
+an app** (also in the browser menu: *Cast, save and share → Install page as app*); Android: browser menu → *Install app* / *Add to
+home screen*; Safari on macOS: *File → Add to Dock*, on iOS *Share → Add to Home Screen*. Firefox on the desktop does not install web
+apps (newer versions only partly, on Windows). If nothing is offered, open the developer tools → *Application* → *Manifest*: the section *Installability* names the reason;
+*Service workers* must show `sw.js` as activated. Typical causes: `sw.js` or the manifest not sent with a JavaScript or JSON type
+(`curl -I https://suite.example.org/sw.js` – a `types { }` block in the server, see above), a page that does not start (a build made
+with a `build_pwa.py` before the fix of the head tags), plain `http` (installing needs HTTPS), or an old service worker in the browser
+(*Application* → *Storage* → *Clear site data*, reload).
+
+**Check before going public:** sign in once, connect to an allowed target, and see that a target outside `--allow` is
+refused (“target not allowed”); `curl https://suite.example.org/info` answers without credentials (version and sign-in
+methods only).
 
 ## Tests
 

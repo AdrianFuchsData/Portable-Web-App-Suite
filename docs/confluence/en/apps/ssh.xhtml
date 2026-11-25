@@ -28,7 +28,7 @@ integrated file panel. Connections go through the <strong>local relay</strong> (
 <li><strong>Local (here → server)</strong>: the relay listens on this computer at <code>127.0.0.1</code> and a port (empty = any free port, shown after
   starting); every connection to it is passed on by the SSH server to <em>host:port</em> – for example a database or web interface that
   only the server can reach (<code>localhost:5432</code> seen from the server). Other programs on this computer, and the other apps of the suite,
-  connect to <code>127.0.0.1</code> at the shown port. This needs the relay on your own machine (a shared relay does not listen on ports).</li>
+  connect to <code>127.0.0.1</code> at the shown port. This needs the relay on your own machine (a shared relay, or one started with <code>--no-listen</code>, does not listen on ports).</li>
 <li><strong>Remote (server → here)</strong>: the SSH server listens on its <code>127.0.0.1</code> at the given port; connections there come back through the
   browser and the relay to <em>host:port</em> on this side.</li>
 </ul>

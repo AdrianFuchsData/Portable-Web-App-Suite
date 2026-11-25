@@ -102,14 +102,62 @@ def patch_html(html, app):
     html, n = re.subn(r'content="(default-src[^"]*)"', csp, html, count=1)
     if not n:
         raise SystemExit(f"{app}: no Content-Security-Policy found")
-    return html.replace("</head>", f'  <link rel="manifest" href="{app}.webmanifest">\n  {REGISTER}\n</head>', 1)
+    # right after the CSP meta tag, at the top of <head>: inlined code further down can contain "</head>" in its strings (the
+    # text editor's Markdown preview builds whole pages), and a <script> put there would end the inlined script early
+    m = re.search(r'<meta\s+http-equiv="Content-Security-Policy"[^>]*>', html)
+    if not m:
+        raise SystemExit(f"{app}: no Content-Security-Policy meta tag found")
+    return html[:m.end()] + f'\n  <link rel="manifest" href="{app}.webmanifest">\n  {REGISTER}' + html[m.end():]
+
+
+def suite_png(size):
+    """The suite icon (as served by the relays: a blue rounded square with four white tiles) as PNG, drawn with the standard library
+    (4×4 samples per pixel, 2×2 for large sizes). Browsers want raster icons of 192 and 512 px for installing; the SVG of every app comes first."""
+    import struct
+    import zlib
+
+    def rounded(x, y, x0, y0, x1, y1, r):
+        if not (x0 <= x <= x1 and y0 <= y <= y1):
+            return False
+        cx = min(max(x, x0 + r), x1 - r)
+        cy = min(max(y, y0 + r), y1 - r)
+        return (x - cx) ** 2 + (y - cy) ** 2 <= r * r
+
+    tiles = [(138, 138, 241, 241, 1.0), (271, 138, 374, 241, 1.0), (138, 271, 241, 374, 1.0), (271, 271, 374, 374, 0.67)]
+    k = 4 if size <= 256 else 2
+    rows = []
+    for py in range(size):
+        row = bytearray([0])
+        for px in range(size):
+            acc = [0.0, 0.0, 0.0, 0.0]
+            for sy in range(k):
+                for sx in range(k):
+                    x, y = (px + (sx + 0.5) / k) * 512 / size, (py + (sy + 0.5) / k) * 512 / size
+                    if not rounded(x, y, 0, 0, 512, 512, 113):
+                        continue
+                    r, g, b = 0x15, 0x65, 0xC0
+                    for x0, y0, x1, y1, alpha in tiles:
+                        if rounded(x, y, x0, y0, x1, y1, 23):
+                            r, g, b = (round(c + (255 - c) * alpha) for c in (r, g, b))
+                            break
+                    acc[0] += r; acc[1] += g; acc[2] += b; acc[3] += 255
+            n = k * k
+            a = acc[3] / n
+            row += bytes([round(acc[0] / (acc[3] / 255) if acc[3] else 0), round(acc[1] / (acc[3] / 255) if acc[3] else 0),
+                          round(acc[2] / (acc[3] / 255) if acc[3] else 0), round(a)])
+        rows.append(bytes(row))
+    chunk = lambda kind, data: struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", size, size, 8, 6, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(b"".join(rows), 9)) + chunk(b"IEND", b""))
 
 
 def manifest(app, name, ext):
     data = {
         "id": f"./{app}.html", "name": name, "short_name": name, "start_url": f"./{app}.html", "scope": "./",
         "display": "standalone", "background_color": "#ffffff", "theme_color": "#0172ad",
-        "icons": [{"src": f"icons/{app}.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}],
+        "icons": [{"src": f"icons/{app}.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"},
+                  {"src": "icons/suite-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+                  {"src": "icons/suite-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}],
     }
     if ext:
         data["file_handlers"] = [{"action": f"./{app}.html", "accept": {"application/octet-stream": [f".{e}" for e in ext]}}]
@@ -123,7 +171,9 @@ def main():
     (out / "icons").mkdir(parents=True)
     known = bridge_apps()
     digest = hashlib.sha256()
-    precache = ["./", "index.html", "overview.html"]
+    precache = ["./", "index.html", "overview.html", "icons/suite-192.png", "icons/suite-512.png"]
+    for size in (192, 512):
+        (out / "icons" / f"suite-{size}.png").write_bytes(suite_png(size))
     for app in APPS:
         src = DIST / f"{app}.html"
         if not src.exists():

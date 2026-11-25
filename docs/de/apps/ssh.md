@@ -31,7 +31,7 @@ Unter **Proxy und Sprungserver** im Verbindungsdialog:
 - **Lokal (hier → Server)**: Das Relay lauscht auf diesem Rechner an `127.0.0.1` und einem Port (leer = ein freier Port, nach dem Start angezeigt);
   jede Verbindung dorthin gibt der SSH-Server an *Host:Port* weiter – etwa eine Datenbank oder Weboberfläche, die nur der Server erreicht
   (`localhost:5432` vom Server aus gesehen). Andere Programme auf diesem Rechner und die anderen Apps der Suite verbinden sich mit `127.0.0.1` am
-  angezeigten Port. Das braucht das Relay auf dem eigenen Rechner (ein gemeinsames Relay lauscht an keinen Ports).
+  angezeigten Port. Das braucht das Relay auf dem eigenen Rechner (ein gemeinsames Relay oder eines, das mit `--no-listen` gestartet wurde, lauscht an keinen Ports).
 - **Entfernt (Server → hier)**: Der SSH-Server lauscht an seinem `127.0.0.1` am angegebenen Port; Verbindungen dorthin kommen über den Browser und
   das Relay zu *Host:Port* auf dieser Seite zurück.
 

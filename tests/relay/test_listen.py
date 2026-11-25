@@ -83,3 +83,26 @@ def test_no_listen_on_a_shared_relay():
             assert answer["ok"] is False and "local machine" in answer["error"], impl
         finally:
             r["stop"]()
+
+
+def test_no_listen_option():
+    """--no-listen / -NoListen switches port forwarding off on a local relay (e.g. one behind the reverse proxy of a public site)."""
+    import shutil
+    from helpers.relay_fixtures import RELAYS_V2
+    for impl in RELAYS_V2:
+        if not shutil.which(RELAYS_V2[impl][0][0]):
+            continue
+        r = start_relay(impl, token="tok", no_listen=True)
+        try:
+            status, _, body = http_request(r["port"], "GET", "/info")
+            assert status == 200 and json.loads(body).get("features", []) == [], impl
+            ws = WebSocketClient(r["port"])
+            ws.send_json({"token": "tok", "listen": {"port": 0}})
+            answer = ws.recv_json()
+            assert answer["ok"] is False and "no-listen" in answer["error"].lower().replace("nolisten", "no-listen"), (impl, answer)
+            # tunnels still work as before
+            ws = WebSocketClient(r["port"])
+            ws.send_json({"token": "tok", "host": "127.0.0.1", "port": 9})
+            assert "ok" in ws.recv_json()
+        finally:
+            r["stop"]()

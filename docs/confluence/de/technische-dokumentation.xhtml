@@ -144,14 +144,16 @@ Anwendung importieren einander daher mit reinen Bezeichnern (<code>@app/doc.js</
 abbildet; das funktioniert im Quellbaum und in der gebauten Datei gleich.</p>
 <h3>Gehostete PWA-Variante</h3>
 <p><code>python3 tools/build_pwa.py [Verzeichnis]</code> (Standard <code>build/pwa</code>, von git ignoriert) macht aus den gebauten Apps eine installierbare
-Website: Jede <code>&lt;app&gt;.html</code> bekommt ein <code>&lt;link rel="manifest"&gt;</code>, die Registrierung von <code>sw.js</code> (nur unter http/https) und eine um
+Website: Jede <code>&lt;app&gt;.html</code> bekommt – direkt nach ihrem CSP-Meta-Tag, da eingebetteter Code weiter unten <code>&lt;/head&gt;</code> in Zeichenketten
+enthalten kann – ein <code>&lt;link rel="manifest"&gt;</code>, die Registrierung von <code>sw.js</code> (nur unter http/https) und eine um
 <code>manifest-src 'self'</code> und <code>'self'</code> in <code>worker-src</code>/<code>img-src</code> erweiterte CSP; daneben <code>&lt;app&gt;.webmanifest</code> (ID/Start-URL <code>./&lt;app&gt;.html</code>,
-standalone, das Favicon als <code>icons/&lt;app&gt;.svg</code>, <code>file_handlers</code> mit den Endungen der App aus der App-Liste in <code>shared/js/bridge.js</code>) und
+standalone, das Favicon als <code>icons/&lt;app&gt;.svg</code> sowie das Suite-Symbol als <code>icons/suite-192.png</code> und <code>suite-512.png</code> (mit der
+Standardbibliothek gezeichnet; Rastersymbole für Startbildschirme und Startansichten), <code>file_handlers</code> mit den Endungen der App aus der App-Liste in <code>shared/js/bridge.js</code>) und
 <code>index.html</code>, das zur Übersicht weiterleitet. Der Service Worker verwendet einen Cache: Übersicht, Manifeste und Symbole werden bei der
 Installation aufgenommen, jede andere Datei beim ersten Laden; Anfragen werden aus dem Cache beantwortet und im Hintergrund erneuert
 (stale-while-revalidate, Query-Strings ignoriert). Über einen Datei-Handler geöffnete Dateien kommen in <code>window.launchQueue</code> an;
 <code>Suite.bridge.receive</code> gibt die erste (Anwendungen mit Tabs: alle) mit ihrem echten <code>FileSystemFileHandle</code> an die App weiter (Speichern schreibt also zurück).
-<code>.webmanifest</code> als <code>application/manifest+json</code> ausliefern. Test: <code>tests/apps/test_pwa.py</code> (Ausgabe, Neuladen offline und die
+<code>.webmanifest</code> als <code>application/manifest+json</code> ausliefern. Test: <code>tests/apps/test_pwa.py</code> (Ausgabe, die Tags oben im <code>&lt;head&gt;</code>, jede Anwendung startet, Neuladen offline und die
 weiterleitende Startseite in Chromium, die Launch Queue mit einem Stub). Der <code>--serve</code>-Modus des Relays bietet dasselbe ohne
 Build-Schritt (siehe <em>PWA</em> im Abschnitt zum Relay; <code>tests/apps/test_pwa_relay.py</code>).</p>
 <h3>Releases und das öffentliche Repository</h3>
@@ -1323,7 +1325,7 @@ Felder. Gespeicherte Befehle liegen in <code>data.settings.snippets</code> ([{id
 entfernte Weiterleitungen nutzen <code>client.listen('127.0.0.1', port)</code> (SSH-<code>tcpip-forward</code>), dessen <code>accept()</code> Kanäle liefert, die mit
 <code>Suite.relay.connect(host, port)</code> verbunden werden. <code>pipe(a, b)</code> kopiert in beide Richtungen, bis eine Seite endet. Gespeicherte Weiterleitungen
 (<code>forwards: [{type, listenPort, host, port}]</code>) starten nach dem Verbinden; alle enden mit dem Tab. Die Relays lauschen nur, wenn sie an Loopback gebunden
-sind, an 127.0.0.1, Ports ≥ 1024; nicht übernommene Verbindungen werden nach 30 s geschlossen (<code>tests/relay/test_listen.py</code>, beide Implementierungen).</p>
+sind und nicht mit <code>--no-listen</code> / <code>-NoListen</code> gestartet wurden, an 127.0.0.1, Ports ≥ 1024; nicht übernommene Verbindungen werden nach 30 s geschlossen (<code>tests/relay/test_listen.py</code>, beide Implementierungen).</p>
 <p>Tests: <code>tests/apps/test_ssh_client.py</code> gegen einen lokalen OpenSSH-Server (<code>tests/helpers/ssh_fixtures.py</code>, Schlüsselanmeldung) über beide Relays:
 Terminal-Ein- und -Ausgabe (aus dem xterm-Puffer gelesen), Sitzungsende und Neu-verbinden-Schaltfläche, abgelehnter Host-Schlüssel,
 passphrasegeschützter Schlüssel, SFTP-Liste/Download/Upload/Ordner anlegen/Umbenennen/Löschen/Navigation, gespeicherte Verbindung mit
@@ -2200,6 +2202,196 @@ andere (die API des Relays, WebSockets) bleibt unberührt.</p>
 vom Tunnel verbraucht wird) und setzen bei Bedarf TLS darauf (<code>upgrade_tls</code>, mit STARTTLS geteilt; <code>SslStream</code>). <code>/http</code> verwendet den <code>ProxyHandler</code>
 von <code>urllib</code> (Python; ein ausdrücklich leerer für <code>--no-proxy</code>-Hosts) oder denselben <code>CONNECT</code>-Tunnel (der rohe HTTP-Client von PowerShell).
 <code>--no-proxy</code>-Muster passen auf den Host, <code>*.domain</code>-Globs und Domain-Endungen.</p>
+<h3>Öffentlicher Online-Dienst (nginx und systemd)</h3>
+<p>Um die Suite als öffentliche Website anzubieten, mit den Netzwerkfunktionen nur für Ihre eigenen Benutzer: <strong>nginx liefert die
+Anwendungen</strong> als statische Dateien aus (jeder darf sie ohne Anmeldung verwenden), und <strong>das Relay</strong> dahinter liefert nur seine API,
+für Benutzer mit Konto. Die Dateien sollte nginx ausliefern, nicht <code>relay.py --serve</code>: Das Relay beantwortet jede Anfrage vollständig
+(kein ETag/304), sodass jeder Besuch die ganze Anwendung erneut lädt (die Übersicht hat etwa 133 MB).</p>
+<p><strong>Dateien.</strong> Auf dem eigenen Rechner, mit gebautem <code>dist/</code> (oder den Dateien eines Releases in <code>dist/</code>), die statische Website erzeugen:</p>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">bash</ac:parameter><ac:plain-text-body><![CDATA[python3 tools/build_pwa.py build/pwa]]></ac:plain-text-body></ac:structured-macro>
+<p><code>build/pwa/</code> enthält die 25 Anwendungen (keine Prototypen oder Testseiten), je Anwendung ein Manifest und ein Symbol, den Service Worker
+<code>sw.js</code> (antwortet aus seinem Cache und aktualisiert im Hintergrund: schnelle Wiederholbesuche, Offline-Nutzung) und <code>index.html</code>, die
+zur Übersicht weiterleitet. Auf dem Server brauchen Sie sonst nichts aus dem Repository:</p>
+<table>
+<thead>
+<tr>
+<th>Auf dem Server</th>
+<th>Woher</th>
+<th>Zweck</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/srv/suite/www/</code></td>
+<td>der Inhalt von <code>build/pwa/</code></td>
+<td>die öffentliche Website (nur lesbar)</td>
+</tr>
+<tr>
+<td><code>/opt/suite-relay/relay.py</code></td>
+<td><code>relay/python/relay.py</code></td>
+<td>das Relay; Python 3.8 oder neuer, nur die Standardbibliothek</td>
+</tr>
+<tr>
+<td><code>/etc/suite-relay/users.json</code></td>
+<td>auf dem Server angelegt (unten)</td>
+<td>die Relay-Konten</td>
+</tr>
+</tbody>
+</table>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">bash</ac:parameter><ac:plain-text-body><![CDATA[sudo useradd --system --no-create-home --shell /usr/sbin/nologin suite-relay
+sudo install -d -m 750 -o root -g suite-relay /etc/suite-relay
+sudo python3 /opt/suite-relay/relay.py --users /etc/suite-relay/users.json --add-user anna --allow-user 'mail.example.org:993'
+sudo chown root:suite-relay /etc/suite-relay/users.json && sudo chmod 640 /etc/suite-relay/users.json]]></ac:plain-text-body></ac:structured-macro>
+<p><code>--allow-user</code> beschränkt, was ein Konto erreichen darf, innerhalb der Liste <code>--allow</code> des Relays.</p>
+<p><strong>systemd</strong> (<code>/etc/systemd/system/suite-relay.service</code>):</p>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">ini</ac:parameter><ac:plain-text-body><![CDATA[[Unit]
+Description=Portable Web App Suite relay
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=suite-relay
+Group=suite-relay
+ExecStart=/usr/bin/python3 /opt/suite-relay/relay.py \
+    --users /etc/suite-relay/users.json \
+    --bind 127.0.0.1 --port 8765 \
+    --trusted-proxy 127.0.0.1 \
+    --host suite.example.org \
+    --origin https://suite.example.org \
+    --no-listen \
+    --allow 'mail.example.org:993' --allow 'mail.example.org:587' \
+    --allow 'git.internal.example.org:22'
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+MemoryMax=1G
+
+[Install]
+WantedBy=multi-user.target]]></ac:plain-text-body></ac:structured-macro>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">bash</ac:parameter><ac:plain-text-body><![CDATA[sudo systemctl daemon-reload && sudo systemctl enable --now suite-relay
+journalctl -u suite-relay -f]]></ac:plain-text-body></ac:structured-macro>
+<ul>
+<li><strong><code>--allow</code> ist das Wichtigste.</strong> Ohne diese Option erreicht ein angemeldeter Benutzer jeden Rechner und Port, den der Server erreicht,
+  auch Ihr internes Netz. Nennen Sie nur die Dienste, die für die Suite gedacht sind.</li>
+<li><strong><code>--users</code>, kein <code>--token</code>:</strong> Jede Person hat ein eigenes Konto, das sich einzeln entfernen lässt; ein gemeinsames Token lässt sich
+  nicht für eine Person widerrufen, und ein Leck gibt allen Zugang.</li>
+<li><strong><code>--trusted-proxy 127.0.0.1</code>:</strong> Das Relay glaubt den <code>X-Forwarded-*</code>-Kopfzeilen von nginx (TLS, die Adresse des Clients für die
+  Begrenzung der Anmeldeversuche); Anfragen mit weitergeleiteten Kopfzeilen von anderen Adressen werden abgelehnt.</li>
+<li><strong><code>--host</code> und <code>--origin</code>:</strong> der öffentliche Name (Schutz vor DNS-Rebinding) und der Ursprung der Seiten – nginx liefert sie aus,
+  daher ergänzt das Relay seinen eigenen Ursprung nicht wie mit <code>--serve</code>.</li>
+<li><strong><code>--no-listen</code>:</strong> Ein Relay auf Loopback ließe seine Benutzer sonst Ports am <code>127.0.0.1</code> des Servers öffnen (Portweiterleitung des
+  SSH-Clients).</li>
+<li>Hinter einem Firmen-Proxy ergänzen Sie <code>--upstream-proxy http://proxy:3128</code> und <code>--no-proxy …</code>.</li>
+</ul>
+<p><strong>nginx</strong> (<code>/etc/nginx/sites-available/suite</code>):</p>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">nginx</ac:parameter><ac:plain-text-body><![CDATA[server {
+    listen 80;
+    listen [::]:80;
+    server_name suite.example.org;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name suite.example.org;
+    ssl_certificate     /etc/letsencrypt/live/suite.example.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/suite.example.org/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    root /srv/suite/www;
+    index index.html;
+    gzip on;
+    gzip_types application/javascript application/manifest+json image/svg+xml;
+
+    # für jede Antwort (keine location unten setzt eigene Kopfzeilen, daher erben alle diese)
+    add_header Cache-Control                "no-cache" always;
+    add_header Cross-Origin-Opener-Policy   "same-origin" always;
+    add_header Cross-Origin-Embedder-Policy "require-corp" always;
+    add_header Cross-Origin-Resource-Policy "same-origin" always;
+    add_header X-Content-Type-Options       "nosniff" always;
+    add_header Referrer-Policy              "no-referrer" always;
+    add_header Strict-Transport-Security    "max-age=31536000" always;
+
+    # die öffentlichen Anwendungen: ohne Anmeldung; neu geprüft (ETag/Last-Modified, 304 wenn unverändert)
+    location / {
+        try_files $uri $uri/ =404;
+    }
+    # Web-App-Manifeste: der Typ wird hier gesetzt (ein Block types { } würde die ganze MIME-Tabelle von nginx ersetzen)
+    location ~ \.webmanifest$ {
+        default_type application/manifest+json;
+        types { }
+        try_files $uri =404;
+    }
+
+    # das Relay: nur seine API-Pfade, dort braucht alles ein Konto
+    location ~ ^/(info|auth|auth/logout|http)$ {
+        proxy_pass http://127.0.0.1:8765;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        client_max_body_size 100m;
+        proxy_read_timeout 120s;
+    }
+    location = /tcp {
+        proxy_pass http://127.0.0.1:8765;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade           $http_upgrade;
+        proxy_set_header Connection        "upgrade";
+        proxy_set_header Host              $host;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 1d;
+        proxy_send_timeout 1d;
+        proxy_buffering off;
+    }
+}]]></ac:plain-text-body></ac:structured-macro>
+<ul>
+<li><strong><code>/tcp</code> trägt die WebSocket-Tunnel</strong> (Mail, SSH, SFTP, FTP, Datenbanken, Python-Sockets). Ein WebSocket beginnt als HTTP-Anfrage
+  mit <code>Upgrade: websocket</code> und <code>Connection: upgrade</code>; nginx gibt diese Hop-by-Hop-Kopfzeilen nicht von selbst weiter, daher werden sie
+  neu gesetzt. Unter <code>/tcp</code> ist jede Anfrage ein WebSocket, daher hat <code>Connection</code> den festen Wert <code>upgrade</code> (das übliche
+  <code>map $http_upgrade $connection_upgrade { … }</code> braucht man nur, wo gewöhnliche Anfragen und Upgrades eine Location teilen, und ein
+  <code>map</code> muss im Kontext <code>http {}</code> stehen).</li>
+<li><strong>Lange Timeouts</strong> halten ruhende SSH- und Mail-Sitzungen offen; <code>client_max_body_size</code> erlaubt die Anfrage-Bodys der HTTP-Analyse
+  (das Relay selbst nimmt bis 64 MiB an).</li>
+<li><strong><code>X-Forwarded-For</code>:</strong> Das Relay verwendet die letzte Adresse der Kopfzeile, die nginx anfügt; ein Besucher kann also keine andere
+  Herkunft vortäuschen.</li>
+<li><strong>Kein <code>--serve</code>:</strong> Das Relay beantwortet nur seine API; die Pfade oben sind alles, was es hat. Die Seiten sind durch die Kopfzeilen
+  cross-origin-isoliert, daher verwenden die Anwendungen <code>https://suite.example.org</code> von selbst als Relay-Adresse – Benutzer geben in
+  den Relay-Einstellungen nur ihr Konto ein (Anmeldung „Benutzername und Passwort“).</li>
+<li><strong>Kopfzeilen und Typen:</strong> <code>add_header</code>-Zeilen in einer <code>location</code> würden alle des <code>server</code>-Blocks ersetzen, daher setzt keine
+  <code>location</code> eigene. Ein Block <code>types { }</code> ersetzt ebenso die ganze MIME-Tabelle von nginx (HTML würde dann als
+  <code>application/octet-stream</code> heruntergeladen statt angezeigt), daher bekommen nur die Manifeste ihren Typ, in einer eigenen <code>location</code>.</li>
+</ul>
+<p><strong>Aktualisieren.</strong> Kopieren Sie ein neues <code>build/pwa/</code> über <code>/srv/suite/www/</code>; Besucher erhalten es beim nächsten Start (der Service
+Worker aktualisiert im Hintergrund). Ein neues Relay: <code>relay.py</code> ersetzen, <code>systemctl restart suite-relay</code>.</p>
+<p><strong>Installieren.</strong> Chrome und Edge (Desktop) zeigen ein Installationssymbol in der Adressleiste, und die Titelleiste der Suite zeigt
+<strong>Als App installieren</strong> (auch im Browsermenü: <em>Streamen, speichern und teilen → Seite als App installieren</em>); Android: Browsermenü →
+<em>App installieren</em> / <em>Zum Startbildschirm hinzufügen</em>; Safari unter macOS: <em>Ablage → Zum Dock hinzufügen</em>, unter iOS <em>Teilen → Zum
+Home-Bildschirm</em>. Firefox installiert am Desktop keine Web-Apps (neuere Versionen nur teilweise, unter Windows). Wird nichts angeboten, öffnen Sie die Entwicklerwerkzeuge → <em>Anwendung</em>
+→ <em>Manifest</em>: Der Abschnitt <em>Installierbarkeit</em> nennt den Grund; unter <em>Service Worker</em> muss <code>sw.js</code> aktiviert sein. Typische Ursachen:
+<code>sw.js</code> oder das Manifest nicht mit einem JavaScript- bzw. JSON-Typ ausgeliefert (<code>curl -I https://suite.example.org/sw.js</code> – ein Block
+<code>types { }</code> im Server, siehe oben), eine Seite, die nicht startet (ein Build mit einem <code>build_pwa.py</code> vor der Korrektur der Head-Tags),
+einfaches <code>http</code> (Installieren braucht HTTPS) oder ein alter Service Worker im Browser (<em>Anwendung</em> → <em>Speicher</em> → <em>Websitedaten löschen</em>,
+neu laden).</p>
+<p><strong>Vor der Veröffentlichung prüfen:</strong> einmal anmelden, zu einem erlaubten Ziel verbinden und sehen, dass ein Ziel außerhalb von
+<code>--allow</code> abgelehnt wird („target not allowed“); <code>curl https://suite.example.org/info</code> antwortet ohne Anmeldedaten (nur Version und
+Anmeldeverfahren).</p>
 <h2>Tests</h2>
 <ac:structured-macro ac:name="code"><ac:parameter ac:name="language">bash</ac:parameter><ac:plain-text-body><![CDATA[python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt

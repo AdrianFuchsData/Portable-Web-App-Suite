@@ -31,7 +31,7 @@ Under **Proxy and jump host** in the connection dialog:
 - **Local (here → server)**: the relay listens on this computer at `127.0.0.1` and a port (empty = any free port, shown after
   starting); every connection to it is passed on by the SSH server to *host:port* – for example a database or web interface that
   only the server can reach (`localhost:5432` seen from the server). Other programs on this computer, and the other apps of the suite,
-  connect to `127.0.0.1` at the shown port. This needs the relay on your own machine (a shared relay does not listen on ports).
+  connect to `127.0.0.1` at the shown port. This needs the relay on your own machine (a shared relay, or one started with `--no-listen`, does not listen on ports).
 - **Remote (server → here)**: the SSH server listens on its `127.0.0.1` at the given port; connections there come back through the
   browser and the relay to *host:port* on this side.
 

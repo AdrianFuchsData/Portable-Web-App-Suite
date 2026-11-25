@@ -19,6 +19,7 @@
     Python and open network connections from Python); the relay's own origin is then allowed besides -Origin.
     -UpstreamProxy http://[user:password@]host:port (or "env": HTTPS_PROXY/HTTP_PROXY/NO_PROXY) routes the outgoing
     connections through an HTTP proxy (CONNECT); -NoProxy lists hosts reached directly.
+    -NoListen switches off port forwarding (listening on 127.0.0.1 for the SSH client), e.g. for a relay that serves a public site.
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File relay.ps1
@@ -47,6 +48,7 @@ param(
     [string]$ProxyUserHeader,
     [double]$SessionHours = 12,
     [switch]$InsecureTransport,
+    [switch]$NoListen,
     [string]$Serve,
     [string]$UpstreamProxy,
     [string[]]$NoProxy = @(),
@@ -224,7 +226,7 @@ $config = @{
     Common = $common.ToString()
     Sessions = [hashtable]::Synchronized(@{}); Failures = [hashtable]::Synchronized(@{})
     Serve = $serveDir; Proxy = $upstream; NoProxy = @($NoProxy)
-    CanListen = [System.Net.IPAddress]::IsLoopback($bindAddress)  # (port forwarding: only on the user's own machine)
+    CanListen = [System.Net.IPAddress]::IsLoopback($bindAddress) -and -not $NoListen  # (port forwarding: only on the user's own machine, not with -NoListen)
     Pending = [hashtable]::Synchronized(@{})                       # id of an accepted connection -> @{ Client; Time }
 }
 
@@ -772,7 +774,7 @@ self.addEventListener('fetch', (e) => {
     # Listen on 127.0.0.1 for a page (port forwarding): announce every incoming connection ({"op":"accept","id"}), keep it in
     # $config.Pending until a tunnel takes it ({"accept": id}, within 30 s); closing the WebSocket stops listening.
     function Start-Listen($ws, $listen) {
-        if (-not $config.CanListen) { throw 'this relay does not listen on ports (only a relay on the local machine does)' }
+        if (-not $config.CanListen) { throw 'this relay does not listen on ports (only a relay on the local machine does, unless started with -NoListen)' }
         $port = [int]$listen.port
         if ($port -and ($port -lt 1024 -or $port -gt 65535)) { throw 'port must be between 1024 and 65535' }
         $l = New-Object System.Net.Sockets.TcpListener ([System.Net.IPAddress]::Loopback, $port)

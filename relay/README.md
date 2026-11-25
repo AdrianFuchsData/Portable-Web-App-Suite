@@ -92,6 +92,7 @@ With `--users` and without `--token`, the token sign-in is switched off. Both ca
 | `--proxy-user-header H` | `-ProxyUserHeader H` | Header with the user name that a trusted proxy has authenticated (client certificates, SSO); such requests need no relay credentials |
 | `--session-hours N` | `-SessionHours N` | Idle time after which a login expires (default 12) |
 | `--insecure-transport` | `-InsecureTransport` | Accept credentials without TLS from other machines (trusted networks only) |
+| `--no-listen` | `-NoListen` | Switch off port forwarding (listening on `127.0.0.1` for the SSH client). A relay bound to loopback behind a reverse proxy on the same host – e.g. for a public site – would otherwise let its signed-in users open ports on the server's `127.0.0.1`. |
 | `--origin O` | `-Origin O` | Allowed page origin (default `null`, i.e. pages opened from `file://`). Add the origin of the hosted PWA variant if used. Repeatable. |
 | `--allow P` | `-Allow P` | Allowed targets as `host:port` patterns (e.g. `*.example.org:993`) for everybody. Default: all. Repeatable. |
 | `--cafile F` | `-CaFile F` | Additional trusted CA certificates (PEM) for TLS to the targets, e.g. a company CA |
@@ -162,6 +163,10 @@ user name in a header and start the relay with `--proxy-user-header X-Remote-Use
 the proxy removes this header from client requests. Basic authentication by the proxy cannot be used: the apps cannot
 send it with WebSocket connections.
 
+**A public site with the relay for your users only** (nginx serves the apps, the relay only its API; systemd service and
+nginx templates): see *Public online service* in the technical documentation (`docs/en/technical-documentation.md`,
+`docs/de/technische-dokumentation.md`).
+
 ## Protocol (version 2)
 
 * `GET /info` → `{"relay": "portable-web-app-suite", "version": 2, "implementation": "…", "auth": ["token", "password", "proxy"], "tls": true|false, "features": ["listen"]}`
@@ -177,7 +182,8 @@ send it with WebSocket connections.
   port) → the relay listens on `127.0.0.1:N` and answers `{"ok": true, "port": N}`. For every incoming connection it sends
   `{"op": "accept", "id": "…"}`; a new WebSocket to `/tcp` with `{"token", "accept": "<id>"}` takes that connection within
   30 seconds and is a tunnel to it as above. Closing the listening WebSocket stops listening and closes connections not taken.
-  Only a relay bound to a loopback address listens (`"listen"` in the `features` of `/info`); a shared relay refuses.
+  Only a relay bound to a loopback address and started without `--no-listen` listens (`"listen"` in the `features` of `/info`); a shared
+  relay refuses.
 * **HTTP proxy:** `POST /http` with header `X-Relay-Token` and body
   `{"method", "url", "headers": [[name, value]], "body": "<base64>", "insecure", "followRedirects", "timeout"}`;
   answer `{"status", "reason", "url", "httpVersion", "headers": [[name, value]], "body": "<base64>", "timeMs"}`
@@ -200,7 +206,8 @@ implementation. SSH stays encrypted end to end by the SSH client in the browser.
   unknown `Host` header (DNS rebinding). Forwarded headers are only trusted from `--trusted-proxy` addresses.
 * Allow-lists of targets for everybody (`--allow`) and per account.
 * Port forwarding (listening) only on `127.0.0.1`, only ports from 1024, and only when the relay itself is bound to a loopback
-  address – a relay on a server never opens ports for its users.
+  address – a relay on a server never opens ports for its users. A relay on loopback behind a reverse proxy on the same host is
+  bound to loopback too: start it with `--no-listen` there.
 * Served files (`--serve`) need no credentials; only regular files inside the folder are served (no `..`, no hidden files).
   Pages served by the relay can use it with its token like `file://` pages, so serve only the apps of the suite there.
 

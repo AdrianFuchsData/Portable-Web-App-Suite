@@ -17,7 +17,7 @@ Protocol (version 2; version 1 clients keep working), see relay/README.md:
       {"token": "...", "host": "imap.example.org", "port": 993, "tls": true, "insecure": false}
   "token" is the relay token or a session token. Answer {"ok": true} or {"ok": false, "error": "..."}. Then binary
   messages carry the TCP data; text messages are control messages ({"op": "starttls", "insecure": false}).
-  Listening (port forwarding; only a relay bound to a loopback address, "listen" in /info features): first message
+  Listening (port forwarding; only a relay bound to a loopback address and without --no-listen, "listen" in /info features): first message
   {"token", "listen": {"port": N}} -> the relay listens on 127.0.0.1:N (N >= 1024, 0 = any) and answers {"ok": true, "port": N};
   for every incoming connection it sends {"op": "accept", "id": "..."}. Another WebSocket /tcp with {"token", "accept": "<id>"}
   takes that connection (within 30 s) and is a tunnel to it like above. Closing the listening WebSocket stops listening.
@@ -43,7 +43,7 @@ Usage:
     python3 relay.py [--port 8765] [--bind 127.0.0.1] [--token TOKEN] [--users users.json] [--origin ORIGIN ...]
                      [--allow PATTERN ...] [--cafile FILE] [--tls-cert cert.pem --tls-key key.pem] [--host NAME ...]
                      [--base-path /relay] [--trusted-proxy ADDR/CIDR ...] [--proxy-user-header X-Remote-User]
-                     [--session-hours 12] [--insecure-transport] [--serve DIR]
+                     [--session-hours 12] [--insecure-transport] [--no-listen] [--serve DIR]
                      [--upstream-proxy http://host:port | env] [--no-proxy HOST ...]
     python3 relay.py --users users.json --add-user anna [--allow-user PATTERN ...]    # create/change an account
 """
@@ -297,9 +297,10 @@ async def upgrade_tls(writer, ctx, host):
 class Relay:
     def __init__(self, token, origins, allow, cafile, port, users=None, users_file=None, hosts=(), base_path="",
                  trusted_proxies=(), proxy_user_header=None, session_hours=12, tls=False, insecure_transport=False,
-                 serve=None, upstream_proxy=None, no_proxy=(), bind="127.0.0.1"):
+                 serve=None, upstream_proxy=None, no_proxy=(), bind="127.0.0.1", no_listen=False):
         self.token = token
-        self.can_listen = is_loopback(bind)  # (port forwarding: only on the user's own machine)
+        # (port forwarding: only on the user's own machine, and not when switched off, e.g. for a relay of a public service)
+        self.can_listen = is_loopback(bind) and not no_listen
         self.pending = {}  # id of an accepted connection -> (reader, writer, time)
         self.origins = set(origins)
         self.allow = allow
@@ -696,7 +697,7 @@ class Relay:
 async def _relay_listen(relay, ws, spec):
     """Listen on 127.0.0.1 for a page (port forwarding): announce every incoming connection, keep it until a tunnel takes it."""
     if not relay.can_listen:
-        raise ValueError("this relay does not listen on ports (only a relay on the local machine does)")
+        raise ValueError("this relay does not listen on ports (only a relay on the local machine does, unless started with --no-listen)")
     port = int(spec.get("port") or 0)
     if port and not 1024 <= port <= 65535:
         raise ValueError("port must be between 1024 and 65535")
@@ -919,6 +920,7 @@ def main():
     parser.add_argument("--proxy-user-header", help="header with the user name authenticated by a trusted reverse proxy, e.g. X-Remote-User")
     parser.add_argument("--session-hours", type=float, default=12, help="idle time after which a login expires (default 12)")
     parser.add_argument("--insecure-transport", action="store_true", help="accept credentials without TLS from other machines (trusted networks only)")
+    parser.add_argument("--no-listen", action="store_true", help="switch off port forwarding (listening on 127.0.0.1 for the SSH client), e.g. for a relay that serves a public site")
     parser.add_argument("--serve", metavar="DIR", help="also serve the apps in DIR (cross-origin isolated: interrupt and network functions of the notebook)")
     parser.add_argument("--upstream-proxy", metavar="URL", help='route outgoing connections through an HTTP proxy (http://[user:password@]host:port), or "env"')
     parser.add_argument("--no-proxy", action="append", default=[], help="host (or *.domain) reached without the upstream proxy; repeatable, comma-separated")
@@ -952,7 +954,7 @@ def main():
                   hosts=args.host, base_path=args.base_path, trusted_proxies=args.trusted_proxy,
                   proxy_user_header=args.proxy_user_header, session_hours=args.session_hours, tls=bool(ssl_ctx),
                   insecure_transport=args.insecure_transport, serve=args.serve, upstream_proxy=upstream, no_proxy=no_proxy,
-                  bind=args.bind)
+                  bind=args.bind, no_listen=args.no_listen)
 
     async def serve():
         server = await asyncio.start_server(relay.handle, args.bind, args.port, limit=MAX_HEADER, ssl=ssl_ctx)
